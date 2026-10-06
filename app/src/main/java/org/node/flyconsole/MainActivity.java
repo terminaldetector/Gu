@@ -17,9 +17,10 @@ public final class MainActivity extends Activity {
  private void state(boolean b){busy=b;send.setEnabled(!b);load.setEnabled(!b);}
  private long budget(){return Math.max(0,Runtime.getRuntime().maxMemory()-Runtime.getRuntime().totalMemory()+Runtime.getRuntime().freeMemory())*2/3;}
  protected void onActivityResult(int r,int c,Intent data){super.onActivityResult(r,c,data);if(r==1&&c==RESULT_OK&&data!=null)importGraph(data.getData());}
+ private InputStream bundledInput() throws IOException {try{return getAssets().open("brain.fly.gz");}catch(IOException ex){return getAssets().open("brain.fly");}}
  private void importGraph(Uri uri){if(busy)return;state(true);graph=null;engine=null;append("Загрузка…");worker.execute(()->{File tmp=new File(getFilesDir(),"import.tmp");try{
    if(uri!=null){try(InputStream in=getContentResolver().openInputStream(uri);OutputStream out=new FileOutputStream(tmp)){byte[] buf=new byte[65536];int n;long total=0;while((n=in.read(buf))!=-1){total+=n;if(total>1024L*1024*1024)throw new IOException("Файл больше 1 ГБ");out.write(buf,0,n);}}}
-   Graph loaded;try(InputStream in=uri==null?(model.exists()?new FileInputStream(model):getAssets().open("brain.fly.gz")):new FileInputStream(tmp)){loaded=Graph.read(in,budget());}
+   Graph loaded;try(InputStream in=uri==null?(model.exists()?new FileInputStream(model):bundledInput()):new FileInputStream(tmp)){loaded=Graph.read(in,budget());}
    Engine next=new Engine(loaded);if(uri!=null&&!tmp.renameTo(model))throw new IOException("Не удалось сохранить граф");graph=loaded;engine=next;
    runOnUiThread(()->{append("Импортирован граф: "+graph.ids.length+" нейронов / "+graph.targets.length+" связей\nПервый ID: "+graph.ids[0]+" · оценка памяти: "+graph.memoryBytes()/1048576+" МиБ");state(false);});
   }catch(Exception|OutOfMemoryError ex){tmp.delete();graph=Graph.demo();engine=new Engine(graph);runOnUiThread(()->{append("Импорт не выполнен: "+ex.getMessage()+"\nВключён синтетический тест.");state(false);});}});}
