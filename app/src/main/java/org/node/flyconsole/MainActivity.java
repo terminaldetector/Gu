@@ -4,7 +4,7 @@ public final class MainActivity extends Activity {
  private final ExecutorService worker=Executors.newSingleThreadExecutor();private final AtomicBoolean cancel=new AtomicBoolean();
  private Engine engine;private Graph graph;private TextView log;private EditText entry;private Button send,load;private boolean busy;private File model;
  public void onCreate(Bundle b){super.onCreate(b);getWindow().setStatusBarColor(Color.rgb(5,5,16));
-  LinearLayout root=new LinearLayout(this);root.setOrientation(1);root.setPadding(20,32,20,20);root.setBackgroundColor(Color.rgb(5,5,16));
+  LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setPadding(20,32,20,20);root.setBackgroundColor(Color.rgb(5,5,16));
   TextView title=new TextView(this);title.setText("FLY / CONSOLE");title.setTextSize(25);title.setTextColor(Color.rgb(130,255,190));root.addView(title);
   load=new Button(this);load.setText("Импорт .fly / .fly.gz");root.addView(load);load.setOnClickListener(v->{Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);i.setType("*/*");i.addCategory(Intent.CATEGORY_OPENABLE);startActivityForResult(i,1);});
   ScrollView scroll=new ScrollView(this);log=new TextView(this);log.setTextColor(Color.LTGRAY);log.setTextSize(16);scroll.addView(log);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
