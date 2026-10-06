@@ -1,0 +1,10 @@
+*.apk
+*.fly
+*.feather
+*.parquet
+.gradle/
+build/
+local.properties
+__pycache__/
+*.fly.gz
+app/src/main/assets/brain.fly.json
