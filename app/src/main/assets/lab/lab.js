@@ -90,7 +90,7 @@ let mapReceivedAt=0;
 function updateMapFreshness(){
  const state=$('mapState');if(!state)return;
  const stale=!connected||!mapReceivedAt||performance.now()-mapReceivedAt>2000;
- state.textContent=!mapReceivedAt?'Ожидает расчёта':stale?'Последнее окно · пауза':'Живое окно сети';
+ state.textContent=!mapReceivedAt?'Ожидает расчёта':stale?'Пауза · окно сети':'Живое окно сети';
  state.parentElement.classList.toggle('stale',stale);
 }
 function updateNeuralMap(data){
@@ -105,7 +105,7 @@ function updateNeuralMap(data){
   cell.setAttribute('aria-label',cell.title);
  }
  mapReceivedAt=performance.now();
- $('mapStats').textContent=(data.backend||'cpu').toUpperCase()+' · '+data.active+' активных · FDB '+(data.fdbEdges||0);
+ $('mapStats').textContent=(data.backend||'cpu').toUpperCase()+' · '+data.active+' акт. · FDB '+(data.fdbEdges||0);
  updateMapFreshness();
 }
 function showTab(tab){

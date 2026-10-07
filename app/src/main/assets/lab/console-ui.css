@@ -8,3 +8,6 @@ body.hide-map .micro-panel{display:none}
 @media(orientation:landscape) and (max-height:360px){body.game-mode .micro-panel{margin-top:2px;padding-top:4px}body.game-mode .micro-heading{margin-bottom:5px}body.game-mode .map-legend{display:none}body.game-mode .game-hud.right #gameState{display:none}}
 
 #gameNotice{display:none}body.game-mode #gameNotice.visible{display:block;position:absolute;left:20%;right:20%;bottom:60px;padding:8px 12px;background:#1b252ff2;border:1px solid #526779;border-radius:6px;font-size:11px;line-height:1.4;text-align:center;z-index:8;pointer-events:none}body.game-mode #gameNotice.error{color:#ffd2c6;border-color:#bb6b59}@media(orientation:portrait){body.game-mode #gameNotice.visible{bottom:240px;left:12px;right:118px}}
+/* Keep telemetry above the right-hand touch controls at short landscape heights. */
+body.game-mode .neural-map{max-width:104px}body.game-mode .map-legend{display:none}body.game-mode #mapStats{font-size:9px}
+@media(orientation:landscape){body.game-mode .actions{align-self:flex-end}}

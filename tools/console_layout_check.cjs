@@ -33,20 +33,23 @@ const assets=path.resolve('app/src/main/assets'),demo=JSON.parse(fs.readFileSync
   await page.setViewportSize({width:w,height:h});await page.waitForTimeout(100);
   const boxes=await page.evaluate(()=>{
    const rect=el=>{const r=el.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom};};
-   return {canvas:rect(screen),map:rect($('neuralMap')),toolbar:rect($('gameToolbar')),buttons:[...document.querySelectorAll('[data-button]')].map(rect),scroll:document.documentElement.scrollWidth,width:innerWidth,height:innerHeight,frame,generation};
+   return {canvas:rect(screen),map:rect($('neuralMap')),micro:rect($('neuralMap').parentElement),toolbar:rect($('gameToolbar')),buttons:[...document.querySelectorAll('[data-button]')].map(rect),scroll:document.documentElement.scrollWidth,width:innerWidth,height:innerHeight,frame,generation};
   });
   assert(boxes.canvas.w>80&&boxes.canvas.h>80,`usable video ${w}x${h}`);
   assert(Math.abs(boxes.canvas.w/boxes.canvas.h-256/240)<.025,`preserve video ratio ${w}x${h}`);
   assert(boxes.scroll<=w+1,`no horizontal overflow ${w}x${h}`);
   for(const b of boxes.buttons)assert(b.w>=25&&b.h>=25&&b.x>=0&&b.right<=w+1&&b.bottom<=h+1,`all human buttons visible ${w}x${h}`);
   const c=boxes.canvas,m=boxes.map;assert(c.right<=m.x+1||c.y>=m.bottom||c.bottom<=m.y,'map stays outside game image');
+  await page.evaluate(()=>$('gameNotice').classList.remove('visible'));
+  if(w>h){const m=boxes.micro;for(const b of boxes.buttons)assert(b.right<=m.x||b.x>=m.right||b.y>=m.bottom||b.bottom<=m.y,`telemetry clear of controls ${w}x${h}`);}
   if(w===390||w===844)await page.screenshot({path:`ui-preview/${w>h?'landscape':'portrait'}.png`});
  }
+ await page.click('#gameExit');await page.screenshot({path:'ui-preview/menu.png'});await page.click('#enterGame');
  await page.click('#gameSettings');assert(await page.locator('#orientation').isVisible());
  await page.selectOption('#orientation','portrait');assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('fly-display')).orientation),'portrait');
  await page.uncheck('#showMap');await page.click('#enterGame');assert(!await page.locator('#neuralMap').isVisible());
  await page.goto('https://flyconsole.local/lab/index.html?system=sega');await page.waitForFunction(()=>loaded,null,{timeout:30000});
- await page.click('#enterGame');
+ await page.click('#enterGame');await page.evaluate(()=>{for(let i=0;i<25;i++)nes.frame();$('gameNotice').classList.remove('visible');});
  assert.equal(await page.locator('[data-button="2"]').textContent(),'C','Sega must retain its third game button');
  for(const [w,h] of [[390,844],[844,390]]){
   await page.setViewportSize({width:w,height:h});await page.waitForTimeout(100);
