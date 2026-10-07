@@ -21,3 +21,12 @@ vm.runInContext(keys,state);
 assert(state.keysEqual(JSON.stringify({configuration:{backend:'cpu'},gmode:'off'}),JSON.stringify({configuration:{}})));
 assert(!state.keysEqual(JSON.stringify({configuration:{fdb:{edges:[{source:'1',target:'2',weight:1}]}}}),JSON.stringify({configuration:{}})));
 console.log('PASS: profile key migration and FDB identity separation');
+
+
+const growth=source.slice(source.indexOf('function validateGrowth'),source.indexOf('function configuration'));
+vm.runInContext(growth,state);
+const good={enabled:true,interval:10,perWindow:2,maxEdges:256,initialWeight:8,explore:true,rewardGate:false};
+assert.doesNotThrow(()=>state.validateGrowth(good));
+for(const bad of [{...good,interval:1.5},{...good,maxEdges:1025},{...good,initialWeight:0},{...good,explore:1}])assert.throws(()=>state.validateGrowth(bad));
+assert(source.indexOf('if(data.fdbState)',source.indexOf('window.labResult='))<source.indexOf('learnedButtons(data)',source.indexOf('window.labResult=')),'grown layer must be saved before terminal autosave/reapply');
+console.log('PASS: production FDB growth validation and terminal checkpoint ordering');

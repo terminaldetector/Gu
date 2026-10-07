@@ -93,5 +93,5 @@ assert run(weight=0,delta=120)==[40,1]
 assert run(weight=120,delta=-120)==[40,0]
 assert run(weight=240)==[40,1] # original weights outside the old signed16 range
 assert run(weight=0,mutate=True)==[40,1] # new edge uploaded at an actual window boundary
-print("PASS: actual GLES31 production shader; CPU LIF trajectory, 1.8ms delay, inhibition, gain, lesions, silence")
+print("PASS: actual GLES31 production shader; CPU LIF trajectory, 1.8ms delay, inhibition, gain, lesions, silence, FDB extra edges/deltas/live revision, float32 weights >128")
 

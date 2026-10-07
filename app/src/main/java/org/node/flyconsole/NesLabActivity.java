@@ -251,7 +251,7 @@ public final class NesLabActivity extends Activity {
         response.put("fdbGrown",grown).put("fdbRevision",experiment.options.delta==null?0:experiment.options.delta.version());
         if(experiment.options.delta!=null&&experiment.options.delta.version()!=oldRevision){
             JSONObject state=fdbState();response.put("fdbState",state);
-            if(recordingOn)recorder.write("# fdb_mutation,"+sequence+","+state.toString()+"\n");
+            if(recordingOn){String mutation="# fdb_mutation,"+(sequence+1)+","+state.toString()+"\n";recorder.write(mutation);recordedBytes+=mutation.getBytes(StandardCharsets.UTF_8).length;}
         }
         response.put("fdbEdges",experiment.options.delta==null?0:experiment.options.delta.growthCount()).put("fdbDeltas",experiment.options.delta==null?0:experiment.options.delta.deltaCount());
         response.put("outputs",output).put("inputs",new JSONArray(rates)).put("sequence",++sequence);

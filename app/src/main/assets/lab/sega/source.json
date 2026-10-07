@@ -4,7 +4,8 @@
   "compiler": "Emscripten 3.1.57",
   "license": "Genesis Plus GX noncommercial + component notices",
   "source_archive": "genplus-source.zip",
-  "core_api": "genplus-fly-6090aff9-api2",
-  "wasm_sha256": "d778a2b1668459517b73d1e038995683e64df57cf99fb2d5184096fb5da8bea5",
-  "source_sha256": "c4e34a588411eed5facf610241184bf64813b26d5aabeb4e8cfc2da64a7d07ec"
+  "core_api": "genplus-fly-6090aff9-api4",
+  "wasm_sha256": "d8c072295a884027d963c3fa52aeced6a0f2a6de322daadb9f58c28f8d072429",
+  "source_sha256": "7de8660355314e23298d0e799360988c07668d0bd4ba7bb194d26d7cb2a49d05",
+  "controllers": 2
 }

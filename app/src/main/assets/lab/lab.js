@@ -269,8 +269,8 @@ window.labResult=function(data) {
   if(data.generation!==generation||data.token!==pendingToken)return;
   pendingToken=null;lastResponse=performance.now();measuredWindows++;measuredNetworkMs+=data.wallMs;if(benchmark)benchmark.cpuMs+=data.wallMs;
   if(data.error){releaseBrain();return;}
-  try{brainMask=connected?learnedButtons(data):0;}catch(error){window.labError({message:error.message});brainMask=0;}updateButtons();learningStats();
   if(data.fdbState){$('fdbJson').value=JSON.stringify(data.fdbState,null,2);if(requestedConfiguration)requestedConfiguration.fdb=data.fdbState;}
+  try{brainMask=connected?learnedButtons(data):0;}catch(error){window.labError({message:error.message});brainMask=0;}updateButtons();learningStats();
   $('fdbStatus').textContent='FDB v'+(data.fdbRevision||0)+' · выросло '+(data.fdbGrown||0)+' · дельт '+(data.fdbDeltas||0)+' · новых связей '+(data.fdbEdges||0);
   $('spikes').textContent=data.spikes;$('active').textContent=data.active;$('compute').textContent=data.wallMs.toFixed(1);
   [...$('outputs').children].forEach((element,i)=>{element.textContent=buttonNames[i]+' '+data.outputs[i].toFixed(0)+' Гц';element.className=(data.buttons&(1<<i))?'on':'';});

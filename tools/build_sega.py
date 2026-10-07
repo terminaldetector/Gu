@@ -50,7 +50,9 @@ int EMSCRIPTEN_KEEPALIVE wasm_input_update(void) {
     with zipfile.ZipFile(assets/'genplus-source.zip','w',zipfile.ZIP_DEFLATED) as archive:
         for path in sorted(source.rglob('*')):
             if path.is_file() and build not in path.parents and 'docs' not in path.relative_to(source).parts and not path.name.endswith(('.wasm','.dbg')) and path!=output/'genplus.js':
-                archive.write(path,path.relative_to(source.parent))
+                info=zipfile.ZipInfo(str(path.relative_to(source.parent)),(2024,1,1,0,0,0))
+                info.compress_type=zipfile.ZIP_DEFLATED;info.external_attr=0o100644<<16
+                archive.writestr(info,path.read_bytes())
     meta=json.loads((assets/'source.json').read_text())
     meta.update(core_api='genplus-fly-6090aff9-api4',compiler='Emscripten 3.1.57',controllers=2,
                 wasm_sha256=hashlib.sha256((assets/'genplus.wasm').read_bytes()).hexdigest(),
