@@ -46,6 +46,7 @@ public final class NesLabActivity extends Activity {
     private String romHash = "not-loaded";
     private final java.util.ArrayDeque<String> offeredRomHashes = new java.util.ArrayDeque<>();
     private long sequence, configVersion;
+    private boolean neuralConfigured;
     private int latestMask;
     private BufferedWriter recorder;
     private File recording;
@@ -109,7 +110,7 @@ public final class NesLabActivity extends Activity {
             web.loadUrl(ORIGIN+"/lab/index.html?system="+labSystem);
         });
     }
-    private void loadGraph(){try{long free=Runtime.getRuntime().maxMemory()-Runtime.getRuntime().totalMemory()+Runtime.getRuntime().freeMemory();Graph loaded=GraphCache.load(new File(getFilesDir(),"connectome.fly"),()->{try{return getAssets().open("brain.fly.gz");}catch(IOException ex){return getAssets().open("brain.fly");}},free*2/3);Experiment next=Experiment.automatic(loaded);Engine nextEngine=new Engine(loaded);closeGpu();graph=loaded;graphKind=GraphCache.kind;experiment=next;engine=nextEngine;backend="cpu";initialError=null;announce();}catch(Exception|OutOfMemoryError ex){engine=null;graph=null;error("Коннектом не загрузился: "+ex.getMessage()+". Эмулятор доступен вручную.");}}
+    private void loadGraph(){neuralConfigured=false;try{long free=Runtime.getRuntime().maxMemory()-Runtime.getRuntime().totalMemory()+Runtime.getRuntime().freeMemory();Graph loaded=GraphCache.load(new File(getFilesDir(),"connectome.fly"),()->{try{return getAssets().open("brain.fly.gz");}catch(IOException ex){return getAssets().open("brain.fly");}},free*2/3);Experiment next=Experiment.automatic(loaded);Engine nextEngine=new Engine(loaded);closeGpu();graph=loaded;graphKind=GraphCache.kind;experiment=next;engine=nextEngine;backend="cpu";initialError=null;announce();}catch(Exception|OutOfMemoryError ex){engine=null;graph=null;error("Коннектом не загрузился: "+ex.getMessage()+". Эмулятор доступен вручную.");}}
 
     private void announce() {
         if (!pageReady) return;
@@ -154,9 +155,13 @@ public final class NesLabActivity extends Activity {
     }
 
     private void configure(JSONObject data) throws Exception {
+        if(data.has("reset")&&!(data.get("reset") instanceof Boolean))throw new IllegalArgumentException("Reset must be boolean");
+        boolean initial=!neuralConfigured;
+        boolean reset=initial||data.optBoolean("reset",true);
         if (engine == null) throw new IllegalStateException("Коннектом ещё не готов");
         String requestedBackend=data.optString("backend","cpu");
         if (!requestedBackend.equals("cpu")&&!requestedBackend.equals("gpu")) throw new IllegalArgumentException("Неизвестный backend");
+        if(!reset&&!requestedBackend.equals(backend))throw new IllegalArgumentException("Смена CPU/GPU требует явного сброса сети; ROM сохранён");
         if (requestedBackend.equals("gpu") && Build.VERSION.SDK_INT < 21) throw new IllegalArgumentException("GPU backend требует Android 5.0+");
         Experiment next = new Experiment(parsePorts(data.getJSONArray("inputs"), 16), parsePorts(data.getJSONArray("outputs"), 8));
         for (int input : next.inputs) for (int output : next.outputs)
@@ -175,6 +180,7 @@ public final class NesLabActivity extends Activity {
         next.scramble = data.getBoolean("scramble");
         next.agentButtonMask=systemButtonMask(data.optString("systemButtons","auto"));
         long seed=data.getLong("seed"); if(data.getDouble("seed")!=seed||seed<0||seed>2147483647L) throw new IllegalArgumentException("Seed 0–2147483647");
+        if(!reset&&experiment.seed!=seed)throw new IllegalArgumentException("Изменение seed требует явного сброса сети");
         next.seedPermutation(seed);
         JSONArray lesions=data.getJSONArray("lesions"); if(lesions.length()>256) throw new IllegalArgumentException("Не более 256 абляций");
         next.options.lesions=parsePorts(lesions,lesions.length());
@@ -215,17 +221,23 @@ public final class NesLabActivity extends Activity {
             next.options.delta=layer;
         }
 
+        if(!reset&&fdb!=null&&experiment.options.delta!=null&&java.util.Arrays.equals(next.inputs,experiment.inputs)&&java.util.Arrays.equals(next.outputs,experiment.outputs)){
+            JSONObject current=fdbState();
+            JSONArray ds=fdb.optJSONArray("deltas"),es=fdb.optJSONArray("edges");
+            if(current.getJSONArray("deltas").toString().equals(ds==null?"[]":ds.toString())&&current.getJSONArray("edges").toString().equals(es==null?"[]":es.toString())
+                &&String.valueOf(nextGrowthConfig).equals(String.valueOf(growthConfiguration))){next.options.delta=experiment.options.delta;nextGrowth=fdbGrowth;nextGrowthConfig=growthConfiguration;}
+        }
         if (requestedBackend.equals("gpu")) {
             if (gpuEngine == null) gpuEngine = new GpuLifEngine(graph);
-            gpuEngine.reset(next.seed);
+            if(reset)gpuEngine.reset(next.seed);
         } else {
             closeGpu();
-            engine.reset(next.seed);
+            if(reset)engine.reset(next.seed);
         }
         backend=requestedBackend;
-        experiment=next;fdbGrowth=nextGrowth;growthConfiguration=nextGrowthConfig; configVersion++; sequence=0; latestMask=0;
+        experiment=next;fdbGrowth=nextGrowth;growthConfiguration=nextGrowthConfig; configVersion++; if(reset)sequence=0; latestMask=0;neuralConfigured=true;
         if(recordingOn) recorder.write("# config,"+data.put("configVersion",configVersion).put("backend",backend).toString().replace('\n',' ')+"\n");
-        emit("labConfigured",new JSONObject().put("configVersion",configVersion).put("mode",next.mode).put("backend",backend).put("generation",data.optLong("generation",-1)));
+        emit("labConfigured",new JSONObject().put("reset",reset).put("initial",initial).put("configVersion",configVersion).put("mode",next.mode).put("backend",backend).put("generation",data.optLong("generation",-1)));
     }
 
     private int systemButtonMask(String mode){

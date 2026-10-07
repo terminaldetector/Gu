@@ -54,7 +54,7 @@ public final class GpuLifEngine implements AutoCloseable {
     private EGLDisplay display = EGL14.EGL_NO_DISPLAY;
     private EGLContext context = EGL14.EGL_NO_CONTEXT;
     private EGLSurface surface = EGL14.EGL_NO_SURFACE;
-    private int stepProgram, clearProgram;
+    private int stepProgram, clearProgram, tickLocation;
     private int seed;
     private long tick;
     private boolean closed;
@@ -71,6 +71,7 @@ public final class GpuLifEngine implements AutoCloseable {
         try {
             createContext();
             stepProgram = link(STEP);
+            tickLocation=GLES31.glGetUniformLocation(stepProgram,"tick");
             clearProgram = link(CLEAR);
             GLES31.glGenBuffers(buffers.length, buffers, 0);
             uploadStatic();
@@ -109,12 +110,13 @@ public final class GpuLifEngine implements AutoCloseable {
         int steps = durationMs * 10, done = 0;
         GLES31.glUseProgram(stepProgram); bindAll(); setUniforms(options);
         for (; done < steps && (cancel == null || !cancel.get()); done++, tick++) {
-            GLES31.glUniform1i(GLES31.glGetUniformLocation(stepProgram, "tick"), (int)tick);
+            GLES31.glUniform1i(tickLocation, (int)tick);
             GLES31.glDispatchCompute((n + LOCAL - 1) / LOCAL, 1, 1);
             GLES31.glMemoryBarrier(GLES31.GL_SHADER_STORAGE_BARRIER_BIT);
-            checkGl("compute step");
+
         }
         GLES31.glMemoryBarrier(GLES31.GL_SHADER_STORAGE_BARRIER_BIT | GLES31.GL_BUFFER_UPDATE_BARRIER_BIT);
+        checkGl("compute steps");
         int[] counts = readInts(5, n); long spikes = 0;
         for (int c : counts) spikes += c;
         return new Engine.Result(counts, spikes, tick, done, (System.nanoTime()-started)/1e9);
