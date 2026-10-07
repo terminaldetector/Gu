@@ -19,5 +19,5 @@ const html=fs.readFileSync('app/src/main/assets/lab/index.html','utf8');
 const manifest=fs.readFileSync('app/src/main/AndroidManifest.xml','utf8');
 assert(html.includes('id="gmodeLaunch"')&&html.includes('id="gameExit"')&&html.includes('id="gameSettings"')&&html.includes('id="gameConnect"'),'dedicated game mode must expose launch, exit, settings and connect controls');
 assert(html.includes('body.game-mode .screen canvas{height:100%;width:auto;')&&html.includes('object-fit:contain'),'landscape game view must preserve the ROM aspect ratio');
-assert(manifest.includes('android:screenOrientation="landscape"'),'the console Activity must open in landscape');
+assert(manifest.includes('android:screenOrientation="fullUser"')&&manifest.includes('android:configChanges="orientation|screenSize|keyboardHidden"'),'rotation must preserve the Activity and live session');
 console.log('PASS: deterministic 2P starter prior, spatial direction bias, and protection of trained readout weights');

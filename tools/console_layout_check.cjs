@@ -1,0 +1,49 @@
+'use strict';
+// Production UI in Chromium, bridge fixture only; no claim about biological behavior.
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {chromium}=require('playwright');
+const assets=path.resolve('app/src/main/assets'),demo=JSON.parse(fs.readFileSync(path.join(assets,'lab/demo-rom.json')));
+(async()=>{
+ const browser=await chromium.launch({headless:true});
+ const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.route('https://flyconsole.local/**',async route=>{
+  const file=path.join(assets,new URL(route.request().url()).pathname.slice(1));
+  if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
+  const type=file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':file.endsWith('.json')?'application/json':'text/html';
+  await route.fulfill({contentType:type,body:fs.readFileSync(file)});
+ });
+ await page.exposeFunction('fixtureDemo',()=>page.evaluate(d=>window.labLoadRom({base64:d.base64,name:'Diagnostic / UI fixture',sha256:'fixture'}),demo));
+ await page.addInitScript(()=>{window.FlyBridge={demo:()=>window.fixtureDemo(),acceptRom(){},orientation(){},stop(){},resume(){}};});
+ await page.goto('https://flyconsole.local/lab/index.html');await page.waitForFunction(()=>loaded);
+ assert.equal(await page.locator('#neuralMap .neural-cube').count(),16);
+ await page.click('[data-tab="network"]');assert(await page.locator('#mode').isVisible());assert(!await page.locator('#gamePanel').isVisible());
+ await page.click('[data-tab="learning"]');assert(await page.locator('#learnMode').isVisible());
+ await page.click('[data-tab="research"]');assert(await page.locator('#benchmarkStart').isVisible());
+ await page.click('[data-tab="info"]');assert(await page.locator('#passport').count());
+ const preservation=await page.evaluate(()=>{const before={frame,weights:JSON.stringify(learner.weights),generation};openGame();leaveGame('network');openGame();return before.frame===frame&&before.weights===JSON.stringify(learner.weights)&&before.generation===generation;});
+ assert(preservation,'presentation navigation must not reset console or network session');
+ await page.evaluate(()=>{connected=true;updateNeuralMap({backend:'gpu',active:16,fdbEdges:4,neuralGroups:Array.from({length:16},(_,i)=>({hz:i*20,spikes:i,active:i,neurons:100}))});});
+ assert((await page.textContent('#mapStats')).includes('GPU'));
+ const colors=await page.locator('.neural-cube').evaluateAll(c=>c.map(el=>el.style.getPropertyValue('--cell')));assert.notEqual(colors[0],colors[15]);
+ await page.evaluate(()=>{connected=false;updateGmodeHud();});assert((await page.textContent('#mapState')).includes('пауза'));
+ fs.mkdirSync('ui-preview',{recursive:true});
+ for(const [w,h] of [[390,844],[844,390],[360,640],[640,360],[568,320],[1280,800]]){
+  await page.setViewportSize({width:w,height:h});
+  const boxes=await page.evaluate(()=>{
+   const rect=el=>{const r=el.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom};};
+   return {canvas:rect(screen),map:rect($('neuralMap')),toolbar:rect($('gameToolbar')),buttons:[...document.querySelectorAll('[data-button]')].map(rect),scroll:document.documentElement.scrollWidth,width:innerWidth,height:innerHeight,frame,generation};
+  });
+  assert(boxes.canvas.w>80&&boxes.canvas.h>80,`usable video ${w}x${h}`);
+  assert(Math.abs(boxes.canvas.w/boxes.canvas.h-256/240)<.025,`preserve video ratio ${w}x${h}`);
+  assert(boxes.scroll<=w+1,`no horizontal overflow ${w}x${h}`);
+  for(const b of boxes.buttons)assert(b.w>=25&&b.h>=25&&b.x>=0&&b.right<=w+1&&b.bottom<=h+1,`all human buttons visible ${w}x${h}`);
+  const c=boxes.canvas,m=boxes.map;assert(c.right<=m.x+1||c.y>=m.bottom||c.bottom<=m.y,'map stays outside game image');
+  if(w===390||w===844)await page.screenshot({path:`ui-preview/${w>h?'landscape':'portrait'}.png`});
+ }
+ await page.click('#gameSettings');assert(await page.locator('#orientation').isVisible());
+ await page.selectOption('#orientation','portrait');assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('fly-display')).orientation),'portrait');
+ await page.uncheck('#showMap');await page.click('#enterGame');assert(!await page.locator('#neuralMap').isVisible());
+ assert.deepEqual(errors,[],'no JavaScript page errors');
+ await browser.close();console.log('PASS: tabs, real telemetry rendering, stale state, navigation preservation and 6 portrait/landscape layouts');
+})().catch(e=>{console.error(e);process.exitCode=1;});

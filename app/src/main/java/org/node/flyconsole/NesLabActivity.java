@@ -250,6 +250,16 @@ public final class NesLabActivity extends Activity {
         response.put("buttons",latestMask).put("backend",backend).put("backendNote","gpu".equals(backend)?"OpenGL ES 3.1 compute, float32 weights, q24.8 delayed events":"Java CPU reference");
         response.put("spikes",result.spikes).put("active",result.active).put("simMs",result.endTick*.1).put("wallMs",result.wallSeconds*1000);
         response.put("steps",result.steps).put("configVersion",configVersion);
+        // Contiguous graph-index groups, not anatomical regions; same counts on CPU and GPU.
+        long[] groupSpikes=new long[16]; int[] groupActive=new int[16],groupSize=new int[16];
+        for(int i=0;i<result.counts.length;i++){
+            int group=(int)((long)i*16/result.counts.length);
+            groupSize[group]++;groupSpikes[group]+=result.counts[i];if(result.counts[i]>0)groupActive[group]++;
+        }
+        JSONArray groups=new JSONArray();
+        for(int i=0;i<16;i++)groups.put(new JSONObject().put("spikes",groupSpikes[i]).put("active",groupActive[i]).put("neurons",groupSize[i])
+            .put("hz",result.steps==0||groupSize[i]==0?0:groupSpikes[i]*10000.0/result.steps/groupSize[i]));
+        response.put("neuralGroups",groups);
         JSONArray output=new JSONArray(); for(int index:experiment.outputs) output.put(result.steps==0?0:result.counts[index]*10000.0/result.steps);
         long oldRevision=experiment.options.delta==null?-1:experiment.options.delta.version();
         String learningMode=request.optString("learningMode","off");
@@ -382,6 +392,14 @@ public final class NesLabActivity extends Activity {
                 if(recordingOn)recorder.write("# system_buttons,"+data.getString("mode")+",allowed_mask="+mask+"\n");
                 emit("labSystemButtons",new JSONObject().put("mode",data.getString("mode")).put("generation",data.getLong("generation")));
             }catch(Exception ex){error(ex.getMessage());}});
+        }
+        @JavascriptInterface public void orientation(String mode) {
+            final int choice;
+            if("auto".equals(mode))choice=android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_USER;
+            else if("portrait".equals(mode))choice=android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+            else if("landscape".equals(mode))choice=android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+            else return;
+            runOnUiThread(()->setRequestedOrientation(choice));
         }
         @JavascriptInterface public void stop() { controlEpoch.incrementAndGet();cancel.set(true); }
         @JavascriptInterface public void resume() { if(foreground)cancel.set(false); }

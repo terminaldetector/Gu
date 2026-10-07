@@ -84,7 +84,40 @@ function updateGmodeHud(){
  brain.textContent=connected?'СЕТЬ ON':gmodeBoost?'BOOST READY':'СЕТЬ OFF';brain.className=connected?'hud-live':gmodeBoost?'hud-warm':'hud-idle';
  state.textContent=active?(gmodeBoost?'Усиленный старт · '+(connected?'играет':'готов'):'2P · '+(connected?'связь активна':'ожидает связи')):'Одиночный режим';
  const connect=$('gameConnect');if(connect)connect.textContent=connected?'Отключить сеть':'Подключить сеть';
+ updateMapFreshness();
 }
+let mapReceivedAt=0;
+function updateMapFreshness(){
+ const state=$('mapState');if(!state)return;
+ const stale=!connected||!mapReceivedAt||performance.now()-mapReceivedAt>2000;
+ state.textContent=!mapReceivedAt?'Ожидает расчёта':stale?'Последнее окно · пауза':'Живое окно сети';
+ state.parentElement.classList.toggle('stale',stale);
+}
+function updateNeuralMap(data){
+ const map=$('neuralMap');if(!map)return;
+ if(!Array.isArray(data.neuralGroups)||data.neuralGroups.length!==16){mapReceivedAt=0;updateMapFreshness();return;}
+ for(let i=0;i<16;i++){
+  const group=data.neuralGroups[i],cell=map.children[i];
+  const hz=Number(group.hz);if(!Number.isFinite(hz)||hz<0)return;
+  const intensity=Math.min(1,Math.log1p(hz)/Math.log1p(500));
+  cell.style.setProperty('--cell',`hsl(151 45% ${10+intensity*48}%)`);
+  cell.title=`Группа ${i+1}: ${group.spikes} импульсов · ${group.active}/${group.neurons} активных · ${hz.toFixed(2)} Гц/нейрон`;
+  cell.setAttribute('aria-label',cell.title);
+ }
+ mapReceivedAt=performance.now();
+ $('mapStats').textContent=(data.backend||'cpu').toUpperCase()+' · '+data.active+' активных · FDB '+(data.fdbEdges||0);
+ updateMapFreshness();
+}
+function showTab(tab){
+ if(!['game','network','learning','research','info'].includes(tab))return;
+ holding.clear();refreshManual();
+ document.querySelector('main').dataset.tab=tab;
+ document.querySelectorAll('[data-page]').forEach(el=>el.hidden=el.dataset.page!==tab);
+ document.querySelectorAll('.tab-bar [data-tab]').forEach(el=>{const active=el.dataset.tab===tab;el.classList.toggle('active',active);el.setAttribute('aria-selected',String(active));});
+ window.scrollTo(0,0);
+}
+function openGame(){showTab('game');document.body.classList.add('game-mode');}
+function leaveGame(tab='game'){document.body.classList.remove('game-mode');showTab(tab);}
 function setGmodeBoost(enabled){
  enabled=Boolean(enabled);if(enabled===gmodeBoost)return;
  window.labPause();
@@ -326,6 +359,7 @@ window.labResult=function(data) {
   try{brainMask=connected?learnedButtons(data):0;}catch(error){window.labError({message:error.message});brainMask=0;}updateButtons();learningStats();
   $('fdbStatus').textContent='FDB v'+(data.fdbRevision||0)+' · выросло '+(data.fdbGrown||0)+' · дельт '+(data.fdbDeltas||0)+' · новых связей '+(data.fdbEdges||0);
   $('spikes').textContent=data.spikes;$('active').textContent=data.active;$('compute').textContent=data.wallMs.toFixed(1);
+  updateNeuralMap(data);
   [...$('outputs').children].forEach((element,i)=>{element.textContent=buttonNames[i]+' '+data.outputs[i].toFixed(0)+' Гц';element.className=(data.buttons&(1<<i))?'on':'';});
   history.push(Math.log10(1+data.spikes));if(history.length>100)history.shift();drawHistory();
   $('performance').textContent='Измерено: '+measuredFrames+' кадров · '+measuredWindows+' окон · эмуляция '+measuredCpuMs.toFixed(1)+' мс · backend '+(data.backend||'cpu')+' '+measuredNetworkMs.toFixed(1)+' мс · среднее окно '+(measuredNetworkMs/Math.max(1,measuredWindows)).toFixed(1)+' мс. Скорость попыток — в отдельном отчёте.';
@@ -368,10 +402,24 @@ $('fdbClear').onclick=()=>{window.labPause();$('fdbJson').value='';status('FDB �
 $('fdbJson').onchange=()=>{window.labPause();status('FDB изменён. Примените конфигурацию.');};
 $('gmode').onchange=()=>setGMode($('gmode').value);
 $('gmodeBoost').onchange=()=>setGmodeBoost($('gmodeBoost').checked);
-$('gmodeLaunch').onclick=()=>{if(labPlatform==='sega'&&nes&&!nes.twoPlayerSupported){status('Это ядро Sega не сообщает поддержку P2.',true);return;}$('gmode').value='coop';setGMode('coop');if(!$('gmodeBoost').checked){$('gmodeBoost').checked=true;setGmodeBoost(true);}document.body.classList.add('game-mode');status('2P Game Mode: человек P1 · коннектом P2. Связь запускается отдельно.');};
-$('gameExit').onclick=()=>document.body.classList.remove('game-mode');
-$('gameSettings').onclick=()=>{document.body.classList.remove('game-mode');$('gmode').scrollIntoView({behavior:'smooth',block:'center'});};
+$('gmodeLaunch').onclick=()=>{if(labPlatform==='sega'&&nes&&!nes.twoPlayerSupported){status('Это ядро Sega не сообщает поддержку P2.',true);return;}$('gmode').value='coop';setGMode('coop');if(!$('gmodeBoost').checked){$('gmodeBoost').checked=true;setGmodeBoost(true);}openGame();status('2P Game Mode: человек P1 · коннектом P2. Связь запускается отдельно.');};
+$('gameExit').onclick=()=>leaveGame();
+$('gameSettings').onclick=()=>leaveGame('network');
 $('gameConnect').onclick=()=>{if(connected)$('brainToggle').click();else connectBrain();};
+document.querySelectorAll('.tab-bar [data-tab]').forEach(el=>el.onclick=()=>showTab(el.dataset.tab));
+$('enterGame').onclick=openGame;
+for(let i=0;i<16;i++){const cube=document.createElement('span');cube.className='neural-cube';cube.textContent=String(i+1).padStart(2,'0');$('neuralMap').appendChild(cube);}
+function displayPreferences(){
+ const preferences={orientation:$('orientation').value,touchScale:$('touchScale').value,showMap:$('showMap').checked};
+ document.documentElement.style.setProperty('--pad-scale',preferences.touchScale);
+ document.body.classList.toggle('hide-map',!preferences.showMap);
+ try{localStorage.setItem('fly-display',JSON.stringify(preferences));}catch(_){}
+ if(window.FlyBridge&&typeof window.FlyBridge.orientation==='function')window.FlyBridge.orientation(preferences.orientation);
+}
+try{const saved=JSON.parse(localStorage.getItem('fly-display')||'null');if(saved){if(['auto','portrait','landscape'].includes(saved.orientation))$('orientation').value=saved.orientation;if(['1','1.2'].includes(saved.touchScale))$('touchScale').value=saved.touchScale;if(typeof saved.showMap==='boolean')$('showMap').checked=saved.showMap;}}catch(_){}
+for(const id of ['orientation','touchScale','showMap'])$(id).onchange=displayPreferences;
+displayPreferences();
+setInterval(updateMapFreshness,1000);
 $('systemButtons').onchange=()=>{try{
  window.labPause();learner.setAllowedMask(agentAllowedMask());learningBoundary();
  if(requestedConfiguration)requestedConfiguration.systemButtons=$('systemButtons').value;

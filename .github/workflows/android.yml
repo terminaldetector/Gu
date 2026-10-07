@@ -30,6 +30,17 @@ jobs:
           version: '3.1.57'
       - run: python tools/build_sega.py
       - run: bash tools/check.sh
+      - name: Install UI test browser
+        run: |
+          npm install --prefix /tmp/fly-ui playwright@1.51.1
+          /tmp/fly-ui/node_modules/.bin/playwright install --with-deps chromium
+      - name: Check portrait and landscape console layouts
+        run: NODE_PATH=/tmp/fly-ui/node_modules node tools/console_layout_check.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: FlyConsole-ui-preview
+          path: ui-preview/
       - run: python tools/gpu_runtime_check.py
       - run: python tools/bundle_data.py
       - run: gradle assembleDebug lintDebug
