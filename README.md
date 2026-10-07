@@ -1,3 +1,11 @@
+## Version 1.0.1: Sega raster hotfix
+
+The upstream WASM custom blitter doubled pixels/rows while the frontend read native viewport dimensions. Worse, its second-row pointer mixed byte pitch with pixel indexing and wrote outside the framebuffer. Replaced it with one native-resolution RGBA row per emulated line; the frontend reads the actual byte pitch. Added framebuffer boundary guards checked each frame. This also corrects the retinal input derived from the image.
+
+Regression tests run the actual rebuilt WASM in 256/320-column and NTSC224/PAL240 modes: complete solid backdrop, no alternating holes or half-image crop, untouched unused rows/columns and buffer guards, correct red channel, and state roundtrip. Sega controller, audio, learning and mobile-browser integration remain checked. Commercial-ROM screenshot prompted the fix; that exact ROM was not provided for direct verification. Core snapshot tag moves to API3: old Sega snapshots/profile packages containing API2 starts must be recaptured; learner weights without old snapshots are unchanged. Updated core source archive is bundled for licence compliance.
+
+This is a bugfix release only. No FDB or new GPT-like features are added.
+
 ## Version 1.0: audited experimental release
 
 Three offline modes: **1 NES / 2 Sega / 3 Lab Code + JSON inference**. Shared APK retains the existing application ID and signing certificate. Full FlyWire v783 signed graph is bundled; there is no model download or commercial game ROM. Model: 138,639 nodes / 15,091,983 directed aggregated edges, about 50.7 MiB gzip / 116.7 MiB raw FLY1. Android 8+ and a current WebView are required. Physical-device minimum RAM/FPS is not certified.

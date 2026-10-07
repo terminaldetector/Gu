@@ -24,6 +24,7 @@ PYJSON
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/InferenceProgram.java tools/InferenceCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.InferenceCheck
 node tools/sega_check.cjs
+node tools/sega_render_check.cjs
 
 node tools/sega_learning_check.cjs
 
