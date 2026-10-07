@@ -33,7 +33,7 @@ function learnedButtons(data){
  if(benchmark)return benchmarkDecision(data);
  const mode=$('learnMode').value;if(mode==='off')return data.buttons;
  if($('mode').value!=='closed'||$('clock').value!=='lockstep')throw Error('Обучение требует замкнутого пошагового контура');
- if(manualMask){learningBoundary();return 0;}
+ if(manualMask&&gmodeMode==='off'){learningBoundary();return 0;}
  const diagnostic=$('rewardMode').value==='diagnostic';
  if(diagnostic&&(labPlatform!=='nes'||romHash!==diagnosticHash))throw Error('Диагностическая награда доступна только для встроенного тестового ROM');
  const address=Number($('rewardAddress').value),scale=Number($('rewardScale').value),limit=Number($('episodeLength').value);
