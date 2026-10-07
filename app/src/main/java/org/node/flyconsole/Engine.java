@@ -21,6 +21,8 @@ public final class Engine {
         public double gain = 1;
         public boolean disableInhibition;
         public int[] lesions = new int[0];
+        /** Optional FDB plastic/growth layer; the immutable CSR stays untouched. */
+        public GraphDelta delta;
     }
 
     public static final class Result {
@@ -115,8 +117,14 @@ public final class Engine {
                 float[] future = pending[(int) ((tick + 18) % 19)];
                 for (int edge = graph.offsets[i]; edge < graph.offsets[i + 1]; edge++) {
                     int target = graph.targets[edge];
-                    if (lesioned[target] || (options.disableInhibition && graph.weights[edge] < 0)) continue;
-                    future[target] += graph.weights[edge] * options.gain;
+                    if (lesioned[target]) continue;
+                    float weight = graph.weights[edge] + (options.delta == null ? 0 : options.delta.weightDelta(i, target));
+                    if (lesioned[target] || (options.disableInhibition && weight < 0)) continue;
+                    future[target] += weight * options.gain;
+                }
+                if (options.delta != null) for (GraphDelta.Edge extra : options.delta.outgoing(i)) {
+                    if (lesioned[extra.target] || (options.disableInhibition && extra.weight < 0)) continue;
+                    future[extra.target] += extra.weight * options.gain;
                 }
             }
         }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Build;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
@@ -32,6 +33,8 @@ public final class NesLabActivity extends Activity {
     private WebView web;
     private volatile Graph graph;
     private Engine engine;
+    private GpuLifEngine gpuEngine;
+    private String backend = "cpu";
     private Experiment experiment;
     private volatile boolean destroyed;
     private volatile boolean pageReady;
@@ -104,7 +107,7 @@ public final class NesLabActivity extends Activity {
             web.loadUrl(ORIGIN+"/lab/index.html?system="+labSystem);
         });
     }
-    private void loadGraph(){try{long free=Runtime.getRuntime().maxMemory()-Runtime.getRuntime().totalMemory()+Runtime.getRuntime().freeMemory();Graph loaded=GraphCache.load(new File(getFilesDir(),"connectome.fly"),()->{try{return getAssets().open("brain.fly.gz");}catch(IOException ex){return getAssets().open("brain.fly");}},free*2/3);Experiment next=Experiment.automatic(loaded);Engine nextEngine=new Engine(loaded);graph=loaded;graphKind=GraphCache.kind;experiment=next;engine=nextEngine;initialError=null;announce();}catch(Exception|OutOfMemoryError ex){engine=null;graph=null;error("Коннектом не загрузился: "+ex.getMessage()+". Эмулятор доступен вручную.");}}
+    private void loadGraph(){try{long free=Runtime.getRuntime().maxMemory()-Runtime.getRuntime().totalMemory()+Runtime.getRuntime().freeMemory();Graph loaded=GraphCache.load(new File(getFilesDir(),"connectome.fly"),()->{try{return getAssets().open("brain.fly.gz");}catch(IOException ex){return getAssets().open("brain.fly");}},free*2/3);Experiment next=Experiment.automatic(loaded);Engine nextEngine=new Engine(loaded);closeGpu();graph=loaded;graphKind=GraphCache.kind;experiment=next;engine=nextEngine;backend="cpu";initialError=null;announce();}catch(Exception|OutOfMemoryError ex){engine=null;graph=null;error("Коннектом не загрузился: "+ex.getMessage()+". Эмулятор доступен вручную.");}}
 
     private void announce() {
         if (!pageReady) return;
@@ -114,7 +117,7 @@ public final class NesLabActivity extends Activity {
             info.put("system",labSystem).put("neurons", graph.ids.length).put("edges", graph.targets.length).put("kind", graphKind);
             info.put("inputs", ids(experiment.inputs)).put("outputs", ids(experiment.outputs));
             info.put("diagnostics",LabDiagnostics.describe(this,graph)).put("graph_sha256",graph.fingerprint()).put("notice",GraphCache.notice);
-            info.put("heapMiB", Runtime.getRuntime().maxMemory() / 1048576);
+            info.put("heapMiB", Runtime.getRuntime().maxMemory() / 1048576).put("backend", backend).put("gpuAvailable", Build.VERSION.SDK_INT >= 21);
             emit("labReady", info);
         } catch (Exception ex) { error(ex.getMessage()); }
     }
@@ -150,58 +153,62 @@ public final class NesLabActivity extends Activity {
 
     private void configure(JSONObject data) throws Exception {
         if (engine == null) throw new IllegalStateException("Коннектом ещё не готов");
+        String requestedBackend=data.optString("backend","cpu");
+        if (!requestedBackend.equals("cpu")&&!requestedBackend.equals("gpu")) throw new IllegalArgumentException("Неизвестный backend");
+        if (requestedBackend.equals("gpu") && Build.VERSION.SDK_INT < 21) throw new IllegalArgumentException("GPU backend требует Android 5.0+");
         Experiment next = new Experiment(parsePorts(data.getJSONArray("inputs"), 16), parsePorts(data.getJSONArray("outputs"), 8));
         for (int input : next.inputs) for (int output : next.outputs)
             if (input == output) throw new IllegalArgumentException("Вход и выход не должны совпадать");
         next.mode = data.getString("mode");
         if (!next.mode.equals("observe") && !next.mode.equals("closed") && !next.mode.equals("sham"))
             throw new IllegalArgumentException("Неизвестный режим");
-        next.maxHz = data.getDouble("maxHz");
-        next.thresholdHz = data.getDouble("thresholdHz");
-        next.windowMs = data.getInt("windowMs");if(data.getDouble("windowMs")!=next.windowMs)throw new IllegalArgumentException("Окно должно быть целым");
+        next.maxHz = data.getDouble("maxHz"); next.thresholdHz = data.getDouble("thresholdHz");
+        next.windowMs = data.getInt("windowMs"); if(data.getDouble("windowMs")!=next.windowMs) throw new IllegalArgumentException("Окно должно быть целым");
         next.options.gain = data.getDouble("gain");
         if (!Double.isFinite(next.maxHz) || next.maxHz < 0 || next.maxHz > 500 ||
             !Double.isFinite(next.thresholdHz) || next.thresholdHz < 1 || next.thresholdHz > 500 ||
             !Double.isFinite(next.options.gain) || next.options.gain < 0 || next.options.gain > 2 ||
-            next.windowMs < 1 || next.windowMs > 100)
-            throw new IllegalArgumentException("Параметры вне допустимых границ");
+            next.windowMs < 1 || next.windowMs > 100) throw new IllegalArgumentException("Параметры вне допустимых границ");
         next.options.disableInhibition = data.getBoolean("disableInhibition");
         next.scramble = data.getBoolean("scramble");
-        long seed=data.getLong("seed");if(data.getDouble("seed")!=seed||seed<0||seed>2147483647L)throw new IllegalArgumentException("Seed 0–2147483647");next.seedPermutation(seed);
-        JSONArray lesions = data.getJSONArray("lesions");
-        if (lesions.length() > 256) throw new IllegalArgumentException("Не более 256 абляций");
-        next.options.lesions = parsePorts(lesions, lesions.length());
-        // Reset makes comparisons start from a declared seed and clears in-flight synaptic events.
-        engine.reset(next.seed);
-        experiment = next;
-        configVersion++;
-        sequence = 0;
-        latestMask = 0;
-        if (recordingOn) recorder.write("# config," + data.put("configVersion", configVersion).toString().replace('\n', ' ') + "\n");
-        emit("labConfigured", new JSONObject().put("configVersion", configVersion).put("mode", next.mode).put("generation",data.optLong("generation",-1)));
+        long seed=data.getLong("seed"); if(data.getDouble("seed")!=seed||seed<0||seed>2147483647L) throw new IllegalArgumentException("Seed 0–2147483647");
+        next.seedPermutation(seed);
+        JSONArray lesions=data.getJSONArray("lesions"); if(lesions.length()>256) throw new IllegalArgumentException("Не более 256 абляций");
+        next.options.lesions=parsePorts(lesions,lesions.length());
+
+        if (requestedBackend.equals("gpu")) {
+            if (gpuEngine == null) gpuEngine = new GpuLifEngine(graph);
+            gpuEngine.reset(next.seed);
+        } else {
+            closeGpu();
+            engine.reset(next.seed);
+        }
+        backend=requestedBackend;
+        experiment=next; configVersion++; sequence=0; latestMask=0;
+        if(recordingOn) recorder.write("# config,"+data.put("configVersion",configVersion).put("backend",backend).toString().replace('\n',' ')+"\n");
+        emit("labConfigured",new JSONObject().put("configVersion",configVersion).put("mode",next.mode).put("backend",backend).put("generation",data.optLong("generation",-1)));
     }
 
     private void sample(JSONObject request) throws Exception {
         if (engine == null) throw new IllegalStateException("Коннектом недоступен");
-        JSONArray pixels = request.getJSONArray("retina");
-        if (pixels.length() != 16) throw new IllegalArgumentException("Нужно 16 ячеек экрана");
-        double[] brightness = new double[16];
-        for (int i = 0; i < 16; i++) brightness[i] = pixels.getDouble(i);
-        double[] rates = experiment.rates(brightness);
-        Engine.Result result = engine.advance(experiment.inputs, rates, experiment.windowMs, experiment.options, cancel);
-        int mask = experiment.buttons(result);
-        latestMask = cancel.get() ? 0 : mask;
-        JSONObject response = new JSONObject();
-        response.put("token", request.getLong("token")).put("generation", request.getLong("generation"));
-        response.put("buttons", latestMask).put("spikes", result.spikes).put("active", result.active);
-        response.put("simMs", result.endTick * .1).put("wallMs", result.wallSeconds * 1000);
-        response.put("steps", result.steps).put("configVersion", configVersion);
-        JSONArray output = new JSONArray();
-        for (int index : experiment.outputs) output.put(result.steps == 0 ? 0 : result.counts[index] * 10000.0 / result.steps);
-        response.put("outputs", output).put("inputs", new JSONArray(rates));
-        response.put("sequence", ++sequence);
-        if (recordingOn) record(request, rates, result, latestMask);
-        emit("labResult", response);
+        JSONArray pixels=request.getJSONArray("retina"); if(pixels.length()!=16) throw new IllegalArgumentException("Нужно 16 ячеек экрана");
+        double[] brightness=new double[16]; for(int i=0;i<16;i++) brightness[i]=pixels.getDouble(i);
+        double[] rates=experiment.rates(brightness);
+        Engine.Result result;
+        if ("gpu".equals(backend)) {
+            if (gpuEngine == null) throw new IllegalStateException("GPU backend не инициализирован");
+            result=gpuEngine.advance(experiment.inputs,rates,experiment.windowMs,experiment.options,cancel);
+        } else result=engine.advance(experiment.inputs,rates,experiment.windowMs,experiment.options,cancel);
+        int mask=experiment.buttons(result); latestMask=cancel.get()?0:mask;
+        JSONObject response=new JSONObject();
+        response.put("token",request.getLong("token")).put("generation",request.getLong("generation"));
+        response.put("buttons",latestMask).put("backend",backend).put("backendNote","gpu".equals(backend)?"OpenGL ES 3.1 compute, q16.8 weights":"Java CPU reference");
+        response.put("spikes",result.spikes).put("active",result.active).put("simMs",result.endTick*.1).put("wallMs",result.wallSeconds*1000);
+        response.put("steps",result.steps).put("configVersion",configVersion);
+        JSONArray output=new JSONArray(); for(int index:experiment.outputs) output.put(result.steps==0?0:result.counts[index]*10000.0/result.steps);
+        response.put("outputs",output).put("inputs",new JSONArray(rates)).put("sequence",++sequence);
+        if(recordingOn) record(request,rates,result,latestMask);
+        emit("labResult",response);
     }
 
     private void record(JSONObject request, double[] rates, Engine.Result result, int mask) throws Exception {
@@ -225,12 +232,12 @@ public final class NesLabActivity extends Activity {
 
     private void startRecording() throws Exception {
         stopRecording();
-        engine.reset(experiment.seed); configVersion++; sequence = 0;
+        if ("gpu".equals(backend) && gpuEngine != null) gpuEngine.reset(experiment.seed); else engine.reset(experiment.seed); configVersion++; sequence = 0;
         recording = new File(getFilesDir(), labSystem+"-experiment.csv");
         recorder = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(recording), StandardCharsets.UTF_8));
         recordedBytes = 0;
         recorder.write("# system,"+labSystem+"\n");
-        recorder.write("# model," + graphKind + ",neurons=" + graph.ids.length + ",edges=" + graph.targets.length + ",dt_ms=0.1,brian2_parity=unverified,sha256="+graph.fingerprint()+"\n");
+        recorder.write("# model," + graphKind + ",neurons=" + graph.ids.length + ",edges=" + graph.targets.length + ",backend=" + backend + ",dt_ms=0.1,brian2_parity=unverified,sha256="+graph.fingerprint()+"\n");
         recorder.write("# rom_sha256," + romHash + "\n");
         StringBuilder header = new StringBuilder("wall_epoch_ms,config_version,sequence,emulator_frame,sim_ms,compute_ms,spikes,active,buttons_mask,manual_mask,frozen_retina,controller_mask,learning_mode,learning_reward");
         for (int i = 0; i < 16; i++) header.append(",input_hz_").append(i);
@@ -242,12 +249,14 @@ public final class NesLabActivity extends Activity {
         config.put("system",labSystem).put("configVersion", configVersion).put("rom_sha256", romHash);
         config.put("inputs", ids(experiment.inputs)).put("outputs", ids(experiment.outputs));
         config.put("mode", experiment.mode).put("maxHz", experiment.maxHz).put("thresholdHz", experiment.thresholdHz);
-        config.put("windowMs", experiment.windowMs).put("gain", experiment.options.gain);
+        config.put("windowMs", experiment.windowMs).put("gain", experiment.options.gain).put("backend",backend);
         config.put("seed", experiment.seed).put("scramble", experiment.scramble);
         config.put("disableInhibition", experiment.options.disableInhibition).put("lesions", ids(experiment.options.lesions));
         recorder.write("# config," + config + "\n");
         emit("labRecording", new JSONObject().put("active", true));
     }
+
+    private void closeGpu(){ if(gpuEngine!=null){ try{gpuEngine.close();}catch(Exception ignored){} gpuEngine=null; } }
 
     private void stopRecording() throws IOException {
         recordingOn = false;
@@ -274,7 +283,7 @@ public final class NesLabActivity extends Activity {
                 try {
                     if (!offeredRomHashes.remove(sha256)) return;
                     romHash = sha256;
-                    if (engine != null) { engine.reset(experiment.seed); configVersion++; sequence = 0; }
+                    if (engine != null) { if ("gpu".equals(backend) && gpuEngine != null) gpuEngine.reset(experiment.seed); else engine.reset(experiment.seed); configVersion++; sequence = 0; }
                     if (recordingOn) { recorder.write("# rom_sha256," + romHash + "\n"); recorder.flush(); }
                 } catch (Exception ex) { error(ex.getMessage()); }
             });
@@ -426,7 +435,7 @@ public final class NesLabActivity extends Activity {
     @Override protected void onDestroy() {
         destroyed = true;
         cancel.set(true);
-        worker.execute(() -> { try { stopRecording(); } catch (IOException ignored) { } });
+        worker.execute(() -> { try { stopRecording(); } catch (IOException ignored) { } closeGpu(); });
         worker.shutdown();
         web.removeJavascriptInterface("FlyBridge");
         web.destroy();
