@@ -42,7 +42,7 @@ let browser;
   for(const b of boxes.buttons)assert(b.w>=25&&b.h>=25&&b.x>=0&&b.right<=w+1&&b.bottom<=h+1,`all human buttons visible ${w}x${h}`);
   const c=boxes.canvas,m=boxes.map;assert(c.right<=m.x+1||c.y>=m.bottom||c.bottom<=m.y,'map stays outside game image');
   await page.evaluate(()=>$('gameNotice').classList.remove('visible'));
-  if(w>h){const m=boxes.micro;for(const b of boxes.buttons)assert(b.right<=m.x||b.x>=m.right||b.y>=m.bottom||b.bottom<=m.y,`telemetry clear of controls ${w}x${h}`);}
+  if(w>h){const m=boxes.micro;for(const b of boxes.buttons)assert(b.right<=m.x||b.x>=m.right||b.y>=m.bottom||b.bottom<=m.y,`telemetry clear of controls ${w}x${h}: ${JSON.stringify({micro:m,button:b})}`);}
   if(w===390||w===844)await page.screenshot({path:`ui-preview/${w>h?'landscape':'portrait'}.png`});
  }
  await page.click('#gameExit');await page.screenshot({path:'ui-preview/menu.png'});await page.click('#enterGame');
