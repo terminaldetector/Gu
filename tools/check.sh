@@ -14,6 +14,8 @@ java -cp "$task_tmp/classes" org.node.flyconsole.ExperimentCheck
 node tools/nes_check.cjs
 node --check app/src/main/assets/lab/lab.js
 node tools/gmode_check.cjs
+node tools/system_controls_check.cjs
+node tools/console_reset_check.cjs
 python tools/gpu_shader_check.py
 
 node tools/learning_check.cjs

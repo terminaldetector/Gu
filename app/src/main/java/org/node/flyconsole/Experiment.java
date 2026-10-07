@@ -11,6 +11,8 @@ public final class Experiment {
     public final Engine.Options options = new Engine.Options();
     public String mode = "observe";
     public boolean scramble;
+    /** I/O ownership only: neuron activity remains observable. */
+    public int agentButtonMask = 255;
     public int windowMs = 20;
     public double maxHz = 150, thresholdHz = 30;
     public long seed = 1;
@@ -54,7 +56,7 @@ public final class Experiment {
         // Opposing directions cancel. A/B/Start/Select remain independent.
         if ((mask & 48) == 48) mask &= ~48;
         if ((mask & 192) == 192) mask &= ~192;
-        return mask;
+        return mask & agentButtonMask;
     }
 
     public static Experiment automatic(Graph graph) {
@@ -95,3 +97,4 @@ public final class Experiment {
         return false;
     }
 }
+

@@ -26,6 +26,13 @@ public final class ExperimentCheck {
         experiment.mode="observe";if(experiment.buttons(a)!=0)throw new AssertionError("observe must not control NES");
         experiment.mode="closed";int mask=experiment.buttons(a);if(mask==0)throw new AssertionError("closed loop buttons");
         if((mask&48)==48||(mask&192)==192)throw new AssertionError("opposing buttons");
+        int[] buttons=new int[24];buttons[experiment.outputs[2]]=100;buttons[experiment.outputs[3]]=100;
+        Engine.Result controls=new Engine.Result(buttons,200,100,100,0);
+        experiment.agentButtonMask=255;if(experiment.buttons(controls)!=12)throw new AssertionError("auto system buttons");
+        experiment.agentButtonMask=243;if(experiment.buttons(controls)!=0)throw new AssertionError("NES Start/Select blocked natively");
+        experiment.agentButtonMask=247;if(experiment.buttons(controls)!=4)throw new AssertionError("Sega Start blocked, C preserved");
+        if(controls.counts[experiment.outputs[2]]!=100)throw new AssertionError("blocking must preserve neural activity telemetry");
+        experiment.agentButtonMask=255;
         experiment.mode="sham";for(double rate:experiment.rates(screen))if(rate!=0)throw new AssertionError("sham input");
         experiment.mode="observe";experiment.scramble=true;experiment.seedPermutation(42);
         double[] gradient=new double[16];for(int i=0;i<16;i++)gradient[i]=i/16.0;
@@ -46,3 +53,4 @@ public final class ExperimentCheck {
         System.out.println("PASS: screen-to-spikes-to-buttons, seed, sham, observe, gain, ablation, shuffle, incremental state, cancellation");
     }
 }
+

@@ -1,8 +1,8 @@
 'use strict';
 const assert=require('assert'),fs=require('fs'),vm=require('vm');
 const source=fs.readFileSync('app/src/main/assets/lab/lab.js','utf8');
-const block=source.slice(source.indexOf('function normalizeMask'),source.indexOf('function rgbaAndRetina'));
-const events=[],state={loaded:true,manualMask:0,brainMask:0,gmodeMode:'off',appliedMask:0,appliedHumanMask:0,appliedAgentMask:0,nes:{buttonDown:(p,b)=>events.push(['down',p,b]),buttonUp:(p,b)=>events.push(['up',p,b])}};
+const block=source.slice(source.indexOf('function agentAllowedMask'),source.indexOf('function rgbaAndRetina'));
+const events=[],state={loaded:true,manualMask:0,brainMask:0,gmodeMode:'off',appliedMask:0,appliedHumanMask:0,appliedAgentMask:0,labPlatform:'nes',controlMode:'auto',$:()=>({value:state.controlMode}),nes:{buttonDown:(p,b)=>events.push(['down',p,b]),buttonUp:(p,b)=>events.push(['up',p,b])}};
 vm.createContext(state);vm.runInContext(block,state);
 state.gmodeMode='coop';state.manualMask=1;state.brainMask=2;state.updateButtons();
 assert.deepStrictEqual(events,[['down',1,0],['down',2,1]]);
@@ -30,3 +30,6 @@ assert.doesNotThrow(()=>state.validateGrowth(good));
 for(const bad of [{...good,interval:1.5},{...good,maxEdges:1025},{...good,initialWeight:0},{...good,explore:1}])assert.throws(()=>state.validateGrowth(bad));
 assert(source.indexOf('if(data.fdbState)',source.indexOf('window.labResult='))<source.indexOf('learnedButtons(data)',source.indexOf('window.labResult=')),'grown layer must be saved before terminal autosave/reapply');
 console.log('PASS: production FDB growth validation and terminal checkpoint ordering');
+
+assert(state.keysEqual(JSON.stringify({configuration:{systemButtons:'auto'}}),JSON.stringify({configuration:{}})));
+assert(!state.keysEqual(JSON.stringify({configuration:{systemButtons:'blocked'}}),JSON.stringify({configuration:{}})));

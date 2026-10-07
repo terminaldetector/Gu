@@ -173,6 +173,7 @@ public final class NesLabActivity extends Activity {
             next.windowMs < 1 || next.windowMs > 100) throw new IllegalArgumentException("Параметры вне допустимых границ");
         next.options.disableInhibition = data.getBoolean("disableInhibition");
         next.scramble = data.getBoolean("scramble");
+        next.agentButtonMask=systemButtonMask(data.optString("systemButtons","auto"));
         long seed=data.getLong("seed"); if(data.getDouble("seed")!=seed||seed<0||seed>2147483647L) throw new IllegalArgumentException("Seed 0–2147483647");
         next.seedPermutation(seed);
         JSONArray lesions=data.getJSONArray("lesions"); if(lesions.length()>256) throw new IllegalArgumentException("Не более 256 абляций");
@@ -225,6 +226,12 @@ public final class NesLabActivity extends Activity {
         experiment=next;fdbGrowth=nextGrowth;growthConfiguration=nextGrowthConfig; configVersion++; sequence=0; latestMask=0;
         if(recordingOn) recorder.write("# config,"+data.put("configVersion",configVersion).put("backend",backend).toString().replace('\n',' ')+"\n");
         emit("labConfigured",new JSONObject().put("configVersion",configVersion).put("mode",next.mode).put("backend",backend).put("generation",data.optLong("generation",-1)));
+    }
+
+    private int systemButtonMask(String mode){
+        if(mode.equals("auto"))return 255;
+        if(mode.equals("blocked"))return "sega".equals(labSystem)?247:243;
+        throw new IllegalArgumentException("Неизвестный режим Start/Select");
     }
 
     private void sample(JSONObject request) throws Exception {
@@ -344,7 +351,7 @@ public final class NesLabActivity extends Activity {
                 try {
                     if (!offeredRomHashes.remove(sha256)) return;
                     romHash = sha256;
-                    if (engine != null) { if ("gpu".equals(backend) && gpuEngine != null) gpuEngine.reset(experiment.seed); else engine.reset(experiment.seed); if(fdbGrowth!=null)fdbGrowth.reset(experiment.seed); configVersion++; sequence = 0; }
+                    latestMask=0; // ROM acceptance changes console identity, never neural state.
                     if (recordingOn) { recorder.write("# rom_sha256," + romHash + "\n"); recorder.flush(); }
                 } catch (Exception ex) { error(ex.getMessage()); }
             });
@@ -365,6 +372,16 @@ public final class NesLabActivity extends Activity {
                 catch (Exception ex) { error(ex.getMessage()); }
                 finally { if(controlEpoch.get()==epoch&&foreground)cancel.set(false); }
             });
+        }
+        @JavascriptInterface public void systemButtons(String json) {
+            if(destroyed||json.length()>8192)return;
+            submit(()->{try{
+                JSONObject data=new JSONObject(json);int mask=systemButtonMask(data.getString("mode"));
+                if(experiment==null)throw new IllegalStateException("Коннектом не готов");
+                experiment.agentButtonMask=mask;latestMask&=mask;
+                if(recordingOn)recorder.write("# system_buttons,"+data.getString("mode")+",allowed_mask="+mask+"\n");
+                emit("labSystemButtons",new JSONObject().put("mode",data.getString("mode")).put("generation",data.getLong("generation")));
+            }catch(Exception ex){error(ex.getMessage());}});
         }
         @JavascriptInterface public void stop() { controlEpoch.incrementAndGet();cancel.set(true); }
         @JavascriptInterface public void resume() { if(foreground)cancel.set(false); }

@@ -5,3 +5,5 @@ NES/Sega GMode with separate P1/P2 controllers, bounded structural FDB growth, t
 Sega API4 is rebuilt from bundled source during CI; the delivered APK includes the matching source and hashes. Tests use actual WASM/68K controller buses and actual GLES compute shader execution in Mesa, plus CPU regression checks, Android compilation and lint.
 
 See V2-GMODE-FDB-GPU.md for parameters and limitations. Mobile GPU speed, full-connectome hardware execution and commercial-game completion remain unverified. Structural growth is an experimental heuristic rather than a demonstrated biological learning mechanism or general intelligence.
+
+Alpha03: separate console/neural resets and snapshot restore; reconnect without resetting an unchanged applied configuration. Start/Select ownership auto/manual-only across neural control, SARSA and random evaluation. Sega C remains available. Training episodes preserve neural dynamics; benchmarks retain explicit seeded resets.
