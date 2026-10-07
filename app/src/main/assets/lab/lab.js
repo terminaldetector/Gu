@@ -116,8 +116,13 @@ function showTab(tab){
  document.querySelectorAll('.tab-bar [data-tab]').forEach(el=>{const active=el.dataset.tab===tab;el.classList.toggle('active',active);el.setAttribute('aria-selected',String(active));});
  window.scrollTo(0,0);
 }
-function openGame(){showTab('game');document.body.classList.add('game-mode');}
-function leaveGame(tab='game'){document.body.classList.remove('game-mode');showTab(tab);}
+function fitVideo(){
+ if(!document.body.classList.contains('game-mode')){screen.style.removeProperty('width');screen.style.removeProperty('height');return;}
+ const space=screen.parentElement,scale=Math.min(space.clientWidth/screen.width,space.clientHeight/screen.height);
+ if(scale>0){screen.style.width=(screen.width*scale)+'px';screen.style.height=(screen.height*scale)+'px';}
+}
+function openGame(){showTab('game');document.body.classList.add('game-mode');fitVideo();}
+function leaveGame(tab='game'){document.body.classList.remove('game-mode');showTab(tab);fitVideo();}
 function setGmodeBoost(enabled){
  enabled=Boolean(enabled);if(enabled===gmodeBoost)return;
  window.labPause();
@@ -140,7 +145,13 @@ function log(text) {
   const lines = ($('log').textContent + '\n' + text).trim().split('\n').slice(-80);
   $('log').textContent = lines.join('\n');
 }
-function status(text,error=false) { $('status').textContent=text; $('status').className=error?'error':''; }
+let noticeTimer;
+function status(text,error=false) {
+ $('status').textContent=text;$('status').className=error?'error':'';
+ const notice=$('gameNotice');if(!notice)return;
+ notice.textContent=text;notice.classList.toggle('error',error);notice.classList.add('visible');
+ clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>notice.classList.remove('visible'),7000);
+}
 function nativeCall(name,...args) {
   if (typeof window.FlyBridge==='undefined') { status('Android bridge недоступен: NES можно тестировать в браузере.',true); return; }
   window.FlyBridge[name](...args);
@@ -176,7 +187,7 @@ function updateButtons() {
   appliedHumanMask=human;appliedAgentMask=agent;appliedMask=agent;
 }
 function rgbaAndRetina(buffer,width=256,height=240) {
-  if(screen.width!==width||screen.height!==height){screen.width=width;screen.height=height;screen.style.aspectRatio=width+"/"+height;image=context.createImageData(width,height);}
+  if(screen.width!==width||screen.height!==height){screen.width=width;screen.height=height;screen.style.aspectRatio=width+"/"+height;image=context.createImageData(width,height);fitVideo();}
   const sums=new Float64Array(16),counts=new Uint32Array(16);
   for(let i=0;i<width*height;i++) {
     const color=buffer[i],r=color&255,g=(color>>>8)&255,b=(color>>>16)&255,at=i*4;
@@ -420,6 +431,8 @@ try{const saved=JSON.parse(localStorage.getItem('fly-display')||'null');if(saved
 for(const id of ['orientation','touchScale','showMap'])$(id).onchange=displayPreferences;
 displayPreferences();
 setInterval(updateMapFreshness,1000);
+if(typeof ResizeObserver!=='undefined')new ResizeObserver(fitVideo).observe(screen.parentElement);
+window.addEventListener('resize',()=>{holding.clear();refreshManual();fitVideo();});
 $('systemButtons').onchange=()=>{try{
  window.labPause();learner.setAllowedMask(agentAllowedMask());learningBoundary();
  if(requestedConfiguration)requestedConfiguration.systemButtons=$('systemButtons').value;
