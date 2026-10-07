@@ -5,7 +5,7 @@ const {chromium}=require('playwright');
 const assets=path.resolve('app/src/main/assets'),demo=JSON.parse(fs.readFileSync(path.join(assets,'lab/demo-rom.json')));
 let browser;
 (async()=>{
- browser=await chromium.launch({headless:true});
+ browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE});
  const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('https://flyconsole.local/**',async route=>{
