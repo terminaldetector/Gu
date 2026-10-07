@@ -214,6 +214,7 @@ public final class NesLabActivity extends Activity {
             .append(',').append(request.getLong("frame")).append(',').append(result.endTick * .1)
             .append(',').append(String.format(Locale.US, "%.3f", result.wallSeconds * 1000))
             .append(',').append(result.spikes).append(',').append(result.active).append(',').append(mask).append(',').append(request.optInt("manualMask", 0)).append(',').append(request.optBoolean("frozen", false) ? 1 : 0);
+        row.append(',').append(request.optInt("controllerMask", 0)).append(',').append(request.optString("learningMode", "off").replaceAll("[^a-z]", "")).append(',').append(request.optDouble("learningReward", 0));
         for (double rate : rates) row.append(',').append(String.format(Locale.US, "%.3f", rate));
         for (int output : experiment.outputs) row.append(',').append(result.counts[output]);
         row.append('\n');
@@ -234,7 +235,7 @@ public final class NesLabActivity extends Activity {
         recordedBytes = 0;
         recorder.write("# model," + graphKind + ",neurons=" + graph.ids.length + ",edges=" + graph.targets.length + ",dt_ms=0.1,brian2_parity=unverified\n");
         recorder.write("# rom_sha256," + romHash + "\n");
-        StringBuilder header = new StringBuilder("wall_epoch_ms,config_version,sequence,nes_frame,sim_ms,compute_ms,spikes,active,buttons_mask,manual_mask,frozen_retina");
+        StringBuilder header = new StringBuilder("wall_epoch_ms,config_version,sequence,nes_frame,sim_ms,compute_ms,spikes,active,buttons_mask,manual_mask,frozen_retina,controller_mask,learning_mode,learning_reward");
         for (int i = 0; i < 16; i++) header.append(",input_hz_").append(i);
         for (String button : Experiment.BUTTONS) header.append(",spikes_").append(button);
         recorder.write(header.append('\n').toString());

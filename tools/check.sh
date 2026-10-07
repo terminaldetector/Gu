@@ -10,3 +10,5 @@ java -cp "$task_tmp/classes" org.node.flyconsole.EngineCheck "$task_tmp/test.fly
 java -cp "$task_tmp/classes" org.node.flyconsole.ExperimentCheck
 node tools/nes_check.cjs
 node --check app/src/main/assets/lab/lab.js
+
+node tools/learning_check.cjs

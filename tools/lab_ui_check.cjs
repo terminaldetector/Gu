@@ -64,6 +64,15 @@ const sha=crypto.createHash('sha256').update(Buffer.from(demo.base64,'base64')).
  await page.evaluate(()=>window.labError({message:'Test error'}));
  assert.equal(await page.evaluate(()=>brainMask),0);assert.equal(await page.evaluate(()=>connected),false);
  assert.equal(await page.locator('#outputs .on').count(),0);
+ await page.selectOption('#learnMode','train');await page.fill('#episodeLength','10');await page.uncheck('#autoEpisode');
+ await page.click('#brainToggle');await page.waitForFunction(()=>connected&&!configuring);await page.click('#play');
+ await page.waitForFunction(()=>learner.episodes>=1,{timeout:15000});
+ assert((await page.evaluate(()=>learner.updates))>=8,'real UI learns from Java neural features');
+ await page.click('#savePolicy');const weights=await page.evaluate(()=>JSON.stringify(learner.weights));
+ await page.click('#clearPolicy');await page.click('#loadPolicy');assert.equal(await page.evaluate(()=>JSON.stringify(learner.weights)),weights,'UI policy restores');
+ await page.selectOption('#learnMode','eval');const updates=await page.evaluate(()=>learner.updates);
+ await page.click('#brainToggle');await page.waitForFunction(()=>connected&&!configuring);await page.click('#play');await page.waitForFunction(()=>learner.episodes>=2,{timeout:15000});
+ assert.equal(await page.evaluate(()=>learner.updates),updates,'evaluation does not train');
  await page.screenshot({path:process.env.UI_SCREENSHOT||'lab-ui-test.png',fullPage:true});
  assert.deepEqual(errors,[],'no browser runtime errors');
  console.log('PASS: mobile UI, real screen->Java Engine->NES movement, observe, gain=0, snapshots, reset, errors');

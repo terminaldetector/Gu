@@ -25,6 +25,20 @@
 <canvas id="activity" width="600" height="100"></canvas><div id="outputs" class="ports"></div>
 <p class="note" id="timing">Время сети и время NES отображаются отдельно.</p>
 </section>
+<section class="panel"><h2>Обучение игрового выхода</h2>
+<p class="note">SARSA(λ) обучает небольшой адаптер кнопок по картинке и 8 выходам сети. Исходные связи коннектома остаются фиксированными. Обучение требует замкнутого контура и пошагового времени.</p>
+<label>Политика</label><select id="learnMode"><option value="off">Исходные кнопки сети</option><option value="train">Учиться с исследованием</option><option value="eval">Оценивать без обучения</option></select>
+<label>Награда</label><select id="rewardMode"><option value="diagnostic">Тестовый ROM: дойти вправо к x=200, y=100</option><option value="ram">Изменение значения RAM</option><option value="manual">Ручная награда / штраф</option></select>
+<div class="row"><div><label>RAM адрес 0–2047, десятичный</label><input id="rewardAddress" type="number" min="0" max="2047" value="0"></div><div><label>Множитель награды</label><input id="rewardScale" type="number" min="-10" max="10" step=".1" value=".1"></div></div>
+<p class="note">RAM: один беззнаковый байт, награда = разность × множитель; переход 255→0 считается отрицательным. Адрес счёта нужно найти для конкретной игры.</p>
+<div class="row"><div><label>Исследование ε, 0–1</label><input id="epsilon" type="number" min="0" max="1" step=".01" value=".2"></div><div><label>Скорость α, .001–.2</label><input id="alpha" type="number" min=".001" max=".2" step=".001" value=".04"></div></div>
+<label>Длина эпизода, решений 10–2000</label><input id="episodeLength" type="number" min="10" max="2000" value="180">
+<label><input id="autoEpisode" type="checkbox" checked> Автоперезапуск ROM между эпизодами</label>
+<div class="row"><button id="rewardPlus">Награда +1</button><button id="rewardMinus">Штраф −1</button><button id="endEpisode">Закончить эпизод</button></div>
+<div class="row" style="margin-top:8px"><button id="savePolicy">Сохранить обучение</button><button id="loadPolicy">Загрузить</button><button id="clearPolicy">Сбросить веса</button></div>
+<label>Перенос модели: JSON (привязан к ROM, портам и настройкам награды)</label><textarea id="policyJson" spellcheck="false" placeholder="Сохранить заполняет JSON; Загрузить читает JSON или локальный слот"></textarea>
+<p id="learningStats" class="note">Обновлений: 0 · эпизодов: 0</p><canvas id="rewardChart" width="600" height="100"></canvas>
+<p class="note">Диагностическая награда и координаты читают RAM собственного ROM — это явно заданная задача, не самостоятельное понимание игры. В оценке веса заморожены; ручные нажатия приостанавливают обучение.</p></section>
 <section class="panel"><details><summary>Вмешательства и порты</summary>
 <label for="gain">Усиление передаваемых весов: <b id="gainLabel">1.00</b></label><input id="gain" type="range" min="0" max="2" step=".05" value="1">
 <label><input id="disableInhibition" type="checkbox"> Отключить отрицательные связи</label>
@@ -36,5 +50,5 @@
 <p class="note">Автопорты: 16 узлов с высокой исходящей степенью и 8 сильных положительных целей. Анатомическая принадлежность не учитывается. Изменения вступают в силу после «Применить» и сбрасывают сеть.</p>
 </details></section>
 <section class="panel"><p class="note">Запись CSV начинает новый опыт: сбрасывает сеть по seed. ROM продолжает с текущего кадра.</p><div class="row"><button id="record" disabled>Запись CSV</button><button id="export">Экспорт CSV</button></div><details style="margin-top:12px"><summary>Журнал</summary><pre id="log"></pre></details></section>
-<div class="footer">JSNES 2.1.0 · локальная эмуляция. Тестовый NROM написан для этой лаборатории. Сохранение снимка относится к NES; коннектом при восстановлении сбрасывается. Эта версия не содержит обучения или готовой игровой стратегии.</div>
-</main><script src="jsnes.min.js"></script><script src="lab.js"></script></body></html>
+<div class="footer">JSNES 2.1.0 · локальная эмуляция. Тестовый NROM написан для этой лаборатории. Сохранение снимка относится к NES; коннектом при восстановлении сбрасывается. Обучается выходной адаптер; готовой стратегии для произвольной игры нет.</div>
+</main><script src="jsnes.min.js"></script><script src="learner.js"></script><script src="lab.js"></script></body></html>

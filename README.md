@@ -1,6 +1,15 @@
+## Version 0.3: reward-driven game learning
+Install `FlyConsole-NES-0.3-debug.apk`; same app ID/signing key as 0.2. Select **Учиться с исследованием**, enable the brain connection, then start NES. This forces closed/lockstep coupling. Linear SARSA(lambda) trains 9 controller-action readouts from 16 sampled retinal values, 8 actual neural firing rates, bias, and four diagnostic coordinates (zeros for other games). The original connectome weights are fixed. Hyperparameters: gamma .95, lambda .7, configurable epsilon and alpha; clipped updates and bounded weights. Manual control clears temporal learning traces.
+
+The bundled task rewards reducing Manhattan distance to x=200,y=100; reaching it adds +2. Its reward and extra coordinates intentionally use the diagnostic ROM RAM. Other ROMs support one-byte RAM-delta reward (address 0–2047, signed scale) or manual +/- reward. No automatic game-score discovery, arbitrary-game mastery or connectome-wide plasticity is claimed. Choose episode length, automatic reset, or manual termination. Automatic reset restarts both NES and neural state while retaining learned weights. Evaluation disables weight updates and exploration; ties may still be seeded-random.
+
+Save/load a local policy slot or transfer the JSON text. Imports require identical ROM SHA256, port IDs, network configuration and reward settings. Policy JSON contains readout weights, RNG and counters, not neural state or NES state. Reward chart stores the last 100 episode outcomes. CSV also records applied controller mask, learning mode and the previous decision reward (not an exact replay).
+
+`node tools/learning_check.cjs` executes real NES episodes: 100 training episodes improve the diagnostic task, then 20/20 evaluation episodes reach the target for seed 123. This isolates the learner with fixed synthetic neural features; the browser integration test separately checks training from actual Java Engine outputs on its 24-node fixture. Neither proves whole-brain biological learning or success in other games.
+
 # Fly Console NES — offline connectome experiment lab
 
-Android 8+ app with a bundled NES emulator and Shiu/FlyWire v783 connectome. Both run locally. This is a **sensorimotor experiment workbench**, not a language model or a trained game-playing agent.
+Android 8+ app with a bundled NES emulator and Shiu/FlyWire v783 connectome. Both run locally. This is a **sensorimotor experiment workbench** with an experimental trainable game readout.
 
 ## Version 0.2: NES lab
 Install `FlyConsole-NES-0.2-debug.apk` (or the latest Actions artifact). This build has app ID `org.node.flyconsole.nes`, so it can coexist with version 0.1. Android System WebView must support modern JavaScript; update it if the emulator fails to initialize.
@@ -8,7 +17,7 @@ Install `FlyConsole-NES-0.2-debug.apk` (or the latest Actions artifact). This bu
 1. The original diagnostic NROM loads automatically; press **Запустить NES** and try the direction buttons. A changes sprite colour and gates a pulse tone. Import your `.nes` file with **Открыть .nes** (up to 4 MiB; unsupported mappers produce an error).
 2. Once the graph loads, choose **Наблюдение** or **Замкнутый**, then **Включить связь**. The default ports are technical selections, not labelled fly sensory or motor neurons.
 3. Try **Пошаговая связь**: one NES frame waits for one neural window. Async mode keeps the NES running while a bounded stream of screen samples is processed. Biological/network time is reported separately from NES frames and wall time.
-4. Under **Вмешательства и порты**, edit gain, negative-edge removal, deterministic input shuffle, frozen retinal input, lesions and explicit FlyWire IDs. **Применить** resets network state and RNG. No learning or plasticity is implemented.
+4. Under **Вмешательства и порты**, edit gain, negative-edge removal, deterministic input shuffle, frozen retinal input, lesions and explicit FlyWire IDs. **Применить** resets network state and RNG. Connectome synaptic plasticity is not implemented; the version 0.3 readout can learn.
 5. **Запись CSV** resets the connectome by seed and records a new trial from the current NES frame. CSV includes ports/configuration, ROM SHA256, wall/network time, inputs, output spike counts, manual and neural button masks and frozen-input flag. Recording caps at 8 MiB. Export uses the Android document picker. CSV is observational, not a complete executable replay.
 6. **Снимок NES** saves one emulator slot locally, associated with the ROM hash. It does not save neural state; restoring resets the connectome. **Консоль** opens the original command interface, including graph import. The immutable graph is shared to avoid duplicating its large edge arrays.
 
@@ -51,7 +60,7 @@ A reduced induced graph can be built with `--max-neurons 10000`. This selects sm
 * All outputs are computed by the engine. No invented chat responses or fake whole-brain demo.
 
 ## Research and limitations
-Based on Shiu et al., Nature 2024 https://www.nature.com/articles/s41586-024-07763-9 and inspected https://github.com/philshiu/Drosophila_brain_model/blob/main/model.py (MIT). Original simulator is Brian2/Python, not an Android library. This is an independent mobile implementation; **numerical and spike-train parity with Brian2 has not been established**. Input event scheduling, discretization and RNG can differ. No body, sensory transduction, learning/plasticity, consciousness claim, or natural-language model is included.
+Based on Shiu et al., Nature 2024 https://www.nature.com/articles/s41586-024-07763-9 and inspected https://github.com/philshiu/Drosophila_brain_model/blob/main/model.py (MIT). Original simulator is Brian2/Python, not an Android library. This is an independent mobile implementation; **numerical and spike-train parity with Brian2 has not been established**. Input event scheduling, discretization and RNG can differ. No body, biological sensory transduction, connectome plasticity, consciousness claim, or natural-language model is included.
 
 Transmitter identity is inferred per presynaptic neuron using synapse-count-weighted argmax. ACh excites; GABA/glutamate inhibit; modulatory classes are omitted. These are model assumptions, not measured temporal physiology. There is no spike raster export yet. A maximum of eight most active neurons is displayed.
 
