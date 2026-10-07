@@ -73,7 +73,7 @@ public final class NesLabActivity extends Activity {
                     path == null || !path.startsWith("/lab/") || path.contains("..") || !"GET".equals(request.getMethod()))
                     return response("text/plain", new ByteArrayInputStream(new byte[0]));
                 try {
-                    String mime = path.endsWith(".js") ? "application/javascript" :
+                    String mime = path.endsWith(".css") ? "text/css" : path.endsWith(".js") ? "application/javascript" :
                         path.endsWith(".json") ? "application/json" : path.endsWith(".wasm") ? "application/wasm" : path.endsWith(".zip") ? "application/zip" : "text/html";
                     return response(mime, getAssets().open(path.substring(1)));
                 } catch (IOException ex) { return response("text/plain", new ByteArrayInputStream(new byte[0])); }

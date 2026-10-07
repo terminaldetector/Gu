@@ -20,4 +20,6 @@ const manifest=fs.readFileSync('app/src/main/AndroidManifest.xml','utf8');
 assert(html.includes('id="gmodeLaunch"')&&html.includes('id="gameExit"')&&html.includes('id="gameSettings"')&&html.includes('id="gameConnect"'),'dedicated game mode must expose launch, exit, settings and connect controls');
 assert(html.includes('body.game-mode .screen canvas{height:100%;width:auto;')&&html.includes('object-fit:contain'),'landscape game view must preserve the ROM aspect ratio');
 assert(manifest.includes('android:screenOrientation="fullUser"')&&manifest.includes('android:configChanges="orientation|screenSize|keyboardHidden"'),'rotation must preserve the Activity and live session');
+const activity=fs.readFileSync('app/src/main/java/org/node/flyconsole/NesLabActivity.java','utf8');
+assert(activity.includes('path.endsWith(".css") ? "text/css"'),'Android WebView must serve the stylesheet with text/css under nosniff');
 console.log('PASS: deterministic 2P starter prior, spatial direction bias, and protection of trained readout weights');
