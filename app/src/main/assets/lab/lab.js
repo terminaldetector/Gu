@@ -331,7 +331,7 @@ function apply(start=false,restoreStart=true,reset=false) {
     if($('learnMode').value!=='off')validateProfile(profileValues());
     learner.setActions(FlyGameTools.actions($('actionMasks').value));learner.setAllowedMask(agentAllowedMask());
     requestedConfiguration=configuration();validateConfiguration(requestedConfiguration);pendingSince=performance.now();nativeCall('configure',JSON.stringify({...requestedConfiguration,generation,reset}));
-    status('Применение параметров и сброс состояния…');
+    status(reset?'Сброс динамики сети…':'Применение параметров с сохранением динамики…');
   }catch(error){status(error.message,true);configuring=false;}
 }
 function connectBrain(restoreStart=true){
