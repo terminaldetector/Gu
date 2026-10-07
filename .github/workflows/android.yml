@@ -37,4 +37,25 @@ jobs:
         with:
           name: FlyConsole-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+      - name: Split APK for bounded mobile downloads
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          source = Path('app/build/outputs/apk/debug/app-debug.apk').read_bytes()
+          size = 24_000_000
+          for index, start in enumerate(range(0, len(source), size), 1):
+              Path(f'/tmp/flyconsole-apk-part-{index}').write_bytes(source[start:start + size])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FlyConsole-apk-part-1
+          path: /tmp/flyconsole-apk-part-1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FlyConsole-apk-part-2
+          path: /tmp/flyconsole-apk-part-2
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FlyConsole-apk-part-3
+          path: /tmp/flyconsole-apk-part-3
 
