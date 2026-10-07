@@ -177,7 +177,7 @@ public final class GpuLifEngine implements AutoCloseable {
     private void uploadInt(int i,int[] a){GLES31.glBindBuffer(GLES31.GL_SHADER_STORAGE_BUFFER,buffers[i]);GLES31.glBufferData(GLES31.GL_SHADER_STORAGE_BUFFER,a.length*4,directInts(a),GLES31.GL_DYNAMIC_DRAW);}
     private int[] readInts(int i,int len){
         GLES31.glBindBuffer(GLES31.GL_SHADER_STORAGE_BUFFER,buffers[i]);
-        ByteBuffer b=GLES30.glMapBufferRange(GLES31.GL_SHADER_STORAGE_BUFFER,0,len*4,GLES30.GL_MAP_READ_BIT);
+        ByteBuffer b=(ByteBuffer)GLES30.glMapBufferRange(GLES31.GL_SHADER_STORAGE_BUFFER,0,len*4,GLES30.GL_MAP_READ_BIT);
         if(b==null)throw new IllegalStateException("GPU readback failed");b.order(ByteOrder.nativeOrder());
         int[] out=new int[len];b.asIntBuffer().get(out);GLES30.glUnmapBuffer(GLES31.GL_SHADER_STORAGE_BUFFER);return out;
     }
