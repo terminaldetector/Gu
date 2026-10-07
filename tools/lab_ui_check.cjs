@@ -94,6 +94,28 @@ const sha=crypto.createHash('sha256').update(Buffer.from(demo.base64,'base64')).
  assert.equal(regressions.steps,10,'exact episode limit');assert(regressions.boundary,'reward edit stops and clears stale transition');
  assert(regressions.death.death&&regressions.death.reward===-4);assert(regressions.win.success&&regressions.win.reward===5);
  assert(regressions.actions.includes(8)&&regressions.actions.includes(4),'Start and Select are available');
+ await page.evaluate(()=>{window.labPause();$('rewardMode').value='manual';$('deathEnabled').checked=false;$('winEnabled').checked=true;$('winAddress').value='100';$('winValue').value=String(nes.cpu.mem[100]===255?0:255);$('episodeLength').value='10';$('captureStart').onclick();$('benchmarkCriterion').value='Test RAM byte equals 255';$('benchmarkAttempts').value='2';$('benchmarkPolicy').value='random';});
+ const frozenWeights=await page.evaluate(()=>JSON.stringify(learner.save()));
+ await page.click('#benchmarkStart');await page.waitForFunction(()=>lastBenchmark&&lastBenchmark.finished_reason==='complete',null,{timeout:15000});
+ const report=await page.evaluate(()=>lastBenchmark);assert.equal(report.summary.completed,2);assert.equal(report.summary.timeouts,2);assert.equal(report.trials[0].decisions,10);assert(report.weights_unchanged);assert.equal(await page.evaluate(()=>JSON.stringify(learner.save())),frozenWeights,'benchmark freezes trained weights/counters/RNG');assert(report.summary.measured_fps>0);assert.equal(report.system,await page.evaluate(()=>labPlatform));
+ await page.evaluate(()=>{window.labPause();$('winAddress').value='100';$('winValue').value=String(nes.cpu.mem[100]);$('benchmarkAttempts').value='1';$('benchmarkPolicy').value='neurons';$('benchmarkStart').onclick();});
+ await page.waitForFunction(()=>lastBenchmark&&lastBenchmark.summary.successes===1,null,{timeout:15000});
+ await page.getByText('Инспектор RAM',{exact:true}).click();await page.click('#ramInspect');assert((await page.textContent('#ramView')).includes(': '));
+ const extra=await page.evaluate(async()=>{
+  window.labPause();const saved=JSON.parse(JSON.stringify(startSnapshot));if(labPlatform==='nes')delete saved.state.cpu.mem;else saved.state.data='AAAA';
+  let bad=false;try{validateSnapshot(saved);}catch(_){bad=true;}
+  const prior=nes,hash=romHash,weights=JSON.stringify(learner.weights),snapshot=startSnapshot;
+  const create=labPlatform==='nes'?jsnes.NES.prototype.loadROM:SegaConsole.create;
+  if(labPlatform==='nes')jsnes.NES.prototype.loadROM=function(){throw Error('boot failure');};else SegaConsole.create=async()=>({loadROM(){throw Error('boot failure');}});
+  const demo=labPlatform==='nes'?prior.romData:prior.romData; // Use valid bytes before forcing candidate boot failure.
+  const bytes=labPlatform==='nes'?typeof demo==='string'?Uint8Array.from(demo,c=>c.charCodeAt(0)):demo:prior.romData;
+  let b64='';if(bytes)for(const b of bytes)b64+=String.fromCharCode(b);
+  await window.labLoadRom({base64:btoa(b64),sha256:'changed',name:'failure'});
+  if(labPlatform==='nes')jsnes.NES.prototype.loadROM=create;else SegaConsole.create=create;
+  const preserved=nes===prior&&romHash===hash&&JSON.stringify(learner.weights)===weights&&startSnapshot===snapshot;
+  configuring=true;window.startAfterConfig=true;const before=generation;window.labConfigured({generation:before-1,mode:'closed'});const ignored=configuring&&!connected;window.labPause();
+  return {bad,preserved,ignored};
+ });assert(extra.bad,'invalid snapshot rejected');assert(extra.preserved,'failed ROM does not mutate graph/ROM policy identity');assert(extra.ignored,'stale configure ignored');
  await page.screenshot({path:process.env.UI_SCREENSHOT||'lab-ui-test.png',fullPage:true});
  assert.deepEqual(errors,[],'no browser runtime errors');
  console.log('PASS: Java coupling, training/evaluation, BGR, exact episodes, immutable starts, profile import, invalid ROM rollback, reward edits');

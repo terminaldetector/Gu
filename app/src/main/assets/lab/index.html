@@ -14,6 +14,7 @@
 <div class="row tiny"><button data-button="2">SELECT</button><button data-button="3">START</button></div>
 <div class="row" style="margin-top:12px"><button id="play" class="primary">Запустить NES</button><button id="step">Один кадр</button><button id="resetNes">Сброс NES</button></div>
 <div class="row" style="margin-top:8px"><button id="saveState">Снимок NES</button><button id="loadState">Вернуть снимок</button></div></section>
+<section class="panel"><details><summary>Паспорт модели и устройства</summary><pre id="passport" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px">Загрузка…</pre></details><p id="performance" class="note">Замеры появятся после запуска. Требования оцениваются по фактической скорости на устройстве.</p></section>
 <section class="panel"><h2>Эксперимент с сетью</h2>
 <label for="mode">Контур</label><select id="mode"><option value="observe">Наблюдение: экран → нейроны</option><option value="closed">Замкнутый: экран → нейроны → кнопки</option><option value="sham">Контроль: вход отключён, выход отключён</option></select>
 <label for="clock">Ход времени</label><select id="clock"><option value="async">NES идёт отдельно; сеть получает кадры с паузой</option><option value="lockstep">Пошаговая связь: NES ждёт ответа сети</option></select>
@@ -52,6 +53,11 @@
 <label>Перенос модели: JSON (привязан к ROM, портам и профилю)</label><textarea id="policyJson" spellcheck="false" placeholder="Сохранить заполняет JSON; Загрузить читает JSON или локальный слот"></textarea>
 <p id="learningStats" class="note">Обновлений: 0 · эпизодов: 0</p><canvas id="rewardChart" width="600" height="100"></canvas>
 <p class="note">Диагностическая награда и координаты читают RAM собственного ROM — это явно заданная задача, не самостоятельное понимание игры. В оценке веса заморожены; ручные нажатия приостанавливают обучение.</p></section>
+<section class="panel"><h2>Оценка прохождения</h2><p class="note">Сначала пройдите меню вручную, сохраните старт и проверьте RAM-критерий победы. Эта серия замораживает веса. Сравнивайте нейронный выход, адаптер SARSA и случайную политику при одинаковом старте и seed.</p>
+<label>Игра</label><input id="benchmarkGame" maxlength="100"><label>Что означает успех</label><input id="benchmarkCriterion" maxlength="200" placeholder="Например: завершение первого уровня, флаг RAM…">
+<div class="row"><select id="benchmarkScope" aria-label="Масштаб критерия"><option value="level">Уровень / отдельная задача</option><option value="full_game">Пользовательский критерий финала игры</option></select><select id="benchmarkPolicy" aria-label="Политика оценки"><option value="neurons">Нейронные кнопки</option><option value="sarsa">Замороженный SARSA</option><option value="random">Случайный контроль</option></select></div>
+<label>Попытки, 1–100</label><input id="benchmarkAttempts" type="number" min="1" max="100" value="10"><div class="row"><button id="benchmarkStart">Начать оценку</button><button id="benchmarkStop">Остановить</button><button id="benchmarkExport">Отчёт JSON</button></div><pre id="benchmarkResult" style="white-space:pre-wrap;font-size:12px">Оценка ещё не проводилась. Прохождение Zero Tolerance не подтверждено.</pre>
+<details><summary>Инспектор RAM</summary><p class="note">64 байта и изменения между чтениями. Адреса счёта, здоровья и финала для внешнего ROM нужно определить и проверить самостоятельно; готового профиля Zero Tolerance нет.</p><label>Смещение RAM, десятичное</label><input id="ramOffset" type="number" min="0" value="0"><button id="ramInspect">Прочитать RAM</button><pre id="ramView" style="white-space:pre-wrap;font-size:11px;overflow-wrap:anywhere"></pre></details></section>
 <section class="panel"><details><summary>Вмешательства и порты</summary>
 <label for="gain">Усиление передаваемых весов: <b id="gainLabel">1.00</b></label><input id="gain" type="range" min="0" max="2" step=".05" value="1">
 <label><input id="disableInhibition" type="checkbox"> Отключить отрицательные связи</label>
@@ -64,4 +70,4 @@
 </details></section>
 <section class="panel"><p class="note">Запись CSV начинает новый опыт: сбрасывает сеть по seed. ROM продолжает с текущего кадра.</p><div class="row"><button id="record" disabled>Запись CSV</button><button id="export">Экспорт CSV</button></div><details style="margin-top:12px"><summary>Журнал</summary><pre id="log"></pre></details></section>
 <div class="footer" id="platformFooter">JSNES 2.1.0 · локальная эмуляция. Тестовый NROM написан для этой лаборатории. Сохранение снимка относится к NES; коннектом при восстановлении сбрасывается. Обучается выходной адаптер; готовой стратегии для произвольной игры нет.</div>
-</main><script src="jsnes.min.js"></script><script src="game-tools.js"></script><script src="learner.js"></script><script src="sega/genplus.js"></script><script src="sega-core.js"></script><script src="lab.js"></script></body></html>
+</main><script src="jsnes.min.js"></script><script src="game-tools.js"></script><script src="learner.js"></script><script src="sega/genplus.js"></script><script src="sega-core.js"></script><script src="benchmark.js"></script><script src="lab.js"></script></body></html>

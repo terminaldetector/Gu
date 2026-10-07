@@ -3,6 +3,17 @@ import java.io.*;
 public final class Graph {
  public final long[] ids; public final int[] offsets, targets; public final float[] weights;
  public Graph(long[] ids,int[] offsets,int[] targets,float[] weights){this.ids=ids;this.offsets=offsets;this.targets=targets;this.weights=weights;}
+ private volatile String digest;
+ public synchronized String fingerprint(){
+  if(digest!=null)return digest;
+  try{java.security.MessageDigest md=java.security.MessageDigest.getInstance("SHA-256");java.nio.ByteBuffer b=java.nio.ByteBuffer.allocate(8192);
+   b.putInt(ids.length).putInt(targets.length);
+   for(long id:ids){if(b.remaining()<8){md.update(b.array(),0,b.position());b.clear();}b.putLong(id);}
+   for(int[] values:new int[][]{offsets,targets})for(int v:values){if(b.remaining()<4){md.update(b.array(),0,b.position());b.clear();}b.putInt(v);}
+   for(float v:weights){if(b.remaining()<4){md.update(b.array(),0,b.position());b.clear();}b.putFloat(v);}
+   md.update(b.array(),0,b.position());StringBuilder result=new StringBuilder();for(byte v:md.digest())result.append(String.format(java.util.Locale.US,"%02x",v&255));digest=result.toString();return digest;
+  }catch(java.security.NoSuchAlgorithmException ex){throw new IllegalStateException(ex);}
+ }
  public long memoryBytes(){return 8L*ids.length+4L*offsets.length+8L*targets.length+104L*ids.length;}
  public static Graph read(InputStream input,long budget) throws IOException {
   BufferedInputStream buffered=new BufferedInputStream(input);buffered.mark(2);int first=buffered.read(),second=buffered.read();buffered.reset();

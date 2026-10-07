@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 /** Local-only WebView frontend; all connectome simulation runs on the worker. */
 public final class NesLabActivity extends Activity {
@@ -27,14 +28,15 @@ public final class NesLabActivity extends Activity {
     private static final int PICK_ROM = 10, EXPORT_CSV = 11, PICK_MODEL = 12, EXPORT_MODEL = 13;
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
     private final AtomicBoolean cancel = new AtomicBoolean();
+    private final AtomicLong pageEpoch=new AtomicLong(),controlEpoch=new AtomicLong();private final ThreadLocal<Long> taskPage=new ThreadLocal<>();private volatile boolean foreground;
     private WebView web;
-    private Graph graph;
+    private volatile Graph graph;
     private Engine engine;
     private Experiment experiment;
     private volatile boolean destroyed;
-    private boolean pageReady;
+    private volatile boolean pageReady;
     private String initialError;
-    private String labSystem="nes";
+    private volatile String labSystem="nes";
     private String graphKind = "FlyWire v783 / Shiu signed model";
     private String romHash = "not-loaded";
     private final java.util.ArrayDeque<String> offeredRomHashes = new java.util.ArrayDeque<>();
@@ -73,13 +75,15 @@ public final class NesLabActivity extends Activity {
             }
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) { return true; }
             @Override public void onPageFinished(WebView view, String url) {
-                worker.execute(() -> { pageReady = true; announce(); });
+                submit(() -> { pageReady = true; if(engine==null)loadGraph();else announce(); });
             }
         });
-        setContentView(web);
-        worker.execute(this::loadGraph);
+        setContentView(web);UiInsets.apply(this,web);recording=new File(getFilesDir(),labSystem+"-experiment.csv");
+        submit(this::loadGraph);
         web.loadUrl(ORIGIN + "/lab/index.html?system="+labSystem);
     }
+
+    private void submit(Runnable task){if(destroyed)return;final long epoch=pageEpoch.get();try{worker.execute(()->{if(destroyed||epoch!=pageEpoch.get())return;taskPage.set(epoch);try{task.run();}finally{taskPage.remove();}});}catch(java.util.concurrent.RejectedExecutionException ignored){}}
 
     private WebResourceResponse response(String mime, InputStream stream) {
         WebResourceResponse response = new WebResourceResponse(mime, "UTF-8", stream);
@@ -93,38 +97,14 @@ public final class NesLabActivity extends Activity {
     @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);switchSystem("sega".equals(intent.getStringExtra("system"))?"sega":"nes");}
     private void switchSystem(String system){
         if (system.equals(labSystem)) return;
-        cancel.set(true);
+        cancel.set(true);controlEpoch.incrementAndGet();
         worker.execute(()->{try{stopRecording();offeredRomHashes.clear();}catch(IOException ex){error(ex.getMessage());}});
         web.evaluateJavascript("if(window.labPause)window.labPause();try{persistPolicy(false);document.getElementById('saveProfile').onclick();}catch(e){}", ignored -> {
-            labSystem=system;pageReady=false;romHash="not-loaded";
+            pageEpoch.incrementAndGet();labSystem=system;pageReady=false;romHash="not-loaded";recording=new File(getFilesDir(),labSystem+"-experiment.csv");
             web.loadUrl(ORIGIN+"/lab/index.html?system="+labSystem);
         });
     }
-    private void loadGraph() {
-        try {
-            if (GraphCache.current != null) {
-                graph = GraphCache.current; graphKind = GraphCache.kind;
-                experiment = Experiment.automatic(graph); engine = new Engine(graph); announce(); return;
-            }
-            InputStream source;
-            File imported = new File(getFilesDir(), "connectome.fly");
-            if (imported.exists()) { source = new FileInputStream(imported); graphKind = "Imported graph"; }
-            else {
-                try { source = getAssets().open("brain.fly.gz"); }
-                catch (IOException ex) { source = getAssets().open("brain.fly"); }
-            }
-            long available = Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory() + Runtime.getRuntime().freeMemory();
-            try (InputStream in = source) { graph = Graph.read(in, available * 2 / 3); }
-            experiment = Experiment.automatic(graph);
-            engine = new Engine(graph);
-            GraphCache.current = graph; GraphCache.kind = graphKind;
-            announce();
-        } catch (Exception | OutOfMemoryError ex) {
-            engine = null;
-            graph = null;
-            error("Коннектом не загрузился: " + ex.getMessage() + ". NES доступен в ручном режиме.");
-        }
-    }
+    private void loadGraph(){try{long free=Runtime.getRuntime().maxMemory()-Runtime.getRuntime().totalMemory()+Runtime.getRuntime().freeMemory();Graph loaded=GraphCache.load(new File(getFilesDir(),"connectome.fly"),()->{try{return getAssets().open("brain.fly.gz");}catch(IOException ex){return getAssets().open("brain.fly");}},free*2/3);Experiment next=Experiment.automatic(loaded);Engine nextEngine=new Engine(loaded);graph=loaded;graphKind=GraphCache.kind;experiment=next;engine=nextEngine;initialError=null;announce();}catch(Exception|OutOfMemoryError ex){engine=null;graph=null;error("Коннектом не загрузился: "+ex.getMessage()+". Эмулятор доступен вручную.");}}
 
     private void announce() {
         if (!pageReady) return;
@@ -133,6 +113,7 @@ public final class NesLabActivity extends Activity {
             JSONObject info = new JSONObject();
             info.put("system",labSystem).put("neurons", graph.ids.length).put("edges", graph.targets.length).put("kind", graphKind);
             info.put("inputs", ids(experiment.inputs)).put("outputs", ids(experiment.outputs));
+            info.put("diagnostics",LabDiagnostics.describe(this,graph)).put("graph_sha256",graph.fingerprint()).put("notice",GraphCache.notice);
             info.put("heapMiB", Runtime.getRuntime().maxMemory() / 1048576);
             emit("labReady", info);
         } catch (Exception ex) { error(ex.getMessage()); }
@@ -146,8 +127,9 @@ public final class NesLabActivity extends Activity {
 
     private void emit(String method, JSONObject value) {
         if (destroyed) return;
+        final long epoch=taskPage.get()==null?pageEpoch.get():taskPage.get();
         String script = "if(window." + method + ")window." + method + "(" + value + ");";
-        runOnUiThread(() -> { if (!destroyed) web.evaluateJavascript(script, null); });
+        runOnUiThread(() -> { if (!destroyed&&epoch==pageEpoch.get()) web.evaluateJavascript(script, null); });
     }
 
     private void error(String message) {
@@ -176,7 +158,7 @@ public final class NesLabActivity extends Activity {
             throw new IllegalArgumentException("Неизвестный режим");
         next.maxHz = data.getDouble("maxHz");
         next.thresholdHz = data.getDouble("thresholdHz");
-        next.windowMs = data.getInt("windowMs");
+        next.windowMs = data.getInt("windowMs");if(data.getDouble("windowMs")!=next.windowMs)throw new IllegalArgumentException("Окно должно быть целым");
         next.options.gain = data.getDouble("gain");
         if (!Double.isFinite(next.maxHz) || next.maxHz < 0 || next.maxHz > 500 ||
             !Double.isFinite(next.thresholdHz) || next.thresholdHz < 1 || next.thresholdHz > 500 ||
@@ -185,7 +167,7 @@ public final class NesLabActivity extends Activity {
             throw new IllegalArgumentException("Параметры вне допустимых границ");
         next.options.disableInhibition = data.getBoolean("disableInhibition");
         next.scramble = data.getBoolean("scramble");
-        next.seedPermutation(data.getLong("seed"));
+        long seed=data.getLong("seed");if(data.getDouble("seed")!=seed||seed<0||seed>2147483647L)throw new IllegalArgumentException("Seed 0–2147483647");next.seedPermutation(seed);
         JSONArray lesions = data.getJSONArray("lesions");
         if (lesions.length() > 256) throw new IllegalArgumentException("Не более 256 абляций");
         next.options.lesions = parsePorts(lesions, lesions.length());
@@ -196,7 +178,7 @@ public final class NesLabActivity extends Activity {
         sequence = 0;
         latestMask = 0;
         if (recordingOn) recorder.write("# config," + data.put("configVersion", configVersion).toString().replace('\n', ' ') + "\n");
-        emit("labConfigured", new JSONObject().put("configVersion", configVersion).put("mode", next.mode));
+        emit("labConfigured", new JSONObject().put("configVersion", configVersion).put("mode", next.mode).put("generation",data.optLong("generation",-1)));
     }
 
     private void sample(JSONObject request) throws Exception {
@@ -244,13 +226,13 @@ public final class NesLabActivity extends Activity {
     private void startRecording() throws Exception {
         stopRecording();
         engine.reset(experiment.seed); configVersion++; sequence = 0;
-        recording = new File(getFilesDir(), "nes-experiment.csv");
+        recording = new File(getFilesDir(), labSystem+"-experiment.csv");
         recorder = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(recording), StandardCharsets.UTF_8));
         recordedBytes = 0;
         recorder.write("# system,"+labSystem+"\n");
-        recorder.write("# model," + graphKind + ",neurons=" + graph.ids.length + ",edges=" + graph.targets.length + ",dt_ms=0.1,brian2_parity=unverified\n");
+        recorder.write("# model," + graphKind + ",neurons=" + graph.ids.length + ",edges=" + graph.targets.length + ",dt_ms=0.1,brian2_parity=unverified,sha256="+graph.fingerprint()+"\n");
         recorder.write("# rom_sha256," + romHash + "\n");
-        StringBuilder header = new StringBuilder("wall_epoch_ms,config_version,sequence,nes_frame,sim_ms,compute_ms,spikes,active,buttons_mask,manual_mask,frozen_retina,controller_mask,learning_mode,learning_reward");
+        StringBuilder header = new StringBuilder("wall_epoch_ms,config_version,sequence,emulator_frame,sim_ms,compute_ms,spikes,active,buttons_mask,manual_mask,frozen_retina,controller_mask,learning_mode,learning_reward");
         for (int i = 0; i < 16; i++) header.append(",input_hz_").append(i);
         for (int i=0;i<Experiment.BUTTONS.length;i++) header.append(",spikes_").append(i==2&&"sega".equals(labSystem)?"C":Experiment.BUTTONS[i]);
         recorder.write(header.append('\n').toString());
@@ -288,9 +270,9 @@ public final class NesLabActivity extends Activity {
         @JavascriptInterface public void switchSystem(String system){if(!system.equals("nes")&&!system.equals("sega"))return;runOnUiThread(()->NesLabActivity.this.switchSystem(system));}
         @JavascriptInterface public void acceptRom(String sha256) {
             if (destroyed || sha256.length() != 64) return;
-            worker.execute(() -> {
+            submit(() -> {
                 try {
-                    if (!offeredRomHashes.contains(sha256)) return;
+                    if (!offeredRomHashes.remove(sha256)) return;
                     romHash = sha256;
                     if (engine != null) { engine.reset(experiment.seed); configVersion++; sequence = 0; }
                     if (recordingOn) { recorder.write("# rom_sha256," + romHash + "\n"); recorder.flush(); }
@@ -299,22 +281,22 @@ public final class NesLabActivity extends Activity {
         }
         @JavascriptInterface public void sample(String json) {
             if (destroyed || json.length() > 8192) return;
-            worker.execute(() -> {
+            submit(() -> {
                 try { NesLabActivity.this.sample(new JSONObject(json)); }
                 catch (Exception ex) { error(ex.getMessage()); emitFailedSample(json); }
             });
         }
         @JavascriptInterface public void configure(String json) {
             if (destroyed || json.length() > 32768) return;
-            cancel.set(true);
-            worker.execute(() -> {
+            cancel.set(true);final long epoch=controlEpoch.incrementAndGet();
+            submit(() -> {
                 try { NesLabActivity.this.configure(new JSONObject(json)); }
                 catch (Exception ex) { error(ex.getMessage()); }
-                finally { cancel.set(false); }
+                finally { if(controlEpoch.get()==epoch&&foreground)cancel.set(false); }
             });
         }
-        @JavascriptInterface public void stop() { cancel.set(true); }
-        @JavascriptInterface public void resume() { cancel.set(false); }
+        @JavascriptInterface public void stop() { controlEpoch.incrementAndGet();cancel.set(true); }
+        @JavascriptInterface public void resume() { if(foreground)cancel.set(false); }
         @JavascriptInterface public void console() {
             runOnUiThread(() -> startActivity(new Intent(NesLabActivity.this,CodeLabActivity.class).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)));
         }
@@ -325,7 +307,7 @@ public final class NesLabActivity extends Activity {
             });
         }
         @JavascriptInterface public void demo() {
-            worker.execute(() -> {
+            submit(() -> {
                 try (InputStream in = getAssets().open("sega".equals(labSystem)?"lab/demo-sega.json":"lab/demo-rom.json")) {
                     JSONObject data = new JSONObject(readText(in, 100000));
                     loadRom(Base64.decode(data.getString("base64"), Base64.DEFAULT), "sega".equals(labSystem)?"Fly MD original diagnostic":"Fly NES diagnostic / NROM-0");
@@ -333,7 +315,7 @@ public final class NesLabActivity extends Activity {
             });
         }
         @JavascriptInterface public void recording(boolean enabled) {
-            worker.execute(() -> {
+            submit(() -> {
                 try {
                     if (engine == null) throw new IllegalStateException("Коннектом не готов");
                     if (enabled) startRecording();
@@ -345,29 +327,29 @@ public final class NesLabActivity extends Activity {
             runOnUiThread(() -> startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("*/*").addCategory(Intent.CATEGORY_OPENABLE), PICK_MODEL));
         }
         @JavascriptInterface public void exportModel(String json) {
-            if (destroyed || json.length() > 8 * 1024 * 1024) return;
-            worker.execute(() -> {
+            if(destroyed)return;if(json.getBytes(StandardCharsets.UTF_8).length>8*1024*1024){error("JSON превышает 8 МиБ");return;}
+            submit(() -> {
                 try {
-                    new JSONObject(json);
-                    modelExport = new File(getFilesDir(), "nes-model-export.json");
+                    JSONObject document=new JSONObject(json);final String suffix="fly-evaluation-report".equals(document.optString("type"))?"report":"model";
+                    modelExport = new File(getFilesDir(), labSystem+"-"+suffix+"-export.json");
                     try (Writer writer = new OutputStreamWriter(new FileOutputStream(modelExport), StandardCharsets.UTF_8)) { writer.write(json); }
                     runOnUiThread(() -> {
                         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("application/json").addCategory(Intent.CATEGORY_OPENABLE);
-                        intent.putExtra(Intent.EXTRA_TITLE, "fly-nes-model.json");
+                        intent.putExtra(Intent.EXTRA_TITLE, "fly-"+labSystem+"-"+suffix+".json");
                         startActivityForResult(intent, EXPORT_MODEL);
                     });
                 } catch (Exception ex) { error(ex.getMessage()); }
             });
         }
         @JavascriptInterface public void exportCsv() {
-            worker.execute(() -> {
+            submit(() -> {
                 try {
                     stopRecording();
                     if (recording == null || !recording.exists()) throw new IllegalStateException("Сначала включите запись");
                     emit("labRecording", new JSONObject().put("active", false));
                     runOnUiThread(() -> {
                         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("text/csv").addCategory(Intent.CATEGORY_OPENABLE);
-                        intent.putExtra(Intent.EXTRA_TITLE, "fly-nes-experiment.csv");
+                        intent.putExtra(Intent.EXTRA_TITLE, "fly-"+labSystem+"-experiment.csv");
                         startActivityForResult(intent, EXPORT_CSV);
                     });
                 } catch (Exception ex) { error(ex.getMessage()); }
@@ -397,7 +379,7 @@ public final class NesLabActivity extends Activity {
         super.onActivityResult(request, result, data);
         if (result != RESULT_OK || data == null || data.getData() == null) return;
         Uri uri = data.getData();
-        worker.execute(() -> {
+        submit(() -> {
             try {
                 if (request == PICK_ROM) {
                     byte[] bytes;
@@ -415,13 +397,13 @@ public final class NesLabActivity extends Activity {
                         emit("labImportModel", new JSONObject(readText(in, 8 * 1024 * 1024)));
                     }
                 } else if (request == EXPORT_MODEL) {
-                    try (InputStream in = new FileInputStream(modelExport); OutputStream out = getContentResolver().openOutputStream(uri)) {
+                    try (InputStream in = new FileInputStream(modelExport); OutputStream out = getContentResolver().openOutputStream(uri,"wt")) {
                         byte[] buffer = new byte[8192]; int n;
                         while ((n = in.read(buffer)) != -1) out.write(buffer, 0, n);
                     }
                     runOnUiThread(() -> Toast.makeText(this, "JSON сохранён", Toast.LENGTH_SHORT).show());
                 } else if (request == EXPORT_CSV) {
-                    try (InputStream in = new FileInputStream(recording); OutputStream out = getContentResolver().openOutputStream(uri)) {
+                    try (InputStream in = new FileInputStream(recording); OutputStream out = getContentResolver().openOutputStream(uri,"wt")) {
                         byte[] buffer = new byte[8192]; int n;
                         while ((n = in.read(buffer)) != -1) out.write(buffer, 0, n);
                     }
@@ -432,14 +414,14 @@ public final class NesLabActivity extends Activity {
     }
 
     @Override protected void onPause() {
-        cancel.set(true);
+        foreground=false;controlEpoch.incrementAndGet();cancel.set(true);
         web.evaluateJavascript("if(window.labPause)window.labPause();", null);
         super.onPause();
         web.onPause();
     }
     @Override protected void onResume() {
-        super.onResume(); if (web != null) web.onResume();
-        if (engine != null && GraphCache.current != null && GraphCache.current != graph) worker.execute(this::loadGraph);
+        super.onResume();foreground=true; if (web != null) web.onResume();
+        if (GraphCache.current != null && GraphCache.current != graph) submit(this::loadGraph);
     }
     @Override protected void onDestroy() {
         destroyed = true;

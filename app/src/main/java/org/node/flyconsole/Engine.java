@@ -68,7 +68,7 @@ public final class Engine {
 
     public Result advance(int[] inputs, double[] rates, int durationMs,
                           Options options, AtomicBoolean cancel) {
-        if (inputs.length != rates.length || inputs.length > 64 || durationMs < 1 || durationMs > 10000)
+        if (inputs.length != rates.length || inputs.length > 256 || durationMs < 1 || durationMs > 10000)
             throw new IllegalArgumentException("Неверные параметры симуляции");
         if (!Double.isFinite(options.gain) || options.gain < 0 || options.gain > 2)
             throw new IllegalArgumentException("Усиление должно быть 0–2");

@@ -46,6 +46,28 @@ const sha=crypto.createHash('sha256').update(Buffer.from(demo.base64,'base64')).
  await page.selectOption('#learnMode','train');await page.selectOption('#rewardMode','ram');await page.selectOption('#ramFormat','signed');await page.fill('#episodeLength','10');await page.uncheck('#autoEpisode');
  await page.click('#brainToggle');await page.waitForFunction(()=>connected&&!configuring);await page.click('#play');await page.waitForFunction(()=>learner.episodes>=1,null,{timeout:15000});assert((await page.evaluate(()=>learner.updates))>=8);
  const roundtrip=await page.evaluate(()=>{const saved=JSON.parse(JSON.stringify(policyPackage(true))),weights=JSON.stringify(learner.weights);learner.reset(99);window.labImportModel(saved);return JSON.stringify(learner.weights)===weights;});assert(roundtrip,'Sega profile/snapshot/policy roundtrip');
+ await page.evaluate(()=>{window.labPause();$('rewardMode').value='manual';$('deathEnabled').checked=false;$('winEnabled').checked=true;$('winAddress').value='100';$('winValue').value=String(nes.cpu.mem[100]===255?0:255);$('episodeLength').value='10';$('captureStart').onclick();$('benchmarkCriterion').value='Test RAM byte equals 255';$('benchmarkAttempts').value='2';$('benchmarkPolicy').value='random';});
+ const frozenWeights=await page.evaluate(()=>JSON.stringify(learner.save()));
+ await page.click('#benchmarkStart');await page.waitForFunction(()=>lastBenchmark&&lastBenchmark.finished_reason==='complete',null,{timeout:15000});
+ const report=await page.evaluate(()=>lastBenchmark);assert.equal(report.summary.completed,2);assert.equal(report.summary.timeouts,2);assert.equal(report.trials[0].decisions,10);assert(report.weights_unchanged);assert.equal(await page.evaluate(()=>JSON.stringify(learner.save())),frozenWeights,'benchmark freezes trained weights/counters/RNG');assert(report.summary.measured_fps>0);assert.equal(report.system,await page.evaluate(()=>labPlatform));
+ await page.evaluate(()=>{window.labPause();$('winAddress').value='100';$('winValue').value=String(nes.cpu.mem[100]);$('benchmarkAttempts').value='1';$('benchmarkPolicy').value='neurons';$('benchmarkStart').onclick();});
+ await page.waitForFunction(()=>lastBenchmark&&lastBenchmark.summary.successes===1,null,{timeout:15000});
+ await page.getByText('Инспектор RAM',{exact:true}).click();await page.click('#ramInspect');assert((await page.textContent('#ramView')).includes(': '));
+ const extra=await page.evaluate(async()=>{
+  window.labPause();const saved=JSON.parse(JSON.stringify(startSnapshot));if(labPlatform==='nes')delete saved.state.cpu.mem;else saved.state.data='AAAA';
+  let bad=false;try{validateSnapshot(saved);}catch(_){bad=true;}
+  const prior=nes,hash=romHash,weights=JSON.stringify(learner.weights),snapshot=startSnapshot;
+  const create=labPlatform==='nes'?jsnes.NES:SegaConsole.create;
+  if(labPlatform==='nes')jsnes.NES=function(){return {loadROM(){throw Error('boot failure');}};};else SegaConsole.create=async()=>({loadROM(){throw Error('boot failure');}});
+  const demo=labPlatform==='nes'?prior.romData:prior.romData; // Use valid bytes before forcing candidate boot failure.
+  const bytes=labPlatform==='nes'?Uint8Array.from(demo,c=>c.charCodeAt(0)):prior.romData;
+  let b64='';if(bytes)for(const b of bytes)b64+=String.fromCharCode(b);
+  await window.labLoadRom({base64:btoa(b64),sha256:'changed',name:'failure'});
+  if(labPlatform==='nes')jsnes.NES=create;else SegaConsole.create=create;
+  const preserved=nes===prior&&romHash===hash&&JSON.stringify(learner.weights)===weights&&startSnapshot===snapshot;
+  configuring=true;window.startAfterConfig=true;const before=generation;window.labConfigured({generation:before-1,mode:'closed'});const ignored=configuring&&!connected;window.labPause();
+  return {bad,preserved,ignored};
+ });assert(extra.bad,'invalid snapshot rejected');assert(extra.preserved,'failed ROM does not mutate graph/ROM policy identity');assert(extra.ignored,'stale configure ignored');
  assert.equal(await page.textContent('[data-button="2"]'),'C');assert.equal(await page.textContent('#navSega'),'2 / SEGA');assert.deepEqual(errors,[]);
  await page.screenshot({path:process.env.UI_SCREENSHOT||'sega-ui.png',fullPage:true});console.log('PASS: browser WASM/CSP, Sega video->Java network->controller/RAM, episode snapshot, training and model import');await browser.close();java.stdin.end();
 })().catch(e=>{console.error(e);java.kill();process.exit(1);});
