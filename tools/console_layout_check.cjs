@@ -3,8 +3,9 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const assets=path.resolve('app/src/main/assets'),demo=JSON.parse(fs.readFileSync(path.join(assets,'lab/demo-rom.json')));
+let browser;
 (async()=>{
- const browser=await chromium.launch({headless:true});
+ browser=await chromium.launch({headless:true});
  const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('https://flyconsole.local/**',async route=>{
@@ -27,7 +28,7 @@ const assets=path.resolve('app/src/main/assets'),demo=JSON.parse(fs.readFileSync
  await page.evaluate(()=>{connected=true;updateNeuralMap({backend:'gpu',active:16,fdbEdges:4,neuralGroups:Array.from({length:16},(_,i)=>({hz:i*20,spikes:i,active:i,neurons:100}))});});
  assert((await page.textContent('#mapStats')).includes('GPU'));
  const colors=await page.locator('.neural-cube').evaluateAll(c=>c.map(el=>el.style.getPropertyValue('--cell')));assert.notEqual(colors[0],colors[15]);
- await page.evaluate(()=>{connected=false;updateGmodeHud();});assert((await page.textContent('#mapState')).includes('пауза'));
+ await page.evaluate(()=>{connected=false;updateGmodeHud();});assert((await page.textContent('#mapState')).toLowerCase().includes('пауза'));
  fs.mkdirSync('ui-preview',{recursive:true});
  for(const [w,h] of [[390,844],[844,390],[360,640],[640,360],[568,320],[1280,800]]){
   await page.setViewportSize({width:w,height:h});await page.waitForTimeout(100);
@@ -59,4 +60,4 @@ const assets=path.resolve('app/src/main/assets'),demo=JSON.parse(fs.readFileSync
  }
  assert.deepEqual(errors,[],'no JavaScript page errors');
  await browser.close();console.log('PASS: tabs, real telemetry rendering, stale state, navigation preservation and 6 portrait/landscape layouts');
-})().catch(e=>{console.error(e);process.exitCode=1;});
+})().catch(async e=>{console.error(e);if(browser)await browser.close();process.exitCode=1;});
