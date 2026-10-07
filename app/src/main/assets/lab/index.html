@@ -21,6 +21,12 @@
 <p class="note" id="backendNote">GPU режим не подменяет CPU: результаты и скорость показываются отдельно.</p>
 <label for="gmode">GMode · второй игрок</label><select id="gmode"><option value="off">Обычный один игрок · сеть → P1</option><option value="coop">Человек P1 + connectome/SARSA P2</option><option value="coop-reverse">Connectome/SARSA P1 + человек P2</option></select>
 <p class="note" id="gmodeStatus">NES GMode: человек и локальный агент могут играть Contra одновременно. Sega P2 появится после пересборки WASM-core.</p>
+<details><summary>Recursive Lab · FDB overlay (CPU)</summary>
+<p class="note">Редактируемый слой связей поверх исходного коннектома. Автоматическое выращивание сети ещё не подключено. ID нейронов записывайте строками.</p>
+<textarea id="fdbJson" placeholder='{"deltas":[{"source":"ID","target":"ID","weight":1}],"edges":[]}'></textarea>
+<div class="row"><button id="fdbSave">Checkpoint</button><button id="fdbRestore">Вернуть checkpoint</button><button id="fdbClear">Очистить слой</button></div>
+<p class="note" id="fdbStatus">Слой пуст. После изменения нажмите «Применить».</p>
+</details>
 <label for="clock">Ход времени</label><select id="clock"><option value="async">NES идёт отдельно; сеть получает кадры с паузой</option><option value="lockstep">Пошаговая связь: NES ждёт ответа сети</option></select>
 <div class="row"><div><label for="maxHz">Максимум входа, Гц</label><input id="maxHz" type="number" min="0" max="500" value="150"></div><div><label for="thresholdHz">Порог кнопки, Гц</label><input id="thresholdHz" type="number" min="1" max="500" value="30"></div></div>
 <div class="row"><div><label for="windowMs">Окно сети, мс</label><input id="windowMs" type="number" min="1" max="100" value="20"></div><div><label for="seed">Seed</label><input id="seed" type="number" step="1" min="0" max="2147483647" value="1"></div></div>

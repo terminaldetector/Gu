@@ -1,13 +1,17 @@
 'use strict';
-const assert=require('assert');
-function compose(mode,manual,agent){
-  const norm=m=>{if(m&16)m&=~32;if(m&32)m&=~16;if(m&64)m&=~128;if(m&128)m&=~64;return m;};
-  let human=norm(manual),brain=norm(agent);
-  if(mode==='off'){brain=norm(manual|agent);human=0;}
-  return {human,agent:brain,humanPort:mode==='coop-reverse'?2:1,agentPort:mode==='coop'?2:1};
-}
-assert.deepStrictEqual(compose('off',1,2),{human:0,agent:3,humanPort:1,agentPort:1});
-assert.deepStrictEqual(compose('coop',1,2),{human:1,agent:2,humanPort:1,agentPort:2});
-assert.deepStrictEqual(compose('coop-reverse',16,32),{human:16,agent:32,humanPort:2,agentPort:1});
-assert.strictEqual(compose('coop',16|32,0).human,16);
-console.log('GMode routing checks passed');
+const assert=require('assert'),fs=require('fs'),vm=require('vm');
+const source=fs.readFileSync('app/src/main/assets/lab/lab.js','utf8');
+const block=source.slice(source.indexOf('function normalizeMask'),source.indexOf('function rgbaAndRetina'));
+const events=[],state={loaded:true,manualMask:0,brainMask:0,gmodeMode:'off',appliedMask:0,appliedHumanMask:0,appliedAgentMask:0,nes:{buttonDown:(p,b)=>events.push(['down',p,b]),buttonUp:(p,b)=>events.push(['up',p,b])}};
+vm.createContext(state);vm.runInContext(block,state);
+state.gmodeMode='coop';state.manualMask=1;state.brainMask=2;state.updateButtons();
+assert.deepStrictEqual(events,[['down',1,0],['down',2,1]]);
+events.length=0;state.manualMask=0;state.updateButtons();assert.deepStrictEqual(events,[['up',1,0]]);
+state.releasePorts();events.length=0;
+state.gmodeMode='coop-reverse';state.manualMask=16;state.brainMask=32;state.updateButtons();
+assert.deepStrictEqual(events,[['down',2,4],['down',1,5]]);
+state.releasePorts();events.length=0;
+state.gmodeMode='off';state.manualMask=32;state.brainMask=16;state.updateButtons();
+assert.deepStrictEqual(events,[['down',1,5]],'manual direction must win in single player');
+assert(source.includes("if(manualMask&&gmodeMode==='off')"));
+console.log('PASS: production GMode port isolation, release, swapped ports and manual override');

@@ -176,6 +176,31 @@ public final class NesLabActivity extends Activity {
         JSONArray lesions=data.getJSONArray("lesions"); if(lesions.length()>256) throw new IllegalArgumentException("Не более 256 абляций");
         next.options.lesions=parsePorts(lesions,lesions.length());
 
+        JSONObject fdb=data.optJSONObject("fdb");
+        if(data.has("fdb")&&!data.isNull("fdb")&&fdb==null)throw new IllegalArgumentException("FDB must be JSON object");
+        if(fdb!=null) {
+            if(!graph.fingerprint().equals(fdb.getString("graph_sha256")))throw new IllegalArgumentException("FDB belongs to another connectome");
+            GraphDelta layer=new GraphDelta(graph.ids.length);
+            for(String kind:new String[]{"deltas","edges"}){
+                JSONArray links=fdb.optJSONArray(kind);if(links==null)continue;
+                if(links.length()>1024)throw new IllegalArgumentException("FDB UI limit: 1024 links per list");
+                for(int k=0;k<links.length();k++){
+                    JSONObject link=links.getJSONObject(k);
+                    if(!(link.get("source") instanceof String)||!(link.get("target") instanceof String))throw new IllegalArgumentException("FDB IDs must be strings");
+                    int source=engine.index(Long.parseLong(link.getString("source")));
+                    int target=engine.index(Long.parseLong(link.getString("target")));
+                    double value=link.getDouble("weight");if(!Double.isFinite(value)||Math.abs(value)>127)throw new IllegalArgumentException("FDB weight must be -127..127");
+                    if(kind.equals("deltas")){
+                        boolean exists=false;for(int e=graph.offsets[source];e<graph.offsets[source+1];e++)if(graph.targets[e]==target){exists=true;break;}
+                        if(!exists)throw new IllegalArgumentException("FDB delta requires existing base edge");
+                        layer.addWeightDelta(source,target,(float)value);
+                    }else layer.addEdge(source,target,(float)value);
+                }
+            }
+            if(requestedBackend.equals("gpu")&&(layer.deltaCount()>0||layer.growthCount()>0))throw new IllegalArgumentException("FDB overlay requires CPU; GPU overlay not implemented");
+            next.options.delta=layer;
+        }
+
         if (requestedBackend.equals("gpu")) {
             if (gpuEngine == null) gpuEngine = new GpuLifEngine(graph);
             gpuEngine.reset(next.seed);
@@ -206,6 +231,7 @@ public final class NesLabActivity extends Activity {
         response.put("spikes",result.spikes).put("active",result.active).put("simMs",result.endTick*.1).put("wallMs",result.wallSeconds*1000);
         response.put("steps",result.steps).put("configVersion",configVersion);
         JSONArray output=new JSONArray(); for(int index:experiment.outputs) output.put(result.steps==0?0:result.counts[index]*10000.0/result.steps);
+        response.put("fdbEdges",experiment.options.delta==null?0:experiment.options.delta.growthCount()).put("fdbDeltas",experiment.options.delta==null?0:experiment.options.delta.deltaCount());
         response.put("outputs",output).put("inputs",new JSONArray(rates)).put("sequence",++sequence);
         if(recordingOn) record(request,rates,result,latestMask);
         emit("labResult",response);
@@ -253,6 +279,7 @@ public final class NesLabActivity extends Activity {
         config.put("seed", experiment.seed).put("scramble", experiment.scramble);
         config.put("disableInhibition", experiment.options.disableInhibition).put("lesions", ids(experiment.options.lesions));
         recorder.write("# config," + config + "\n");
+        if(experiment.options.delta!=null)recorder.write("# fdb_genome,"+experiment.options.delta.genome()+"\n");
         emit("labRecording", new JSONObject().put("active", true));
     }
 

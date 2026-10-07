@@ -1,20 +1,20 @@
-# V2 alpha — GMode / FDB / GPU
+# V2 status after unfinished-zone audit
 
-Ветка `v2/gmode-fdb-gpu` переводит лабораторию из одиночного демо в воспроизводимый контур экспериментов.
+Implemented:
+- GPU shader uses CPU LIF coefficients, voltage stimulation, reset/current clearing, refractory rules and the 19-slot / 1.8 ms delay queue.
+- SSBO ring aliases bindings 3/4 intentionally; dispatches are separated by shader-storage barriers.
+- GPU initialization checks ES version, SSBO block/binding count and largest-buffer size; allocation/dispatch errors are surfaced. Out-of-range q16.8 weights are rejected, never silently clipped.
+- Production shader executes in Mesa EGL CI and compares each simulation step against LIF equations for forced input, silence, inhibition, gain and lesions.
+- FDB CPU overlay editor supports explicit added edges and existing-edge weight deltas using string FlyWire IDs; SHA binds each overlay to its graph. JSON exports/profiles carry overlays. Checkpoint/restore uses device storage.
+- GraphDelta bounds deltas/growth and checkpoints, keeps deterministic genome ordering and monotonic rollback revisions.
+- GMode controller tests execute production frontend functions. Single-player manual directions take priority; co-op input remains independent; switching roles releases both ports.
 
-## Что уже входит
+Limitations:
+- GPU Poisson RNG differs from Java Random; float/q16.8 differs from CPU double/float. Stochastic bit-for-bit parity is not claimed.
+- This GPU implementation needs 10 compute SSBO blocks. GLES 3.1 alone does not guarantee that limit. Unsupported devices receive an explicit initialization error and may choose CPU.
+- Approximate SSBO storage is 100 MiB for 138639 neurons / 15091983 edges, plus Java graph, staging allocations and driver memory. Mobile performance still requires hardware measurement.
+- FDB overlay executes on CPU only. Automatic topology learning, new neurons, pruning and Recursive Lab scheduling remain unimplemented.
+- Sega P2 remains unavailable in the bundled API3 WASM. It requires a core-source rebuild and controller regression test; frontend routing alone cannot implement it.
+- Compilation and software GPU tests are not a real-phone performance benchmark.
 
-- **GPU backend:** OpenGL ES 3.1 compute shader. CSR-граф загружается в SSBO; веса рёбер хранятся в q16.8, состояние LIF — в GPU-памяти. CPU reference остаётся отдельным backend для проверки расхождений.
-- **NES GMode:** для NES JSNES поддержаны два порта: человек P1 + connectome/SARSA P2 и обратная схема. SARSA продолжает обучать внешний адаптер действий, а исходный граф остаётся фиксированным.
-- **FDB foundation:** `GraphDelta` — ограниченный изменяемый слой поверх неизменяемого CSR: дельты весов, рост рёбер, checkpoint/rollback и growth genome. Это база для Recursive Lab, не подмена биологического коннектома.
-- **Sega честно ограничена:** текущая Genesis Plus GX API3 WASM-сборка экспортирует только P1. Интерфейс отключает GMode для Sega, пока core не будет пересобран с P2-входом.
-
-## Оценка памяти и требований
-
-Для опубликованного графа (≈138 639 нейронов, ≈15,09 млн связей) CPU-представление занимает порядка 130–140 МиБ по оценке GraphCache. GPU SSBO с int-targets, q16.8 weights, offsets и состояниями — примерно 95 МиБ плюс служебная память драйвера. Это ориентир, а не гарантия: перед запуском смотрите паспорт устройства и фактический замер.
-
-Минимальная практическая конфигурация: Android 8+ с OpenGL ES 3.1, свободная RAM от 1 ГиБ для комфортного сценария, GPU-режим только после успешной инициализации. Если compute недоступен, выбирайте CPU reference; приложение не делает скрытый fallback.
-
-## Важные границы
-
-ROM-файлы пользователь предоставляет сам. В APK ROM Contra/Zero Tolerance и образ коннектома не должны смешиваться с авторскими файлами; лицензии и право на ROM остаются у пользователя. Нейронная модель — экспериментальный локальный адаптер, а не доказательство биологической эквивалентности и не готовый игровой ИИ.
+Bundled graph: 53119189 compressed bytes (~50.7 MiB), 122399548 packed bytes (~116.7 MiB), 136817992 estimated CPU array bytes (~130.5 MiB).

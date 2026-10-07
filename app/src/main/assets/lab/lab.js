@@ -67,8 +67,9 @@ function learnedButtons(data){
 
 
 function setGMode(value){
+  window.labPause();
   if(value!=='off'&&labPlatform==='sega'){gmodeMode='off';$('gmode').value='off';$('gmodeStatus').textContent='Sega core ограничен P1; GMode отключён.';return;}
-  gmodeMode=value;window.labPause();learningBoundary();updateButtons();
+  gmodeMode=value;learningBoundary();updateButtons();
   $('gmodeStatus').textContent=value==='off'?'Обычный режим: сеть управляет P1.':value==='coop'?'NES GMode: человек P1 · connectome/SARSA P2.':'NES GMode: connectome/SARSA P1 · человек P2.';
   status('GMode изменён: '+value+'. Включите связь заново.');
 }
@@ -100,7 +101,7 @@ function applyPortMask(port,mask,old) {
 }
 function updateButtons() {
   let human=normalizeMask(manualMask),agent=normalizeMask(brainMask);
-  if(gmodeMode==='off'){agent=normalizeMask(manualMask|brainMask);human=0;}
+  if(gmodeMode==='off'){agent=manualMask|brainMask;if(manualMask&16)agent&=~32;if(manualMask&32)agent&=~16;if(manualMask&64)agent&=~128;if(manualMask&128)agent&=~64;agent=normalizeMask(agent);human=0;}
   const humanPort=gmodeMode==='coop-reverse'?2:1,agentPort=gmodeMode==='coop'?2:1;
   if(gmodeMode==='off')applyPortMask(1,agent,appliedAgentMask);
   else {applyPortMask(humanPort,human,appliedHumanMask);applyPortMask(agentPort,agent,appliedAgentMask);}
@@ -210,13 +211,24 @@ window.labError=function(data) {
   $('brainToggle').textContent='Включить связь';releaseBrain();
 };
 function ids(id) { return $(id).value.split(/[\s,;]+/).filter(Boolean); }
+function fdbConfiguration(){
+ const raw=$('fdbJson').value.trim();if(!raw)return null;
+ if(raw.length>512*1024)throw Error('FDB JSON слишком большой');
+ const value=JSON.parse(raw);
+ if(!value||typeof value!=='object'||Array.isArray(value))throw Error('FDB должен быть объектом');
+ for(const kind of ['deltas','edges']){
+  const list=value[kind]||[];if(!Array.isArray(list)||list.length>1024)throw Error('FDB: до 1024 связей в списке');
+  for(const x of list)if(!x||typeof x.source!=='string'||typeof x.target!=='string'||!/^\d+$/.test(x.source)||!/^\d+$/.test(x.target)||!Number.isFinite(x.weight)||Math.abs(x.weight)>127)throw Error('FDB: неверный ID или вес');
+ }
+ return {...value,graph_sha256:value.graph_sha256||(graphIdentity&&graphIdentity.sha256)};
+}
 function configuration() {
   const seed=Number($('seed').value);
   if(!Number.isSafeInteger(seed)||seed<0||seed>2147483647)throw Error('Seed должен быть целым 0–2147483647');
   return {inputs:ids('inputIds'),outputs:ids('outputIds'),lesions:ids('lesions'),
     mode:$('mode').value,maxHz:Number($('maxHz').value),thresholdHz:Number($('thresholdHz').value),
     windowMs:Number($('windowMs').value),gain:Number($('gain').value),seed,
-    disableInhibition:$('disableInhibition').checked,scramble:$('scramble').checked,backend:$('backend').value};
+    disableInhibition:$('disableInhibition').checked,scramble:$('scramble').checked,backend:$('backend').value,fdb:fdbConfiguration(),gmode:gmodeMode};
 }
 function apply(start=false,restoreStart=true) {
   try {
@@ -250,6 +262,7 @@ window.labResult=function(data) {
   pendingToken=null;lastResponse=performance.now();measuredWindows++;measuredNetworkMs+=data.wallMs;if(benchmark)benchmark.cpuMs+=data.wallMs;
   if(data.error){releaseBrain();return;}
   try{brainMask=connected?learnedButtons(data):0;}catch(error){window.labError({message:error.message});brainMask=0;}updateButtons();learningStats();
+  $('fdbStatus').textContent='FDB: дельт '+(data.fdbDeltas||0)+' · новых связей '+(data.fdbEdges||0);
   $('spikes').textContent=data.spikes;$('active').textContent=data.active;$('compute').textContent=data.wallMs.toFixed(1);
   [...$('outputs').children].forEach((element,i)=>{element.textContent=buttonNames[i]+' '+data.outputs[i].toFixed(0)+' Гц';element.className=(data.buttons&(1<<i))?'on':'';});
   history.push(Math.log10(1+data.spikes));if(history.length>100)history.shift();drawHistory();
@@ -286,6 +299,10 @@ $('step').onclick=()=>{if(!playing&&pendingToken===null){nativeCall('resume');ad
 $('console').onclick=()=>nativeCall('console');
 $('demo').onclick=()=>nativeCall('demo');$('import').onclick=()=>nativeCall('pickRom');$('audio').onclick=toggleSound;
 $('apply').onclick=()=>apply(false);
+$('fdbSave').onclick=()=>{try{const fdb=fdbConfiguration();if(!ready)throw Error('Коннектом не готов');localStorage.setItem('fly-fdb-'+graphIdentity.sha256,JSON.stringify(fdb));status('FDB checkpoint сохранён для текущего графа.');}catch(e){status(e.message,true);}};
+$('fdbRestore').onclick=()=>{try{if(!ready)throw Error('Коннектом не готов');const raw=localStorage.getItem('fly-fdb-'+graphIdentity.sha256);if(raw===null)throw Error('Checkpoint отсутствует');window.labPause();$('fdbJson').value=JSON.parse(raw)===null?'':raw;status('FDB восстановлен. Примените конфигурацию.');}catch(e){status(e.message,true);}};
+$('fdbClear').onclick=()=>{window.labPause();$('fdbJson').value='';status('FDB слой очищен. Примените конфигурацию.');};
+$('fdbJson').onchange=()=>{window.labPause();status('FDB изменён. Примените CPU-конфигурацию.');};
 $('gmode').onchange=()=>setGMode($('gmode').value);
 $('backend').onchange=()=>{window.labPause();status('Backend изменён: нажмите «Применить» для запуска '+$('backend').value+'.');};
 $('brainToggle').onclick=()=>{if(connected){connected=false;resetSession();nativeCall('stop');status('Связь отключена; эмулятор доступен вручную.');}else apply(true);};
@@ -321,6 +338,8 @@ function validateProfile(p){
  for(const name of ['death','win'])FlyGameTools.predicate(new Uint8Array(ramLimit),p[name+'Address'],p[name+'Value'],ramLimit);
 }
 function validateConfiguration(c){
+ if(c.gmode!==undefined&&!['off','coop','coop-reverse'].includes(c.gmode))throw Error('Неверный GMode');
+ if(labPlatform==='sega'&&c.gmode&&c.gmode!=='off')throw Error('Sega P2 unavailable');
  for(const [id,min,max] of [['maxHz',0,500],['thresholdHz',1,500],['windowMs',1,100],['seed',0,2147483647],['gain',0,2]])if(!Number.isFinite(c[id])||c[id]<min||c[id]>max||(['windowMs','seed'].includes(id)&&!Number.isInteger(c[id])))throw Error('Неверная конфигурация сети: '+id);
  if(!['closed','observe','sham'].includes(c.mode)||typeof c.disableInhibition!=='boolean'||typeof c.scramble!=='boolean'||!['cpu','gpu'].includes(c.backend||'cpu'))throw Error('Неверная конфигурация сети');
  for(const [id,len] of [['inputs',16],['outputs',8],['lesions',null]])if(!Array.isArray(c[id])||(len!==null&&c[id].length!==len)||c[id].length>256||new Set(c[id]).size!==c[id].length||c[id].some(x=>typeof x!=='string'||!/^\d+$/.test(x)))throw Error('Неверные ID портов');
@@ -357,6 +376,8 @@ function restoreProfile(data){
   for(const id of ['maxHz','thresholdHz','windowMs','seed','gain'])$(id).value=data.configuration[id];
   for(const id of ['disableInhibition','scramble'])$(id).checked=data.configuration[id];
   if($('backend'))$('backend').value=data.configuration.backend||'cpu';
+  $('fdbJson').value=data.configuration.fdb?JSON.stringify(data.configuration.fdb,null,2):'';
+  gmodeMode=data.configuration.gmode||'off';$('gmode').value=gmodeMode;releasePorts();
   for(const id of ['inputs','outputs','lesions'])$(id==='inputs'?'inputIds':id==='outputs'?'outputIds':'lesions').value=data.configuration[id].join(', ');
   $('mode').value=data.configuration.mode;configuration();startSnapshot=data.start||null;learner.setActions(actionSet);learningBoundary();updateStartInfo();
  }catch(error){for(const id of profileFields){const el=$(id);if(el.type==='checkbox')el.checked=backup[id];else el.value=backup[id];}startSnapshot=oldStart;for(const id of ['maxHz','thresholdHz','windowMs','seed','gain'])$(id).value=cfg[id];for(const id of ['disableInhibition','scramble'])$(id).checked=cfg[id];$('inputIds').value=cfg.inputs.join(', ');$('outputIds').value=cfg.outputs.join(', ');$('lesions').value=cfg.lesions.join(', ');$('mode').value=cfg.mode;throw error;}
@@ -419,6 +440,7 @@ $('benchmarkStart').onclick=()=>{try{
  const p=profileValues();validateProfile(p);validateSnapshot(startSnapshot);
  if(p.rewardMode==='diagnostic'&&(labPlatform!=='nes'||romHash!==diagnosticHash))throw Error('Диагностический критерий доступен только для собственного NES ROM');
  if(p.rewardMode!=='diagnostic'&&!p.winEnabled)throw Error('Задайте и проверьте RAM-критерий победы в профиле игры');
+ if(gmodeMode!=='off')throw Error('Автоматический benchmark требует одиночного режима: ввод человека меняет результат');
  const attempts=Number($('benchmarkAttempts').value);if(!Number.isInteger(attempts)||attempts<1||attempts>100)throw Error('Попыток должно быть 1–100');
  const description=$('benchmarkCriterion').value.trim();if(!description)throw Error('Опишите, что именно означает победа');
  window.labPause();$('mode').value='closed';$('clock').value='lockstep';learner.setActions(FlyGameTools.actions(p.actionMasks));

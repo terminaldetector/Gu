@@ -24,7 +24,9 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r tools/requirements.txt
+      - run: sudo apt-get update && sudo apt-get install -y libegl1 libgles2 libgl1-mesa-dri
       - run: bash tools/check.sh
+      - run: python tools/gpu_runtime_check.py
       - run: python tools/bundle_data.py
       - run: gradle assembleDebug lintDebug
       - uses: actions/upload-artifact@v4
