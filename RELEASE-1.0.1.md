@@ -1,3 +1,5 @@
 # Fly Console Lab 1.0.1
 Sega raster and memory-boundary hotfix. Native-resolution RGBA replaces the erroneous doubled blitter; frame stride comes from the core. Actual WASM rendering checked at 256/320 columns, NTSC224/PAL240, correct RGB, padding and framebuffer guards. Controller/audio, learning and mobile UI regressions checked. App ID and shared APK signing certificate retained.
 Old Sega snapshots use the prior core tag and are rejected; capture a new start after updating. No new FDB/GPT-like functionality. The exact external ROM from the reported screenshot has not been supplied for direct testing.
+
+WebView is hosted in an inset parent layout so system bars/cutouts do not overlap page content; physical-device verification remains outstanding.

@@ -4,7 +4,7 @@ The upstream WASM custom blitter doubled pixels/rows while the frontend read nat
 
 Regression tests run the actual rebuilt WASM in 256/320-column and NTSC224/PAL240 modes: complete solid backdrop, no alternating holes or half-image crop, untouched unused rows/columns and buffer guards, correct red channel, and state roundtrip. Sega controller, audio, learning and mobile-browser integration remain checked. Commercial-ROM screenshot prompted the fix; that exact ROM was not provided for direct verification. Core snapshot tag moves to API3: old Sega snapshots/profile packages containing API2 starts must be recaptured; learner weights without old snapshots are unchanged. Updated core source archive is bundled for licence compliance.
 
-This is a bugfix release only. No FDB or new GPT-like features are added.
+System-bar/cutout insets are now applied to a parent layout around WebView, preventing content from drawing underneath Android bars. Physical-device verification remains needed. This is a bugfix release only. No FDB or new GPT-like features are added.
 
 ## Version 1.0: audited experimental release
 

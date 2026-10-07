@@ -78,7 +78,7 @@ public final class NesLabActivity extends Activity {
                 submit(() -> { pageReady = true; if(engine==null)loadGraph();else announce(); });
             }
         });
-        setContentView(web);UiInsets.apply(this,web);recording=new File(getFilesDir(),labSystem+"-experiment.csv");
+        UiInsets.attachWeb(this,web);recording=new File(getFilesDir(),labSystem+"-experiment.csv");
         submit(this::loadGraph);
         web.loadUrl(ORIGIN + "/lab/index.html?system="+labSystem);
     }
