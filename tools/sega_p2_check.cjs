@@ -1,0 +1,20 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const Sega=require('../app/src/main/assets/lab/sega-core.js'),Factory=require('../app/src/main/assets/lab/sega/genplus.js');
+(async()=>{
+ const s=await Sega.create({},Factory,{wasmBinary:fs.readFileSync('app/src/main/assets/lab/sega/genplus.wasm')});
+ assert(s.twoPlayerSupported);
+ s.loadROM(Uint8Array.from(Buffer.from(require('../app/src/main/assets/lab/demo-sega.json').base64,'base64')));
+ const frames=n=>{for(let i=0;i<n;i++)s.frame();};
+ const score=address=>(s.cpu.mem[address]<<8|s.cpu.mem[address+1]);
+ frames(10);assert.equal(score(0),0);assert.equal(score(2),0);
+ s.buttonDown(2,7);frames(12);assert.equal(score(0),0);assert.equal(score(2),12,'P2 physical bus B changes its own 68K RAM score');
+ s.buttonUp(2,7);s.buttonDown(1,7);frames(7);assert.equal(score(0),7);assert.equal(score(2),12,'P1 independent');
+ s.buttonDown(2,6);const snapshot=s.toJSON();frames(5);assert.equal(score(0),12);assert.equal(score(2),7,'simultaneous opposing controller inputs');
+ s.fromJSON(snapshot);assert.equal(s.mask,128);assert.equal(s.mask2,64);frames(5);assert.equal(score(0),12);assert.equal(score(2),7,'both masks and RAM survive snapshot');
+ for(let port=1;port<=2;port++)for(let b=0;b<8;b++)s.buttonUp(port,b);
+ frames(4);assert.equal(score(0),12);assert.equal(score(2),7,'no stuck buttons');
+ s.reloadROM();assert.equal(s.mask,0);assert.equal(s.mask2,0);frames(10);assert.equal(score(0),0);assert.equal(score(2),0);
+ assert.throws(()=>s.buttonDown(3,0));
+ console.log('PASS: real API4 WASM and 68K ROM, physical P2 bus, independent ports, simultaneous input, snapshots, release/reset');
+})().catch(e=>{console.error(e);process.exit(1);});

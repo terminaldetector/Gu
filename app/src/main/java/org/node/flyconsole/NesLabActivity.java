@@ -36,6 +36,8 @@ public final class NesLabActivity extends Activity {
     private GpuLifEngine gpuEngine;
     private String backend = "cpu";
     private Experiment experiment;
+    private FdbGrowth fdbGrowth;
+    private JSONObject growthConfiguration;
     private volatile boolean destroyed;
     private volatile boolean pageReady;
     private String initialError;
@@ -176,13 +178,14 @@ public final class NesLabActivity extends Activity {
         JSONArray lesions=data.getJSONArray("lesions"); if(lesions.length()>256) throw new IllegalArgumentException("Не более 256 абляций");
         next.options.lesions=parsePorts(lesions,lesions.length());
 
+        FdbGrowth nextGrowth=null;JSONObject nextGrowthConfig=null;
         JSONObject fdb=data.optJSONObject("fdb");
         if(data.has("fdb")&&!data.isNull("fdb")&&fdb==null)throw new IllegalArgumentException("FDB must be JSON object");
         if(fdb!=null) {
             if(!graph.fingerprint().equals(fdb.getString("graph_sha256")))throw new IllegalArgumentException("FDB belongs to another connectome");
             GraphDelta layer=new GraphDelta(graph.ids.length);
             for(String kind:new String[]{"deltas","edges"}){
-                JSONArray links=fdb.optJSONArray(kind);if(links==null)continue;
+                JSONArray links=fdb.optJSONArray(kind);if(links==null){if(fdb.has(kind))throw new IllegalArgumentException("FDB list must be array");continue;}
                 if(links.length()>1024)throw new IllegalArgumentException("FDB UI limit: 1024 links per list");
                 for(int k=0;k<links.length();k++){
                     JSONObject link=links.getJSONObject(k);
@@ -197,7 +200,17 @@ public final class NesLabActivity extends Activity {
                     }else layer.addEdge(source,target,(float)value);
                 }
             }
-            if(requestedBackend.equals("gpu")&&(layer.deltaCount()>0||layer.growthCount()>0))throw new IllegalArgumentException("FDB overlay requires CPU; GPU overlay not implemented");
+            JSONObject growth=fdb.optJSONObject("growth");
+            if(fdb.has("growth")&&growth==null)throw new IllegalArgumentException("FDB growth must be object");
+            if(growth!=null) {
+                if(!(growth.get("enabled") instanceof Boolean))throw new IllegalArgumentException("FDB enabled must be boolean");
+                nextGrowthConfig=new JSONObject(growth.toString());
+                if(growth.getBoolean("enabled")) {
+                    for(String field:new String[]{"interval","perWindow","maxEdges"})if(!(growth.get(field) instanceof Number)||growth.getDouble(field)!=growth.getInt(field))throw new IllegalArgumentException("FDB growth requires integers");
+                    for(String field:new String[]{"explore","rewardGate"})if(!(growth.get(field) instanceof Boolean))throw new IllegalArgumentException("FDB growth requires booleans");
+                    nextGrowth=new FdbGrowth(graph,layer,next.inputs,next.outputs,growth.getInt("interval"),growth.getInt("perWindow"),growth.getInt("maxEdges"),(float)growth.getDouble("initialWeight"),growth.getBoolean("explore"),growth.getBoolean("rewardGate"),next.seed);
+                }
+            }
             next.options.delta=layer;
         }
 
@@ -209,7 +222,7 @@ public final class NesLabActivity extends Activity {
             engine.reset(next.seed);
         }
         backend=requestedBackend;
-        experiment=next; configVersion++; sequence=0; latestMask=0;
+        experiment=next;fdbGrowth=nextGrowth;growthConfiguration=nextGrowthConfig; configVersion++; sequence=0; latestMask=0;
         if(recordingOn) recorder.write("# config,"+data.put("configVersion",configVersion).put("backend",backend).toString().replace('\n',' ')+"\n");
         emit("labConfigured",new JSONObject().put("configVersion",configVersion).put("mode",next.mode).put("backend",backend).put("generation",data.optLong("generation",-1)));
     }
@@ -227,14 +240,35 @@ public final class NesLabActivity extends Activity {
         int mask=experiment.buttons(result); latestMask=cancel.get()?0:mask;
         JSONObject response=new JSONObject();
         response.put("token",request.getLong("token")).put("generation",request.getLong("generation"));
-        response.put("buttons",latestMask).put("backend",backend).put("backendNote","gpu".equals(backend)?"OpenGL ES 3.1 compute, q16.8 weights":"Java CPU reference");
+        response.put("buttons",latestMask).put("backend",backend).put("backendNote","gpu".equals(backend)?"OpenGL ES 3.1 compute, float32 weights, q24.8 delayed events":"Java CPU reference");
         response.put("spikes",result.spikes).put("active",result.active).put("simMs",result.endTick*.1).put("wallMs",result.wallSeconds*1000);
         response.put("steps",result.steps).put("configVersion",configVersion);
         JSONArray output=new JSONArray(); for(int index:experiment.outputs) output.put(result.steps==0?0:result.counts[index]*10000.0/result.steps);
+        long oldRevision=experiment.options.delta==null?-1:experiment.options.delta.version();
+        String learningMode=request.optString("learningMode","off");
+        boolean frozen=request.optBoolean("frozen",false)||learningMode.equals("eval")||learningMode.startsWith("benchmark");
+        int grown=fdbGrowth==null||cancel.get()?0:fdbGrowth.observe(result,request.optDouble("learningReward",0),experiment.options.lesions,frozen);
+        response.put("fdbGrown",grown).put("fdbRevision",experiment.options.delta==null?0:experiment.options.delta.version());
+        if(experiment.options.delta!=null&&experiment.options.delta.version()!=oldRevision){
+            JSONObject state=fdbState();response.put("fdbState",state);
+            if(recordingOn)recorder.write("# fdb_mutation,"+sequence+","+state.toString()+"\n");
+        }
         response.put("fdbEdges",experiment.options.delta==null?0:experiment.options.delta.growthCount()).put("fdbDeltas",experiment.options.delta==null?0:experiment.options.delta.deltaCount());
         response.put("outputs",output).put("inputs",new JSONArray(rates)).put("sequence",++sequence);
         if(recordingOn) record(request,rates,result,latestMask);
         emit("labResult",response);
+    }
+
+    private JSONObject fdbState() throws Exception {
+        JSONObject state=new JSONObject().put("graph_sha256",graph.fingerprint());
+        GraphDelta layer=experiment.options.delta;
+        for(String kind:new String[]{"deltas","edges"}) {
+            JSONArray links=new JSONArray();
+            if(layer!=null)for(GraphDelta.Edge e:kind.equals("edges")?layer.edges():layer.deltas())links.put(new JSONObject().put("source",Long.toString(graph.ids[e.source])).put("target",Long.toString(graph.ids[e.target])).put("weight",e.weight));
+            state.put(kind,links);
+        }
+        if(growthConfiguration!=null)state.put("growth",growthConfiguration);
+        return state;
     }
 
     private void record(JSONObject request, double[] rates, Engine.Result result, int mask) throws Exception {
@@ -258,7 +292,7 @@ public final class NesLabActivity extends Activity {
 
     private void startRecording() throws Exception {
         stopRecording();
-        if ("gpu".equals(backend) && gpuEngine != null) gpuEngine.reset(experiment.seed); else engine.reset(experiment.seed); configVersion++; sequence = 0;
+        if ("gpu".equals(backend) && gpuEngine != null) gpuEngine.reset(experiment.seed); else engine.reset(experiment.seed); if(fdbGrowth!=null)fdbGrowth.reset(experiment.seed); configVersion++; sequence = 0;
         recording = new File(getFilesDir(), labSystem+"-experiment.csv");
         recorder = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(recording), StandardCharsets.UTF_8));
         recordedBytes = 0;
@@ -279,7 +313,7 @@ public final class NesLabActivity extends Activity {
         config.put("seed", experiment.seed).put("scramble", experiment.scramble);
         config.put("disableInhibition", experiment.options.disableInhibition).put("lesions", ids(experiment.options.lesions));
         recorder.write("# config," + config + "\n");
-        if(experiment.options.delta!=null)recorder.write("# fdb_genome,"+experiment.options.delta.genome()+"\n");
+        if(experiment.options.delta!=null){recorder.write("# fdb_genome,"+experiment.options.delta.genome()+"\n");recorder.write("# fdb_state,"+fdbState().toString()+"\n");}
         emit("labRecording", new JSONObject().put("active", true));
     }
 
@@ -310,7 +344,7 @@ public final class NesLabActivity extends Activity {
                 try {
                     if (!offeredRomHashes.remove(sha256)) return;
                     romHash = sha256;
-                    if (engine != null) { if ("gpu".equals(backend) && gpuEngine != null) gpuEngine.reset(experiment.seed); else engine.reset(experiment.seed); configVersion++; sequence = 0; }
+                    if (engine != null) { if ("gpu".equals(backend) && gpuEngine != null) gpuEngine.reset(experiment.seed); else engine.reset(experiment.seed); if(fdbGrowth!=null)fdbGrowth.reset(experiment.seed); configVersion++; sequence = 0; }
                     if (recordingOn) { recorder.write("# rom_sha256," + romHash + "\n"); recorder.flush(); }
                 } catch (Exception ex) { error(ex.getMessage()); }
             });
@@ -323,7 +357,8 @@ public final class NesLabActivity extends Activity {
             });
         }
         @JavascriptInterface public void configure(String json) {
-            if (destroyed || json.length() > 32768) return;
+            if (destroyed) return;
+            if(json.length()>1024*1024){error("Конфигурация превышает 1 МиБ");return;}
             cancel.set(true);final long epoch=controlEpoch.incrementAndGet();
             submit(() -> {
                 try { NesLabActivity.this.configure(new JSONObject(json)); }
@@ -469,3 +504,4 @@ public final class NesLabActivity extends Activity {
         super.onDestroy();
     }
 }
+

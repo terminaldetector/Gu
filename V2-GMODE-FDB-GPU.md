@@ -1,20 +1,21 @@
-# V2 status after unfinished-zone audit
+# V2 GMode / structural FDB / GPU
 
 Implemented:
-- GPU shader uses CPU LIF coefficients, voltage stimulation, reset/current clearing, refractory rules and the 19-slot / 1.8 ms delay queue.
-- SSBO ring aliases bindings 3/4 intentionally; dispatches are separated by shader-storage barriers.
-- GPU initialization checks ES version, SSBO block/binding count and largest-buffer size; allocation/dispatch errors are surfaced. Out-of-range q16.8 weights are rejected, never silently clipped.
-- Production shader executes in Mesa EGL CI and compares each simulation step against LIF equations for forced input, silence, inhibition, gain and lesions.
-- FDB CPU overlay editor supports explicit added edges and existing-edge weight deltas using string FlyWire IDs; SHA binds each overlay to its graph. JSON exports/profiles carry overlays. Checkpoint/restore uses device storage.
-- GraphDelta bounds deltas/growth and checkpoints, keeps deterministic genome ordering and monotonic rollback revisions.
-- GMode controller tests execute production frontend functions. Single-player manual directions take priority; co-op input remains independent; switching roles releases both ports.
+- NES and Sega API4 route independent human/agent controllers in both role assignments. Sega physical port B uses pad[4]. Both masks are included in snapshots, released on mode changes and reset. Select a two-player game mode inside the ROM; the app cannot turn a one-player game into co-op.
+- API4 is rebuilt from the bundled licensed source by `python tools/build_sega.py` (Emscripten 3.1.57). CI runs the rebuild before tests and APK packaging. The APK includes the matching modified source archive and SHA-256 metadata. On a raw checkout, rebuild before running Sega tests; older checked-in binaries are not API4.
+- The original MIT diagnostic ROM reads both real controller buses and maintains separate RAM counters. CI verifies P2 independence, simultaneous input, release, reset and snapshot restoration against actual WASM/68K execution.
+- FDB JSON supports added edges and base-edge weight deltas, bound to the connectome SHA. The immutable base graph is preserved. Repeated extra edges/self loops are rejected.
+- Auto-growth is a bounded experimental structural-plasticity heuristic: active sources from the previous simulation window connect to current active output targets; `explore` additionally permits inactive targets. Candidate sources are configured visual inputs; targets are configured controller output neurons. Existing base edges and extra edges are skipped, as are lesioned neurons. This grows links between existing neurons, not new neurons.
+- `growth`: enabled, interval (1..1000 windows), perWindow (1..8), maxEdges (1..1024), initialWeight (0..127], explore, rewardGate. Seed controls traversal. rewardGate uses the previous decision's reward and permits growth only if it is positive. This is not a complete credit-assignment algorithm and does not guarantee better game performance.
+- Growth is frozen in eval, benchmark and frozen-retina mode. JSON editor, profiles and topology checkpoints receive the current grown layer. CSV records mutations with string FlyWire IDs and the graph SHA. A topology checkpoint restarts growth history/RNG when reapplied; it is not a full neural-state checkpoint.
+- GPU executes base weights, weight deltas and new edges. Float32 weights remove the previous signed16 weight range restriction. Sparse changed base weights are patched/restored on revision changes. New edges use a separate CSR SSBO; revisions upload between windows, preserving neuron state and the 1.8 ms delayed queue. An edge affects future source spikes, never events already queued.
+- GPU LIF coefficients, stimulation, reset and refractory rules match the CPU equations. The production shader is executed in Mesa EGL and trajectories are compared step by step, including extra edges, deltas, live revisions, lesions, inhibition and weights above 128.
 
-Limitations:
-- GPU Poisson RNG differs from Java Random; float/q16.8 differs from CPU double/float. Stochastic bit-for-bit parity is not claimed.
-- This GPU implementation needs 10 compute SSBO blocks. GLES 3.1 alone does not guarantee that limit. Unsupported devices receive an explicit initialization error and may choose CPU.
-- Approximate SSBO storage is 100 MiB for 138639 neurons / 15091983 edges, plus Java graph, staging allocations and driver memory. Mobile performance still requires hardware measurement.
-- FDB overlay executes on CPU only. Automatic topology learning, new neurons, pruning and Recursive Lab scheduling remain unimplemented.
-- Sega P2 remains unavailable in the bundled API3 WASM. It requires a core-source rebuild and controller regression test; frontend routing alone cannot implement it.
-- Compilation and software GPU tests are not a real-phone performance benchmark.
+Limits:
+- Delayed GPU events use q24.8 integer accumulation; Poisson hash RNG differs from Java Random and GPU float32 differs from CPU double. No stochastic bit-for-bit or Brian2 biological parity claim.
+- GPU requires GLES 3.1 and at least 10 compute SSBO blocks/bindings, sufficient SSBO size and allocation memory. GLES 3.1 alone does not guarantee support. Choose CPU if initialization fails.
+- Full graph GPU buffers are approximately 130 MiB plus Java arrays, temporary uploads and driver memory. Real mobile speed, thermal behavior and full-graph GPU execution still require hardware measurements.
+- Automatic pruning, new neurons and general recursive scheduling are not implemented. GPT-like programmable lab is preserved; this change does not introduce an LLM or prove RSAI.
+- Zero Tolerance completion or Contra mastery has not been demonstrated. Controller tests prove integration, not game skill.
 
-Bundled graph: 53119189 compressed bytes (~50.7 MiB), 122399548 packed bytes (~116.7 MiB), 136817992 estimated CPU array bytes (~130.5 MiB).
+Bundled graph: 138639 neurons, 15091983 signed edges; 53119189 compressed bytes (~50.7 MiB), 122399548 packed bytes (~116.7 MiB), 136817992 estimated CPU array bytes (~130.5 MiB).

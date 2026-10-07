@@ -25,6 +25,10 @@ jobs:
           python-version: '3.11'
       - run: pip install -r tools/requirements.txt
       - run: sudo apt-get update && sudo apt-get install -y libegl1 libgles2 libgl1-mesa-dri
+      - uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: '3.1.57'
+      - run: python tools/build_sega.py
       - run: bash tools/check.sh
       - run: python tools/gpu_runtime_check.py
       - run: python tools/bundle_data.py
@@ -33,3 +37,4 @@ jobs:
         with:
           name: FlyConsole-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+

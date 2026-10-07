@@ -17,14 +17,14 @@
 <section class="panel"><details><summary>Паспорт модели и устройства</summary><pre id="passport" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px">Загрузка…</pre></details><p id="performance" class="note">Замеры появятся после запуска. Требования оцениваются по фактической скорости на устройстве.</p></section>
 <section class="panel"><h2>Эксперимент с сетью</h2>
 <label for="mode">Контур</label><select id="mode"><option value="observe">Наблюдение: экран → нейроны</option><option value="closed">Замкнутый: экран → нейроны → кнопки</option><option value="sham">Контроль: вход отключён, выход отключён</option></select>
-<label for="backend">Backend расчёта</label><select id="backend"><option value="cpu">CPU reference · точнее и воспроизводимо</option><option value="gpu">GPU compute · OpenGL ES 3.1 · q16.8</option></select>
+<label for="backend">Backend расчёта</label><select id="backend"><option value="cpu">CPU reference · точнее и воспроизводимо</option><option value="gpu">GPU compute · OpenGL ES 3.1 · float32</option></select>
 <p class="note" id="backendNote">GPU режим не подменяет CPU: результаты и скорость показываются отдельно.</p>
 <label for="gmode">GMode · второй игрок</label><select id="gmode"><option value="off">Обычный один игрок · сеть → P1</option><option value="coop">Человек P1 + connectome/SARSA P2</option><option value="coop-reverse">Connectome/SARSA P1 + человек P2</option></select>
-<p class="note" id="gmodeStatus">NES GMode: человек и локальный агент могут играть Contra одновременно. Sega P2 появится после пересборки WASM-core.</p>
-<details><summary>Recursive Lab · FDB overlay (CPU)</summary>
-<p class="note">Редактируемый слой связей поверх исходного коннектома. Автоматическое выращивание сети ещё не подключено. ID нейронов записывайте строками.</p>
+<p class="note" id="gmodeStatus">NES / Sega GMode: человек и локальный агент управляют разными контроллерами. Игру нужно запустить в режиме двух игроков.</p>
+<details><summary>Recursive Lab · FDB рост связей (CPU / GPU)</summary>
+<p class="note">Слой поверх исходного коннектома. Рост использует активность входов предыдущего окна и выходов текущего. Explore разрешает исследовать молчащие выходы; rewardGate разрешает рост только при положительной награде предыдущего решения. Это экспериментальная эвристика, улучшение игры не гарантировано. Рост остановлен в eval, benchmark и при заморозке. ID нейронов записывайте строками.</p>
 <textarea id="fdbJson" placeholder='{"deltas":[{"source":"ID","target":"ID","weight":1}],"edges":[]}'></textarea>
-<div class="row"><button id="fdbSave">Checkpoint</button><button id="fdbRestore">Вернуть checkpoint</button><button id="fdbClear">Очистить слой</button></div>
+<div class="row"><button id="fdbAuto">Включить авто-рост</button><button id="fdbSave">Checkpoint</button><button id="fdbRestore">Вернуть checkpoint</button><button id="fdbClear">Очистить слой</button></div>
 <p class="note" id="fdbStatus">Слой пуст. После изменения нажмите «Применить».</p>
 </details>
 <label for="clock">Ход времени</label><select id="clock"><option value="async">NES идёт отдельно; сеть получает кадры с паузой</option><option value="lockstep">Пошаговая связь: NES ждёт ответа сети</option></select>
@@ -81,3 +81,4 @@
 <section class="panel"><p class="note">Запись CSV начинает новый опыт: сбрасывает сеть по seed. ROM продолжает с текущего кадра.</p><div class="row"><button id="record" disabled>Запись CSV</button><button id="export">Экспорт CSV</button></div><details style="margin-top:12px"><summary>Журнал</summary><pre id="log"></pre></details></section>
 <div class="footer" id="platformFooter">JSNES 2.1.0 · локальная эмуляция. Тестовый NROM написан для этой лаборатории. Сохранение снимка относится к NES; коннектом при восстановлении сбрасывается. Обучается выходной адаптер; готовой стратегии для произвольной игры нет.</div>
 </main><script src="jsnes.min.js"></script><script src="game-tools.js"></script><script src="learner.js"></script><script src="sega/genplus.js"></script><script src="sega-core.js"></script><script src="benchmark.js"></script><script src="lab.js"></script></body></html>
+

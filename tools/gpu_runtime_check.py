@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Execute the production compute shader in Mesa EGL, compare LIF trajectories."""
-import ctypes as C, json, math, os, re
+import ctypes as C, json, math, os, re, struct
 from pathlib import Path
 os.environ.setdefault("EGL_PLATFORM","surfaceless")
 os.environ.setdefault("LIBGL_ALWAYS_SOFTWARE","1")
@@ -45,18 +45,22 @@ def upload(index,values,typ=I):
 def read(index,length,typ=F):
     bind(SSBO,buffers[index]);p=mapping(SSBO,0,length*4,1);assert p
     values=list((typ*length).from_buffer_copy(C.string_at(p,length*4)));assert unmap(SSBO);return values
-def run(weight=120,prob=1,gain=1,disable=0,lesions=(0,0)):
+def run(weight=120,prob=1,gain=1,disable=0,lesions=(0,0),extra=0,delta=0,mutate=False):
     upload(0,[-52,-52],F);upload(1,[0,0],F);upload(2,[0,0])
     upload(3,[0]*38);upload(5,[0,0]);upload(6,[0,1,1]);upload(7,[1])
-    upload(8,[round(weight*256)&65535],U);upload(9,lesions)
+    upload(8,[weight+delta],F);upload(9,lesions)
+    bits=lambda x:struct.unpack("I",struct.pack("f",x))[0]
+    upload(4,[3,5,5,1,bits(extra)] if extra else [3,3,3],U)
     use(program)
-    for i in range(10):base(SSBO,i,buffers[3 if i==4 else i])
+    for i in range(10):base(SSBO,i,buffers[i])
     for name,val in {"N":2,"seed":1,"edges":1,"inputCount":1,"disableInhibition":disable}.items():ui(loc(program,name.encode()),val)
     uf(loc(program,b"gain"),gain)
     uiv(loc(program,b"inputIds"),1,(I*1)(0));ufv(loc(program,b"inputProb"),1,(F*1)(prob))
     v=[-52.,-52.];cur=[0.,0.];ref=[0,0];counts=[0,0];pending=[[0.,0.] for _ in range(19)]
     ev=math.exp(-.1/20);eg=math.exp(-.1/5);coupling=(ev-eg)/3
     for tick in range(40):
+        if mutate and tick==10:
+            extra=120;upload(4,[3,5,5,1,bits(extra)],U)
         ui(loc(program,b"tick"),tick);dispatch(1,1,1);barrier(0x2000|0x200)
         assert error()==0,"OpenGL error"
         due=pending[tick%19]
@@ -69,7 +73,9 @@ def run(weight=120,prob=1,gain=1,disable=0,lesions=(0,0)):
         for i in range(2):
             if lesions[i] or v[i]<=-45:continue
             counts[i]+=1;v[i]=-52;cur[i]=0;ref[i]=0 if i==0 else 22
-            if i==0 and not lesions[1] and not(disable and weight<0):pending[(tick+18)%19][1]+=weight*gain
+            if i==0 and not lesions[1]:
+                for w in [weight+delta,extra]:
+                    if not(disable and w<0):pending[(tick+18)%19][1]+=round(w*gain*256)/256
         actual=read(5,2,I)
         assert actual==counts,(tick,actual,counts)
         for label,actual,expected in [("voltage",read(0,2),v),("current",read(1,2),cur)]:
@@ -80,4 +86,12 @@ assert run(prob=0)==[0,0]
 assert run(gain=0)==[40,0]
 assert run(weight=-120,disable=1)==[40,0]
 assert run(lesions=(0,1))==[40,0]
+assert run(weight=0,extra=120)==[40,1]
+assert run(weight=0,extra=120,lesions=(0,1))==[40,0]
+assert run(weight=0,extra=-120,disable=1)==[40,0]
+assert run(weight=0,delta=120)==[40,1]
+assert run(weight=120,delta=-120)==[40,0]
+assert run(weight=240)==[40,1] # original weights outside the old signed16 range
+assert run(weight=0,mutate=True)==[40,1] # new edge uploaded at an actual window boundary
 print("PASS: actual GLES31 production shader; CPU LIF trajectory, 1.8ms delay, inhibition, gain, lesions, silence")
+

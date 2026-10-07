@@ -1,16 +1,7 @@
-# V2 alpha release note
+# V2 experimental branch
 
-Выпуск предназначен для технической проверки на реальном Android-устройстве. Основной сценарий — NES Contra с внешним ROM, режим GMode и сравнение CPU/GPU по CSV-журналу.
+NES/Sega GMode with separate P1/P2 controllers, bounded structural FDB growth, topology checkpoints and CPU/GPU execution of mutable connection layers. The programmable GPT-like lab remains available.
 
-### Проверка
+Sega API4 is rebuilt from bundled source during CI; the delivered APK includes the matching source and hashes. Tests use actual WASM/68K controller buses and actual GLES compute shader execution in Mesa, plus CPU regression checks, Android compilation and lint.
 
-CI выполняет Java/JS/ROM regression checks, проверяет GMode routing и контракт OpenGL ES 3.1 shader. APK собирается Gradle workflow; локальная машина без Android SDK не используется как доказательство сборки.
-
-### Что смотреть на устройстве
-
-1. Откройте NES, загрузите свой ROM и выберите GMode.
-2. Примените CPU reference, затем повторите тот же seed в GPU compute.
-3. Сравните `backend`, spikes, active, wallMs и CSV metadata.
-4. Для FDB используйте следующий экран Recursive Lab: `GraphDelta` уже отделяет growth layer от immutable connectome.
-
-Sega остаётся рабочим однопользовательским эмулятором; P2 будет добавлен отдельной пересборкой API3 core.
+See V2-GMODE-FDB-GPU.md for parameters and limitations. Mobile GPU speed, full-connectome hardware execution and commercial-game completion remain unverified. Structural growth is an experimental heuristic rather than a demonstrated biological learning mechanism or general intelligence.

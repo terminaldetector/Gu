@@ -43,6 +43,15 @@ public final class GraphDelta {
     public synchronized long version(){return version;}
     public synchronized int growthCount(){return growth.size();}
     public synchronized int deltaCount(){return weightDeltas.size();}
+    public synchronized List<Edge> deltas(){
+        ArrayList<Edge> out=new ArrayList<>();
+        for(java.util.Map.Entry<Long,Float> e:new java.util.TreeMap<>(weightDeltas).entrySet())out.add(new Edge((int)(e.getKey()>>32),(int)(long)e.getKey(),e.getValue()));
+        return out;
+    }
+    public synchronized List<Edge> edges(){return new ArrayList<>(growth);}
+    public synchronized boolean hasEdge(int source,int target){
+        for(Edge e:outgoing(source))if(e.target==target)return true;return false;
+    }
     public synchronized void addWeightDelta(int source,int target,float amount){
         check(source,target);if(!Float.isFinite(amount))throw new IllegalArgumentException("Неверная дельта FDB");
         long k=key(source,target);float next=weightDeltas.containsKey(k)?weightDeltas.get(k)+amount:amount;
@@ -53,6 +62,7 @@ public final class GraphDelta {
     public synchronized float weightDelta(int source,int target){Float x=weightDeltas.get(key(source,target));return x==null?0f:x;}
     public synchronized int addEdge(int source,int target,float weight){
         check(source,target);if(!Float.isFinite(weight)||Math.abs(weight)>128f)throw new IllegalArgumentException("Вес FDB вне границ");
+        if(source==target||hasEdge(source,target))throw new IllegalArgumentException("FDB: петля или повторная связь");
         if(growth.size()>=maxGrowth)throw new IllegalStateException("Лимит роста FDB достигнут");
         Edge edge=new Edge(source,target,weight);growth.add(edge);
         ArrayList<Edge> list=bySource.get(source);if(list==null){list=new ArrayList<>();bySource.put(source,list);}list.add(edge);version++;return growth.size()-1;

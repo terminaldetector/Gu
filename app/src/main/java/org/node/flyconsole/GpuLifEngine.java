@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * OpenGL ES 3.1 compute backend for the sparse LIF graph.
- * CSR is immutable; state remains in SSBOs and synapses use q16.8 packing.
+ * CSR is immutable; state remains in SSBOs and weights are float32; delayed events use signed q24.8 accumulation.
  */
 public final class GpuLifEngine implements AutoCloseable {
     private static final int LOCAL = 64;
@@ -27,16 +27,15 @@ public final class GpuLifEngine implements AutoCloseable {
         "layout(std430,binding=1) buffer I{float c[];};\n" +
         "layout(std430,binding=2) buffer R{int r[];};\n" +
         "layout(std430,binding=3) buffer PI{int pi[];};\n" +
-        "layout(std430,binding=4) buffer PO{int po[];};\n" +
+        "layout(std430,binding=4) readonly buffer X{uint extra[];};\n" +
         "layout(std430,binding=5) buffer C{int counts[];};\n" +
         "layout(std430,binding=6) readonly buffer O{int off[];};\n" +
         "layout(std430,binding=7) readonly buffer T{int target[];};\n" +
-        "layout(std430,binding=8) readonly buffer W{uint weight[];};\n" +
+        "layout(std430,binding=8) readonly buffer W{float weight[];};\n" +
         "layout(std430,binding=9) readonly buffer L{uint lesion[];};\n" +
         "uniform int N,tick,seed,edges,inputCount,inputIds[256];\n" +
         "uniform float inputProb[256],gain; uniform int disableInhibition;\n" +
         "uint h32(uint x){x+=0x9e3779b9u;x=(x^(x>>16u))*0x85ebca6bu;x=(x^(x>>13u))*0xc2b2ae35u;return x^(x>>16u);}\n" +
-        "int s16(uint x){return int(x<<16u)>>16;}\n" +
         "void main(){uint u=gl_GlobalInvocationID.x;if(u>=uint(N))return;int i=int(u);\n" +
         "int due=(tick%19)*N+i;\n" +
         "if(lesion[i]!=0u){v[i]=-52.;c[i]=0.;r[i]=0;pi[due]=0;return;}\n" +
@@ -44,7 +43,7 @@ public final class GpuLifEngine implements AutoCloseable {
         "for(int k=0;k<inputCount;k++)if(inputIds[k]==i)driven=true;\n" +
         "if(r[i]>0){r[i]--;}else{x=-52.+(x+52.)*0.9950124791926823+cur*0.004937935295309022;cur*=0.9801986733067553;}\n" +
         "for(int k=0;k<inputCount;k++)if(inputIds[k]==i){uint q=h32(uint(seed)^(uint(tick)*1103515245u)^(u*2654435761u));if(float(q&16777215u)/16777216.<inputProb[k])x+=68.75;}\n" +
-        "if(x>-45.){x=-52.;cur=0.;r[i]=driven?0:22;counts[i]++;int future=((tick+18)%19)*N;for(int e=off[i];e<off[i+1]&&e<edges;e++){float w=float(s16((e&1)==0?weight[e>>1]:(weight[e>>1]>>16u)))/256.;if(lesion[target[e]]!=0u||(disableInhibition!=0&&w<0.))continue;atomicAdd(po[future+target[e]],int(round(w*gain*256.)));}}\n" +
+        "if(x>-45.){x=-52.;cur=0.;r[i]=driven?0:22;counts[i]++;int future=((tick+18)%19)*N;for(int e=off[i];e<off[i+1]&&e<edges;e++){float w=weight[e];if(lesion[target[e]]!=0u||(disableInhibition!=0&&w<0.))continue;atomicAdd(pi[future+target[e]],int(round(w*gain*256.)));}for(uint e=extra[i];e<extra[i+1];e+=2u){int t=int(extra[e]);float w=uintBitsToFloat(extra[e+1u]);if(lesion[t]!=0u||(disableInhibition!=0&&w<0.))continue;atomicAdd(pi[future+t],int(round(w*gain*256.)));}}\n" +
         "v[i]=x;c[i]=cur;}\n";
     private static final String CLEAR =
         "#version 310 es\nlayout(local_size_x=64) in;layout(std430,binding=0) buffer X{int x[];};uniform int N;void main(){uint i=gl_GlobalInvocationID.x;if(i<uint(N))x[i]=0;}\n";
@@ -59,10 +58,16 @@ public final class GpuLifEngine implements AutoCloseable {
     private int seed;
     private long tick;
     private boolean closed;
+    private GraphDelta uploadedLayer;
+    private long uploadedVersion=-1;
+    private final double[] incomingMagnitude;
+    private final java.util.HashSet<Integer> patchedWeights=new java.util.HashSet<>();
 
     public GpuLifEngine(Graph graph) {
         if (graph == null || graph.ids.length == 0) throw new IllegalArgumentException("Пустой граф");
-        this.graph = graph; this.n = graph.ids.length; this.edges = graph.targets.length;
+        this.graph = graph; this.n = graph.ids.length; this.edges = graph.targets.length;this.incomingMagnitude=new double[n];
+        for(int e=0;e<edges;e++)incomingMagnitude[graph.targets[e]]+=Math.abs(graph.weights[e]);
+        for(double sum:incomingMagnitude)if(!Double.isFinite(sum)||sum>4_000_000)throw new IllegalArgumentException("GPU delayed-event accumulator range exceeded");
         try {
             createContext();
             stepProgram = link(STEP);
@@ -77,7 +82,7 @@ public final class GpuLifEngine implements AutoCloseable {
         }
     }
 
-    public String backendName() { return "gpu-gles31-q16.8"; }
+    public String backendName() { return "gpu-gles31-f32-q24.8-events"; }
 
     public synchronized void reset(long newSeed) {
         ensureOpen();
@@ -96,7 +101,7 @@ public final class GpuLifEngine implements AutoCloseable {
         if (options == null) options = new Engine.Options();
         if (options.gain < 0 || options.gain > 2 || !Double.isFinite(options.gain))
             throw new IllegalArgumentException("Неверный gain");
-        if(options.delta!=null&&(options.delta.deltaCount()!=0||options.delta.growthCount()!=0)) throw new IllegalArgumentException("FDB overlay currently requires CPU backend");
+        syncLayer(options.delta);
         uploadInputs(inputs, rates);
         uploadInt(9, lesionWords(options.lesions));
         clear(5);
@@ -147,13 +152,39 @@ public final class GpuLifEngine implements AutoCloseable {
     }
 
     private void uploadStatic() {
-        int[] packed = new int[(edges + 1) / 2];
-        for (int i=0;i<edges;i++) {
-            int q=Math.round(graph.weights[i]*256f);
-            if(q<Short.MIN_VALUE||q>Short.MAX_VALUE)throw new IllegalArgumentException("Вес коннектома вне q16.8 диапазона: "+graph.weights[i]);
-            if((i&1)==0)packed[i>>1]=q&0xffff;else packed[i>>1]|=(q&0xffff)<<16;
+        uploadInt(6,graph.offsets);uploadInt(7,graph.targets);uploadFloat(8,graph.weights);
+        uploadInt(4,emptyOverlay());checkGl("graph upload");
+    }
+    private int[] emptyOverlay(){int[] a=new int[n+1];Arrays.fill(a,n+1);return a;}
+    private void syncLayer(GraphDelta layer) {
+        if(layer==uploadedLayer&&(layer==null||layer.version()==uploadedVersion))return;
+        java.util.List<GraphDelta.Edge> deltas=java.util.Collections.emptyList(), extras=java.util.Collections.emptyList();
+        long revision=-1;
+        if(layer!=null)synchronized(layer){revision=layer.version();deltas=layer.deltas();extras=layer.edges();}
+        double[] magnitude=incomingMagnitude.clone();
+        for(GraphDelta.Edge d:deltas)for(int e=graph.offsets[d.source];e<graph.offsets[d.source+1];e++)if(graph.targets[e]==d.target)magnitude[d.target]+=Math.abs(graph.weights[e]+d.weight)-Math.abs(graph.weights[e]);
+        for(GraphDelta.Edge e:extras)magnitude[e.target]+=Math.abs(e.weight);
+        for(double sum:magnitude)if(!Double.isFinite(sum)||sum>4_000_000)throw new IllegalArgumentException("FDB exceeds GPU delayed-event range");
+        // Restore previous sparse patches before applying the new revision.
+        for(int e:patchedWeights)patchWeight(e,graph.weights[e]);patchedWeights.clear();
+        for(GraphDelta.Edge d:deltas) {
+            boolean found=false;
+            for(int e=graph.offsets[d.source];e<graph.offsets[d.source+1];e++)if(graph.targets[e]==d.target){
+                patchWeight(e,graph.weights[e]+d.weight);patchedWeights.add(e);found=true;
+            }
+            if(!found)throw new IllegalArgumentException("FDB delta requires base edge");
         }
-        uploadInt(6,graph.offsets);uploadInt(7,graph.targets);uploadInt(8,packed);checkGl("graph upload");
+        int[] a=new int[n+1+extras.size()*2], counts=new int[n];
+        for(GraphDelta.Edge e:extras)counts[e.source]++;
+        a[0]=n+1;for(int i=0;i<n;i++)a[i+1]=a[i]+2*counts[i];
+        int[] cursor=Arrays.copyOf(a,n);
+        for(GraphDelta.Edge e:extras){int pos=cursor[e.source];a[pos]=e.target;a[pos+1]=Float.floatToIntBits(e.weight);cursor[e.source]+=2;}
+        uploadInt(4,a);checkGl("FDB upload");uploadedLayer=layer;uploadedVersion=revision;
+    }
+    private void patchWeight(int edge,float weight){
+        if(!Float.isFinite(weight)||Math.abs(weight)>4_000_000f)throw new IllegalArgumentException("GPU event weight out of range");
+        GLES31.glBindBuffer(GLES31.GL_SHADER_STORAGE_BUFFER,buffers[8]);
+        GLES31.glBufferSubData(GLES31.GL_SHADER_STORAGE_BUFFER,edge*4,4,directFloats(new float[]{weight}));
     }
 
     private void uploadInputs(int[] inputs,double[] rates) {
@@ -177,7 +208,7 @@ public final class GpuLifEngine implements AutoCloseable {
         GLES31.glUniform1f(GLES31.glGetUniformLocation(stepProgram,"gain"),(float)o.gain);
         GLES31.glUniform1i(GLES31.glGetUniformLocation(stepProgram,"disableInhibition"),o.disableInhibition?1:0);
     }
-    private void bindAll(){for(int i=0;i<buffers.length;i++)GLES31.glBindBufferBase(GLES31.GL_SHADER_STORAGE_BUFFER,i,buffers[i==4?3:i]);}
+    private void bindAll(){for(int i=0;i<buffers.length;i++)GLES31.glBindBufferBase(GLES31.GL_SHADER_STORAGE_BUFFER,i,buffers[i]);}
     private void clear(int index) {
         GLES31.glUseProgram(clearProgram);GLES31.glBindBufferBase(GLES31.GL_SHADER_STORAGE_BUFFER,0,buffers[index]);
         GLES31.glUniform1i(GLES31.glGetUniformLocation(clearProgram,"N"),n);
@@ -217,3 +248,4 @@ public final class GpuLifEngine implements AutoCloseable {
         display=EGL14.EGL_NO_DISPLAY;context=EGL14.EGL_NO_CONTEXT;surface=EGL14.EGL_NO_SURFACE;
     }
 }
+

@@ -68,9 +68,9 @@ function learnedButtons(data){
 
 function setGMode(value){
   window.labPause();
-  if(value!=='off'&&labPlatform==='sega'){gmodeMode='off';$('gmode').value='off';$('gmodeStatus').textContent='Sega core ограничен P1; GMode отключён.';return;}
+  if(value!=='off'&&labPlatform==='sega'&&nes&&!nes.twoPlayerSupported){gmodeMode='off';$('gmode').value='off';$('gmodeStatus').textContent='Ядро Sega не поддерживает P2.';return;}
   gmodeMode=value;learningBoundary();updateButtons();
-  $('gmodeStatus').textContent=value==='off'?'Обычный режим: сеть управляет P1.':value==='coop'?'NES GMode: человек P1 · connectome/SARSA P2.':'NES GMode: connectome/SARSA P1 · человек P2.';
+  $('gmodeStatus').textContent=value==='off'?'Обычный режим: сеть управляет P1.':value==='coop'?labPlatform.toUpperCase()+' GMode: человек P1 · connectome/SARSA P2.':labPlatform.toUpperCase()+' GMode: connectome/SARSA P1 · человек P2.';
   status('GMode изменён: '+value+'. Включите связь заново.');
 }
 function log(text) {
@@ -199,8 +199,8 @@ window.labReady=function(data) {
   graphIdentity={kind:data.kind,neurons:data.neurons,edges:data.edges,sha256:data.graph_sha256,diagnostics:data.diagnostics};ready=true;
   $('brainInfo').textContent=data.neurons.toLocaleString('ru')+' нейронов · '+(data.edges/1e6).toFixed(2)+' млн связей';
   const be=$('backend');if(be){be.value=data.backend||'cpu';const go=be.querySelector('option[value="gpu"]');if(go)go.disabled=data.gpuAvailable===false;}
-  const gm=$('gmode');if(gm&&labPlatform==='sega'){gm.value='off';gmodeMode='off';for(const o of gm.options)if(o.value!=='off')o.disabled=true;}
-  if(labPlatform==='sega'&&$('gmodeStatus'))$('gmodeStatus').textContent='Sega API3: только P1; GMode ждёт пересборку WASM-core с P2.';
+  const gm=$('gmode');if(gm&&labPlatform==='sega'&&nes&&!nes.twoPlayerSupported){gm.value='off';gmodeMode='off';for(const o of gm.options)if(o.value!=='off')o.disabled=true;}
+  if(labPlatform==='sega'&&$('gmodeStatus'))$('gmodeStatus').textContent='Sega API4: независимые P1/P2; человек и сеть могут играть вместе.';
   const d=data.diagnostics||{},device=d.device||{};
   $('passport').textContent='Fly Console Lab '+(d.version||'test')+' · '+labPlatform.toUpperCase()+'\n'+data.kind+'\nНейронов: '+data.neurons+' · связей: '+data.edges+'\nSHA256 графа: '+(data.graph_sha256||'не предоставлен')+'\nМодель: LIF · dt '+(d.dt_ms||.1)+' мс · задержка '+(d.synaptic_delay_ms||1.8)+' мс · веса фиксированы\nОценка графа и одного состояния: '+(d.graph_memory_mib||'—')+' МиБ · предел Java heap: '+data.heapMiB+' МиБ\nУстройство: '+(device.model||'тестовая среда')+' · Android '+(device.android||'—')+' / API '+(device.sdk||'—')+'\nWebView: '+(device.webview||'—')+' · ABI '+(device.abis||[]).join(', ')+'\nБиологическая эквивалентность не подтверждена. SARSA обучает внешний адаптер из 45 признаков.';
   ['apply','brainToggle','record','console'].forEach(id=>$(id).disabled=false);
@@ -220,7 +220,15 @@ function fdbConfiguration(){
   const list=value[kind]||[];if(!Array.isArray(list)||list.length>1024)throw Error('FDB: до 1024 связей в списке');
   for(const x of list)if(!x||typeof x.source!=='string'||typeof x.target!=='string'||!/^\d+$/.test(x.source)||!/^\d+$/.test(x.target)||!Number.isFinite(x.weight)||Math.abs(x.weight)>127)throw Error('FDB: неверный ID или вес');
  }
+ validateGrowth(value.growth);
  return {...value,graph_sha256:value.graph_sha256||(graphIdentity&&graphIdentity.sha256)};
+}
+function validateGrowth(g){
+ if(g===undefined)return;
+ if(!g||typeof g!=='object'||Array.isArray(g)||typeof g.enabled!=='boolean')throw Error('FDB growth: неверный объект');
+ if(!g.enabled)return;
+ for(const [k,min,max] of [['interval',1,1000],['perWindow',1,8],['maxEdges',1,1024]])if(!Number.isInteger(g[k])||g[k]<min||g[k]>max)throw Error('FDB growth: неверный '+k);
+ if(!Number.isFinite(g.initialWeight)||g.initialWeight<=0||g.initialWeight>127||typeof g.explore!=='boolean'||typeof g.rewardGate!=='boolean')throw Error('FDB growth: неверный вес или правило');
 }
 function configuration() {
   const seed=Number($('seed').value);
@@ -262,7 +270,8 @@ window.labResult=function(data) {
   pendingToken=null;lastResponse=performance.now();measuredWindows++;measuredNetworkMs+=data.wallMs;if(benchmark)benchmark.cpuMs+=data.wallMs;
   if(data.error){releaseBrain();return;}
   try{brainMask=connected?learnedButtons(data):0;}catch(error){window.labError({message:error.message});brainMask=0;}updateButtons();learningStats();
-  $('fdbStatus').textContent='FDB: дельт '+(data.fdbDeltas||0)+' · новых связей '+(data.fdbEdges||0);
+  if(data.fdbState){$('fdbJson').value=JSON.stringify(data.fdbState,null,2);if(requestedConfiguration)requestedConfiguration.fdb=data.fdbState;}
+  $('fdbStatus').textContent='FDB v'+(data.fdbRevision||0)+' · выросло '+(data.fdbGrown||0)+' · дельт '+(data.fdbDeltas||0)+' · новых связей '+(data.fdbEdges||0);
   $('spikes').textContent=data.spikes;$('active').textContent=data.active;$('compute').textContent=data.wallMs.toFixed(1);
   [...$('outputs').children].forEach((element,i)=>{element.textContent=buttonNames[i]+' '+data.outputs[i].toFixed(0)+' Гц';element.className=(data.buttons&(1<<i))?'on':'';});
   history.push(Math.log10(1+data.spikes));if(history.length>100)history.shift();drawHistory();
@@ -299,10 +308,11 @@ $('step').onclick=()=>{if(!playing&&pendingToken===null){nativeCall('resume');ad
 $('console').onclick=()=>nativeCall('console');
 $('demo').onclick=()=>nativeCall('demo');$('import').onclick=()=>nativeCall('pickRom');$('audio').onclick=toggleSound;
 $('apply').onclick=()=>apply(false);
+$('fdbAuto').onclick=()=>{try{window.labPause();const fdb=fdbConfiguration()||{deltas:[],edges:[]};fdb.growth={enabled:true,interval:10,perWindow:2,maxEdges:256,initialWeight:8,explore:true,rewardGate:false};$('fdbJson').value=JSON.stringify(fdb,null,2);status('FDB: рост по активности включён с исследованием молчащих выходов. Примените конфигурацию.');}catch(e){status(e.message,true);}};
 $('fdbSave').onclick=()=>{try{const fdb=fdbConfiguration();if(!ready)throw Error('Коннектом не готов');localStorage.setItem('fly-fdb-'+graphIdentity.sha256,JSON.stringify(fdb));status('FDB checkpoint сохранён для текущего графа.');}catch(e){status(e.message,true);}};
 $('fdbRestore').onclick=()=>{try{if(!ready)throw Error('Коннектом не готов');const raw=localStorage.getItem('fly-fdb-'+graphIdentity.sha256);if(raw===null)throw Error('Checkpoint отсутствует');window.labPause();$('fdbJson').value=JSON.parse(raw)===null?'':raw;status('FDB восстановлен. Примените конфигурацию.');}catch(e){status(e.message,true);}};
 $('fdbClear').onclick=()=>{window.labPause();$('fdbJson').value='';status('FDB слой очищен. Примените конфигурацию.');};
-$('fdbJson').onchange=()=>{window.labPause();status('FDB изменён. Примените CPU-конфигурацию.');};
+$('fdbJson').onchange=()=>{window.labPause();status('FDB изменён. Примените конфигурацию.');};
 $('gmode').onchange=()=>setGMode($('gmode').value);
 $('backend').onchange=()=>{window.labPause();status('Backend изменён: нажмите «Применить» для запуска '+$('backend').value+'.');};
 $('brainToggle').onclick=()=>{if(connected){connected=false;resetSession();nativeCall('stop');status('Связь отключена; эмулятор доступен вручную.');}else apply(true);};
@@ -338,8 +348,9 @@ function validateProfile(p){
  for(const name of ['death','win'])FlyGameTools.predicate(new Uint8Array(ramLimit),p[name+'Address'],p[name+'Value'],ramLimit);
 }
 function validateConfiguration(c){
+ if(c.fdb)validateGrowth(c.fdb.growth);
  if(c.gmode!==undefined&&!['off','coop','coop-reverse'].includes(c.gmode))throw Error('Неверный GMode');
- if(labPlatform==='sega'&&c.gmode&&c.gmode!=='off')throw Error('Sega P2 unavailable');
+ if(labPlatform==='sega'&&nes&&!nes.twoPlayerSupported&&c.gmode&&c.gmode!=='off')throw Error('Sega P2 unavailable');
  for(const [id,min,max] of [['maxHz',0,500],['thresholdHz',1,500],['windowMs',1,100],['seed',0,2147483647],['gain',0,2]])if(!Number.isFinite(c[id])||c[id]<min||c[id]>max||(['windowMs','seed'].includes(id)&&!Number.isInteger(c[id])))throw Error('Неверная конфигурация сети: '+id);
  if(!['closed','observe','sham'].includes(c.mode)||typeof c.disableInhibition!=='boolean'||typeof c.scramble!=='boolean'||!['cpu','gpu'].includes(c.backend||'cpu'))throw Error('Неверная конфигурация сети');
  for(const [id,len] of [['inputs',16],['outputs',8],['lesions',null]])if(!Array.isArray(c[id])||(len!==null&&c[id].length!==len)||c[id].length>256||new Set(c[id]).size!==c[id].length||c[id].some(x=>typeof x!=='string'||!/^\d+$/.test(x)))throw Error('Неверные ID портов');
@@ -461,3 +472,4 @@ $('ramInspect').onclick=()=>{try{
 $('ramOffset').max=ramLimit-64;$('benchmarkGame').value=labPlatform==='sega'?'Zero Tolerance':'NES experiment';
 
 drawHistory();learningStats();requestAnimationFrame(loop);nativeCall('demo');
+
