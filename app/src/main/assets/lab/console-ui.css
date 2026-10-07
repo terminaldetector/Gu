@@ -11,3 +11,4 @@ body.hide-map .micro-panel{display:none}
 /* Keep telemetry above the right-hand touch controls at short landscape heights. */
 body.game-mode .neural-map{max-width:104px}body.game-mode .map-legend{display:none}body.game-mode #mapStats{font-size:9px}
 @media(orientation:landscape){body.game-mode .actions{align-self:flex-end}}
+@media(orientation:landscape) and (max-height:360px){body.game-mode .neural-map{max-width:88px}body.game-mode .micro-panel small{font-size:8px;line-height:1.25;margin-top:3px}}
