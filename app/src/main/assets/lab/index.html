@@ -30,13 +30,25 @@
 <label>Политика</label><select id="learnMode"><option value="off">Исходные кнопки сети</option><option value="train">Учиться с исследованием</option><option value="eval">Оценивать без обучения</option></select>
 <label>Награда</label><select id="rewardMode"><option value="diagnostic">Тестовый ROM: дойти вправо к x=200, y=100</option><option value="ram">Изменение значения RAM</option><option value="manual">Ручная награда / штраф</option></select>
 <div class="row"><div><label>RAM адрес 0–2047, десятичный</label><input id="rewardAddress" type="number" min="0" max="2047" value="0"></div><div><label>Множитель награды</label><input id="rewardScale" type="number" min="-10" max="10" step=".1" value=".1"></div></div>
-<p class="note">RAM: один беззнаковый байт, награда = разность × множитель; переход 255→0 считается отрицательным. Адрес счёта нужно найти для конкретной игры.</p>
+<p class="note">RAM: награда = изменение значения × множитель. Адрес и формат счёта задаются для конкретной игры. Переполнение учитывается только при включённой опции.</p>
 <div class="row"><div><label>Исследование ε, 0–1</label><input id="epsilon" type="number" min="0" max="1" step=".01" value=".2"></div><div><label>Скорость α, .001–.2</label><input id="alpha" type="number" min=".001" max=".2" step=".001" value=".04"></div></div>
+<details><summary>Профиль внешней игры</summary>
+<div class="row"><div><label>Ширина RAM, байт</label><select id="ramWidth"><option>1</option><option>2</option><option>3</option><option>4</option></select></div><div><label>Формат</label><select id="ramFormat"><option value="unsigned">Без знака</option><option value="signed">Со знаком</option><option value="bcd">BCD</option></select></div><div><label>Порядок байтов</label><select id="ramEndian"><option value="little">Little endian</option><option value="big">Big endian</option></select></div></div>
+<label><input id="ramWrap" type="checkbox"> Корректировать переполнение счётчика</label>
+<label>Маски действий (A=1, B=2, Select=4, Start=8, ↑=16, ↓=32, ←=64, →=128; сочетания — сумма)</label><textarea id="actionMasks">0,1,2,16,32,64,128,129,17,3,65,33,66,130,18,34,19,67,131,35,4,8</textarea>
+<p class="note">Изменение действий останавливает опыт; веса общих действий сохраняются. Start/Select доступны агенту, но заставку удобнее пройти вручную и сохранить старт.</p>
+<label><input id="deathEnabled" type="checkbox"> Завершать при смерти (байт RAM равен значению)</label><div class="row"><input id="deathAddress" type="number" min="0" max="2047" value="0" aria-label="Адрес смерти"><input id="deathValue" type="number" min="0" max="255" value="0" aria-label="Значение смерти"><input id="deathReward" type="number" min="-10" max="10" value="-1" aria-label="Штраф смерти"></div>
+<label><input id="winEnabled" type="checkbox"> Завершать при победе (байт RAM равен значению)</label><div class="row"><input id="winAddress" type="number" min="0" max="2047" value="0" aria-label="Адрес победы"><input id="winValue" type="number" min="0" max="255" value="255" aria-label="Значение победы"><input id="winReward" type="number" min="-10" max="10" value="2" aria-label="Награда победы"></div>
+<div class="row" style="margin-top:8px"><button id="captureStart">Сохранить старт эпизода</button><button id="clearStart">Удалить старт</button></div><p id="startInfo" class="note">Старт: перезапуск ROM с начала.</p>
+<div class="row"><button id="saveProfile">Сохранить профиль</button><button id="loadProfile">Загрузить профиль</button><button id="exportModel">Экспорт JSON-файла</button><button id="importModel">Импорт JSON-файла</button></div>
+<label><input id="autosavePolicy" type="checkbox" checked> Автосохранение весов после эпизода</label>
+<p class="note">Экспорт включает профиль, стартовый снимок NES и модель. RAM победы/смерти не определяется автоматически. PAL/Dendy тайминг и battery .sav в этом интерфейсе не реализованы.</p>
+</details>
 <label>Длина эпизода, решений 10–2000</label><input id="episodeLength" type="number" min="10" max="2000" value="180">
 <label><input id="autoEpisode" type="checkbox" checked> Автоперезапуск ROM между эпизодами</label>
 <div class="row"><button id="rewardPlus">Награда +1</button><button id="rewardMinus">Штраф −1</button><button id="endEpisode">Закончить эпизод</button></div>
 <div class="row" style="margin-top:8px"><button id="savePolicy">Сохранить обучение</button><button id="loadPolicy">Загрузить</button><button id="clearPolicy">Сбросить веса</button></div>
-<label>Перенос модели: JSON (привязан к ROM, портам и настройкам награды)</label><textarea id="policyJson" spellcheck="false" placeholder="Сохранить заполняет JSON; Загрузить читает JSON или локальный слот"></textarea>
+<label>Перенос модели: JSON (привязан к ROM, портам и профилю)</label><textarea id="policyJson" spellcheck="false" placeholder="Сохранить заполняет JSON; Загрузить читает JSON или локальный слот"></textarea>
 <p id="learningStats" class="note">Обновлений: 0 · эпизодов: 0</p><canvas id="rewardChart" width="600" height="100"></canvas>
 <p class="note">Диагностическая награда и координаты читают RAM собственного ROM — это явно заданная задача, не самостоятельное понимание игры. В оценке веса заморожены; ручные нажатия приостанавливают обучение.</p></section>
 <section class="panel"><details><summary>Вмешательства и порты</summary>
@@ -51,4 +63,4 @@
 </details></section>
 <section class="panel"><p class="note">Запись CSV начинает новый опыт: сбрасывает сеть по seed. ROM продолжает с текущего кадра.</p><div class="row"><button id="record" disabled>Запись CSV</button><button id="export">Экспорт CSV</button></div><details style="margin-top:12px"><summary>Журнал</summary><pre id="log"></pre></details></section>
 <div class="footer">JSNES 2.1.0 · локальная эмуляция. Тестовый NROM написан для этой лаборатории. Сохранение снимка относится к NES; коннектом при восстановлении сбрасывается. Обучается выходной адаптер; готовой стратегии для произвольной игры нет.</div>
-</main><script src="jsnes.min.js"></script><script src="learner.js"></script><script src="lab.js"></script></body></html>
+</main><script src="jsnes.min.js"></script><script src="game-tools.js"></script><script src="learner.js"></script><script src="lab.js"></script></body></html>

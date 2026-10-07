@@ -29,7 +29,7 @@ const sha=crypto.createHash('sha256').update(Buffer.from(demo.base64,'base64')).
   if(op==='sample'){const data=await command('sample',JSON.parse(raw));await page.evaluate(data=>window.labResult(data),data);return;}
  });
  await page.addInitScript(()=>{
-  window.FlyBridge={demo:()=>window.testBridge('demo'),configure:raw=>window.testBridge('configure',raw),sample:raw=>window.testBridge('sample',raw),resume(){},stop(){},pickRom(){},recording(){},exportCsv(){},console(){}};
+  window.FlyBridge={acceptRom(){},demo:()=>window.testBridge('demo'),configure:raw=>window.testBridge('configure',raw),sample:raw=>window.testBridge('sample',raw),resume(){},stop(){},pickRom(){},recording(){},exportCsv(){},console(){}};
  });
  await page.goto('https://flyconsole.local/lab/index.html');
  await page.waitForFunction(()=>document.getElementById('romName').textContent.includes('Original diagnostic'));
@@ -73,8 +73,29 @@ const sha=crypto.createHash('sha256').update(Buffer.from(demo.base64,'base64')).
  await page.selectOption('#learnMode','eval');const updates=await page.evaluate(()=>learner.updates);
  await page.click('#brainToggle');await page.waitForFunction(()=>connected&&!configuring);await page.click('#play');await page.waitForFunction(()=>learner.episodes>=2,{timeout:15000});
  assert.equal(await page.evaluate(()=>learner.updates),updates,'evaluation does not train');
+ const regressions=await page.evaluate(()=>{
+  window.labPause();
+  rgbaAndRetina(new Array(61440).fill(0x0000ff));const color=Array.from(context.getImageData(0,0,1,1).data).slice(0,3);
+  $('captureStart').onclick();const x=nes.cpu.mem[0];nes.cpu.mem[0]=17;restartEpisode();const first=nes.cpu.mem[0];nes.cpu.mem[0]=29;restartEpisode();const second=nes.cpu.mem[0];
+  const pack=JSON.parse(JSON.stringify(policyPackage(true))),weights=JSON.stringify(learner.weights);learner.reset(99);window.labImportModel(pack);const imported=JSON.stringify(learner.weights)===weights;
+  const validNes=nes;window.labLoadRom({base64:'TkVTGgEAAAAAAAAAAAAAAA==',name:'bad',sha256:'bad'});const preserved=loaded&&nes===validNes;
+  $('rewardMode').value='manual';$('learnMode').value='train';$('episodeLength').value='10';$('autoEpisode').checked=false;
+  learner.reset(1);learner.setActions(FlyGameTools.actions($('actionMasks').value));learningBoundary();connected=true;playing=true;
+  for(let i=0;i<10;i++)learnedButtons({buttons:0,outputs:new Array(8).fill(0)});const steps=trials.at(-1).steps;
+  $('rewardMode').value='ram';$('rewardAddress').value='0';$('ramWidth').value='1';$('rewardScale').value='1';learningBoundary();nes.cpu.mem[0]=100;nes.cpu.mem[1]=5;learnedButtons({buttons:0,outputs:new Array(8).fill(0)});
+  $('rewardAddress').value='1';$('rewardAddress').dispatchEvent(new Event('change'));const boundary=learner.previous===null&&lastRewardValue===null&&learnReward===0&&!connected;
+  $('rewardMode').value='manual';$('deathEnabled').checked=true;$('deathAddress').value='20';$('deathValue').value='3';$('deathReward').value='-4';nes.cpu.mem[20]=3;learningBoundary();learnedButtons({buttons:0,outputs:new Array(8).fill(0)});const death=trials.at(-1);
+  $('deathEnabled').checked=false;$('winEnabled').checked=true;$('winAddress').value='21';$('winValue').value='7';$('winReward').value='5';nes.cpu.mem[21]=7;learningBoundary();learnedButtons({buttons:0,outputs:new Array(8).fill(0)});const win=trials.at(-1);
+  return {color,x,first,second,imported,preserved,steps,boundary,death,win,actions:pack.policy.actions};
+ });
+ assert.deepEqual(regressions.color,[255,0,0],'NES BGR decodes to actual red');
+ assert.equal(regressions.first,regressions.x);assert.equal(regressions.second,regressions.x,'start snapshot remains immutable across restores');
+ assert(regressions.imported,'profile+policy import roundtrip');assert(regressions.preserved,'malformed import retains working emulator');
+ assert.equal(regressions.steps,10,'exact episode limit');assert(regressions.boundary,'reward edit stops and clears stale transition');
+ assert(regressions.death.death&&regressions.death.reward===-4);assert(regressions.win.success&&regressions.win.reward===5);
+ assert(regressions.actions.includes(8)&&regressions.actions.includes(4),'Start and Select are available');
  await page.screenshot({path:process.env.UI_SCREENSHOT||'lab-ui-test.png',fullPage:true});
  assert.deepEqual(errors,[],'no browser runtime errors');
- console.log('PASS: mobile UI, real screen->Java Engine->NES movement, observe, gain=0, snapshots, reset, errors');
+ console.log('PASS: Java coupling, training/evaluation, BGR, exact episodes, immutable starts, profile import, invalid ROM rollback, reward edits');
  await browser.close();java.stdin.end();
 })().catch(e=>{console.error(e);java.kill();process.exit(1);});

@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /** Local-only WebView frontend; all connectome simulation runs on the worker. */
 public final class NesLabActivity extends Activity {
     private static final String ORIGIN = "https://flyconsole.local";
-    private static final int PICK_ROM = 10, EXPORT_CSV = 11;
+    private static final int PICK_ROM = 10, EXPORT_CSV = 11, PICK_MODEL = 12, EXPORT_MODEL = 13;
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
     private final AtomicBoolean cancel = new AtomicBoolean();
     private WebView web;
@@ -36,10 +36,12 @@ public final class NesLabActivity extends Activity {
     private String initialError;
     private String graphKind = "FlyWire v783 / Shiu signed model";
     private String romHash = "not-loaded";
+    private final java.util.ArrayDeque<String> offeredRomHashes = new java.util.ArrayDeque<>();
     private long sequence, configVersion;
     private int latestMask;
     private BufferedWriter recorder;
     private File recording;
+    private File modelExport;
     private long recordedBytes;
     private boolean recordingOn;
 
@@ -262,13 +264,25 @@ public final class NesLabActivity extends Activity {
             throw new IllegalArgumentException("Ожидается iNES .nes файл до 4 МиБ");
         StringBuilder hash = new StringBuilder();
         for (byte b : MessageDigest.getInstance("SHA-256").digest(bytes)) hash.append(String.format(Locale.US, "%02x", b & 255));
-        romHash = hash.toString();
-        if (engine != null) { engine.reset(experiment.seed); configVersion++; sequence = 0; }
-        if (recordingOn) { recorder.write("# rom_sha256," + romHash + "\n"); recorder.flush(); }
-        emit("labLoadRom", new JSONObject().put("base64", Base64.encodeToString(bytes, Base64.NO_WRAP)).put("name", name).put("sha256", romHash));
+        String candidateHash = hash.toString();
+        offeredRomHashes.addLast(candidateHash);
+        if (offeredRomHashes.size() > 8) offeredRomHashes.removeFirst();
+        // Commit model/recording identity only after the JS core accepts the ROM.
+        emit("labLoadRom", new JSONObject().put("base64", Base64.encodeToString(bytes, Base64.NO_WRAP)).put("name", name).put("sha256", candidateHash));
     }
 
     public final class Bridge {
+        @JavascriptInterface public void acceptRom(String sha256) {
+            if (destroyed || sha256.length() != 64) return;
+            worker.execute(() -> {
+                try {
+                    if (!offeredRomHashes.contains(sha256)) return;
+                    romHash = sha256;
+                    if (engine != null) { engine.reset(experiment.seed); configVersion++; sequence = 0; }
+                    if (recordingOn) { recorder.write("# rom_sha256," + romHash + "\n"); recorder.flush(); }
+                } catch (Exception ex) { error(ex.getMessage()); }
+            });
+        }
         @JavascriptInterface public void sample(String json) {
             if (destroyed || json.length() > 8192) return;
             worker.execute(() -> {
@@ -310,6 +324,24 @@ public final class NesLabActivity extends Activity {
                     if (engine == null) throw new IllegalStateException("Коннектом не готов");
                     if (enabled) startRecording();
                     else { stopRecording(); emit("labRecording", new JSONObject().put("active", false)); }
+                } catch (Exception ex) { error(ex.getMessage()); }
+            });
+        }
+        @JavascriptInterface public void importModel() {
+            runOnUiThread(() -> startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("*/*").addCategory(Intent.CATEGORY_OPENABLE), PICK_MODEL));
+        }
+        @JavascriptInterface public void exportModel(String json) {
+            if (destroyed || json.length() > 8 * 1024 * 1024) return;
+            worker.execute(() -> {
+                try {
+                    new JSONObject(json);
+                    modelExport = new File(getFilesDir(), "nes-model-export.json");
+                    try (Writer writer = new OutputStreamWriter(new FileOutputStream(modelExport), StandardCharsets.UTF_8)) { writer.write(json); }
+                    runOnUiThread(() -> {
+                        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("application/json").addCategory(Intent.CATEGORY_OPENABLE);
+                        intent.putExtra(Intent.EXTRA_TITLE, "fly-nes-model.json");
+                        startActivityForResult(intent, EXPORT_MODEL);
+                    });
                 } catch (Exception ex) { error(ex.getMessage()); }
             });
         }
@@ -364,6 +396,16 @@ public final class NesLabActivity extends Activity {
                         bytes = out.toByteArray();
                     }
                     loadRom(bytes, "Imported .nes");
+                } else if (request == PICK_MODEL) {
+                    try (InputStream in = getContentResolver().openInputStream(uri)) {
+                        emit("labImportModel", new JSONObject(readText(in, 8 * 1024 * 1024)));
+                    }
+                } else if (request == EXPORT_MODEL) {
+                    try (InputStream in = new FileInputStream(modelExport); OutputStream out = getContentResolver().openOutputStream(uri)) {
+                        byte[] buffer = new byte[8192]; int n;
+                        while ((n = in.read(buffer)) != -1) out.write(buffer, 0, n);
+                    }
+                    runOnUiThread(() -> Toast.makeText(this, "JSON сохранён", Toast.LENGTH_SHORT).show());
                 } else if (request == EXPORT_CSV) {
                     try (InputStream in = new FileInputStream(recording); OutputStream out = getContentResolver().openOutputStream(uri)) {
                         byte[] buffer = new byte[8192]; int n;

@@ -12,3 +12,5 @@ node tools/nes_check.cjs
 node --check app/src/main/assets/lab/lab.js
 
 node tools/learning_check.cjs
+
+node tools/game_tools_check.cjs

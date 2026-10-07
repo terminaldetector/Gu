@@ -1,3 +1,19 @@
+## Version 0.4: external-ROM profiles and audit fixes
+Install `FlyConsole-NES-0.4-debug.apk` over 0.2/0.3 (same package and signing key for the shared APK builds). Full graph remains bundled/offline.
+
+* Correct NES BGR-to-RGB conversion, so both video colours and retinal luminance are accurate. Reject truncated iNES/NES2 images, unsupported mappers and declared ROM sizes larger than the file before core allocation. Failed imports retain the previous emulator. Native ROM identity is committed only after the core acknowledges successful loading.
+* Configurable 2–64 action masks. Default 22 actions include Start, Select, A+B and directional button combinations. Opposing directions are rejected. Policies preserve weights by action mask when the action set changes.
+* RAM reward uses 1–4 bytes, little/big endian, unsigned/signed/packed BCD, optional modular overflow correction. Explicit one-byte equality conditions can terminate on death or victory and add a configured penalty/bonus. RAM addresses are game-specific; no automatic score/death discovery.
+* Capture a game-start snapshot after manually passing menus. Episode restarts restore that immutable snapshot and reset neural/RNG state; without it the ROM reboots. Episode limits now count exactly the selected number of decisions. Reward/profile edits stop the experiment and clear pending transition history, preventing spurious deltas.
+* Feature vector adds 16 differences from the previous sampled screen (45 values total). The image remains a coarse 4x4 luminance grid, not object tracking or full visual history. The diagnostic task still has explicit RAM coordinate features unavailable to arbitrary games.
+* Per-ROM local profiles, episode autosaves, document-picker JSON import/export with a profile, neural port configuration, policy, optional start snapshot, last 100 episode outcomes and last 200 feature/action/reward transitions. Exported transitions are bounded observations, not exact emulator/neural replay. Imported profile/model identity, ranges and shape are validated. Core policy v1 weights can be expanded to v2 internally; old 0.3 UI packages need profile migration and do not import directly.
+
+Recommended external game workflow: load `.nes` → manually start the game → capture episode start → select actions and reward RAM format → configure death/win conditions if known → choose training → enable connection → start NES. Save a profile or export JSON for reuse. Import JSON only after loading the matching ROM.
+
+Current JSNES 2.1.0 mapper support is validated against the vendored implementation. PAL/Dendy timing and battery `.sav` persistence are not implemented by this frontend; use NES snapshots. The 4 MiB ROM cap remains. Sparse/delayed rewards, coarse vision and linear SARSA remain limitations; no arbitrary-game mastery or connectome plasticity is claimed. Android document-picker and physical-device lifecycle tests remain outstanding.
+
+Validation includes RAM format/overflow, invalid ROM sizes/mappers, configurable actions, readout feature updates and v1 policy migration. Mobile browser integration tests real Java neural coupling plus BGR correctness, exact episode limits, repeated snapshot restore, imported profile/model roundtrip, failed-ROM rollback and reward-edit boundaries.
+
 ## Version 0.3: reward-driven game learning
 Install `FlyConsole-NES-0.3-debug.apk`; same app ID/signing key as 0.2. Select **Учиться с исследованием**, enable the brain connection, then start NES. This forces closed/lockstep coupling. Linear SARSA(lambda) trains 9 controller-action readouts from 16 sampled retinal values, 8 actual neural firing rates, bias, and four diagnostic coordinates (zeros for other games). The original connectome weights are fixed. Hyperparameters: gamma .95, lambda .7, configurable epsilon and alpha; clipped updates and bounded weights. Manual control clears temporal learning traces.
 
