@@ -15,3 +15,9 @@ state.gmodeMode='off';state.manualMask=32;state.brainMask=16;state.updateButtons
 assert.deepStrictEqual(events,[['down',1,5]],'manual direction must win in single player');
 assert(source.includes("if(manualMask&&gmodeMode==='off')"));
 console.log('PASS: production GMode port isolation, release, swapped ports and manual override');
+
+const keys=source.slice(source.indexOf('function keysEqual'),source.indexOf('function learningKey'));
+vm.runInContext(keys,state);
+assert(state.keysEqual(JSON.stringify({configuration:{backend:'cpu'},gmode:'off'}),JSON.stringify({configuration:{}})));
+assert(!state.keysEqual(JSON.stringify({configuration:{fdb:{edges:[{source:'1',target:'2',weight:1}]}}}),JSON.stringify({configuration:{}})));
+console.log('PASS: profile key migration and FDB identity separation');
