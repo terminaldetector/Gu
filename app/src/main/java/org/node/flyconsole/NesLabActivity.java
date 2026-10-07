@@ -316,7 +316,7 @@ public final class NesLabActivity extends Activity {
         @JavascriptInterface public void stop() { cancel.set(true); }
         @JavascriptInterface public void resume() { cancel.set(false); }
         @JavascriptInterface public void console() {
-            runOnUiThread(() -> startActivity(new Intent(NesLabActivity.this,MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)));
+            runOnUiThread(() -> startActivity(new Intent(NesLabActivity.this,CodeLabActivity.class).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)));
         }
         @JavascriptInterface public void pickRom() {
             runOnUiThread(() -> {

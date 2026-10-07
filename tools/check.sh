@@ -26,3 +26,8 @@ java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.InferenceChe
 node tools/sega_check.cjs
 
 node tools/sega_learning_check.cjs
+
+javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/LabModule.java tools/CodeLabCheck.java
+java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.CodeLabCheck
+CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/code_worker_check.cjs
+node --check app/src/main/assets/code/lab.js
