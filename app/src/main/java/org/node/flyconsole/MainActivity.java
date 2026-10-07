@@ -2,10 +2,11 @@ package org.node.flyconsole;
 import android.app.*;import android.os.*;import android.content.*;import android.net.Uri;import android.graphics.Color;import android.widget.*;import java.io.*;import java.util.concurrent.*;import java.util.concurrent.atomic.AtomicBoolean;
 public final class MainActivity extends Activity {
  private final ExecutorService worker=Executors.newSingleThreadExecutor();private final AtomicBoolean cancel=new AtomicBoolean();
- private Engine engine;private Graph graph;private TextView log;private EditText entry;private Button send,load;private boolean busy;private File model;
+ private Engine engine;private Graph graph;private TextView log;private EditText entry;private Button send,load,nesButton;private boolean busy;private File model;
  public void onCreate(Bundle b){super.onCreate(b);getWindow().setStatusBarColor(Color.rgb(5,5,16));
   LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setPadding(20,32,20,20);root.setBackgroundColor(Color.rgb(5,5,16));
   TextView title=new TextView(this);title.setText("FLY / CONSOLE");title.setTextSize(25);title.setTextColor(Color.rgb(130,255,190));root.addView(title);
+  nesButton=new Button(this);nesButton.setText("NES / экспериментальная лаборатория");root.addView(nesButton);nesButton.setOnClickListener(v->startActivity(new Intent(this,NesLabActivity.class).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)));
   load=new Button(this);load.setText("Импорт .fly / .fly.gz");root.addView(load);load.setOnClickListener(v->{Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);i.setType("*/*");i.addCategory(Intent.CATEGORY_OPENABLE);startActivityForResult(i,1);});
   ScrollView scroll=new ScrollView(this);log=new TextView(this);log.setTextColor(Color.LTGRAY);log.setTextSize(16);log.setTextIsSelectable(true);scroll.addView(log);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
   entry=new EditText(this);entry.setTextColor(Color.WHITE);entry.setHintTextColor(Color.GRAY);entry.setHint("stim ID Hz ms / status / reset");entry.setSingleLine();root.addView(entry);
@@ -14,14 +15,14 @@ public final class MainActivity extends Activity {
   graph=Graph.demo();engine=new Engine(graph);importGraph(null);
  }
  private void append(String s){log.append("\n\n"+s);}
- private void state(boolean b){busy=b;send.setEnabled(!b);load.setEnabled(!b);}
+ private void state(boolean b){busy=b;send.setEnabled(!b);load.setEnabled(!b);nesButton.setEnabled(!b);}
  private long budget(){return Math.max(0,Runtime.getRuntime().maxMemory()-Runtime.getRuntime().totalMemory()+Runtime.getRuntime().freeMemory())*2/3;}
  protected void onActivityResult(int r,int c,Intent data){super.onActivityResult(r,c,data);if(r==1&&c==RESULT_OK&&data!=null)importGraph(data.getData());}
  private InputStream bundledInput() throws IOException {try{return getAssets().open("brain.fly.gz");}catch(IOException ex){return getAssets().open("brain.fly");}}
  private void importGraph(Uri uri){if(busy)return;state(true);graph=null;engine=null;append("Загрузка…");worker.execute(()->{File tmp=new File(getFilesDir(),"import.tmp");try{
    if(uri!=null){try(InputStream in=getContentResolver().openInputStream(uri);OutputStream out=new FileOutputStream(tmp)){byte[] buf=new byte[65536];int n;long total=0;while((n=in.read(buf))!=-1){total+=n;if(total>1024L*1024*1024)throw new IOException("Файл больше 1 ГБ");out.write(buf,0,n);}}}
-   Graph loaded;try(InputStream in=uri==null?(model.exists()?new FileInputStream(model):bundledInput()):new FileInputStream(tmp)){loaded=Graph.read(in,budget());}
-   Engine next=new Engine(loaded);if(uri!=null&&!tmp.renameTo(model))throw new IOException("Не удалось сохранить граф");graph=loaded;engine=next;
+   Graph loaded;if(uri==null&&GraphCache.current!=null){loaded=GraphCache.current;}else try(InputStream in=uri==null?(model.exists()?new FileInputStream(model):bundledInput()):new FileInputStream(tmp)){loaded=Graph.read(in,budget());}
+   Engine next=new Engine(loaded);if(uri!=null&&!tmp.renameTo(model))throw new IOException("Не удалось сохранить граф");graph=loaded;engine=next;GraphCache.current=loaded;if(uri!=null)GraphCache.kind="Imported graph";
    runOnUiThread(()->{entry.setText("stim "+graph.ids[0]+" 150 1000");append("Импортирован граф: "+graph.ids.length+" нейронов / "+graph.targets.length+" связей\nПервый ID: "+graph.ids[0]+" · оценка памяти: "+graph.memoryBytes()/1048576+" МиБ");state(false);});
   }catch(Exception|OutOfMemoryError ex){tmp.delete();graph=Graph.demo();engine=new Engine(graph);runOnUiThread(()->{append("Импорт не выполнен: "+ex.getMessage()+"\nВключён синтетический тест.");state(false);});}});}
  private void command(){if(busy)return;String text=entry.getText().toString().trim();append("› "+text);String[] a=text.split("\\s+");

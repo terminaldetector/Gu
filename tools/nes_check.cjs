@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const jsnes=require(path.join(root,'app/src/main/assets/lab/jsnes.min.js'));
+const data=JSON.parse(fs.readFileSync(path.join(root,'app/src/main/assets/lab/demo-rom.json')));
+const bytes=Buffer.from(data.base64,'base64');
+let frames=0,colors=0,audioSamples=0,peakAudio=0,litPixels=0;
+const nes=new jsnes.NES({onFrame:b=>{frames++;colors=new Set(b).size;litPixels=Array.from(b).filter(c=>(c&0xffffff)!==0).length;},onAudioSample:l=>{audioSamples++;peakAudio=Math.max(peakAudio,Math.abs(l));}});
+nes.loadROM(bytes);for(let i=0;i<15;i++)nes.frame();assert.equal(frames,15);assert(colors>=3);assert(litPixels>1000,"background grid must remain visible after palette updates");assert(audioSamples>0);
+const x=nes.cpu.mem[0];nes.buttonDown(1,jsnes.Controller.BUTTON_RIGHT);for(let i=0;i<10;i++)nes.frame();assert(nes.cpu.mem[0]>x);
+nes.buttonUp(1,jsnes.Controller.BUTTON_RIGHT);const y=nes.cpu.mem[1];nes.buttonDown(1,jsnes.Controller.BUTTON_UP);for(let i=0;i<10;i++)nes.frame();assert(nes.cpu.mem[1]<y);
+nes.buttonDown(1,jsnes.Controller.BUTTON_A);for(let i=0;i<3;i++)nes.frame();assert.equal(nes.cpu.mem[0x10],1);assert(peakAudio>0,"diagnostic pulse must produce audible samples");
+const snapshot=nes.toJSON(),before=nes.cpu.mem[1];for(let i=0;i<5;i++)nes.frame();assert.notEqual(nes.cpu.mem[1],before);nes.fromJSON(snapshot);assert.equal(nes.cpu.mem[1],before);
+for(let i=0;i<8;i++)nes.buttonUp(1,i);nes.reloadROM();for(let i=0;i<15;i++)nes.frame();assert.equal(nes.cpu.mem[0],120);assert.equal(nes.cpu.mem[1],100);
+console.log('PASS: real NROM bootstrap, video, audio samples, controller bus, sprite movement, save/restore, reset');

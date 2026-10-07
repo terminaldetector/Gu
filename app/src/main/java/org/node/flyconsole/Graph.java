@@ -6,7 +6,7 @@ public final class Graph {
  public long memoryBytes(){return 8L*ids.length+4L*offsets.length+8L*targets.length+104L*ids.length;}
  public static Graph read(InputStream input,long budget) throws IOException {
   BufferedInputStream buffered=new BufferedInputStream(input);buffered.mark(2);int first=buffered.read(),second=buffered.read();buffered.reset();
-  DataInputStream d=new DataInputStream(first==31&&second==139?new java.util.zip.GZIPInputStream(buffered):buffered);
+  DataInputStream d=new DataInputStream(first==31&&second==139?new BufferedInputStream(new java.util.zip.GZIPInputStream(buffered),65536):buffered);
   if(d.readInt()!=0x464C5931)throw new IOException("Ожидается FLY1: сначала преобразуйте Feather/Parquet");
   int n=d.readInt(),m=d.readInt();
   if(n<1||n>1000000||m<0||m>100000000||116L*n+8L*m+4>budget)throw new IOException("Граф превышает безопасный бюджет памяти");

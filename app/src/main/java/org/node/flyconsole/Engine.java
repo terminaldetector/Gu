@@ -1,29 +1,142 @@
 package org.node.flyconsole;
-import java.util.*;
+
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+/** Independent 0.1 ms LIF engine. Experimental interventions are explicit. */
 public final class Engine {
- private final Graph graph; private final double[] v,g; private final int[] refractory; private final float[][] pending;
- private final Random rng=new Random(1); private int tick;
- public Engine(Graph graph){this.graph=graph;int n=graph.ids.length;v=new double[n];g=new double[n];refractory=new int[n];pending=new float[19][n];reset();}
- public void reset(){Arrays.fill(v,-52);Arrays.fill(g,0);Arrays.fill(refractory,0);for(float[] a:pending)Arrays.fill(a,0);tick=0;rng.setSeed(1);}
- public String run(long id,double hz,int durationMs,java.util.concurrent.atomic.AtomicBoolean cancel){
-  int input=Arrays.binarySearch(graph.ids,id);if(input<0)throw new IllegalArgumentException("Неизвестный ID");
-  long start=System.nanoTime(),spikes=0;int[] counts=new int[v.length];int steps=durationMs*10,done=0;
-  double ev=Math.exp(-.1/20),eg=Math.exp(-.1/5),coupling=(ev-eg)/3;
-  for(int s=0;s<steps&&!cancel.get();s++,tick++,done++){
-   float[] due=pending[tick%19];
-   for(int i=0;i<v.length;i++){
-    g[i]+=due[i];due[i]=0;
-    if(refractory[i]>0){refractory[i]--;continue;}v[i]=-52+(v[i]+52)*ev+g[i]*coupling;g[i]*=eg;
-   }
-   if(rng.nextDouble()<1-Math.exp(-hz*.0001))v[input]+=.275*250;
-   for(int i=0;i<v.length;i++)if(v[i]>-45){
-    counts[i]++;spikes++;v[i]=-52;g[i]=0;refractory[i]=i==input?0:22;
-    float[] future=pending[(tick+18)%19];for(int e=graph.offsets[i];e<graph.offsets[i+1];e++)future[graph.targets[e]]+=graph.weights[e];
-   }
-  }
-  double wall=(System.nanoTime()-start)/1e9;int active=0;for(int c:counts)if(c>0)active++;
-  StringBuilder out=new StringBuilder(String.format(Locale.US,"%s %.1f ms · %.3f s на CPU · ×%.2f\n%d импульсов · %d активных нейронов",cancel.get()?"Остановлено":"Завершено",done*.1,wall,done*.0001/Math.max(wall,1e-9),spikes,active));
-  for(int k=0;k<Math.min(8,counts.length);k++){int best=0;for(int i=1;i<counts.length;i++)if(counts[i]>counts[best])best=i;if(counts[best]==0)break;out.append("\n").append(graph.ids[best]).append(": ").append(counts[best]);counts[best]=0;}
-  return out.toString();
- }
+    private final Graph graph;
+    private final double[] voltage, current;
+    private final int[] refractory;
+    private final float[][] pending;
+    private Random random;
+    private long tick;
+    private static final double EV = Math.exp(-.1 / 20);
+    private static final double EG = Math.exp(-.1 / 5);
+    private static final double COUPLING = (EV - EG) / 3;
+
+    public static final class Options {
+        public double gain = 1;
+        public boolean disableInhibition;
+        public int[] lesions = new int[0];
+    }
+
+    public static final class Result {
+        public final int[] counts;
+        public final long spikes, endTick;
+        public final int active, steps;
+        public final double wallSeconds;
+        Result(int[] counts, long spikes, long endTick, int steps, double wallSeconds) {
+            this.counts = counts;
+            this.spikes = spikes;
+            this.endTick = endTick;
+            this.steps = steps;
+            this.wallSeconds = wallSeconds;
+            int n = 0;
+            for (int c : counts) if (c > 0) n++;
+            active = n;
+        }
+    }
+
+    public Engine(Graph graph) {
+        this.graph = graph;
+        int n = graph.ids.length;
+        voltage = new double[n];
+        current = new double[n];
+        refractory = new int[n];
+        pending = new float[19][n];
+        reset(1);
+    }
+
+    public void reset() { reset(1); }
+    public void reset(long seed) {
+        Arrays.fill(voltage, -52);
+        Arrays.fill(current, 0);
+        Arrays.fill(refractory, 0);
+        for (float[] a : pending) Arrays.fill(a, 0);
+        tick = 0;
+        random = new Random(seed);
+    }
+
+    public int index(long id) {
+        int index = Arrays.binarySearch(graph.ids, id);
+        if (index < 0) throw new IllegalArgumentException("Неизвестный FlyWire ID: " + id);
+        return index;
+    }
+
+    public Result advance(int[] inputs, double[] rates, int durationMs,
+                          Options options, AtomicBoolean cancel) {
+        if (inputs.length != rates.length || inputs.length > 64 || durationMs < 1 || durationMs > 10000)
+            throw new IllegalArgumentException("Неверные параметры симуляции");
+        if (!Double.isFinite(options.gain) || options.gain < 0 || options.gain > 2)
+            throw new IllegalArgumentException("Усиление должно быть 0–2");
+        boolean[] driven = new boolean[voltage.length];
+        boolean[] lesioned = new boolean[voltage.length];
+        double[] probability = new double[inputs.length];
+        for (int k = 0; k < inputs.length; k++) {
+            if (inputs[k] < 0 || inputs[k] >= voltage.length || !Double.isFinite(rates[k]) || rates[k] < 0 || rates[k] > 1000)
+                throw new IllegalArgumentException("Неверный вход");
+            if (driven[inputs[k]]) throw new IllegalArgumentException("Повторяющийся вход");
+            driven[inputs[k]] = true;
+            probability[k] = 1 - Math.exp(-rates[k] * .0001);
+        }
+        for (int i : options.lesions) {
+            if (i < 0 || i >= voltage.length) throw new IllegalArgumentException("Неверная абляция");
+            lesioned[i] = true;
+            voltage[i] = -52;
+            current[i] = 0;
+        }
+        long start = System.nanoTime(), spikes = 0;
+        int[] counts = new int[voltage.length];
+        int steps = durationMs * 10, done = 0;
+        for (; done < steps && !cancel.get(); done++, tick++) {
+            float[] due = pending[(int) (tick % 19)];
+            for (int i = 0; i < voltage.length; i++) {
+                if (lesioned[i]) { due[i] = 0; continue; }
+                current[i] += due[i];
+                due[i] = 0;
+                if (refractory[i] > 0) { refractory[i]--; continue; }
+                voltage[i] = -52 + (voltage[i] + 52) * EV + current[i] * COUPLING;
+                current[i] *= EG;
+            }
+            for (int k = 0; k < inputs.length; k++) {
+                if (!lesioned[inputs[k]] && random.nextDouble() < probability[k])
+                    voltage[inputs[k]] += .275 * 250;
+            }
+            for (int i = 0; i < voltage.length; i++) {
+                if (lesioned[i] || voltage[i] <= -45) continue;
+                counts[i]++;
+                spikes++;
+                voltage[i] = -52;
+                current[i] = 0;
+                refractory[i] = driven[i] ? 0 : 22;
+                float[] future = pending[(int) ((tick + 18) % 19)];
+                for (int edge = graph.offsets[i]; edge < graph.offsets[i + 1]; edge++) {
+                    int target = graph.targets[edge];
+                    if (lesioned[target] || (options.disableInhibition && graph.weights[edge] < 0)) continue;
+                    future[target] += graph.weights[edge] * options.gain;
+                }
+            }
+        }
+        return new Result(counts, spikes, tick, done, (System.nanoTime() - start) / 1e9);
+    }
+
+    public String run(long id, double hz, int durationMs, AtomicBoolean cancel) {
+        Result result = advance(new int[]{index(id)}, new double[]{hz}, durationMs, new Options(), cancel);
+        StringBuilder out = new StringBuilder(String.format(Locale.US,
+            "%s %.1f ms · %.3f s на CPU · ×%.2f\n%d импульсов · %d активных нейронов",
+            cancel.get() ? "Остановлено" : "Завершено", result.steps * .1, result.wallSeconds,
+            result.steps * .0001 / Math.max(result.wallSeconds, 1e-9), result.spikes, result.active));
+        int[] counts = result.counts.clone();
+        for (int k = 0; k < Math.min(8, counts.length); k++) {
+            int best = 0;
+            for (int i = 1; i < counts.length; i++) if (counts[i] > counts[best]) best = i;
+            if (counts[best] == 0) break;
+            out.append("\n").append(graph.ids[best]).append(": ").append(counts[best]);
+            counts[best] = 0;
+        }
+        return out.toString();
+    }
 }

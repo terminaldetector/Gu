@@ -1,0 +1,8 @@
+{
+  "package": "jsnes",
+  "version": "2.1.0",
+  "url": "https://registry.npmjs.org/jsnes/-/jsnes-2.1.0.tgz",
+  "sha1": "3abe3b1261accc7b3d9c4e4763cd58a8e4660e4f",
+  "license": "Apache-2.0",
+  "changes": "Vendored without modification"
+}
