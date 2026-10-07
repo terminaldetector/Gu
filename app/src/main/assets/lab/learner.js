@@ -7,6 +7,19 @@ class Learner {
  random(){let x=this.rng;x^=x<<13;x^=x>>>17;x^=x<<5;this.rng=x>>>0;return this.rng/4294967296;}
  features(retina,outputs,position=null,previous=null){const current=retina.map(x=>Math.max(0,Math.min(1,x)));const motion=current.map((x,i)=>previous?x-previous[i]:0);return [1,...current,...motion,...outputs.map(x=>Math.tanh(x/100)),...(position||[0,0,0,0])];}
  setActions(actions){if(!Array.isArray(actions)||actions.length<2||actions.length>64||new Set(actions).size!==actions.length||actions.some(x=>!Number.isInteger(x)||x<0||x>255||(x&48)===48||(x&192)===192))throw Error('Invalid action set');const old=this.actions,weights=this.weights;this.weights=actions.map(mask=>old.includes(mask)?weights[old.indexOf(mask)].slice():new Array(45).fill(0));this.actions=actions.slice();this.boundary();}
+ preset(seed=1){
+  if(this.updates>0||this.weights.some(row=>row.some(weight=>Math.abs(weight)>1e-9)))return false;
+  let x=(seed>>>0)||1;const rnd=()=>{x^=x<<13;x^=x>>>17;x^=x<<5;return (x>>>0)/4294967296;};
+  this.weights=this.actions.map(mask=>{
+   const w=new Array(45).fill(0);w[0]=(rnd()-.5)*.08;
+   for(let i=0;i<16;i++){const col=i%4,row=(i/4)|0;let v=0;
+    if(mask&128)v+=(col-1.5)*.018;if(mask&64)v+=(1.5-col)*.018;
+    if(mask&16)v+=(1.5-row)*.018;if(mask&32)v+=(row-1.5)*.018;
+    if(mask&1||mask&2)v+=(.5-rnd())*.006;w[1+i]=v;w[17+i]=v*.7;
+   }
+   if(mask&1||mask&2)w[33]=.012;if(mask===0)w[0]+=.01;return w;
+  });this.boundary();return true;
+ }
 
  setAllowedMask(mask){if(!Number.isInteger(mask)||mask<0||mask>255||!this.actions.some(a=>(a&~mask)===0))throw Error('Нет разрешённых действий: добавьте нейтральную маску 0 или игровые кнопки');if(mask!==this.allowedMask){this.allowedMask=mask;this.boundary();}}
  eligible(){return this.actions.map((mask,i)=>(mask&~this.allowedMask)===0?i:-1).filter(i=>i>=0);}
@@ -36,4 +49,3 @@ class Learner {
 }
 root.FlyLearner=Learner;if(typeof module!=='undefined')module.exports=Learner;
 })(typeof window==='undefined'?globalThis:window);
-
