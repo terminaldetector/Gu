@@ -1,9 +1,11 @@
 /* Local NES frontend and bounded asynchronous connectome bridge. */
 'use strict';
 const $ = id => document.getElementById(id);
-const buttonNames = ['A','B','Select','Start','↑','↓','←','→'];
+const labPlatform=new URLSearchParams(location.search).get('system')==='sega'?'sega':'nes';
+const buttonNames = ['A','B',labPlatform==='sega'?'C':'Select','Start','↑','↓','←','→'];
+const ramLimit=labPlatform==='sega'?65536:2048;
 const screen = $('screen'), context = screen.getContext('2d', {alpha:false});
-const image = context.createImageData(256,240);
+let image = context.createImageData(256,240);
 let nes, loaded = false, playing = false, connected = false, ready = false, configuring = false;
 let romHash = '', frame = 0, generation = 0, token = 0, pendingToken = null;
 let manualMask = 0, brainMask = 0, appliedMask = 0, lastResponse = 0;
@@ -19,7 +21,8 @@ const learner=new FlyLearner(1),trials=[],transitions=[];
 let lastDecisionFeatures=null,sampledControllerMask=0,graphIdentity=null;
 let episodeSteps=0,episodeReward=0,rewardPending=0,finishPending=false,lastRewardValue=null,diagnosticHash=null,learnReward=0;
 function learningBoundary(){learner.boundary();lastRewardValue=null;episodeSteps=0;episodeReward=0;rewardPending=0;finishPending=false;previousRetina=null;lastDecisionFeatures=null;learnReward=0;}
-function learningKey(){return JSON.stringify({romHash,inputs:ids('inputIds'),outputs:ids('outputIds'),profile:profileValues(),configuration:configuration()});}
+function keysEqual(a,b){try{const x=JSON.parse(a),y=JSON.parse(b);x.system=x.system||'nes';y.system=y.system||'nes';const sort=v=>Array.isArray(v)?v.map(sort):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,sort(v[k])])):v;return JSON.stringify(sort(x))===JSON.stringify(sort(y));}catch(_){return false;}}
+function learningKey(){return JSON.stringify({romHash,inputs:ids('inputIds'),outputs:ids('outputIds'),system:labPlatform,profile:profileValues(),configuration:configuration()});}
 function learningStats(){ $('learningStats').textContent='Обновлений: '+learner.updates+' · эпизодов: '+learner.episodes+' · награда: '+episodeReward.toFixed(2)+' · шаг: '+episodeSteps+' · кнопки: '+brainMask;
  const c=$('rewardChart').getContext('2d');c.fillStyle='#111626';c.fillRect(0,0,600,100);if(trials.length<2)return;const low=Math.min(0,...trials.map(t=>t.reward)),high=Math.max(1,...trials.map(t=>t.reward));c.strokeStyle='#b39bff';c.beginPath();trials.forEach((t,i)=>{const x=i*600/99,y=95-(t.reward-low)/(high-low)*85;i?c.lineTo(x,y):c.moveTo(x,y);});c.stroke();
 }
@@ -28,19 +31,19 @@ function learnedButtons(data){
  if($('mode').value!=='closed'||$('clock').value!=='lockstep')throw Error('Обучение требует замкнутого пошагового контура');
  if(manualMask){learningBoundary();return 0;}
  const diagnostic=$('rewardMode').value==='diagnostic';
- if(diagnostic&&romHash!==diagnosticHash)throw Error('Диагностическая награда доступна только для встроенного тестового ROM');
+ if(diagnostic&&(labPlatform!=='nes'||romHash!==diagnosticHash))throw Error('Диагностическая награда доступна только для встроенного тестового ROM');
  const address=Number($('rewardAddress').value),scale=Number($('rewardScale').value),limit=Number($('episodeLength').value);
  const epsilon=Number($('epsilon').value),alpha=Number($('alpha').value);
- if(!Number.isInteger(address)||address<0||address>2047||!Number.isFinite(scale)||Math.abs(scale)>10||!Number.isInteger(limit)||limit<10||limit>2000||epsilon<0||epsilon>1||!Number.isFinite(epsilon)||alpha<.001||alpha>.2||!Number.isFinite(alpha))throw Error('Параметры обучения вне границ');
+ if(!Number.isInteger(address)||address<0||address>=ramLimit||!Number.isFinite(scale)||Math.abs(scale)>10||!Number.isInteger(limit)||limit<10||limit>2000||epsilon<0||epsilon>1||!Number.isFinite(epsilon)||alpha<.001||alpha>.2||!Number.isFinite(alpha))throw Error('Параметры обучения вне границ');
  learner.epsilon=epsilon;learner.alpha=alpha;
  const x=nes.cpu.mem[0],y=nes.cpu.mem[1];
  const spec={address,width:Number($('ramWidth').value),format:$('ramFormat').value,endian:$('ramEndian').value};
- const value=diagnostic?-Math.abs(200-x)-Math.abs(100-y):$('rewardMode').value==='ram'?FlyGameTools.readRam(nes.cpu.mem,spec):0;
+ const value=diagnostic?-Math.abs(200-x)-Math.abs(100-y):$('rewardMode').value==='ram'?FlyGameTools.readRam(nes.cpu.mem,spec,ramLimit):0;
  let reward=rewardPending;rewardPending=0;
  if(lastRewardValue!==null){if(diagnostic)reward+=(value-lastRewardValue)/8-.01;else if($('rewardMode').value==='ram')reward+=FlyGameTools.delta(value,lastRewardValue,spec,$('ramWrap').checked)*scale;}
  lastRewardValue=value;reward=Math.max(-10,Math.min(10,reward));
- const success=diagnostic?x>=200&&Math.abs(y-100)<=4:$('winEnabled').checked&&FlyGameTools.predicate(nes.cpu.mem,$('winAddress').value,$('winValue').value);
- const death=$('deathEnabled').checked&&FlyGameTools.predicate(nes.cpu.mem,$('deathAddress').value,$('deathValue').value);
+ const success=diagnostic?x>=200&&Math.abs(y-100)<=4:$('winEnabled').checked&&FlyGameTools.predicate(nes.cpu.mem,$('winAddress').value,$('winValue').value,ramLimit);
+ const death=$('deathEnabled').checked&&FlyGameTools.predicate(nes.cpu.mem,$('deathAddress').value,$('deathValue').value,ramLimit);
  const terminal=finishPending||success||death||episodeSteps+1>=limit;finishPending=false;
  const bonus=diagnostic?2:Number($('winReward').value),penalty=Number($('deathReward').value);
  if(!Number.isFinite(bonus)||Math.abs(bonus)>10||!Number.isFinite(penalty)||Math.abs(penalty)>10)throw Error('Награда завершения вне границ');
@@ -53,7 +56,7 @@ function learnedButtons(data){
  if(terminal){trials.push({reward:episodeReward,success:success&&!death,death,steps:episodeSteps,mode});if(trials.length>100)trials.shift();log('Эпизод '+learner.episodes+': '+episodeReward.toFixed(2)+'; успех '+success);learningStats();
   if(mode==='train'&&$('autosavePolicy').checked){try{persistPolicy(false);}catch(error){log('Автосохранение: '+error.message);}}
   if($('autoEpisode').checked){restartEpisode();learningBoundary();apply(true,false);}
-  else {playing=false;connected=false;releaseBrain();$('play').textContent='Запустить NES';$('brainToggle').textContent='Включить связь';nativeCall('stop');learningBoundary();}
+  else {playing=false;connected=false;releaseBrain();$('play').textContent='Запустить эмулятор';$('brainToggle').textContent='Включить связь';nativeCall('stop');learningBoundary();}
  }
  return terminal?0:mask;
 }
@@ -78,14 +81,15 @@ function updateButtons() {
   }
   appliedMask=mask;
 }
-function rgbaAndRetina(buffer) {
+function rgbaAndRetina(buffer,width=256,height=240) {
+  if(screen.width!==width||screen.height!==height){screen.width=width;screen.height=height;screen.style.aspectRatio=width+"/"+height;image=context.createImageData(width,height);}
   const sums=new Float64Array(16),counts=new Uint32Array(16);
-  for(let i=0;i<61440;i++) {
+  for(let i=0;i<width*height;i++) {
     const color=buffer[i],r=color&255,g=(color>>>8)&255,b=(color>>>16)&255,at=i*4;
     image.data[at]=r;image.data[at+1]=g;image.data[at+2]=b;image.data[at+3]=255;
     // Sample every fourth pixel; each of 16 cells still has hundreds of samples.
     if((i&3)===0) {
-      const x=i%256,y=(i/256)|0,tile=((y/60)|0)*4+((x/64)|0);
+      const x=i%width,y=(i/width)|0,tile=((y/(height/4))|0)*4+((x/(width/4))|0);
       sums[tile]+=(.2126*r+.7152*g+.0722*b)/255;counts[tile]++;
     }
   }
@@ -93,23 +97,23 @@ function rgbaAndRetina(buffer) {
   retina=Array.from(sums,(sum,i)=>sum/counts[i]);
   [...$('retina').children].forEach((element,i)=>{const c=Math.round(retina[i]*255);element.style.background=`rgb(${c},${c},${c})`;});
 }
-function setupNes() {
-  nes=new jsnes.NES({
+function coreOptions(){return {
     onFrame:rgbaAndRetina,
-    sampleRate:audioContext?audioContext.sampleRate:48000,
+    sampleRate:audioContext?audioContext.sampleRate:labPlatform==='sega'?44100:48000,
     onAudioSample:(left,right)=>{
       if(!soundEnabled)return;
       if(audioWrite-audioRead>=audioLeft.length)audioRead++;
       audioLeft[audioWrite%audioLeft.length]=left;audioRight[audioWrite%audioRight.length]=right;audioWrite++;
     },
     onStatusUpdate:text=>log(text)
-  });
-}
+  };}
+function setupNes(){nes=new jsnes.NES(coreOptions());}
+async function setupSega(){nes=await SegaConsole.create(coreOptions(),window.GenPlusFactory,{locateFile:path=>'sega/'+path});}
 function toggleSound() {
   try {
     if(!audioContext){
       const Audio = window.AudioContext||window.webkitAudioContext;
-      audioContext=new Audio({sampleRate:48000});
+      audioContext=new Audio({sampleRate:labPlatform==='sega'?44100:48000});
       audioNode=audioContext.createScriptProcessor(2048,0,2);
       audioNode.onaudioprocess=event=>{
         const l=event.outputBuffer.getChannelData(0),r=event.outputBuffer.getChannelData(1);
@@ -130,13 +134,13 @@ function resetSession() {
   generation++;pendingToken=null;lastSample=0;releaseBrain();learningBoundary();
   connected=false;$('brainToggle').textContent='Включить связь';
 }
-window.labLoadRom=function(data) {
+window.labLoadRom=async function(data) {
   const oldNes=nes,oldLoaded=loaded;
   try {
-    playing=false;$('play').textContent='Запустить NES';resetSession();
+    playing=false;$('play').textContent='Запустить эмулятор';resetSession();
     const binary=atob(data.base64),bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));
-    const info=FlyGameTools.validateRom(bytes);
-    loaded=false;setupNes();nes.loadROM(bytes);loaded=true;appliedMask=0;manualMask=0;
+    const info=labPlatform==='sega'?SegaConsole.validateRom(bytes):FlyGameTools.validateRom(bytes);
+    loaded=false;if(labPlatform==='sega')await setupSega();else setupNes();nes.loadROM(bytes);loaded=true;appliedMask=0;manualMask=0;
     const changedRom=romHash!==data.sha256;romHash=data.sha256;frame=0;if(data.name.includes("diagnostic"))diagnosticHash=romHash;if(changedRom){learner.reset(Number($("seed").value));learner.setActions(FlyGameTools.actions($("actionMasks").value));startSnapshot=null;}learningBoundary();updateStartInfo();
     for(let i=0;i<5;i++){nes.frame();frame++;}
     $('romName').textContent=data.name+' · '+romHash.slice(0,12);
@@ -199,7 +203,7 @@ window.labResult=function(data) {
   $('spikes').textContent=data.spikes;$('active').textContent=data.active;$('compute').textContent=data.wallMs.toFixed(1);
   [...$('outputs').children].forEach((element,i)=>{element.textContent=buttonNames[i]+' '+data.outputs[i].toFixed(0)+' Гц';element.className=(data.buttons&(1<<i))?'on':'';});
   history.push(Math.log10(1+data.spikes));if(history.length>100)history.shift();drawHistory();
-  $('timing').textContent='NES: '+frame+' кадров · сеть: '+data.simMs.toFixed(1)+' мс · '+$('clock').selectedOptions[0].textContent;
+  $('timing').textContent=(labPlatform==='sega'?'SEGA: ':'NES: ')+frame+' кадров · сеть: '+data.simMs.toFixed(1)+' мс · '+$('clock').selectedOptions[0].textContent;
   if(performance.now()-lastTelemetry>1000){log('окно '+data.sequence+': '+data.spikes+' импульсов; активных '+data.active+'; кнопки '+data.buttons);lastTelemetry=performance.now();}
 };
 function drawHistory() {
@@ -211,26 +215,26 @@ function drawHistory() {
 function advanceFrame(now,forceSample=false) {
   if(!loaded)return;
   try {updateButtons();nes.frame();frame++;sampleFrame(now,forceSample);}
-  catch(error){playing=false;connected=false;releaseBrain();status('Эмуляция остановлена: '+error.message,true);$('play').textContent='Запустить NES';}
+  catch(error){playing=false;connected=false;releaseBrain();status('Эмуляция остановлена: '+error.message,true);$('play').textContent='Запустить эмулятор';}
 }
 function loop(now) {
   if(brainMask&&now-lastResponse>500)releaseBrain();
   const lockstep=connected&&$('clock').value==='lockstep';
-  if(playing&&now-lastFrame>=1000/60&&(!lockstep||pendingToken===null)&&!configuring){lastFrame=now;advanceFrame(now,lockstep);}
+  if(playing&&now-lastFrame>=1000/(labPlatform==='sega'&&nes?nes.fps:60)&&(!lockstep||pendingToken===null)&&!configuring){lastFrame=now;advanceFrame(now,lockstep);}
   requestAnimationFrame(loop);
 }
 window.labPause=function() {
   playing=false;connected=false;configuring=false;generation++;pendingToken=null;
   manualMask=0;holding.clear();releaseBrain();audioRead=audioWrite;
-  $('play').textContent='Запустить NES';$('brainToggle').textContent='Включить связь';nativeCall('stop');
+  $('play').textContent='Запустить эмулятор';$('brainToggle').textContent='Включить связь';nativeCall('stop');
 };
-$('play').onclick=()=>{if(!loaded){status('Сначала загрузите ROM',true);return;}playing=!playing;$('play').textContent=playing?'Пауза NES':'Запустить NES';if(playing)nativeCall('resume');else{releaseBrain();nativeCall('stop');}};
+$('play').onclick=()=>{if(!loaded){status('Сначала загрузите ROM',true);return;}playing=!playing;$('play').textContent=playing?'Пауза':'Запустить эмулятор';if(playing)nativeCall('resume');else{releaseBrain();nativeCall('stop');}};
 $('step').onclick=()=>{if(!playing&&pendingToken===null){nativeCall('resume');advanceFrame(performance.now(),true);}};
 $('console').onclick=()=>nativeCall('console');
 $('demo').onclick=()=>nativeCall('demo');$('import').onclick=()=>nativeCall('pickRom');$('audio').onclick=toggleSound;
 $('apply').onclick=()=>apply(false);
-$('brainToggle').onclick=()=>{if(connected){connected=false;resetSession();nativeCall('stop');status('Связь отключена; NES доступен вручную.');}else apply(true);};
-$('resetNes').onclick=()=>{if(loaded){playing=false;$('play').textContent='Запустить NES';nes.reloadROM();holding.clear();manualMask=0;brainMask=0;for(let i=0;i<8;i++)nes.buttonUp(1,i);appliedMask=0;frame=0;resetSession();for(let i=0;i<5;i++){nes.frame();frame++;}if(ready)apply(false);}};
+$('brainToggle').onclick=()=>{if(connected){connected=false;resetSession();nativeCall('stop');status('Связь отключена; эмулятор доступен вручную.');}else apply(true);};
+$('resetNes').onclick=()=>{if(loaded){playing=false;$('play').textContent='Запустить эмулятор';nes.reloadROM();holding.clear();manualMask=0;brainMask=0;for(let i=0;i<8;i++)nes.buttonUp(1,i);appliedMask=0;frame=0;resetSession();for(let i=0;i<5;i++){nes.frame();frame++;}if(ready)apply(false);}};
 $('gain').oninput=()=>$('gainLabel').textContent=Number($('gain').value).toFixed(2);
 $('freeze').onchange=()=>{frozen=null;log('Freeze retina: '+$('freeze').checked);};
 $('saveState').onclick=()=>{try{if(!loaded)throw Error('ROM не загружен');localStorage.setItem('nes-slot',JSON.stringify({hash:romHash,state:JSON.parse(JSON.stringify(nes.toJSON()))}));status('Снимок NES сохранён. Состояние коннектома не входит в снимок.');}catch(error){status(error.message,true);}};
@@ -256,10 +260,10 @@ $('clearPolicy').onclick=()=>{try{const actions=FlyGameTools.actions($('actionMa
 function profileValues(){const values={};for(const id of profileFields){const el=$(id);values[id]=el.type==='checkbox'?el.checked:el.value;}return values;}
 function updateStartInfo(){$('startInfo').textContent=startSnapshot?'Старт: снимок текущего ROM, кадр '+startSnapshot.frame:'Старт: перезапуск ROM с начала.';}
 function validateProfile(p){
- FlyGameTools.actions(p.actionMasks);if(!['diagnostic','ram','manual'].includes(p.rewardMode))throw Error('Неверная награда');
- FlyGameTools.readRam(new Uint8Array(2048),{address:p.rewardAddress,width:p.ramWidth,format:p.ramFormat,endian:p.ramEndian});
+ if(labPlatform==='sega'&&p.rewardMode==='diagnostic')throw Error('Выберите RAM или ручную награду для Sega');FlyGameTools.actions(p.actionMasks);if(!['diagnostic','ram','manual'].includes(p.rewardMode))throw Error('Неверная награда');
+ FlyGameTools.readRam(new Uint8Array(ramLimit),{address:p.rewardAddress,width:p.ramWidth,format:p.ramFormat,endian:p.ramEndian},ramLimit);
  for(const [id,min,max] of [['rewardScale',-10,10],['epsilon',0,1],['alpha',.001,.2],['episodeLength',10,2000],['deathReward',-10,10],['winReward',-10,10]]){const n=Number(p[id]);if(!Number.isFinite(n)||n<min||n>max||p[id].trim()===''||(id==='episodeLength'&&!Number.isInteger(n)))throw Error('Параметр профиля вне границ: '+id);}
- for(const name of ['death','win'])FlyGameTools.predicate(new Uint8Array(2048),p[name+'Address'],p[name+'Value']);
+ for(const name of ['death','win'])FlyGameTools.predicate(new Uint8Array(ramLimit),p[name+'Address'],p[name+'Value'],ramLimit);
 }
 function validateConfiguration(c){
  for(const [id,min,max] of [['maxHz',0,500],['thresholdHz',1,500],['windowMs',1,100],['seed',0,2147483647],['gain',0,2]])if(!Number.isFinite(c[id])||c[id]<min||c[id]>max||(['windowMs','seed'].includes(id)&&!Number.isInteger(c[id])))throw Error('Неверная конфигурация сети: '+id);
@@ -267,18 +271,21 @@ function validateConfiguration(c){
  for(const [id,len] of [['inputs',16],['outputs',8],['lesions',null]])if(!Array.isArray(c[id])||(len!==null&&c[id].length!==len)||c[id].length>256||new Set(c[id]).size!==c[id].length||c[id].some(x=>typeof x!=='string'||!/^\d+$/.test(x)))throw Error('Неверные ID портов');
  if(c.inputs.some(x=>c.outputs.includes(x)))throw Error('Входные и выходные порты совпадают');
 }
-function validateSnapshot(snapshot){if(!snapshot)return;if(snapshot.hash!==romHash||!snapshot.state||!snapshot.state.cpu||!snapshot.state.ppu||!snapshot.state.mmap||!snapshot.state.papu||!Array.isArray(snapshot.state.cpu.mem)||snapshot.state.cpu.mem.length!==65536||!Array.isArray(snapshot.state.ppu.vramMem)||snapshot.state.ppu.vramMem.length!==32768||!Array.isArray(snapshot.state.ppu.buffer)||snapshot.state.ppu.buffer.length!==61440)throw Error('Неверный стартовый снимок');const probe=new jsnes.NES();probe.loadROM(nes.romData);probe.fromJSON(snapshot.state);}
-function restartEpisode(){holding.clear();manualMask=0;brainMask=0;if(startSnapshot){nes.fromJSON(JSON.parse(JSON.stringify(startSnapshot.state)));frame=startSnapshot.frame;rgbaAndRetina(nes.ppu.buffer);}else{nes.reloadROM();frame=0;for(let i=0;i<5;i++){nes.frame();frame++;}}for(let i=0;i<8;i++)nes.buttonUp(1,i);appliedMask=0;audioRead=audioWrite;updateButtons();}
-function policyPackage(includeStart=false){if(!ready||!loaded)throw Error("Дождитесь ROM и коннектома");validateProfile(profileValues());validateConfiguration(configuration());const actions=FlyGameTools.actions($('actionMasks').value);if(JSON.stringify(actions)!==JSON.stringify(learner.actions))throw Error('Сначала примените набор действий');const result={version:2,romHash,key:learningKey(),profile:profileValues(),configuration:configuration(),policy:learner.save(),trials:trials.slice()};if(includeStart){result.start=startSnapshot;result.transitions=transitions.slice();result.graph=graphIdentity;}return result;}
+function validateSnapshot(snapshot){if(!snapshot)return;if(labPlatform==='sega'){
+ $('resetNes').textContent='Сброс Sega';$('saveState').textContent='Снимок Sega';$('play').textContent='Запустить эмулятор';
+ for(const option of $('clock').options)option.textContent=option.textContent.replaceAll('NES','Sega');
+ for(const el of document.querySelectorAll('p.note'))if(el.textContent.includes('стартовый снимок NES'))el.textContent='Экспорт включает профиль, стартовый снимок Sega и модель. RAM победы/смерти задаётся вручную. PAL/NTSC определяется ядром; battery .sav отдельно не экспортируется.';if(snapshot.hash!==romHash)throw Error('Снимок другого ROM');nes.validateState(snapshot.state);return;}if(snapshot.hash!==romHash||!snapshot.state||!snapshot.state.cpu||!snapshot.state.ppu||!snapshot.state.mmap||!snapshot.state.papu||!Array.isArray(snapshot.state.cpu.mem)||snapshot.state.cpu.mem.length!==65536||!Array.isArray(snapshot.state.ppu.vramMem)||snapshot.state.ppu.vramMem.length!==32768||!Array.isArray(snapshot.state.ppu.buffer)||snapshot.state.ppu.buffer.length!==61440)throw Error('Неверный стартовый снимок');const probe=new jsnes.NES();probe.loadROM(nes.romData);probe.fromJSON(snapshot.state);}
+function restartEpisode(){holding.clear();manualMask=0;brainMask=0;if(startSnapshot){nes.fromJSON(JSON.parse(JSON.stringify(startSnapshot.state)));frame=startSnapshot.frame;if(labPlatform==='nes')rgbaAndRetina(nes.ppu.buffer);}else{nes.reloadROM();frame=0;for(let i=0;i<5;i++){nes.frame();frame++;}}for(let i=0;i<8;i++)nes.buttonUp(1,i);appliedMask=0;audioRead=audioWrite;updateButtons();}
+function policyPackage(includeStart=false){if(!ready||!loaded)throw Error("Дождитесь ROM и коннектома");validateProfile(profileValues());validateConfiguration(configuration());const actions=FlyGameTools.actions($('actionMasks').value);if(JSON.stringify(actions)!==JSON.stringify(learner.actions))throw Error('Сначала примените набор действий');const result={version:2,system:labPlatform,romHash,key:learningKey(),profile:profileValues(),configuration:configuration(),policy:learner.save(),trials:trials.slice()};if(includeStart){result.start=startSnapshot;result.transitions=transitions.slice();result.graph=graphIdentity;}return result;}
 function persistPolicy(show=true){const text=JSON.stringify(policyPackage(false));localStorage.setItem('fly-policy-'+romHash,text);if(show){$('policyJson').value=text;status('Веса сохранены. Для переноса со стартом используйте экспорт JSON.');}}
-function restorePolicy(saved){if(saved.romHash!==romHash||saved.key!==learningKey())throw Error('ROM, порты или профиль не совпадают');const probe=new FlyLearner();probe.load(saved.policy);window.labPause();learner.load(saved.policy);learningBoundary();trials.length=0;if(Array.isArray(saved.trials))trials.push(...saved.trials.slice(-100).filter(t=>Number.isFinite(t.reward)));learningStats();}
+function restorePolicy(saved){if(saved.romHash!==romHash||!keysEqual(saved.key,learningKey()))throw Error('ROM, порты или профиль не совпадают');const probe=new FlyLearner();probe.load(saved.policy);window.labPause();learner.load(saved.policy);learningBoundary();trials.length=0;if(Array.isArray(saved.trials))trials.push(...saved.trials.slice(-100).filter(t=>Number.isFinite(t.reward)));learningStats();}
 $('savePolicy').onclick=()=>{try{persistPolicy();}catch(error){status(error.message,true);}};
 $('loadPolicy').onclick=()=>{try{const raw=$('policyJson').value.trim()||localStorage.getItem('fly-policy-'+romHash);if(!raw||raw.length>8*1024*1024)throw Error('Модель отсутствует или слишком велика');restorePolicy(JSON.parse(raw));status('Модель загружена. Выберите оценку и включите связь.');}catch(error){status(error.message,true);}};
 $('captureStart').onclick=()=>{try{if(!loaded)throw Error('Загрузите ROM');window.labPause();startSnapshot={hash:romHash,frame,state:JSON.parse(JSON.stringify(nes.toJSON()))};learningBoundary();updateStartInfo();status('Старт эпизода сохранён. Автоперезапуск будет возвращаться сюда.');}catch(error){status(error.message,true);}};
 $('clearStart').onclick=()=>{window.labPause();startSnapshot=null;learningBoundary();updateStartInfo();};
-$('saveProfile').onclick=()=>{try{if(!ready||!loaded)throw Error('Дождитесь ROM и коннектома');validateProfile(profileValues());validateConfiguration(configuration());localStorage.setItem('fly-profile-'+romHash,JSON.stringify({version:2,romHash,profile:profileValues(),configuration:configuration(),start:startSnapshot}));status('Профиль игры сохранён.');}catch(error){status(error.message,true);}};
+$('saveProfile').onclick=()=>{try{if(!ready||!loaded)throw Error('Дождитесь ROM и коннектома');validateProfile(profileValues());validateConfiguration(configuration());localStorage.setItem('fly-profile-'+romHash,JSON.stringify({version:2,romHash,system:labPlatform,profile:profileValues(),configuration:configuration(),start:startSnapshot}));status('Профиль игры сохранён.');}catch(error){status(error.message,true);}};
 function restoreProfile(data){
- if(!loaded||data.version!==2||data.romHash!==romHash||!data.profile||!data.configuration)throw Error('Профиль относится к другому ROM или версии');
+ if(!loaded||data.version!==2||data.romHash!==romHash||(data.system||'nes')!==labPlatform||!data.profile||!data.configuration)throw Error('Профиль относится к другому ROM или версии');
  validateProfile(data.profile);validateConfiguration(data.configuration);validateSnapshot(data.start);const actionSet=FlyGameTools.actions(data.profile.actionMasks);
  for(const id of profileFields)if(!Object.prototype.hasOwnProperty.call(data.profile,id)||typeof data.profile[id]!==($(id).type==='checkbox'?'boolean':'string'))throw Error('Неверное поле профиля: '+id);
  const backup=profileValues(),cfg=configuration(),oldStart=startSnapshot;
@@ -293,6 +300,20 @@ function restoreProfile(data){
 $('loadProfile').onclick=()=>{try{const text=localStorage.getItem('fly-profile-'+romHash);if(!text)throw Error('Профиль не сохранён');restoreProfile(JSON.parse(text));status('Профиль восстановлен. Включите связь для применения.');}catch(error){status(error.message,true);}};
 $('exportModel').onclick=()=>{try{if(!loaded)throw Error('Загрузите ROM');nativeCall('exportModel',JSON.stringify(policyPackage(true)));}catch(error){status(error.message,true);}};
 $('importModel').onclick=()=>nativeCall('importModel');
-window.labImportModel=data=>{try{const probe=new FlyLearner();probe.load(data.policy);if(data.romHash!==romHash)throw Error('Модель другого ROM');const values={};for(const id of profileFields)values[id]=data.profile[id];const expected=JSON.stringify({romHash,inputs:data.configuration.inputs,outputs:data.configuration.outputs,profile:values,configuration:data.configuration});if(data.key!==expected||JSON.stringify(probe.actions)!==JSON.stringify(FlyGameTools.actions(values.actionMasks)))throw Error('Модель и профиль не согласованы');restoreProfile(data);restorePolicy(data);status('Профиль и модель импортированы.');}catch(error){status(error.message,true);}};
+window.labImportModel=data=>{try{const probe=new FlyLearner();probe.load(data.policy);if(data.romHash!==romHash)throw Error('Модель другого ROM');const values={};for(const id of profileFields)values[id]=data.profile[id];const expected=JSON.stringify({romHash,inputs:data.configuration.inputs,outputs:data.configuration.outputs,system:labPlatform,profile:values,configuration:data.configuration});if(!keysEqual(data.key,expected)||JSON.stringify(probe.actions)!==JSON.stringify(FlyGameTools.actions(values.actionMasks)))throw Error('Модель и профиль не согласованы');restoreProfile(data);restorePolicy(data);status('Профиль и модель импортированы.');}catch(error){status(error.message,true);}};
 for(const id of profileFields)$(id).addEventListener('change',()=>{window.labPause();learningBoundary();status('Профиль изменён: опыт остановлен. Включите связь для продолжения.');});
-setupNes();drawHistory();learningStats();requestAnimationFrame(loop);nativeCall('demo');
+if(labPlatform==='nes')setupNes();
+$('navNes').onclick=()=>nativeCall('switchSystem','nes');$('navSega').onclick=()=>nativeCall('switchSystem','sega');
+if(labPlatform==='sega'){
+ $('resetNes').textContent='Сброс Sega';$('saveState').textContent='Снимок Sega';$('play').textContent='Запустить эмулятор';
+ for(const option of $('clock').options)option.textContent=option.textContent.replaceAll('NES','Sega');
+ for(const el of document.querySelectorAll('p.note'))if(el.textContent.includes('стартовый снимок NES'))el.textContent='Экспорт включает профиль, стартовый снимок Sega и модель. RAM победы/смерти задаётся вручную. PAL/NTSC определяется ядром; battery .sav отдельно не экспортируется.';
+ $('labTitle').textContent='FLY / SEGA LAB';$('import').textContent='Открыть .bin / .md';$('modeInfo').textContent='Mega Drive · Genesis Plus GX / WASM · A/B/C/Start';
+ $('rewardMode').value='manual';$('ramEndian').value='big';$('ramWidth').value='2';$('rewardMode').querySelector('[value="diagnostic"]').disabled=true;
+ document.querySelector('[data-button="2"]').textContent='C';
+ for(const id of ['rewardAddress','deathAddress','winAddress'])$(id).max='65535';
+ $('ramLabel').textContent='RAM смещение 0–65535 (0 соответствует $FF0000)';
+ $('maskLabel').textContent='Маски Sega: A=1, B=2, C=4, Start=8, ↑=16, ↓=32, ←=64, →=128';
+ $('platformFooter').textContent='Genesis Plus GX · WebAssembly · некоммерческая лицензия. Raw Mega Drive ROM; CD/32X/SMD/ZIP не поддерживаются. Регион и PAL/NTSC выбирает ядро автоматически. Снимки и RAM доступны; battery .sav отдельно не экспортируется.';
+}
+drawHistory();learningStats();requestAnimationFrame(loop);nativeCall('demo');

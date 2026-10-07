@@ -1,3 +1,16 @@
+## Version 0.5: 1 NES / 2 Sega / 3 GPT-like direct inference
+Install `FlyConsole-Lab-0.5-debug.apk` over earlier NES builds (same package/signing key for shared APKs). Three modes retain the full local connectome:
+
+1. **NES**: JSNES and existing profiles, learning and experiments.
+2. **Sega Mega Drive / Genesis**: bundled Genesis Plus GX WebAssembly, three-button A/B/C/Start control, automatic region and 50/60 Hz pacing, video/audio, 64 KiB logical 68K work RAM and core-native state snapshots. Raw `.bin/.md/.gen` up to 8 MiB. ZIP/SMD, Sega CD and 32X are rejected. RAM offset 0 means 68K address $FF0000; multibyte game values usually require big endian. A/B/C/Start/Up/Down/Left/Right use the same eight adapter channels. Six-button X/Y/Z/Mode and battery .sav export are not exposed by this interface.
+3. **GPT-like inference console**: conversational command log retained, plus a bounded JSON experiment DSL. The phrase names the interface, not a language model. Set seed/reset/gain/inhibition/lesions; run up to 64 steps (10,000 ms total), each with up to 256 input ID/rate pairs and 256 named output channels. IDs must be strings to preserve 64-bit identity. Responses contain actual LIF spike counts/rates/timing, not generated prose. Import programs/export clean result JSON through Android's document picker. GitHub Actions uses its own debug signing key; shared release APK updates require the shared signing key. JSON template fills a valid ID from the currently loaded graph. `stim`, `status`, `reset` remain available. `reset:false` carries neural state across programs; seed is applied only on reset.
+
+Sega uses the same 4x4 image adapter and trainable SARSA output policy as NES. Choose a per-game reward/profile; no automatic game understanding. The original MD diagnostic changes a RAM counter with Left/Right, changes backdrop colour and emits a PSG tone with B. For this ROM use signed 16-bit big-endian RAM at offset 0 as reward, or explicit manual rewards. For other games find score/death addresses yourself. NES's coordinate-based diagnostic reward is disabled in Sega.
+
+Genesis core is pinned/built locally with Emscripten 3.1.57. Its noncommercial licence, component notices, complete modified source archive and build recipe are bundled in assets/lab/sega/ and this repository; see THIRD_PARTY.md. No game downloads or commercial ROMs. The immutable graph is shared across modes; inference engines have separate states. Core and Android code can be modified from source. Profiles/models are keyed by platform/ROM/settings; UI v0.4 NES profile keys without a platform field are treated as NES.
+
+Validation: actual 68K diagnostic boot, pad->RAM, RGB output, PSG audio, repeatable snapshots and PAL/NTSC detection; mobile browser screen->Java Engine->Sega controller loop, training and profile/model roundtrip; pure Java programmable inference tests. Whole-brain biological equivalence and physical Android document-picker/lifecycle/performance tests remain outstanding. NES PAL/Dendy and battery .sav limitations remain as documented in its earlier modes.
+
 ## Version 0.4: external-ROM profiles and audit fixes
 Install `FlyConsole-NES-0.4-debug.apk` over 0.2/0.3 (same package and signing key for the shared APK builds). Full graph remains bundled/offline.
 

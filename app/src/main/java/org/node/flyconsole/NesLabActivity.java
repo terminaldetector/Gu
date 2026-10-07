@@ -34,6 +34,7 @@ public final class NesLabActivity extends Activity {
     private volatile boolean destroyed;
     private boolean pageReady;
     private String initialError;
+    private String labSystem="nes";
     private String graphKind = "FlyWire v783 / Shiu signed model";
     private String romHash = "not-loaded";
     private final java.util.ArrayDeque<String> offeredRomHashes = new java.util.ArrayDeque<>();
@@ -47,6 +48,7 @@ public final class NesLabActivity extends Activity {
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
+        labSystem="sega".equals(getIntent().getStringExtra("system"))?"sega":"nes";
         web = new WebView(this);
         web.setBackgroundColor(android.graphics.Color.rgb(8,10,19));
         web.getSettings().setJavaScriptEnabled(true);
@@ -65,7 +67,7 @@ public final class NesLabActivity extends Activity {
                     return response("text/plain", new ByteArrayInputStream(new byte[0]));
                 try {
                     String mime = path.endsWith(".js") ? "application/javascript" :
-                        path.endsWith(".json") ? "application/json" : "text/html";
+                        path.endsWith(".json") ? "application/json" : path.endsWith(".wasm") ? "application/wasm" : path.endsWith(".zip") ? "application/zip" : "text/html";
                     return response(mime, getAssets().open(path.substring(1)));
                 } catch (IOException ex) { return response("text/plain", new ByteArrayInputStream(new byte[0])); }
             }
@@ -76,18 +78,28 @@ public final class NesLabActivity extends Activity {
         });
         setContentView(web);
         worker.execute(this::loadGraph);
-        web.loadUrl(ORIGIN + "/lab/index.html");
+        web.loadUrl(ORIGIN + "/lab/index.html?system="+labSystem);
     }
 
     private WebResourceResponse response(String mime, InputStream stream) {
         WebResourceResponse response = new WebResourceResponse(mime, "UTF-8", stream);
         java.util.Map<String, String> headers = new java.util.HashMap<>();
-        headers.put("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:");
+        headers.put("Content-Security-Policy", "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:");
         headers.put("X-Content-Type-Options", "nosniff");
         response.setResponseHeaders(headers);
         return response;
     }
 
+    @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);switchSystem("sega".equals(intent.getStringExtra("system"))?"sega":"nes");}
+    private void switchSystem(String system){
+        if (system.equals(labSystem)) return;
+        cancel.set(true);
+        worker.execute(()->{try{stopRecording();offeredRomHashes.clear();}catch(IOException ex){error(ex.getMessage());}});
+        web.evaluateJavascript("if(window.labPause)window.labPause();try{persistPolicy(false);document.getElementById('saveProfile').onclick();}catch(e){}", ignored -> {
+            labSystem=system;pageReady=false;romHash="not-loaded";
+            web.loadUrl(ORIGIN+"/lab/index.html?system="+labSystem);
+        });
+    }
     private void loadGraph() {
         try {
             if (GraphCache.current != null) {
@@ -119,7 +131,7 @@ public final class NesLabActivity extends Activity {
         if (engine == null) { if (initialError != null) error(initialError); return; }
         try {
             JSONObject info = new JSONObject();
-            info.put("neurons", graph.ids.length).put("edges", graph.targets.length).put("kind", graphKind);
+            info.put("system",labSystem).put("neurons", graph.ids.length).put("edges", graph.targets.length).put("kind", graphKind);
             info.put("inputs", ids(experiment.inputs)).put("outputs", ids(experiment.outputs));
             info.put("heapMiB", Runtime.getRuntime().maxMemory() / 1048576);
             emit("labReady", info);
@@ -235,16 +247,17 @@ public final class NesLabActivity extends Activity {
         recording = new File(getFilesDir(), "nes-experiment.csv");
         recorder = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(recording), StandardCharsets.UTF_8));
         recordedBytes = 0;
+        recorder.write("# system,"+labSystem+"\n");
         recorder.write("# model," + graphKind + ",neurons=" + graph.ids.length + ",edges=" + graph.targets.length + ",dt_ms=0.1,brian2_parity=unverified\n");
         recorder.write("# rom_sha256," + romHash + "\n");
         StringBuilder header = new StringBuilder("wall_epoch_ms,config_version,sequence,nes_frame,sim_ms,compute_ms,spikes,active,buttons_mask,manual_mask,frozen_retina,controller_mask,learning_mode,learning_reward");
         for (int i = 0; i < 16; i++) header.append(",input_hz_").append(i);
-        for (String button : Experiment.BUTTONS) header.append(",spikes_").append(button);
+        for (int i=0;i<Experiment.BUTTONS.length;i++) header.append(",spikes_").append(i==2&&"sega".equals(labSystem)?"C":Experiment.BUTTONS[i]);
         recorder.write(header.append('\n').toString());
         recordingOn = true;
         // Initial ports/configuration must accompany every recording, even if no config change occurs.
         JSONObject config = new JSONObject();
-        config.put("configVersion", configVersion).put("rom_sha256", romHash);
+        config.put("system",labSystem).put("configVersion", configVersion).put("rom_sha256", romHash);
         config.put("inputs", ids(experiment.inputs)).put("outputs", ids(experiment.outputs));
         config.put("mode", experiment.mode).put("maxHz", experiment.maxHz).put("thresholdHz", experiment.thresholdHz);
         config.put("windowMs", experiment.windowMs).put("gain", experiment.options.gain);
@@ -260,8 +273,8 @@ public final class NesLabActivity extends Activity {
     }
 
     private void loadRom(byte[] bytes, String name) throws Exception {
-        if (bytes.length < 16 || bytes.length > 4 * 1024 * 1024 || bytes[0] != 78 || bytes[1] != 69 || bytes[2] != 83 || bytes[3] != 26)
-            throw new IllegalArgumentException("Ожидается iNES .nes файл до 4 МиБ");
+        if (bytes.length < 16 || bytes.length > ("sega".equals(labSystem)?8:4) * 1024 * 1024 || (!"sega".equals(labSystem) && (bytes[0] != 78 || bytes[1] != 69 || bytes[2] != 83 || bytes[3] != 26)))
+            throw new IllegalArgumentException("Неверный размер/заголовок ROM (NES ≤4 МиБ, Sega ≤8 МиБ)");
         StringBuilder hash = new StringBuilder();
         for (byte b : MessageDigest.getInstance("SHA-256").digest(bytes)) hash.append(String.format(Locale.US, "%02x", b & 255));
         String candidateHash = hash.toString();
@@ -272,6 +285,7 @@ public final class NesLabActivity extends Activity {
     }
 
     public final class Bridge {
+        @JavascriptInterface public void switchSystem(String system){if(!system.equals("nes")&&!system.equals("sega"))return;runOnUiThread(()->NesLabActivity.this.switchSystem(system));}
         @JavascriptInterface public void acceptRom(String sha256) {
             if (destroyed || sha256.length() != 64) return;
             worker.execute(() -> {
@@ -312,9 +326,9 @@ public final class NesLabActivity extends Activity {
         }
         @JavascriptInterface public void demo() {
             worker.execute(() -> {
-                try (InputStream in = getAssets().open("lab/demo-rom.json")) {
+                try (InputStream in = getAssets().open("sega".equals(labSystem)?"lab/demo-sega.json":"lab/demo-rom.json")) {
                     JSONObject data = new JSONObject(readText(in, 100000));
-                    loadRom(Base64.decode(data.getString("base64"), Base64.DEFAULT), "Fly NES diagnostic / NROM-0");
+                    loadRom(Base64.decode(data.getString("base64"), Base64.DEFAULT), "sega".equals(labSystem)?"Fly MD original diagnostic":"Fly NES diagnostic / NROM-0");
                 } catch (Exception ex) { error(ex.getMessage()); }
             });
         }
@@ -390,12 +404,12 @@ public final class NesLabActivity extends Activity {
                     try (InputStream in = getContentResolver().openInputStream(uri); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                         byte[] buffer = new byte[8192]; int n;
                         while ((n = in.read(buffer)) != -1) {
-                            if (out.size() + n > 4 * 1024 * 1024) throw new IOException("ROM больше 4 МиБ");
+                            if (out.size() + n > ("sega".equals(labSystem)?8:4) * 1024 * 1024) throw new IOException("ROM превышает лимит режима");
                             out.write(buffer, 0, n);
                         }
                         bytes = out.toByteArray();
                     }
-                    loadRom(bytes, "Imported .nes");
+                    loadRom(bytes, "sega".equals(labSystem)?"Imported Mega Drive":"Imported .nes");
                 } else if (request == PICK_MODEL) {
                     try (InputStream in = getContentResolver().openInputStream(uri)) {
                         emit("labImportModel", new JSONObject(readText(in, 8 * 1024 * 1024)));
