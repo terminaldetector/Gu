@@ -16,4 +16,10 @@ public final class GraphCache {
   loaded.fingerprint();install(loaded,description);notice=warning;return loaded;
  }
  public static synchronized void install(Graph loaded,String description){notice="";kind=description;current=loaded;}
+ public static boolean same(Graph left, Graph right){
+  if(left==right)return true;
+  if(left==null||right==null)return false;
+  try{return left.fingerprint().equals(right.fingerprint());}
+  catch(RuntimeException ex){return false;}
+ }
 }

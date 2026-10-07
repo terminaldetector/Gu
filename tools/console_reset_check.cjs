@@ -19,4 +19,8 @@ const snap={hash:'own',system:'nes',frame:5,state:core.toJSON()};state.localStor
 const loadLine=source.split('\n').find(x=>x.startsWith("$('loadState').onclick="));vm.runInContext(loadLine,state);state.$('loadState').onclick();state.connectBrain();assert.equal(calls.filter(x=>x==='configure').length,0);assert.equal(JSON.stringify(state.learner.weights),weights);
 const java=fs.readFileSync('app/src/main/java/org/node/flyconsole/NesLabActivity.java','utf8');const accept=java.slice(java.indexOf('@JavascriptInterface public void acceptRom'),java.indexOf('@JavascriptInterface public void sample'));
 assert(!/engine\.reset|gpuEngine\.reset|fdbGrowth\.reset/.test(accept),'ROM acceptance must not indirectly reset model');
+const recording=java.slice(java.indexOf('private void startRecording'),java.indexOf('private void closeGpu'));
+assert(!/engine\.reset|gpuEngine\.reset|fdbGrowth\.reset|configVersion\+\+|sequence\s*=\s*0/.test(recording),'starting CSV recording must preserve live neural state and counters');
+assert(source.includes('function neuralConfiguration(value)'), 'routing changes need a state-preserving configuration path');
+assert(!/if\(start&&restoreStart&&startSnapshot\)restartEpisode\(\)/.test(source.slice(source.indexOf('function apply'),source.indexOf('function connectBrain'))),'connect/apply must not implicitly restart the console');
 console.log('PASS: actual NES reset/snapshot with production UI handlers, reconnect without native configure, model weight preservation and no reset on ROM acceptance');

@@ -243,10 +243,13 @@ function configuration() {
     windowMs:Number($('windowMs').value),gain:Number($('gain').value),seed,
     disableInhibition:$('disableInhibition').checked,scramble:$('scramble').checked,backend:$('backend').value,fdb:fdbConfiguration(),gmode:gmodeMode,systemButtons:$('systemButtons').value};
 }
+function neuralConfiguration(value){
+  const copy=JSON.parse(JSON.stringify(value));delete copy.gmode;delete copy.systemButtons;return copy;
+}
 function apply(start=false,restoreStart=true) {
   try {
     if(!ready)throw Error('Коннектом ещё не готов');if(romLoading)throw Error('Дождитесь загрузки ROM');
-    resetSession();if(start&&restoreStart&&startSnapshot)restartEpisode();configuring=true;configurationApplied=false;window.startAfterConfig=start;
+    resetSession();configuring=true;configurationApplied=false;window.startAfterConfig=start;
     if($('learnMode').value!=='off')validateProfile(profileValues());
     learner.setActions(FlyGameTools.actions($('actionMasks').value));learner.setAllowedMask(agentAllowedMask());
     requestedConfiguration=configuration();validateConfiguration(requestedConfiguration);pendingSince=performance.now();nativeCall('configure',JSON.stringify({...requestedConfiguration,generation}));
@@ -257,7 +260,10 @@ function connectBrain(restoreStart=true){
  try{
   if(!ready||romLoading||configuring)throw Error('Дождитесь ROM и конфигурации');
   const current=configuration();validateConfiguration(current);
-  if(!configurationApplied||!requestedConfiguration||!keysEqual(JSON.stringify({configuration:current}),JSON.stringify({configuration:requestedConfiguration}))){apply(true,restoreStart);return;}
+  if(!configurationApplied||!requestedConfiguration||!keysEqual(JSON.stringify({configuration:neuralConfiguration(current)}),JSON.stringify({configuration:neuralConfiguration(requestedConfiguration)}))){apply(true,restoreStart);return;}
+  const systemButtonsChanged=requestedConfiguration.systemButtons!==current.systemButtons;
+  requestedConfiguration.gmode=current.gmode;requestedConfiguration.systemButtons=current.systemButtons;
+  if(systemButtonsChanged&&ready)nativeCall('systemButtons',JSON.stringify({mode:current.systemButtons,generation}));
   if($('learnMode').value!=='off')validateProfile(profileValues());
   learner.setActions(FlyGameTools.actions($('actionMasks').value));learner.setAllowedMask(agentAllowedMask());
   generation++;pendingToken=null;lastSample=0;learningBoundary();releaseBrain();connected=true;
@@ -500,4 +506,3 @@ $('ramInspect').onclick=()=>{try{
 $('ramOffset').max=ramLimit-64;$('benchmarkGame').value=labPlatform==='sega'?'Zero Tolerance':'NES experiment';
 
 drawHistory();learningStats();requestAnimationFrame(loop);nativeCall('demo');
-

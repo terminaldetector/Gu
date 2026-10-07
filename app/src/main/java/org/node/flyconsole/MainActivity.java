@@ -43,6 +43,6 @@ public final class MainActivity extends Activity {
   }catch(Exception ex){append(ex.getMessage());}
  }
  protected void onPause(){cancel.set(true);if(entry!=null)getPreferences(0).edit().putString("draft",entry.getText().toString()).apply();super.onPause();}
- protected void onResume(){super.onResume();if(!busy&&graph!=null&&GraphCache.current!=null&&graph!=GraphCache.current)importGraph(null);}
+ protected void onResume(){super.onResume();if(!busy&&graph!=null&&GraphCache.current!=null&&!GraphCache.same(graph,GraphCache.current))importGraph(null);}
  protected void onDestroy(){destroyed=true;cancel.set(true);worker.shutdownNow();super.onDestroy();}
 }

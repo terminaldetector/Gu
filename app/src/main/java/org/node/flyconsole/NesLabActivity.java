@@ -299,13 +299,13 @@ public final class NesLabActivity extends Activity {
 
     private void startRecording() throws Exception {
         stopRecording();
-        if ("gpu".equals(backend) && gpuEngine != null) gpuEngine.reset(experiment.seed); else engine.reset(experiment.seed); if(fdbGrowth!=null)fdbGrowth.reset(experiment.seed); configVersion++; sequence = 0;
         recording = new File(getFilesDir(), labSystem+"-experiment.csv");
         recorder = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(recording), StandardCharsets.UTF_8));
         recordedBytes = 0;
         recorder.write("# system,"+labSystem+"\n");
         recorder.write("# model," + graphKind + ",neurons=" + graph.ids.length + ",edges=" + graph.targets.length + ",backend=" + backend + ",dt_ms=0.1,brian2_parity=unverified,sha256="+graph.fingerprint()+"\n");
         recorder.write("# rom_sha256," + romHash + "\n");
+        recorder.write("# recording_start,config_version="+configVersion+",sequence="+sequence+",state_preserved=true\n");
         StringBuilder header = new StringBuilder("wall_epoch_ms,config_version,sequence,emulator_frame,sim_ms,compute_ms,spikes,active,buttons_mask,manual_mask,frozen_retina,controller_mask,learning_mode,learning_reward");
         for (int i = 0; i < 16; i++) header.append(",input_hz_").append(i);
         for (int i=0;i<Experiment.BUTTONS.length;i++) header.append(",spikes_").append(i==2&&"sega".equals(labSystem)?"C":Experiment.BUTTONS[i]);
@@ -509,7 +509,7 @@ public final class NesLabActivity extends Activity {
     }
     @Override protected void onResume() {
         super.onResume();foreground=true; if (web != null) web.onResume();
-        if (GraphCache.current != null && GraphCache.current != graph) submit(this::loadGraph);
+        if (GraphCache.current != null && !GraphCache.same(GraphCache.current, graph)) submit(this::loadGraph);
     }
     @Override protected void onDestroy() {
         destroyed = true;
@@ -521,4 +521,3 @@ public final class NesLabActivity extends Activity {
         super.onDestroy();
     }
 }
-
