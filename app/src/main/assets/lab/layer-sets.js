@@ -10,7 +10,7 @@ function validate(set){
  if(typeof set.name!=='string'||!set.name.trim()||set.name.length>80||typeof set.notes!=='string'||set.notes.length>500)throw Error('Имя: 1–80 символов; заметка: до 500');
  if(!['nes','sega','gb','snes'].includes(set.system)||typeof set.romHash!=='string'||!/^[a-f0-9]{64}$/.test(set.romHash)||!set.graph||!/^[a-f0-9]{64}$/.test(set.graph.sha256))throw Error('Layer Set требует SHA256 ROM и графа');
  for(const k of ['createdAt','updatedAt'])if(!Number.isSafeInteger(set[k])||set[k]<0)throw Error('Неверная дата Layer Set');
- if(!set.runtime||!['async','lockstep','realtime'].includes(set.runtime.clock)||!['continuous','episodic'].includes(set.runtime.runMode)||!['off','train','eval'].includes(set.runtime.learnMode))throw Error('Неверный режим Layer Set');
+ if(!set.runtime||!['async','lockstep','realtime'].includes(set.runtime.clock)||!['continuous','episodic'].includes(set.runtime.runMode)||!['off','teach','train','eval'].includes(set.runtime.learnMode))throw Error('Неверный режим Layer Set');
  if(!set.configuration||!set.profile||!set.policy||!Array.isArray(set.journal)||set.journal.length>200)throw Error('Неполный Layer Set');
  if(set.runtime.learnMode!=='off'&&(set.configuration.mode!=='closed'||set.runtime.clock==='async'))throw Error('Обучение требует closed и realtime / lockstep');
  for(const e of set.journal){

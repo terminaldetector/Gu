@@ -38,6 +38,8 @@ public final class NesLabActivity extends Activity {
     private Experiment experiment;
     private FdbGrowth fdbGrowth;
     private JSONObject growthConfiguration;
+    private FdbLearning fdbLearning;
+    private JSONObject learningConfiguration;
     private volatile boolean destroyed;
     private volatile boolean pageReady;
     private String initialError;
@@ -190,6 +192,7 @@ public final class NesLabActivity extends Activity {
         next.options.lesions=parsePorts(lesions,lesions.length());
 
         FdbGrowth nextGrowth=null;JSONObject nextGrowthConfig=null;
+        FdbLearning nextLearning=null;JSONObject nextLearningConfig=null;
         JSONObject fdb=data.optJSONObject("fdb");
         if(data.has("fdb")&&!data.isNull("fdb")&&fdb==null)throw new IllegalArgumentException("FDB must be JSON object");
         if(fdb!=null) {
@@ -231,6 +234,22 @@ public final class NesLabActivity extends Activity {
                     if(data.optBoolean("reset",true))nextGrowth.reset(next.seed);
                 }
             }
+            JSONObject learning=fdb.optJSONObject("learning");
+            if(fdb.has("learning")&&learning==null)throw new IllegalArgumentException("FDB learning must be object");
+            if(learning!=null){
+                if(!(learning.get("enabled") instanceof Boolean))throw new IllegalArgumentException("FDB learning enabled must be boolean");
+                nextLearningConfig=new JSONObject(learning.toString());
+                if(learning.getBoolean("enabled")||learning.has("rate")){
+                    if(!(learning.get("maxEdges") instanceof Number)||learning.getDouble("maxEdges")!=learning.getInt("maxEdges"))throw new IllegalArgumentException("FDB learning edge cap");
+                    nextLearning=new FdbLearning(graph,layer,next.inputs,next.outputs,learning.getDouble("rate"),learning.getInt("maxEdges"),(float)learning.getDouble("maxWeight"));
+                    JSONObject state=fdb.optJSONObject("learningState");
+                    if(state!=null){
+                        if(state.getInt("version")!=1||!ids(next.inputs).toString().equals(state.getJSONArray("sources").toString())||!ids(next.outputs).toString().equals(state.getJSONArray("targets").toString()))throw new IllegalArgumentException("FDB learning checkpoint ports");
+                        for(String k:new String[]{"observations","human","automatic"})if(!(state.get(k) instanceof Number)||state.getDouble(k)!=state.getLong(k))throw new IllegalArgumentException("FDB learning counter");
+                        nextLearning.restore(state.getLong("observations"),state.getLong("human"),state.getLong("automatic"));
+                    }
+                }
+            }
             next.options.delta=layer;
         }
 
@@ -238,7 +257,7 @@ public final class NesLabActivity extends Activity {
             JSONObject current=fdbState();
             JSONArray ds=fdb.optJSONArray("deltas"),es=fdb.optJSONArray("edges");
             if(current.getJSONArray("deltas").toString().equals(ds==null?"[]":ds.toString())&&current.getJSONArray("edges").toString().equals(es==null?"[]":es.toString())
-                &&String.valueOf(nextGrowthConfig).equals(String.valueOf(growthConfiguration))){next.options.delta=experiment.options.delta;nextGrowth=fdbGrowth;nextGrowthConfig=growthConfiguration;}
+                &&String.valueOf(nextGrowthConfig).equals(String.valueOf(growthConfiguration))&&String.valueOf(nextLearningConfig).equals(String.valueOf(learningConfiguration))){next.options.delta=experiment.options.delta;nextGrowth=fdbGrowth;nextGrowthConfig=growthConfiguration;nextLearning=fdbLearning;nextLearningConfig=learningConfiguration;}
         }
         if (requestedBackend.equals("gpu")) {
             if (gpuEngine == null) gpuEngine = new GpuLifEngine(graph);
@@ -248,7 +267,7 @@ public final class NesLabActivity extends Activity {
             if(reset)engine.reset(next.seed);
         }
         backend=requestedBackend;
-        experiment=next;fdbGrowth=nextGrowth;growthConfiguration=nextGrowthConfig; configVersion++; if(reset)sequence=0; latestMask=0;neuralConfigured=true;
+        experiment=next;fdbGrowth=nextGrowth;growthConfiguration=nextGrowthConfig;fdbLearning=nextLearning;learningConfiguration=nextLearningConfig; configVersion++; if(reset)sequence=0; latestMask=0;neuralConfigured=true;
         if(recordingOn) recorder.write("# config,"+data.put("configVersion",configVersion).put("backend",backend).toString().replace('\n',' ')+"\n");
         emit("labConfigured",new JSONObject().put("reset",reset).put("initial",initial).put("configVersion",configVersion).put("mode",next.mode).put("backend",backend).put("generation",data.optLong("generation",-1)));
     }
@@ -290,6 +309,22 @@ public final class NesLabActivity extends Activity {
         String learningMode=request.optString("learningMode","off");
         boolean frozen=request.optBoolean("frozen",false)||learningMode.equals("eval")||learningMode.startsWith("benchmark");
         int grown=fdbGrowth==null||cancel.get()?0:fdbGrowth.observe(result,request.optDouble("learningReward",0),experiment.options.lesions,frozen);
+        int adapted=0;
+        JSONArray experience=request.optJSONArray("experience");
+        if(experience!=null&&experience.length()>16)throw new IllegalArgumentException("FDB batch limit");
+        // Validate the entire bounded batch before changing any edge.
+        if(experience!=null)for(int k=0;k<experience.length();k++){
+            JSONObject e=experience.getJSONObject(k);JSONArray retina=e.getJSONArray("retina");
+            if(retina.length()!=16||!(e.get("mask") instanceof Number)||e.getDouble("mask")!=e.getInt("mask")||e.getInt("mask")<0||e.getInt("mask")>systemButtonMask("auto")||(e.getInt("mask")&48)==48||(e.getInt("mask")&192)==192||!Double.isFinite(e.getDouble("reward"))||Math.abs(e.getDouble("reward"))>20||!(e.get("human") instanceof Boolean))throw new IllegalArgumentException("FDB labelled experience");
+            for(int j=0;j<16;j++)if(!Double.isFinite(retina.getDouble(j))||retina.getDouble(j)<0||retina.getDouble(j)>1)throw new IllegalArgumentException("FDB retina");
+        }
+        if(fdbLearning!=null&&learningConfiguration.getBoolean("enabled")&&experience!=null&&!cancel.get()&&!frozen&&(learningMode.equals("teach")||learningMode.equals("train")))for(int k=0;k<experience.length();k++){
+            JSONObject e=experience.getJSONObject(k);double[] input=new double[16];for(int j=0;j<16;j++)input[j]=e.getJSONArray("retina").getDouble(j);
+            if((e.getInt("mask")&~experiment.agentButtonMask)!=0||e.getInt("mask")>=(1<<experiment.outputs.length))continue;
+            adapted+=fdbLearning.observe(input,e.getInt("mask"),e.getDouble("reward"),e.getBoolean("human"),experiment.options.lesions,false);
+        }
+        if(fdbLearning!=null)response.put("fdbLearningState",learningState());
+        response.put("fdbAdapted",adapted);
         if(fdbGrowth!=null)response.put("fdbGrowthState",growthState());
         response.put("fdbGrown",grown).put("fdbRevision",experiment.options.delta==null?0:experiment.options.delta.version());
         if(experiment.options.delta!=null&&experiment.options.delta.version()!=oldRevision){
@@ -310,10 +345,14 @@ public final class NesLabActivity extends Activity {
             if(layer!=null)for(GraphDelta.Edge e:kind.equals("edges")?layer.edges():layer.deltas())links.put(new JSONObject().put("source",Long.toString(graph.ids[e.source])).put("target",Long.toString(graph.ids[e.target])).put("weight",e.weight));
             state.put(kind,links);
         }
+        if(learningConfiguration!=null)state.put("learning",learningConfiguration);
+        if(fdbLearning!=null)state.put("learningState",learningState());
         if(growthConfiguration!=null)state.put("growth",growthConfiguration);
         if(fdbGrowth!=null)state.put("growthState",growthState());
         return state;
     }
+
+    private JSONObject learningState()throws Exception{return new JSONObject().put("version",1).put("observations",fdbLearning.observations()).put("human",fdbLearning.human()).put("automatic",fdbLearning.automatic()).put("sources",ids(experiment.inputs)).put("targets",ids(experiment.outputs));}
 
     private JSONObject growthState()throws Exception{return new JSONObject().put("version",1).put("windows",fdbGrowth.windows()).put("rng",fdbGrowth.rng()).put("sources",ids(experiment.inputs)).put("targets",ids(experiment.outputs)).put("previous",fdbGrowth.previous()==null?JSONObject.NULL:new JSONArray(fdbGrowth.previous()));}
 

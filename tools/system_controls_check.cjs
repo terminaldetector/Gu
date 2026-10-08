@@ -11,7 +11,7 @@ assert.equal(policy.actions[policy.choose(f,false)]&12,0,'greedy policy cannot s
 const saved=JSON.stringify(policy.weights);policy.setAllowedMask(255);assert.equal(policy.actions[policy.choose(f,false)],12);assert.equal(JSON.stringify(policy.weights),saved,'ownership mode preserves learned weights');
 policy.setAllowedMask(247);policy.weights[1][0]=20;policy.weights[3][0]=19;assert.equal(policy.actions[policy.choose(f,false)],4,'Sega C remains an allowed game button');
 const events=[],mode={value:'blocked'};
-const state={loaded:true,labPlatform:'nes',$:()=>mode,manualMask:0,brainMask:12,gmodeMode:'off',appliedMask:0,appliedHumanMask:0,appliedAgentMask:0,nes:{buttonDown:(p,b)=>events.push(['down',p,b]),buttonUp:(p,b)=>events.push(['up',p,b])}};
+const state={loaded:true,labPlatform:'nes',$:()=>mode,agentIntervened:false,manualMask:0,brainMask:12,gmodeMode:'off',appliedMask:0,appliedHumanMask:0,appliedAgentMask:0,nes:{buttonDown:(p,b)=>events.push(['down',p,b]),buttonUp:(p,b)=>events.push(['up',p,b])}};
 vm.createContext(state);vm.runInContext(source.slice(source.indexOf('function agentAllowedMask'),source.indexOf('function rgbaAndRetina')),state);
 state.updateButtons();assert.deepEqual(events,[],'raw neural Start/Select blocked at the final controller boundary');
 state.manualMask=12;state.updateButtons();assert.deepEqual(events,[['down',1,2],['down',1,3]],'human Start/Select preserved');

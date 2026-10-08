@@ -2,7 +2,7 @@
 const assert=require('assert'),fs=require('fs'),vm=require('vm');
 const source=fs.readFileSync('app/src/main/assets/lab/lab.js','utf8');
 const block=source.slice(source.indexOf('function agentAllowedMask'),source.indexOf('function rgbaAndRetina'));
-const events=[],state={loaded:true,manualMask:0,brainMask:0,gmodeMode:'off',appliedMask:0,appliedHumanMask:0,appliedAgentMask:0,labPlatform:'nes',controlMode:'auto',$:()=>({value:state.controlMode}),nes:{buttonDown:(p,b)=>events.push(['down',p,b]),buttonUp:(p,b)=>events.push(['up',p,b])}};
+const events=[],state={loaded:true,agentIntervened:false,manualMask:0,brainMask:0,gmodeMode:'off',appliedMask:0,appliedHumanMask:0,appliedAgentMask:0,labPlatform:'nes',controlMode:'auto',$:()=>({value:state.controlMode}),nes:{buttonDown:(p,b)=>events.push(['down',p,b]),buttonUp:(p,b)=>events.push(['up',p,b])}};
 vm.createContext(state);vm.runInContext(block,state);
 state.gmodeMode='coop';state.manualMask=1;state.brainMask=2;state.updateButtons();
 assert.deepStrictEqual(events,[['down',1,0],['down',2,1]]);
@@ -13,7 +13,7 @@ assert.deepStrictEqual(events,[['down',2,4],['down',1,5]]);
 state.releasePorts();events.length=0;
 state.gmodeMode='off';state.manualMask=32;state.brainMask=16;state.updateButtons();
 assert.deepStrictEqual(events,[['down',1,5]],'manual direction must win in single player');
-assert(source.includes("if(manualMask&&gmodeMode==='off')"));
+assert.equal(state.agentIntervened,true,'manual intervention invalidates reward credit');
 console.log('PASS: production GMode port isolation, release, swapped ports and manual override');
 
 const keys=source.slice(source.indexOf('function keysEqual'),source.indexOf('function learningKey'));
