@@ -50,7 +50,11 @@ It does not compute exact gradients through the recurrent W₀ graph.
 The game observation captures both RAM reward state and the executed interval
 **before** requesting the next neural calculation. Frames executed while that
 calculation is pending do not get invented as frames in the already captured
-outcome. Real intervening game time contributes to temporal decay.
+outcome. RAM reward is measured from the live game state at activation of the
+specific action to that captured outcome; progress made by the preceding
+action during backend delay cannot be credited to the new action. Changed
+reward profiles invalidate the outcome. Real intervening game time contributes
+to temporal decay. Manual delayed feedback remains an explicitly supplied label.
 
 On an acknowledged, executed action: traces decay with τ=0.6 s; reward minus
 an EMA baseline produces a clipped advantage; signed eligibility modulates
@@ -119,14 +123,15 @@ Each reward value held across the three seeds. Full FlyWire learned layers
 contained 12–16 edges; fixture layers 16–21. Full-graph CPU simulation measured
 about 59–94 ms per 10 ms neural window on this build host; this is not Android
 FPS. Learned-layer bookkeeping was estimated around 19 KiB, graph plus one CPU
-state around 130.7 MiB. These are implementation estimates, not measured RSS.
+state around 130.5 MiB. These are implementation estimates, not measured RSS.
 Reported engine wall time excludes IPC, actor/plasticity, disk I/O and WASM
 emulation. The saved JSON includes separate emulator time. Battery and physical
 device latency have not been measured.
 
 Unit/integration checks also cover checkpoint corruption rollback, v1 migration,
 continued-training parity, CPU removal, bounded internal-path credit, untouched
-base/deltas and 19 production UI protocol cases. The real GLES compute shader
+base/deltas, 27 production UI protocol cases and production reward-isolation
+checks. The real GLES compute shader
 is compared tick-by-tick with CPU equations, including reinforcement, depression,
 removal and outstanding delayed-event queues. Full-device CPU/GPU parity remains
 unverified; the GPU test uses small controlled networks in Mesa.

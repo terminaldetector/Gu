@@ -56,6 +56,26 @@ function learningStats(){ trainingView();$('learningStats').textContent='Обн�
  if(window.layerExperience)window.layerExperience.refreshStats();
  const c=$('rewardChart').getContext('2d');c.fillStyle='#111626';c.fillRect(0,0,600,100);if(trials.length<2)return;const low=Math.min(0,...trials.map(t=>t.reward)),high=Math.max(1,...trials.map(t=>t.reward));c.strokeStyle='#b39bff';c.beginPath();trials.forEach((t,i)=>{const x=i*600/99,y=95-(t.reward-low)/(high-low)*85;i?c.lineTo(x,y):c.moveTo(x,y);});c.stroke();
 }
+// A realtime backend may leave the preceding action running while calculating.
+// FDB reward starts at activation of its own decision, not the older observation.
+function fdbRewardSnapshot(memory){
+ const source=$('rewardMode').value,diagnostic=source==='diagnostic';
+ const spec={address:Number($('rewardAddress').value),width:Number($('ramWidth').value),format:$('ramFormat').value,endian:$('ramEndian').value};
+ const value=diagnostic?-Math.abs(200-memory[0])-Math.abs(100-memory[1]):source==='ram'?FlyGameTools.readRam(memory,spec,ramLimit):0;
+ const success=diagnostic?memory[0]>=200&&Math.abs(memory[1]-100)<=4:$('winEnabled').checked&&FlyGameTools.predicate(memory,$('winAddress').value,$('winValue').value,ramLimit);
+ const death=$('deathEnabled').checked&&FlyGameTools.predicate(memory,$('deathAddress').value,$('deathValue').value,ramLimit);
+ return {context:JSON.stringify({system:labPlatform,romHash,graph:graphIdentity&&graphIdentity.sha256,inputs:ids('inputIds'),outputs:ids('outputIds'),gmode:gmodeMode,profile:profileValues()}),source,diagnostic,value,success:Boolean(success),death:Boolean(death),spec,wrap:$('ramWrap').checked,scale:Number($('rewardScale').value),bonus:diagnostic?2:Number($('winReward').value),penalty:Number($('deathReward').value)};
+}
+function fdbOutcomeReward(outcome,manualReward){
+ const start=outcome&&outcome.rewardStart,end=outcome&&outcome.rewardEnd;
+ if(!start||!end||start.context!==end.context)return {reward:0,valid:false};
+ let reward=manualReward;
+ if(start.diagnostic)reward+=(end.value-start.value)/8-.01;
+ else if(start.source==='ram')reward+=FlyGameTools.delta(end.value,start.value,start.spec,start.wrap)*start.scale;
+ if(end.death&&!start.death)reward+=start.penalty;
+ else if(end.success&&!end.death&&!start.success)reward+=start.bonus;
+ return {reward:Math.max(-10,Math.min(10,reward)),valid:Number.isFinite(reward)};
+}
 function learnedButtons(data){
  if(benchmark)return benchmarkDecision(data);
  const mode=$('learnMode').value;if(mode==='off')return data.buttons;
@@ -71,7 +91,7 @@ function learnedButtons(data){
  const memory=sampledRam||nes.cpu.mem,x=memory[0],y=memory[1];
  const spec={address,width:Number($('ramWidth').value),format:$('ramFormat').value,endian:$('ramEndian').value};
  const value=diagnostic?-Math.abs(200-x)-Math.abs(100-y):$('rewardMode').value==='ram'?FlyGameTools.readRam(memory,spec,ramLimit):0;
- let reward=rewardPending;rewardPending=0;
+ const manualReward=rewardPending;let reward=manualReward;rewardPending=0;
  if(lastRewardValue!==null){if(diagnostic)reward+=(value-lastRewardValue)/8-.01;else if($('rewardMode').value==='ram')reward+=FlyGameTools.delta(value,lastRewardValue,spec,$('ramWrap').checked)*scale;}
  lastRewardValue=value;reward=Math.max(-10,Math.min(10,reward));
  const rawSuccess=diagnostic?x>=200&&Math.abs(y-100)<=4:$('winEnabled').checked&&FlyGameTools.predicate(memory,$('winAddress').value,$('winValue').value,ramLimit);
@@ -83,16 +103,17 @@ function learnedButtons(data){
  if(death)reward+=penalty;else if(success)reward+=bonus;
  const position=diagnostic?[x/256,y/240,(200-x)/256,(100-y)/240]:null;
  const features=learner.features(sampledRetina,data.outputs,position,previousRetina);previousRetina=sampledRetina.slice();
+ const exo=$('learnerController').value==='exo',credit=window.fdbAgent?fdbOutcomeReward(sampledFdbOutcome,manualReward):{reward:0,valid:false};
+ if(exo&&mode==='train')reward=sampledFdbOutcome&&credit.valid&&!interrupted?credit.reward:0;
  learnReward=reward;episodeReward+=reward;episodeSteps++;
  if(mode!=='teach'&&lastDecisionFeatures&&!interrupted){
   // Automatic FDB credit is accepted only through a cached neural decision, never a retina label.
   transitions.push({romHash,episode:learner.episodes,frame,sequence:data.sequence,state:lastDecisionFeatures,action:lastDecisionAction,reward,next:features.slice(),terminal,mode});if(transitions.length>200)transitions.shift();}
- const exo=$('learnerController').value==='exo';
- if(window.fdbAgent){window.fdbAgent.settle(sampledFdbOutcome,reward,interrupted);sampledFdbOutcome=null;}
+ if(window.fdbAgent){window.fdbAgent.settle(sampledFdbOutcome,credit.reward,interrupted||!credit.valid);sampledFdbOutcome=null;}
  if(exo&&mode!=='teach'&&!data.fdbDecision)throw Error('Нейронное управление не получило решение FDB');
  const mask=mode==='teach'?0:exo?data.fdbDecision.mask:learner.step(features,reward,terminal,mode==='train');
  if(exo&&terminal&&mode!=='teach')learner.episodes++;
- if(!terminal&&window.fdbAgent)window.fdbAgent.remember(data);lastDecisionFeatures=mode==='teach'?null:features.slice();lastDecisionAction=mask;
+ if(!terminal&&window.fdbAgent)window.fdbAgent.remember(data,fdbRewardSnapshot(nes.cpu.mem));lastDecisionFeatures=mode==='teach'?null:features.slice();lastDecisionAction=mask;
  if(mode==='teach'&&terminal)learner.episodes++;
  if(terminal){trials.push({reward:episodeReward,success:success&&!death,death,steps:episodeSteps,mode});if(trials.length>100)trials.shift();log('Эпизод '+learner.episodes+': '+episodeReward.toFixed(2)+'; успех '+success);learningStats();
   if(window.layerExperience)window.layerExperience.terminal({source:success||death?(diagnostic?'diagnostic':'ram'):'boundary',outcome:death?'loss':success?'win':manualFinish?'finished':'timeout',reward:episodeReward,steps:episodeSteps,mode});
@@ -381,7 +402,7 @@ function configuration() {
   return {inputs:ids('inputIds'),outputs:ids('outputIds'),lesions:ids('lesions'),
     mode:$('mode').value,maxHz:Number($('maxHz').value),thresholdHz:Number($('thresholdHz').value),
     windowMs:Number($('windowMs').value),gain:Number($('gain').value),seed,
-    disableInhibition:$('disableInhibition').checked,scramble:$('scramble').checked,backend:$('backend').value,controllerSource:$('learnerController').value,fdb:fdbConfiguration(),gmode:gmodeMode,gmodeBoost:gmodeBoost,systemButtons:$('systemButtons').value};
+    disableInhibition:$('disableInhibition').checked,scramble:$('scramble').checked,backend:$('backend').value,controllerSource:$('learnerController').value||'adaptive',fdb:fdbConfiguration(),gmode:gmodeMode,gmodeBoost:gmodeBoost,systemButtons:$('systemButtons').value};
 }
 function neuralConfiguration(value){
   const copy=JSON.parse(JSON.stringify(value));delete copy.gmode;delete copy.gmodeBoost;delete copy.systemButtons;delete copy.controllerSource;return copy;
@@ -433,7 +454,7 @@ function sampleFrame(now,force=false) {
   lastSample=now;pendingSince=now;pendingToken=++token;
   let input=retina;
   if($('freeze').checked){if(frozen===null)frozen=retina.slice();input=frozen;}else frozen=null;
-  sampledRetina=input.slice();sampledRam=sampleRewardMemory();sampledControllerMask=appliedMask;sampledFdbOutcome=window.fdbAgent?window.fdbAgent.capture():null;
+  sampledRetina=input.slice();sampledRam=sampleRewardMemory();sampledControllerMask=appliedMask;sampledFdbOutcome=window.fdbAgent?window.fdbAgent.capture(fdbRewardSnapshot(sampledRam)):null;
   if(pendingFdbReplay&&!$('freeze').checked&&['teach','train'].includes($('learnMode').value)){fdbExperience.push(...pendingFdbReplay);fdbExperience=fdbExperience.slice(-200);pendingFdbReplay=null;}
   nativeCall('sample',JSON.stringify({retina:input,token:pendingToken,generation,frame,manualMask,humanMask:manualMask,agentMask:brainMask,gmode:gmodeMode,controllerMask:appliedMask,backend:$('backend').value,controllerSource:$('learnerController').value,layerId:window.layerExperience&&window.layerExperience.activeId?window.layerExperience.activeId():null,actions:learner.actions,epsilon:Number($('epsilon').value),learningMode:benchmark?'benchmark-'+benchmark.policy:$('learnMode').value,learningReward:benchmark?0:learnReward,experience:!$('freeze').checked&&['teach','train'].includes($('learnMode').value)?fdbExperience.splice(0,16):[],frozen:$('freeze').checked}));
 }

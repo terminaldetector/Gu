@@ -32,6 +32,7 @@ node tools/archive_replay_check.cjs
 node --check app/src/main/assets/lab/archive-ui.js
 node --check app/src/main/assets/lab/training-journal.js
 node tools/fdb_feedback_check.cjs
+node tools/fdb_reward_check.cjs
 node tools/model_ui_check.cjs
 node tools/layer_sets_check.cjs
 node --check app/src/main/assets/lab/layer-ui.js

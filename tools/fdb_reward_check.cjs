@@ -1,0 +1,20 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const source=fs.readFileSync('app/src/main/assets/lab/lab.js','utf8');
+const block=source.slice(source.indexOf('function fdbRewardSnapshot('),source.indexOf('function learnedButtons('));
+const values={rewardMode:'ram',rewardAddress:'0',ramWidth:'1',ramFormat:'unsigned',ramEndian:'little',ramWrap:false,rewardScale:'1',winEnabled:false,winAddress:'1',winValue:'20',deathEnabled:false,deathAddress:'2',deathValue:'1',winReward:'2',deathReward:'-2'};
+const context={$:id=>({value:String(values[id]),checked:values[id]===true}),FlyGameTools:require('../app/src/main/assets/lab/game-tools.js'),ramLimit:65536,labPlatform:'sega',romHash:'rom',graphIdentity:{sha256:'graph'},ids:id=>id==='inputIds'?['input']:['output'],gmodeMode:'off',profileValues:()=>({...values})};vm.createContext(context);vm.runInContext(block,context);
+const snapshot=memory=>context.fdbRewardSnapshot(memory),reward=(start,end,manual=0)=>context.fdbOutcomeReward({rewardStart:start,rewardEnd:end},manual);
+// An old action increased RAM by 10 during backend delay; the new action only +1.
+const oldObservation=snapshot({0:0}),newActivation=snapshot({0:10}),end=snapshot({0:11});
+assert.equal(reward(newActivation,end).reward,1);assert.equal(end.value-oldObservation.value,11);assert(reward(newActivation,end).valid);
+values.ramWrap=true;assert.equal(reward(snapshot({0:255}),snapshot({0:1})).reward,2,'configured counter wrap');
+values.rewardScale='-1';assert.equal(reward(snapshot({0:4}),snapshot({0:2})).reward,2,'signed task criterion');
+const previous=snapshot({0:4});values.rewardScale='1';assert.equal(reward(previous,snapshot({0:6})).valid,false,'changed profile is rejected, not zero advantage');
+values.winEnabled=true;assert.equal(reward(snapshot({0:0,1:19}),snapshot({0:0,1:20})).reward,2);assert.equal(reward(snapshot({0:0,1:20}),snapshot({0:0,1:20})).reward,0,'pre-existing win cannot be assigned to the new action');
+values.deathEnabled=true;assert.equal(reward(snapshot({0:0,1:19,2:0}),snapshot({0:0,1:20,2:1})).reward,-2,'death overrides simultaneous win');
+values.rewardMode='manual';values.winEnabled=false;values.deathEnabled=false;assert.equal(reward(snapshot({0:100}),snapshot({0:200}),3).reward,3,'manual feedback is not mixed with automatic RAM');
+values.rewardMode='diagnostic';const diagnostic=reward(snapshot({0:100,1:100}),snapshot({0:108,1:100}));assert.equal(diagnostic.reward,.99);
+assert.equal(context.fdbOutcomeReward(null,1).valid,false);assert.equal(reward(newActivation,end,20).reward,10,'bounded reward');
+assert(source.includes('remember(data,fdbRewardSnapshot(nes.cpu.mem))'));assert(source.includes('capture(fdbRewardSnapshot(sampledRam))'));
+console.log('PASS: production FDB reward isolates actual action activation from realtime backend tail, profile identity, wrap/sign, win/death, manual and diagnostic criteria');
