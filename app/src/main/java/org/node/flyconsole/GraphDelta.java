@@ -67,6 +67,27 @@ public final class GraphDelta {
         Edge edge=new Edge(source,target,weight);growth.add(edge);
         ArrayList<Edge> list=bySource.get(source);if(list==null){list=new ArrayList<>();bySource.put(source,list);}list.add(edge);version++;return growth.size()-1;
     }
+    /** Change a grown synapse in-place without touching the immutable base connectome.
+     * Rebuilds the indexed adjacency list and increments the GPU/CPU revision. */
+    public synchronized boolean setGrowthWeight(int source,int target,float weight){
+        check(source,target);
+        if(!Float.isFinite(weight)||Math.abs(weight)>128f)throw new IllegalArgumentException("FDB: invalid learned weight");
+        for(int i=0;i<growth.size();i++){
+            Edge old=growth.get(i);
+            if(old.source==source&&old.target==target){
+                if(old.weight==weight)return false;
+                Edge changed=new Edge(source,target,weight);
+                growth.set(i,changed);
+                ArrayList<Edge> outgoing=bySource.get(source);
+                if(outgoing==null)throw new IllegalStateException("FDB adjacency index missing");
+                for(int j=0;j<outgoing.size();j++){
+                    if(outgoing.get(j).target==target){outgoing.set(j,changed);version++;return true;}
+                }
+                throw new IllegalStateException("FDB adjacency index inconsistent");
+            }
+        }
+        throw new IllegalArgumentException("FDB: grown edge not found");
+    }
     public synchronized List<Edge> outgoing(int source){
         ArrayList<Edge> list=bySource.get(source);return list==null?Collections.<Edge>emptyList():new ArrayList<>(list);
     }
