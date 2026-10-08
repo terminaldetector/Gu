@@ -2,7 +2,7 @@
 'use strict';
 (() => {
 const S=FlyLayerSets,store=new S.Store(localStorage,window.FlyBridge);
-let entries=[],active=null,journal=[],busy=false,deleteId=null,saveQueue=Promise.resolve();
+let entries=[],active=null,journal=[],busy=false,deleteId=null,saveQueue=Promise.resolve(),contextKey=null;
 const ctx=()=>({system:labPlatform,romHash,graphSha256:graphIdentity&&graphIdentity.sha256});
 const message=(text,error=false)=>{$('layerStatus').textContent=text;$('layerStatus').className=error?'note error':'note';};
 const selected=()=>entries.find(e=>e.id===$('layerSelect').value);
@@ -80,6 +80,7 @@ async function importSet(data){
 }
 function autosave(){if(active&&$('layerAutosave').checked)return save(false,true);return Promise.resolve(false);}
 function contextChanged(){
+ const key=JSON.stringify(ctx());if(key===contextKey){renderList();refreshStats();return;}contextKey=key;
  if(active&&!S.compatible(active,ctx())){active=null;journal=[];message('Контекст изменён: выберите Layer Set нужного ROM и коннектома.');}
  if(!active)journal=[];renderList();refreshStats();
 }

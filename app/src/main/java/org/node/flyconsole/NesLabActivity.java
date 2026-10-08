@@ -470,9 +470,9 @@ public final class NesLabActivity extends Activity {
             final long epoch=pageEpoch.get();
             worker.execute(() -> {
                 taskPage.set(epoch);
-                long token=0;JSONObject response=new JSONObject();
+                String token="";JSONObject response=new JSONObject();
                 try {
-                    JSONObject request=new JSONObject(json);token=request.getLong("token");
+                    JSONObject request=new JSONObject(json);token=request.getString("token");
                     LayerSetStore store=new LayerSetStore(new File(getFilesDir(),"layer-sets"));
                     String operation=request.getString("op");Object result;
                     switch(operation){

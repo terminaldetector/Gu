@@ -23,10 +23,10 @@ function summary(set){validate(set);const fdb=set.configuration.fdb;return {id:s
 function compatible(s,context){return s.system===context.system&&s.romHash===context.romHash&&s.graphSha256===context.graphSha256;}
 function stats(entries){const result={manual:{win:0,loss:0,continue:0},criterion:{win:0,loss:0},boundaries:0};for(const e of entries){if(e.source==='manual'&&e.outcome in result.manual)result.manual[e.outcome]++;else if(['ram','diagnostic'].includes(e.source)&&e.outcome in result.criterion)result.criterion[e.outcome]++;else if(e.source==='boundary')result.boundaries++;}return result;}
 class Store {
- constructor(storage,bridge){this.storage=storage;this.bridge=bridge;this.pending=new Map();this.sequence=0;}
+ constructor(storage,bridge){this.storage=storage;this.bridge=bridge;this.pending=new Map();this.sequence=0;this.session=id();}
  receive(response){const p=this.pending.get(response.token);if(!p)return;this.pending.delete(response.token);clearTimeout(p.timer);response.error?p.reject(Error(response.error)):p.resolve(response.data);}
  request(op,payload={}){
-  if(this.bridge&&typeof this.bridge.layerSets==='function')return new Promise((resolve,reject)=>{const token=++this.sequence,timer=setTimeout(()=>{this.pending.delete(token);reject(Error('Ответ хранилища задержался. Обновите список перед повторной записью.'));},30000);this.pending.set(token,{resolve,reject,timer});try{this.bridge.layerSets(JSON.stringify({token,op,...payload}));}catch(e){clearTimeout(timer);this.pending.delete(token);reject(e);}});
+  if(this.bridge&&typeof this.bridge.layerSets==='function')return new Promise((resolve,reject)=>{const token=this.session+':'+(++this.sequence),timer=setTimeout(()=>{this.pending.delete(token);reject(Error('Ответ хранилища задержался. Обновите список перед повторной записью.'));},30000);this.pending.set(token,{resolve,reject,timer});try{this.bridge.layerSets(JSON.stringify({token,op,...payload}));}catch(e){clearTimeout(timer);this.pending.delete(token);reject(e);}});
   try{
    const storage=this.storage,list=()=>{const sets=[];for(let i=0;i<storage.length;i++){const key=storage.key(i);if(key&&key.startsWith(PREFIX)){try{sets.push(JSON.parse(storage.getItem(key)));}catch(_) {}}}return sets;};
    if(op==='list'){const result=[];for(const value of list())try{result.push(summary(value));}catch(_){}return Promise.resolve(result);}

@@ -314,7 +314,7 @@ function validateFdb(value,graphSha,inputs=null,outputs=null){
  if(!value||typeof value!=='object'||Array.isArray(value))throw Error('FDB должен быть объектом');
  if(value.graph_sha256&&value.graph_sha256!==graphSha)throw Error('FDB другого коннектома');
  for(const kind of ['deltas','edges']){
-  const list=value[kind]||[];if(!Array.isArray(list)||list.length>1024)throw Error('FDB: до 1024 связей в списке');
+  const list=value[kind]===undefined?[]:value[kind];if(!Array.isArray(list)||list.length>1024)throw Error('FDB: до 1024 связей в списке');
   for(const x of list)if(!x||typeof x.source!=='string'||typeof x.target!=='string'||!/^\d+$/.test(x.source)||!/^\d+$/.test(x.target)||!Number.isFinite(x.weight)||Math.abs(x.weight)>127)throw Error('FDB: неверный ID или вес');
  }
  validateGrowth(value.growth);
@@ -438,7 +438,7 @@ $('apply').onclick=()=>apply(false);
 $('resetBrain').onclick=()=>apply(false,true,true);
 $('fdbAuto').onclick=()=>{try{window.labPause();const fdb=fdbConfiguration()||{deltas:[],edges:[]};fdb.growth={enabled:true,interval:10,perWindow:2,maxEdges:256,initialWeight:8,explore:true,rewardGate:false};$('fdbJson').value=JSON.stringify(fdb,null,2);status('FDB: рост по активности включён с исследованием молчащих выходов. Примените конфигурацию.');}catch(e){status(e.message,true);}};
 $('fdbSave').onclick=()=>{try{const fdb=fdbConfiguration();if(!ready)throw Error('Коннектом не готов');localStorage.setItem('fly-fdb-'+graphIdentity.sha256,JSON.stringify(fdb));status('FDB checkpoint сохранён для текущего графа.');}catch(e){status(e.message,true);}};
-$('fdbRestore').onclick=()=>{try{if(!ready)throw Error('Коннектом не готов');const raw=localStorage.getItem('fly-fdb-'+graphIdentity.sha256);if(raw===null)throw Error('Checkpoint отсутствует');window.labPause();$('fdbJson').value=JSON.parse(raw)===null?'':raw;status('FDB восстановлен. Примените конфигурацию.');}catch(e){status(e.message,true);}};
+$('fdbRestore').onclick=()=>{try{if(!ready)throw Error('Коннектом не готов');const raw=localStorage.getItem('fly-fdb-'+graphIdentity.sha256);if(raw===null)throw Error('Checkpoint отсутствует');window.labPause();$('fdbJson').value=JSON.parse(raw)===null?'':raw;restoreGrowthStatePending=true;configurationApplied=false;status('FDB восстановлен. Примените конфигурацию.');}catch(e){status(e.message,true);}};
 $('fdbClear').onclick=()=>{window.labPause();$('fdbJson').value='';status('FDB слой очищен. Примените конфигурацию.');};
 $('fdbJson').onchange=()=>{window.labPause();status('FDB изменён. Примените конфигурацию.');};
 $('gmode').onchange=()=>setGMode($('gmode').value);
