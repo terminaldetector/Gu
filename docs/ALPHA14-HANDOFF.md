@@ -4,7 +4,7 @@ Branch: `v2/gmode-fdb-gpu` in https://github.com/terminaldetector/Gu.
 Source under CI: `421052a03d234dea467383f1d4675d8b6c7bb0c6`.
 CI: https://github.com/terminaldetector/Gu/actions/runs/37819220945.
 Release target: `org.node.flyconsole.nes`, `2.0.0-alpha14`, versionCode 22.
-Current release state: CI running; signed APK not yet delivered.
+Release completed: signed APK verified (v2/v3, established certificate), 69,553,963 bytes. SHA256: b2d23ac74812be362727e58643dc096f46ffc9b89ffb92d5bb97401e15fdbfdf. CI SUCCESS; portrait/landscape previews inspected. Physical Android not yet tested.
 
 ## Implemented
 
@@ -18,7 +18,7 @@ Current release state: CI running; signed APK not yet delivered.
 ## Validation
 
 Passed locally: Java TrainingSessionStore reopen/crash-tail/paged history beyond 200; JS archive replay/cancellation/frozen holdout/provenance/metrics; previous learner actual NES task, demonstration, controller, system-control and Layer Set checks; syntax and git diff checks.
-CI includes real WASM all platforms, Java/JS, portrait/landscape UI with candidate/apply assertions, GPU runtime, assembleDebug and lintDebug. Wait for final result before claiming a release.
+CI includes real WASM all platforms, Java/JS, portrait/landscape UI with candidate/apply assertions, GPU runtime, assembleDebug and lintDebug. Final CI result: SUCCESS, job 113455624969.
 Physical Android verification remains outstanding.
 
 ## Continuation
