@@ -68,6 +68,6 @@ const sha=crypto.createHash('sha256').update(Buffer.from(demo.base64,'base64')).
   configuring=true;window.startAfterConfig=true;const before=generation;window.labConfigured({generation:before-1,mode:'closed'});const ignored=configuring&&!connected;window.labPause();
   return {bad,preserved,ignored};
  });assert(extra.bad,'invalid snapshot rejected');assert(extra.preserved,'failed ROM does not mutate graph/ROM policy identity');assert(extra.ignored,'stale configure ignored');
- assert.equal(await page.textContent('[data-button="2"]'),'C');assert.equal(await page.textContent('#navSega'),'2 / SEGA');assert.deepEqual(errors,[]);
+ assert.equal(await page.textContent('[data-button="2"]'),'C');assert.equal(await page.locator('#platformSelect option[value=sega]').count(),1);assert.deepEqual(errors,[]);
  await page.screenshot({path:process.env.UI_SCREENSHOT||'sega-ui.png',fullPage:true});console.log('PASS: browser WASM/CSP, Sega video->Java network->controller/RAM, episode snapshot, training and model import');await browser.close();java.stdin.end();
 })().catch(e=>{console.error(e);java.kill();process.exit(1);});

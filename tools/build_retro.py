@@ -41,11 +41,22 @@ def build(system, settings):
         # suffix as LLVM input. Preserve its bytes with the archive suffix.
         library = work / (name + '_libretro_emscripten.a')
         shutil.copy2(work / (name + '_libretro_emscripten.bc'), library)
+        common_objects = []
+        if system == 'gb':
+            # Static libretro builds expect RetroArch to provide these. Our
+            # standalone frontend links the upstream VFS/path helpers itself.
+            common = source / 'libgambatte/libretro-common'
+            helpers = ['compat/compat_posix_string.c', 'compat/compat_snprintf.c', 'compat/compat_strcasestr.c', 'compat/compat_strl.c', 'compat/fopen_utf8.c', 'encodings/encoding_utf.c', 'file/file_path.c', 'file/file_path_io.c', 'streams/file_stream.c', 'streams/file_stream_transforms.c', 'string/stdstring.c', 'time/rtime.c', 'vfs/vfs_implementation.c']
+            for index, helper in enumerate(helpers):
+                obj = source / f'fly_common_{index}.o'
+                run('emcc', '-O3', '-DHAVE_STDINT_H', '-DHAVE_INTTYPES_H', '-I' + str(common / 'include'), '-c', str(common / helper), '-o', str(obj), cwd=source)
+                common_objects.append(str(obj))
         output = ROOT / 'app/src/main/assets/lab' / system
         output.mkdir(parents=True, exist_ok=True)
         command = ['em++', str(source / 'fly_bridge.cpp'), str(library), '-I' + str(source / include), '-std=c++17', '-O3', '--no-entry', '-sMODULARIZE=1', '-sEXPORT_NAME=' + factory, '-sENVIRONMENT=web,node', '-sALLOW_MEMORY_GROWTH=1', '-sINITIAL_MEMORY=33554432', '-sMAXIMUM_MEMORY=268435456', '-sSTACK_SIZE=2097152', '-sEXPORTED_FUNCTIONS=' + json.dumps(['_' + symbol for symbol in EXPORTS]), '-o', str(output / 'core.js')]
         if system == 'gb':
             command.append('-DFLY_GB')
+            command.extend(common_objects)
         run(*command, cwd=source)
         # GPL/noncommercial redistribution includes the exact frontend and full source.
         with zipfile.ZipFile(output / 'source.zip', 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as z:
