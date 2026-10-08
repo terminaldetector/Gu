@@ -1,16 +1,17 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
-const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets');let browser;
+const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets');let browser,testPage;
 (async()=>{
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE});
  const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,isMobile:true}),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ testPage=page;
  await page.route('https://flyconsole.local/**',async route=>{const file=path.join(assets,new URL(route.request().url()).pathname.slice(1));if(!fs.existsSync(file))return route.fulfill({status:404,body:''});await route.fulfill({contentType:file.endsWith('.js')?'application/javascript':file.endsWith('.css')?'text/css':file.endsWith('.wasm')?'application/wasm':file.endsWith('.json')?'application/json':'text/html',body:fs.readFileSync(file)});});
  await page.exposeFunction('fixtureDemo',system=>{const d=JSON.parse(fs.readFileSync(path.join(assets,'lab/demo-'+(system==='nes'?'rom':system)+'.json')));d.name='Fly '+system+' original diagnostic';d.sha256=crypto.createHash('sha256').update(Buffer.from(d.base64,'base64')).digest('hex');return page.evaluate(data=>window.labLoadRom(data),d);});
  await page.addInitScript(()=>{window.fixturePicks=0;window.FlyBridge={demo:()=>window.fixtureDemo(new URL(location.href).searchParams.get('system')||'nes'),switchSystem:system=>{if(['nes','sega','gb','snes'].includes(system))location.href='/lab/index.html?system='+system;},pickRom:()=>window.fixturePicks++,acceptRom(){},orientation(){},stop(){},resume(){}};});
  await page.goto('https://flyconsole.local/lab/index.html?system=nes');await page.waitForFunction(()=>loaded);
  for(const system of ['gb','snes','sega','nes']){
   await page.evaluate(()=>showTab('platform'));assert.equal(await page.locator('#platformSelect option').count(),4);
-  await page.selectOption('#platformSelect',system);await page.waitForURL('**?system='+system);await page.waitForFunction(()=>loaded,null,{timeout:30000});
+  await page.selectOption('#platformSelect',system);await page.waitForURL(url=>url.searchParams.get('system')===system,{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>loaded,null,{timeout:30000});
   assert.equal(await page.evaluate(()=>labPlatform),system);assert((await page.textContent('#platformInfo')).includes('RAM'));
   await page.evaluate(system=>window.labReady({kind:'UI fixture',neurons:64,edges:100,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:system==='snes'||system==='sega'?12:8},(_,i)=>String(i+17)),backend:'cpu'}),system);
   if(!['gb','snes'].includes(system))continue;
@@ -32,4 +33,4 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   await page.evaluate(()=>leaveGame('platform'));
  }
  assert.deepEqual(errors,[]);await browser.close();console.log('PASS: four-platform selector, real GB/SNES games, snapshots, P1/P2, keyboard and mobile layouts');
-})().catch(async e=>{console.error(e);if(browser)await browser.close();process.exitCode=1;});
+})().catch(async e=>{console.error(e);if(testPage){fs.mkdirSync('ui-preview',{recursive:true});await testPage.screenshot({path:'ui-preview/platform-failure.png'}).catch(()=>{});console.error(await testPage.evaluate(()=>({url:location.href,loaded:typeof loaded==='undefined'?null:loaded,status:document.getElementById('status')?.textContent,log:document.getElementById('log')?.textContent})).catch(()=>null));}if(browser)await browser.close();process.exitCode=1;});
