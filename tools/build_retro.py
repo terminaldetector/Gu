@@ -13,7 +13,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 CORES = {
     'gb': ('libretro/gambatte-libretro', 'd9d6cd06382d1ced30de34d56d3609452323dab1', '.', 'Makefile.libretro', 'gambatte', 'libgambatte/libretro-common/include', 'GambatteFactory'),
-    'snes': ('snes9xgit/snes9x', '1bcc369e89f08243e0a462882fb1f3e42e51de3a', 'libretro', 'Makefile', 'snes9x', 'libretro/libretro-common/include', 'Snes9xFactory'),
+    'snes': ('snes9xgit/snes9x', '1bcc369e89f08243e0a462882fb1f3e42e51de3a', 'libretro', 'Makefile', 'snes9x', 'libretro', 'Snes9xFactory'),
 }
 EXPORTS = ['malloc', 'free', 'lab_init', 'lab_load_rom', 'lab_tick', 'lab_reset', 'lab_video', 'lab_width', 'lab_height', 'lab_valid', 'lab_fps', 'lab_sample_rate', 'lab_audio_count', 'lab_audio_left', 'lab_audio_right', 'lab_ram_size', 'lab_read_ram', 'lab_save_state', 'lab_state', 'lab_load_state']
 
