@@ -24,6 +24,8 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r tools/requirements.txt
+      - name: Check Male CNS streaming converter
+        run: python tools/male_cns_converter_check.py
       - name: Ensure GPU test libraries
         run: |
           if ! python -c "import ctypes,pathlib;ctypes.CDLL('libEGL.so.1');ctypes.CDLL('libGLESv2.so.2');assert pathlib.Path('/usr/lib/x86_64-linux-gnu/dri/swrast_dri.so').exists()"; then
@@ -69,6 +71,11 @@ jobs:
           path: ui-preview/
       - run: python tools/gpu_runtime_check.py
       - run: python tools/bundle_data.py
+      - name: Check full Male CNS model and CPU integration
+        run: |
+          male_test_classes=$(mktemp -d)
+          javac -d "$male_test_classes" app/src/main/java/org/node/flyconsole/Graph.java app/src/main/java/org/node/flyconsole/GraphDelta.java app/src/main/java/org/node/flyconsole/Engine.java tools/MaleCnsGraphCheck.java
+          java -Xmx512m -cp "$male_test_classes" org.node.flyconsole.MaleCnsGraphCheck app/src/main/assets/male-cns.fly.gz
       - run: gradle assembleDebug lintDebug
       - name: Collect official APK signing tool
         run: cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" /tmp/flyconsole-apksigner.jar
@@ -101,4 +108,16 @@ jobs:
         with:
           name: FlyConsole-apk-part-3
           path: /tmp/flyconsole-apk-part-3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FlyConsole-apk-part-4
+          path: /tmp/flyconsole-apk-part-4
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FlyConsole-apk-part-5
+          path: /tmp/flyconsole-apk-part-5
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FlyConsole-apk-part-6
+          path: /tmp/flyconsole-apk-part-6
 

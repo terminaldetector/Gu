@@ -91,6 +91,16 @@ public final class GraphDelta {
     public synchronized List<Edge> outgoing(int source){
         ArrayList<Edge> list=bySource.get(source);return list==null?Collections.<Edge>emptyList():new ArrayList<>(list);
     }
+    /** Retire an exogenous synapse; both adjacency and runtime revision change. */
+    public synchronized boolean removeEdge(int source,int target){
+        check(source,target);
+        for(int i=0;i<growth.size();i++)if(growth.get(i).source==source&&growth.get(i).target==target){
+            growth.remove(i);ArrayList<Edge> list=bySource.get(source);
+            for(int j=0;j<list.size();j++)if(list.get(j).target==target){list.remove(j);if(list.isEmpty())bySource.remove(source);version++;return true;}
+            throw new IllegalStateException("FDB adjacency index inconsistent");
+        }return false;
+    }
+    public synchronized long memoryBytes(){return 64L*weightDeltas.size()+64L*growth.size();}
     public synchronized long checkpoint(){
         if(checkpoints.size()>=16)throw new IllegalStateException("Лимит 16 контрольных точек FDB");
         checkpoints.add(new Snapshot(weightDeltas,growth,version));return checkpoints.size()-1;

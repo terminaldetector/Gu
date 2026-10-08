@@ -1,0 +1,34 @@
+{
+  "model_id": "male-cns-v1.0",
+  "release": "v1.0",
+  "release_date": "2026-06-08",
+  "dataset": "male-cns:v1.0",
+  "source_page": "https://male-cns.janelia.org/download/",
+  "license": "CC-BY-4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "FlyEM Project Team at HHMI Janelia, Cambridge Drosophila Connectomics Group, MRC Laboratory of Molecular Biology, and Google Research",
+  "base_url": "https://storage.googleapis.com/flyem-male-cns/v1.0/connectome-data/flat-connectome/",
+  "files": {
+    "annotations": {
+      "name": "body-annotations-male-cns-v1.0-minconf-0.5.feather",
+      "generation": "1780494878811468",
+      "bytes": 14483314,
+      "md5_base64": "UKdxh3DFciDxYLpPQxq4ng==",
+      "sha256": "2177e246113e4cfbf1e7772ec37c6da1955ff22e8063d0b1f833101f99a9a3b2"
+    },
+    "neurotransmitters": {
+      "name": "body-neurotransmitters-male-cns-v1.0.feather",
+      "generation": "1780894899156750",
+      "bytes": 43282834,
+      "md5_base64": "PYQrEv5cSe763lKNfdJKHw==",
+      "sha256": "95c9289220663abeb3409f3ad9e5a7f8a53f8093f5139d15502cd08da8879621"
+    },
+    "connectivity": {
+      "name": "connectome-weights-male-cns-v1.0-minconf-0.5-traced-only.feather",
+      "generation": "1780494884279095",
+      "bytes": 508025642,
+      "md5_base64": "ZgHUrQr6mf0D6wh5Ze8kIw==",
+      "sha256": "9b3beab17bad5f618be3f2c02d3139a8d07b822565919c013f1e5506d93e604b"
+    }
+  }
+}

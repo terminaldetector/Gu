@@ -31,6 +31,8 @@ node tools/training_sessions_check.cjs
 node tools/archive_replay_check.cjs
 node --check app/src/main/assets/lab/archive-ui.js
 node --check app/src/main/assets/lab/training-journal.js
+node tools/fdb_feedback_check.cjs
+node tools/model_ui_check.cjs
 node tools/layer_sets_check.cjs
 node --check app/src/main/assets/lab/layer-ui.js
 
@@ -46,6 +48,9 @@ javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.InferenceCheck
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/LayerSetStore.java tools/LayerSetStoreCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.LayerSetStoreCheck
+javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/FdbCheckpoint.java tools/FdbCheckpointCheck.java tools/FdbGameBridge.java
+java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbCheckpointCheck
+CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/fdb_game_check.cjs
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/TrainingSessionStore.java tools/TrainingSessionStoreCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.TrainingSessionStoreCheck
 node tools/sega_check.cjs

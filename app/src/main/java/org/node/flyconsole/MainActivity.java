@@ -30,9 +30,9 @@ public final class MainActivity extends Activity {
  private void importGraph(Uri uri){if(busy||destroyed)return;state(true);cancel.set(true);append("Загрузка…");worker.execute(()->{File tmp=new File(getFilesDir(),"import.tmp");try{
    Graph loaded;
    if(uri!=null){try(InputStream in=getContentResolver().openInputStream(uri);OutputStream out=new FileOutputStream(tmp)){byte[] buf=new byte[65536];int n;long total=0;while((n=in.read(buf))!=-1){if(Thread.currentThread().isInterrupted())throw new IOException("Импорт отменён");total+=n;if(total>1024L*1024*1024)throw new IOException("Файл больше 1 ГБ");out.write(buf,0,n);}}try(InputStream in=new FileInputStream(tmp)){loaded=Graph.read(in,budget());}loaded.fingerprint();}
-   else loaded=GraphCache.load(model,this::bundledInput,budget());
+   else loaded=ConnectomeStore.load(this,budget());
    Engine next=new Engine(loaded);
-   if(uri!=null){try{java.nio.file.Files.move(tmp.toPath(),model.toPath(),java.nio.file.StandardCopyOption.REPLACE_EXISTING,java.nio.file.StandardCopyOption.ATOMIC_MOVE);}catch(java.nio.file.AtomicMoveNotSupportedException ex){java.nio.file.Files.move(tmp.toPath(),model.toPath(),java.nio.file.StandardCopyOption.REPLACE_EXISTING);}GraphCache.install(loaded,"Imported graph");}
+   if(uri!=null){try{java.nio.file.Files.move(tmp.toPath(),model.toPath(),java.nio.file.StandardCopyOption.REPLACE_EXISTING,java.nio.file.StandardCopyOption.ATOMIC_MOVE);}catch(java.nio.file.AtomicMoveNotSupportedException ex){java.nio.file.Files.move(tmp.toPath(),model.toPath(),java.nio.file.StandardCopyOption.REPLACE_EXISTING);}ConnectomeStore.select(this,ConnectomeStore.IMPORTED);GraphCache.install(loaded,"Imported graph");}
    graph=loaded;engine=next;lastJson="{}";
    ui(()->{if(!editorRestored&&entry.getText().length()==0)entry.setText("stim "+loaded.ids[0]+" 150 1000");append("Граф: "+loaded.ids.length+" нейронов / "+loaded.targets.length+" связей\nПервый ID: "+loaded.ids[0]+" · оценка памяти: "+loaded.memoryBytes()/1048576+" МиБ\nSHA256: "+loaded.fingerprint());if(!GraphCache.notice.isEmpty())append(GraphCache.notice);state(false);});
   }catch(Exception|OutOfMemoryError ex){tmp.delete();ui(()->{append("Импорт не выполнен: "+ex.getMessage()+"\nПредыдущий граф сохранён. Если полная модель не загрузилась, доступен явно обозначенный синтетический тест из 4 нейронов.");state(false);});}});}

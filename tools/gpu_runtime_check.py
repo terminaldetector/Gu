@@ -4,7 +4,7 @@ import ctypes as C, json, math, os, re, struct
 from pathlib import Path
 os.environ.setdefault("EGL_PLATFORM","surfaceless")
 os.environ.setdefault("LIBGL_ALWAYS_SOFTWARE","1")
-egl=C.CDLL("libEGL.so.1"); gl=C.CDLL("libGLESv2.so.2")
+egl=C.CDLL("libEGL.so.1"); gl=C.CDLL(os.environ.get("GPU_RUNTIME_GL_LIBRARY","libGLESv2.so.2"))
 def fn(lib,name,restype,*args):
     f=getattr(lib,name);f.restype=restype;f.argtypes=list(args);return f
 I=C.c_int; U=C.c_uint; P=C.c_void_p; F=C.c_float
@@ -18,6 +18,8 @@ assert fn(egl,"eglChooseConfig",U,P,P,P,I,P)(d,attrs,C.byref(cfg),1,C.byref(coun
 ctx=fn(egl,"eglCreateContext",P,P,P,P,P)(d,cfg,None,(I*3)(0x3098,3,0x3038)); assert ctx
 surf=fn(egl,"eglCreatePbufferSurface",P,P,P,P)(d,cfg,(I*5)(0x3057,1,0x3056,1,0x3038));assert surf
 assert fn(egl,"eglMakeCurrent",U,P,P,P,P)(d,surf,surf,ctx)
+version=fn(gl,"glGetString",C.c_char_p,U)(0x1F02).decode()
+assert version.startswith("OpenGL ES 3."),version
 createShader=fn(gl,"glCreateShader",U,U); shaderSource=fn(gl,"glShaderSource",None,U,I,P,P)
 compileShader=fn(gl,"glCompileShader",None,U);shaderStatus=fn(gl,"glGetShaderiv",None,U,U,P)
 shaderLog=fn(gl,"glGetShaderInfoLog",None,U,I,P,P)
@@ -45,7 +47,7 @@ def upload(index,values,typ=I):
 def read(index,length,typ=F):
     bind(SSBO,buffers[index]);p=mapping(SSBO,0,length*4,1);assert p
     values=list((typ*length).from_buffer_copy(C.string_at(p,length*4)));assert unmap(SSBO);return values
-def run(weight=120,prob=1,gain=1,disable=0,lesions=(0,0),extra=0,delta=0,mutate=False):
+def run(weight=120,prob=1,gain=1,disable=0,lesions=(0,0),extra=0,delta=0,mutate=False,revisions=None,ticks=40,history=None):
     upload(0,[-52,-52],F);upload(1,[0,0],F);upload(2,[0,0])
     upload(3,[0]*38);upload(5,[0,0]);upload(6,[0,1,1]);upload(7,[1])
     upload(8,[weight+delta],F);upload(9,lesions)
@@ -58,9 +60,19 @@ def run(weight=120,prob=1,gain=1,disable=0,lesions=(0,0),extra=0,delta=0,mutate=
     uiv(loc(program,b"inputIds"),1,(I*1)(0));ufv(loc(program,b"inputProb"),1,(F*1)(prob))
     v=[-52.,-52.];cur=[0.,0.];ref=[0,0];counts=[0,0];pending=[[0.,0.] for _ in range(19)]
     ev=math.exp(-.1/20);eg=math.exp(-.1/5);coupling=(ev-eg)/3
-    for tick in range(40):
+    revisions={} if revisions is None else revisions
+    for tick in range(ticks):
         if mutate and tick==10:
             extra=120;upload(4,[3,5,5,1,bits(extra)],U)
+        if tick in revisions:
+            revision=revisions[tick]
+            # Same SSBO revision shape as production syncLayer: update only
+            # weights/topology, preserving voltage, refractory and queued events.
+            if "extra" in revision:
+                extra=revision["extra"]
+                upload(4,[3,5,5,1,bits(extra)] if extra else [3,3,3],U)
+            if "delta" in revision:
+                delta=revision["delta"];upload(8,[weight+delta],F)
         ui(loc(program,b"tick"),tick);dispatch(1,1,1);barrier(0x2000|0x200)
         assert error()==0,"OpenGL error"
         due=pending[tick%19]
@@ -78,8 +90,14 @@ def run(weight=120,prob=1,gain=1,disable=0,lesions=(0,0),extra=0,delta=0,mutate=
                     if not(disable and w<0):pending[(tick+18)%19][1]+=round(w*gain*256)/256
         actual=read(5,2,I)
         assert actual==counts,(tick,actual,counts)
+        assert read(2,2,I)==ref,("refractory",tick,read(2,2,I),ref)
+        # Removal changes future transmission only. Events emitted before the
+        # revision must retain their old weight and be delivered at +18 ticks.
+        queued=read(3,38,I);expected_queue=[round(x*256) for row in pending for x in row]
+        assert queued==expected_queue,("delayed queue",tick,queued,expected_queue)
         for label,actual,expected in [("voltage",read(0,2),v),("current",read(1,2),cur)]:
             assert all(abs(a-b)<.005 for a,b in zip(actual,expected)),(label,tick,actual,expected)
+        if history is not None:history.append({"tick":tick,"counts":counts.copy(),"queue":queued,"extra":extra,"delta":delta})
     return counts
 assert run()==[40,1]
 assert run(prob=0)==[0,0]
@@ -93,5 +111,18 @@ assert run(weight=0,delta=120)==[40,1]
 assert run(weight=120,delta=-120)==[40,0]
 assert run(weight=240)==[40,1] # original weights outside the old signed16 range
 assert run(weight=0,mutate=True)==[40,1] # new edge uploaded at an actual window boundary
-print("PASS: actual GLES31 production shader; CPU LIF trajectory, 1.8ms delay, inhibition, gain, lesions, silence, FDB extra edges/deltas/live revision, float32 weights >128")
+removed=[]
+assert run(weight=0,extra=120,revisions={10:{"extra":0}},ticks=60,history=removed)==[60,2]
+assert removed[9]["counts"][1]==0 and removed[27]["counts"][1]==1,"in-flight impulses must survive edge removal"
+assert any(removed[10]["queue"]) and not any(removed[28]["queue"]),"old queue drains; removed edge emits nothing new"
+learned=[]
+run(weight=0,extra=7.25,revisions={10:{"extra":121.5},20:{"extra":14.75},30:{"extra":0}},ticks=60,history=learned)
+assert set(v for row in learned[10:28] for v in row["queue"])>={0,round(7.25*256),round(121.5*256)},"both old and reinforced event weights coexist"
+assert not any(learned[48]["queue"]),"pruned learned layer must stop adding impulses"
+restored=[]
+assert run(weight=0,delta=120,revisions={10:{"delta":0}},ticks=60,history=restored)==[60,2]
+assert restored[10]["queue"]==removed[10]["queue"],"restoring ΔW and removing Wexo preserve the same emitted events"
+assert run(weight=0,revisions={10:{"extra":120},20:{"extra":0}},ticks=60)==[60,2]
+assert run(weight=0,extra=-120,revisions={10:{"extra":-60},20:{"extra":0}},ticks=60)==[60,0]
+print("PASS: actual GLES31 production shader ("+version+"); CPU-equation LIF trajectory, exact delayed queue, inhibition/gain/lesions, Wexo reinforcement/depression/pruning, ΔW restore, in-flight event preservation, float32 weights >128")
 

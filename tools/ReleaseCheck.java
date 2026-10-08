@@ -15,6 +15,11 @@ public final class ReleaseCheck {
   for(int i=0;i<4;i++)tasks.add(pool.submit(()->GraphCache.load(invalid.toFile(),()->{opens.incrementAndGet();return new ByteArrayInputStream(bytes.toByteArray());},1000000)));
   Graph shared=tasks.get(0).get();for(Future<Graph> task:tasks)if(task.get()!=shared)throw new AssertionError("duplicate graph");pool.shutdown();Files.delete(invalid);if(opens.get()!=1||GraphCache.notice.isEmpty()||!shared.fingerprint().equals(g.fingerprint()))throw new AssertionError("cache/fallback/fingerprint");
   if(g.fingerprint().equals(new Graph(g.ids,g.offsets,g.targets,new float[]{12,12,-11}).fingerprint()))throw new AssertionError("weights identity");
+  Graph named=GraphCache.loadNamed("male-fixture",()->new ByteArrayInputStream(bytes.toByteArray()),1000000,"Male fixture",g.fingerprint());
+  if(!GraphCache.modelId.equals("male-fixture")||named==shared)throw new AssertionError("named model does not replace graph slot");
+  if(GraphCache.loadNamed("male-fixture",()->{throw new IOException("must use same cached slot");},1,"Male fixture",g.fingerprint())!=named)throw new AssertionError("duplicate named graph");
+  try{GraphCache.loadNamed("bad",()->new ByteArrayInputStream(bytes.toByteArray()),1000000,"Bad",String.format("%064d",0));throw new AssertionError("bad model signature");}catch(IOException expected){}
+  if(GraphCache.current!=named||!GraphCache.modelId.equals("male-fixture"))throw new AssertionError("failed selection destroyed previous model");
   System.out.println("PASS: strict numbers/booleans, invalid/cancelled state preservation, 256 inputs, concurrent graph cache, fallback notice, SHA identity");
  }
 }

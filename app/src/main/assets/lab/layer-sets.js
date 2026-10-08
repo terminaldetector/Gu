@@ -6,7 +6,7 @@ const clone=value=>JSON.parse(JSON.stringify(value));
 const bytes=text=>typeof TextEncoder==='undefined'?unescape(encodeURIComponent(text)).length:new TextEncoder().encode(text).length;
 function id(){return typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.floor(Math.random()*16);return (c==='x'?r:(r&3)|8).toString(16);});}
 function validate(set){
- if(!set||set.type!==TYPE||set.layerVersion!==1||typeof set.id!=='string'||!/^[-a-f0-9]{36}$/.test(set.id))throw Error('Неверный формат Layer Set');
+ if(!set||set.type!==TYPE||![1,2].includes(set.layerVersion)||typeof set.id!=='string'||!/^[-a-f0-9]{36}$/.test(set.id))throw Error('Неверный формат Layer Set');
  if(typeof set.name!=='string'||!set.name.trim()||set.name.length>80||typeof set.notes!=='string'||set.notes.length>500)throw Error('Имя: 1–80 символов; заметка: до 500');
  if(!['nes','sega','gb','snes'].includes(set.system)||typeof set.romHash!=='string'||!/^[a-f0-9]{64}$/.test(set.romHash)||!set.graph||!/^[a-f0-9]{64}$/.test(set.graph.sha256))throw Error('Layer Set требует SHA256 ROM и графа');
  for(const k of ['createdAt','updatedAt'])if(!Number.isSafeInteger(set[k])||set[k]<0)throw Error('Неверная дата Layer Set');

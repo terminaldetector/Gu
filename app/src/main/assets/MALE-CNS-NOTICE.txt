@@ -1,0 +1,20 @@
+Male CNS v1.0 (released June 8, 2026), dataset male-cns:v1.0.
+Data: FlyEM Project Team at HHMI Janelia, Cambridge Drosophila
+Connectomics Group, MRC Laboratory of Molecular Biology, and Google Research.
+Source: https://male-cns.janelia.org/download/
+License: Creative Commons Attribution 4.0 International (CC BY 4.0).
+License text: https://creativecommons.org/licenses/by/4.0/legalcode
+
+Gu changes: the official Traced x Traced aggregated connection graph is
+converted into sorted FLY1 CSR, retaining all 165,122 Traced neuronal bodies
+(including isolated bodies) across brain, optic lobes and ventral nerve cord.
+Non-Traced fragments and glia are not artificial computational neurons.
+No additional synapse-count threshold is applied. Anatomical pair weights
+are converted into signed LIF currents using a static 0.275 scale and the
+official consensus_nt property: acetylcholine positive; GABA, glutamate and
+histamine negative; unknown or other/modulatory transmitters zero.
+The zero-weight connections remain in the anatomical graph. Receptor-specific
+and neuromodulatory dynamics are not represented by this approximation.
+See male-cns.fly.json in the APK for exact source fingerprints, sign policy,
+graph fingerprint, counts and experimental retinal/motor port mappings.
+The data creators do not endorse Gu or its simulations.

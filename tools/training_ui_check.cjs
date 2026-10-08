@@ -39,7 +39,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   const one=oneFrame.report.events.find(e=>e.kind==='sample');assert.equal(one.mask,1);assert.equal(one.frames,1);assert(Math.abs(one.seconds-1/oneFrame.fps)<1e-10);assert.equal(oneFrame.report.session.accepted,1);
   await page.evaluate(()=>leaveGame('learning'));await page.click('#trainingPause');
   await page.waitForFunction(()=>$('humanSessionSelect').options.length>=3);assert(await page.locator('#humanSessionStats').textContent());
-  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('fly-policy-'+romHash)));assert.equal(saved.policy.version,3);assert(saved.experience.human.length>0);
+  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem(modelStorageKey('fly-policy-'))));assert.equal(saved.policy.version,3);assert(saved.experience.human.length>0);
   await page.evaluate(()=>{learner.reset();humanExamples=[];});await page.click('#loadPolicy');assert.equal(await page.evaluate(()=>learner.demonstrations),saved.policy.demonstration.samples);
   const archives=await page.evaluate(()=>humanTeaching.store.request('list')),trainArchive=archives.find(m=>m.system===system&&m.accepted>=10);
   await page.locator('#archiveSessionRoles select[data-session="'+trainArchive.id+'"]').selectOption('train');
@@ -49,7 +49,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   assert.deepEqual(await page.evaluate(()=>({policy:JSON.stringify(learner.save()),frame,fdb:JSON.stringify(fdbConfiguration())})),archiveBefore,'offline candidate and heldout leave live model, ROM and FDB intact');
   assert((await page.locator('#archiveResult').textContent()).includes('Проверка: 1 примеров'));assert.equal(await page.locator('#archiveButtons tr').count(),system==='snes'?12:8);
   await page.click('#archiveApply');await page.waitForFunction(()=>$('archiveStatus').textContent.includes('применены и сохранены'));
-  const applied=await page.evaluate(()=>JSON.parse(localStorage.getItem('fly-policy-'+romHash)));
+  const applied=await page.evaluate(()=>JSON.parse(localStorage.getItem(modelStorageKey('fly-policy-'))));
   assert.equal(applied.policy.demonstration.archive.train[0].id,trainArchive.id);assert.equal(applied.policy.demonstration.archive.test[0].id,oneFrame.report.session.id);assert.deepEqual(applied.policy.weights,JSON.parse(archiveBefore.policy).weights);assert.equal(await page.evaluate(()=>frame),archiveBefore.frame);
   await page.locator('#fdbLearningPanel summary').click();await page.click('#trainingFdb');await page.waitForFunction(()=>connected&&!configuring);await page.click('#trainingStart');
   await page.waitForFunction(()=>trainingRequests.some(r=>r.experience.length>0));assert(await page.evaluate(()=>trainingRequests.every(r=>r.experience.length<=16)),'bounded native batches');

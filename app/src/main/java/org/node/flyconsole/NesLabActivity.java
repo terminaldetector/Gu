@@ -44,7 +44,9 @@ public final class NesLabActivity extends Activity {
     private volatile boolean pageReady;
     private String initialError;
     private volatile String labSystem="nes";
+    private String activeFdbLayerId="";
     private String graphKind = "FlyWire v783 / Shiu signed model";
+    private String modelId=ConnectomeStore.FLYWIRE;
     private String romHash = "not-loaded";
     private final java.util.ArrayDeque<String> offeredRomHashes = new java.util.ArrayDeque<>();
     private long sequence, configVersion;
@@ -116,15 +118,20 @@ public final class NesLabActivity extends Activity {
             web.loadUrl(ORIGIN+"/lab/index.html?system="+labSystem);
         });
     }
-    private void loadGraph(){neuralConfigured=false;try{long free=Runtime.getRuntime().maxMemory()-Runtime.getRuntime().totalMemory()+Runtime.getRuntime().freeMemory();Graph loaded=GraphCache.load(new File(getFilesDir(),"connectome.fly"),()->{try{return getAssets().open("brain.fly.gz");}catch(IOException ex){return getAssets().open("brain.fly");}},free*2/3);Experiment next=Experiment.automatic(loaded,RomImport.wide(labSystem)&&loaded.ids.length>=28?12:8);Engine nextEngine=new Engine(loaded);closeGpu();graph=loaded;graphKind=GraphCache.kind;experiment=next;engine=nextEngine;backend="cpu";initialError=null;announce();}catch(Exception|OutOfMemoryError ex){engine=null;graph=null;error("Коннектом не загрузился: "+ex.getMessage()+". Эмулятор доступен вручную.");}}
+    private long graphBudget(){return Math.max(0,Runtime.getRuntime().maxMemory()-Runtime.getRuntime().totalMemory()+Runtime.getRuntime().freeMemory())*2/3;}
+    private void installGraph(Graph loaded,Engine nextEngine,Experiment next,String id){
+        closeGpu();graph=loaded;engine=nextEngine;experiment=next;modelId=id;graphKind=ConnectomeStore.title(id);backend="cpu";neuralConfigured=false;fdbGrowth=null;fdbLearning=null;growthConfiguration=null;learningConfiguration=null;activeFdbLayerId="";latestMask=0;platformPortsPending=true;initialError=null;
+    }
+    private void loadGraph(){try{Graph loaded=ConnectomeStore.load(this,graphBudget());String id=GraphCache.modelId;Experiment next=ConnectomeStore.ports(this,loaded,RomImport.wide(labSystem)&&loaded.ids.length>=28?12:8,id);Engine nextEngine=new Engine(loaded);installGraph(loaded,nextEngine,next,id);announce();}catch(Exception|OutOfMemoryError ex){error("Коннектом не загрузился: "+ex.getMessage()+". Предыдущая модель и ручная игра сохранены.");}}
 
     private void announce() {
         if (!pageReady) return;
         if (engine == null) { if (initialError != null) error(initialError); return; }
         try {
             JSONObject info = new JSONObject();
-            info.put("system",labSystem).put("neurons", graph.ids.length).put("edges", graph.targets.length).put("kind", graphKind);
-            Experiment ports=platformPortsPending?Experiment.automatic(graph,RomImport.wide(labSystem)&&graph.ids.length>=28?12:8):experiment;
+            info.put("system",labSystem).put("modelId",modelId).put("neurons", graph.ids.length).put("edges", graph.targets.length).put("kind", graphKind);
+            try{info.put("modelManifest",ConnectomeStore.manifest(this,modelId));}catch(Exception ex){info.put("modelManifest",new JSONObject().put("model_id",modelId).put("name",graphKind));}
+            Experiment ports=platformPortsPending?ConnectomeStore.ports(this,graph,RomImport.wide(labSystem)&&graph.ids.length>=28?12:8,modelId):experiment;
             info.put("inputs", ids(ports.inputs)).put("outputs", ids(ports.outputs));platformPortsPending=false;
             info.put("diagnostics",LabDiagnostics.describe(this,graph)).put("graph_sha256",graph.fingerprint()).put("notice",GraphCache.notice);
             info.put("heapMiB", Runtime.getRuntime().maxMemory() / 1048576).put("backend", backend).put("gpuAvailable", Build.VERSION.SDK_INT >= 21);
@@ -197,6 +204,7 @@ public final class NesLabActivity extends Activity {
         JSONObject fdb=data.optJSONObject("fdb");
         if(data.has("fdb")&&!data.isNull("fdb")&&fdb==null)throw new IllegalArgumentException("FDB must be JSON object");
         if(fdb!=null) {
+            if(fdb.has("version")&&(!(fdb.get("version") instanceof Number)||fdb.getDouble("version")!=fdb.getInt("version")||(fdb.getInt("version")!=1&&fdb.getInt("version")!=2)))throw new IllegalArgumentException("FDB format version");
             if(!graph.fingerprint().equals(fdb.getString("graph_sha256")))throw new IllegalArgumentException("FDB belongs to another connectome");
             GraphDelta layer=new GraphDelta(graph.ids.length);
             for(String kind:new String[]{"deltas","edges"}){
@@ -243,13 +251,17 @@ public final class NesLabActivity extends Activity {
                 if(learning.getBoolean("enabled")||learning.has("rate")){
                     if(!(learning.get("maxEdges") instanceof Number)||learning.getDouble("maxEdges")!=learning.getInt("maxEdges"))throw new IllegalArgumentException("FDB learning edge cap");
                     nextLearning=new FdbLearning(graph,layer,next.inputs,next.outputs,learning.getDouble("rate"),learning.getInt("maxEdges"),(float)learning.getDouble("maxWeight"));
+                    nextLearning.seed(next.seed);
                     JSONObject state=fdb.optJSONObject("learningState");
                     if(state!=null){
-                        if(state.getInt("version")!=1||!ids(next.inputs).toString().equals(state.getJSONArray("sources").toString())||!ids(next.outputs).toString().equals(state.getJSONArray("targets").toString()))throw new IllegalArgumentException("FDB learning checkpoint ports");
-                        for(String k:new String[]{"observations","human","automatic"})if(!(state.get(k) instanceof Number)||state.getDouble(k)!=state.getLong(k))throw new IllegalArgumentException("FDB learning counter");
-                        nextLearning.restore(state.getLong("observations"),state.getLong("human"),state.getLong("automatic"));
+                        FdbCheckpoint.restore(nextLearning,state,graph,next.inputs,next.outputs);
                     }
+                    nextLearning.boundary(); // A model file does not restore the live game/engine phase.
                 }
+            }
+            if(nextLearning==null){
+                nextLearningConfig=new JSONObject().put("enabled",false).put("rate",.05).put("maxEdges",256).put("maxWeight",32);
+                nextLearning=new FdbLearning(graph,layer,next.inputs,next.outputs,.05,256,32);nextLearning.seed(next.seed);
             }
             next.options.delta=layer;
         }
@@ -309,8 +321,9 @@ public final class NesLabActivity extends Activity {
         long oldRevision=experiment.options.delta==null?-1:experiment.options.delta.version();
         String learningMode=request.optString("learningMode","off");
         boolean frozen=request.optBoolean("frozen",false)||learningMode.equals("eval")||learningMode.startsWith("benchmark");
-        int grown=fdbGrowth==null||cancel.get()?0:fdbGrowth.observe(result,request.optDouble("learningReward",0),experiment.options.lesions,frozen);
-        int adapted=0;
+        // Unsupervised exploration stays in Lab. Automode birth is outcome-conditioned below.
+        int grown=fdbGrowth==null||cancel.get()?0:fdbGrowth.observe(result,0,experiment.options.lesions,frozen||!learningMode.equals("off"));
+        int adapted=0;boolean humanLearningApplied=false;
         JSONArray experience=request.optJSONArray("experience");
         if(experience!=null&&experience.length()>16)throw new IllegalArgumentException("FDB batch limit");
         // Validate the entire bounded batch before changing any edge.
@@ -322,9 +335,20 @@ public final class NesLabActivity extends Activity {
         if(fdbLearning!=null&&learningConfiguration.getBoolean("enabled")&&experience!=null&&!cancel.get()&&!frozen&&(learningMode.equals("teach")||learningMode.equals("train")))for(int k=0;k<experience.length();k++){
             JSONObject e=experience.getJSONObject(k);double[] input=new double[16];for(int j=0;j<16;j++)input[j]=e.getJSONArray("retina").getDouble(j);
             if((e.getInt("mask")&~experiment.agentButtonMask)!=0||e.getInt("mask")>=(1<<experiment.outputs.length))continue;
-            adapted+=fdbLearning.observe(input,e.getInt("mask"),e.getDouble("reward"),e.getBoolean("human"),experiment.options.lesions,false);
+            adapted+=fdbLearning.observe(input,e.getInt("mask"),e.getDouble("reward"),e.getBoolean("human"),experiment.options.lesions,false);humanLearningApplied|=e.getBoolean("human");
         }
         if(fdbLearning!=null)response.put("fdbLearningState",learningState());
+        if(humanLearningApplied){try{persistFdb(request.optString("layerId",""));}catch(Exception ex){response.put("fdbSaveError",ex.getMessage());}}
+        if("exo".equals(request.optString("controllerSource"))&&(learningMode.matches("train|eval")||learningMode.startsWith("benchmark"))&&!cancel.get()){
+            if(fdbLearning==null)throw new IllegalArgumentException("Подключите FDB перед выбором нейронного управления");
+            JSONArray values=request.getJSONArray("actions");if(values.length()<2||values.length()>64)throw new IllegalArgumentException("FDB action set");int[] actions=new int[values.length()];
+            for(int j=0;j<actions.length;j++){if(!(values.get(j) instanceof Number)||values.getDouble(j)!=values.getInt(j))throw new IllegalArgumentException("FDB action mask");actions[j]=values.getInt(j);}
+            String id=request.getLong("generation")+":"+request.getLong("token");
+            boolean train=learningMode.equals("train")&&!frozen&&learningConfiguration.getBoolean("enabled");
+            FdbLearning.Decision d=fdbLearning.decide(id,result,actions,experiment.agentButtonMask,experiment.thresholdHz,train?request.getDouble("epsilon"):0,train,experiment.options.lesions);
+            response.put("fdbDecision",new JSONObject().put("id",id).put("mask",d.mask).put("probability",d.probability));
+            response.put("fdbLearningState",learningState());
+        }
         response.put("fdbAdapted",adapted);
         if(fdbGrowth!=null)response.put("fdbGrowthState",growthState());
         response.put("fdbGrown",grown).put("fdbRevision",experiment.options.delta==null?0:experiment.options.delta.version());
@@ -339,7 +363,7 @@ public final class NesLabActivity extends Activity {
     }
 
     private JSONObject fdbState() throws Exception {
-        JSONObject state=new JSONObject().put("graph_sha256",graph.fingerprint());
+        JSONObject state=new JSONObject().put("version",2).put("graph_sha256",graph.fingerprint());
         GraphDelta layer=experiment.options.delta;
         for(String kind:new String[]{"deltas","edges"}) {
             JSONArray links=new JSONArray();
@@ -353,7 +377,12 @@ public final class NesLabActivity extends Activity {
         return state;
     }
 
-    private JSONObject learningState()throws Exception{return new JSONObject().put("version",1).put("observations",fdbLearning.observations()).put("human",fdbLearning.human()).put("automatic",fdbLearning.automatic()).put("sources",ids(experiment.inputs)).put("targets",ids(experiment.outputs));}
+    private void persistFdb(String id)throws Exception{
+        if(id.isEmpty()||id.equals("null"))return;
+        new LayerSetStore(new File(getFilesDir(),"layer-sets")).updateFdb(id,labSystem,romHash,graph.fingerprint(),ids(experiment.inputs),ids(experiment.outputs),fdbState());activeFdbLayerId=id;
+    }
+
+    private JSONObject learningState()throws Exception{return FdbCheckpoint.save(fdbLearning,graph,experiment.inputs,experiment.outputs);}
 
     private JSONObject growthState()throws Exception{return new JSONObject().put("version",1).put("windows",fdbGrowth.windows()).put("rng",fdbGrowth.rng()).put("sources",ids(experiment.inputs)).put("targets",ids(experiment.outputs)).put("previous",fdbGrowth.previous()==null?JSONObject.NULL:new JSONArray(fdbGrowth.previous()));}
 
@@ -426,6 +455,19 @@ public final class NesLabActivity extends Activity {
     @Override public boolean dispatchGenericMotionEvent(android.view.MotionEvent event){return controllers!=null&&controllers.motion(event)||super.dispatchGenericMotionEvent(event);}
 
     public final class Bridge {
+        @JavascriptInterface public void selectConnectome(String id){
+            if(destroyed||!ConnectomeStore.valid(id))return;cancel.set(true);final long epoch=controlEpoch.incrementAndGet();
+            submit(()->{JSONObject response=new JSONObject();try{
+                if(!id.equals(modelId)||graph==null){
+                    Graph loaded=ConnectomeStore.candidate(NesLabActivity.this,id,graphBudget());
+                    Experiment next=ConnectomeStore.ports(NesLabActivity.this,loaded,RomImport.wide(labSystem)&&loaded.ids.length>=28?12:8,id);
+                    Engine nextEngine=new Engine(loaded);stopRecording();ConnectomeStore.select(NesLabActivity.this,id);
+                    GraphCache.installNamed(loaded,id,ConnectomeStore.title(id));installGraph(loaded,nextEngine,next,id);
+                }
+                response.put("ok",true).put("id",modelId);announce();
+            }catch(Exception|OutOfMemoryError ex){try{response.put("ok",false).put("id",id).put("activeId",modelId).put("error","Модель не переключена: "+ex.getMessage()+". Предыдущая модель сохранена.");}catch(Exception ignored){}}
+            finally{if(controlEpoch.get()==epoch&&foreground)cancel.set(false);}emit("labModelSelection",response);});
+        }
         @JavascriptInterface public void controls(boolean enabled){runOnUiThread(()->{if(controllers!=null)controllers.enabled(enabled&&foreground);});}
         @JavascriptInterface public void switchSystem(String system){if(!RomImport.validSystem(system))return;runOnUiThread(()->NesLabActivity.this.switchSystem(system));}
         @JavascriptInterface public void acceptRom(String sha256) {
@@ -445,6 +487,24 @@ public final class NesLabActivity extends Activity {
                 try { NesLabActivity.this.sample(new JSONObject(json)); }
                 catch (Exception ex) { error(ex.getMessage()); emitFailedSample(json); }
             });
+        }
+        @JavascriptInterface public void fdbFeedback(String json){
+            if(destroyed||json.getBytes(StandardCharsets.UTF_8).length>8192)return;
+            submit(()->{String token="";JSONObject response=new JSONObject();try{
+                JSONObject request=new JSONObject(json);token=request.getString("token");String op=request.getString("op");
+                if(fdbLearning==null){response.put("token",token).put("data",JSONObject.NULL);emit("labFdbFeedback",response);return;}
+                int changed=0;
+                if(op.equals("boundary"))fdbLearning.boundary();
+                else if(op.equals("reward")){
+                    for(String key:new String[]{"mask","frames"})if(!(request.get(key) instanceof Number)||request.getDouble(key)!=request.getInt(key))throw new IllegalArgumentException("FDB feedback integer");
+                    for(String key:new String[]{"valid","frozen"})if(!(request.get(key) instanceof Boolean))throw new IllegalArgumentException("FDB feedback boolean");
+                    for(String key:new String[]{"reward","seconds"})if(!(request.get(key) instanceof Number))throw new IllegalArgumentException("FDB feedback number");
+                    if(learningConfiguration.getBoolean("enabled"))changed=fdbLearning.feedback(request.getString("decision"),request.getInt("mask"),request.getDouble("reward"),request.getDouble("seconds"),request.getInt("frames"),request.getBoolean("valid"),request.getBoolean("frozen"),experiment.options.lesions);
+                }else throw new IllegalArgumentException("Unknown FDB feedback operation");
+                response.put("token",token).put("data",new JSONObject().put("fdbState",fdbState()).put("changed",changed).put("revision",experiment.options.delta.version()).put("memoryBytes",experiment.options.delta.memoryBytes()+fdbLearning.memoryBytes()));
+                try{persistFdb(request.optString("layerId",""));}catch(Exception ex){response.put("saveError",ex.getMessage());}
+                if(recordingOn)recorder.write("# fdb_feedback,"+request.toString()+","+fdbState().toString()+"\n");
+            }catch(Exception e){try{response.put("token",token).put("error",e.getMessage());}catch(Exception ignored){}}emit("labFdbFeedback",response);});
         }
         @JavascriptInterface public void configure(String json) {
             if (destroyed) return;
@@ -519,7 +579,10 @@ public final class NesLabActivity extends Activity {
                     switch(operation){
                         case "list":result=store.list();break;
                         case "get":result=store.get(request.getString("id"));break;
-                        case "save":result=store.save(request.getJSONObject("set"));break;
+                        case "save":
+                            JSONObject set=request.getJSONObject("set");
+                            if(fdbLearning!=null&&set.getString("id").equals(activeFdbLayerId))set=LayerSetStore.withFdb(set,labSystem,romHash,graph.fingerprint(),ids(experiment.inputs),ids(experiment.outputs),fdbState());
+                            result=store.save(set);break;
                         case "delete":store.delete(request.getString("id"));result=new JSONObject().put("id",request.getString("id"));break;
                         default:throw new IllegalArgumentException("Неизвестная операция Layer Set");
                     }

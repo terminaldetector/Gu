@@ -36,9 +36,10 @@ function packageSet(newCopy=false,automatic=false){
  const base=automatic?active:selected(),old=newCopy?null:base;
  if(!newCopy&&!old)throw Error('Выберите набор для обновления');if(old&&!S.compatible(old,ctx()))throw Error('Обновление набора другого ROM / графа запрещено');
  const packet=policyPackage(false),now=Date.now();
- return S.validate(S.clone({...packet,type:S.TYPE,layerVersion:1,id:old?old.id:S.id(),name:automatic?old.name:$('layerName').value.trim(),notes:automatic?old.notes:$('layerNotes').value.trim(),createdAt:old?old.createdAt:now,updatedAt:now,graph:graphIdentity,runtime:{clock:$('clock').value,runMode:$('runMode').value,learnMode:$('learnMode').value},journal}));
+ return S.validate(S.clone({...packet,type:S.TYPE,layerVersion:2,id:old?old.id:S.id(),name:automatic?old.name:$('layerName').value.trim(),notes:automatic?old.notes:$('layerNotes').value.trim(),createdAt:old?old.createdAt:now,updatedAt:now,graph:graphIdentity,runtime:{clock:$('clock').value,runMode:$('runMode').value,learnMode:$('learnMode').value},journal}));
 }
-function save(newCopy=false,automatic=false){
+async function save(newCopy=false,automatic=false){
+ if(!automatic&&window.fdbAgent){await window.fdbAgent.drain();if(window.fdbAgent.error())throw Error(window.fdbAgent.error());}
  let packet;try{packet=packageSet(newCopy,automatic);}catch(e){if(!automatic)message(e.message,true);else log('Layer Set: '+e.message);return Promise.resolve(false);}
  const context=ctx();
  saveQueue=saveQueue.catch(()=>{}).then(async()=>{
@@ -58,6 +59,7 @@ function validatePortable(set){
  return set;
 }
 async function load(){
+ window.labPause();if(window.fdbAgent)await window.fdbAgent.drain();await saveQueue.catch(()=>{});
  const entry=selected();if(!entry||!S.compatible(entry,ctx()))throw Error('Выберите набор текущего ROM и графа');
  const before=ctx();const set=validatePortable(await store.request('get',{id:entry.id}));
  if(!S.compatible(S.summary(set),ctx())||before.romHash!==romHash)throw Error('ROM или граф изменился во время загрузки');
@@ -85,7 +87,7 @@ function contextChanged(){
  if(!active)journal=[];renderList();refreshStats();
 }
 window.labLayerSets=response=>store.receive(response);
-window.layerExperience={refreshStats,contextChanged,importSet,autosave,terminal:event=>{append(event);if(event.mode==='train'||event.mode==='teach')autosave();}};
+window.layerExperience={activeId:()=>active&&active.id||null,refreshStats,contextChanged,importSet,autosave,terminal:event=>{append(event);if(event.mode==='train'||event.mode==='teach')autosave();}};
 const act=fn=>async()=>{if(busy)return;busy=true;renderSelected();try{await fn();}catch(e){message(e.message,true);status(e.message,true);}finally{busy=false;renderSelected();}};
 // Save owns its queue and busy state; other actions are serialized by their UI controls.
  $('layerNew').onclick=()=>save(true);$('layerUpdate').onclick=()=>save(false);

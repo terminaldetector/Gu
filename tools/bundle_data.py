@@ -11,3 +11,4 @@ with tempfile.TemporaryDirectory() as t:
   if blob!=sha or len(data)!=size:raise RuntimeError('Source changed: '+name)
   (p/name).write_bytes(data)
  subprocess.run([sys.executable,'tools/convert_shiu.py',str(p/'Connectivity_783.parquet'),str(p/'Completeness_783.csv'),'app/src/main/assets/brain.fly.gz'],check=True)
+subprocess.run([sys.executable,'tools/bundle_male_cns.py'],check=True)

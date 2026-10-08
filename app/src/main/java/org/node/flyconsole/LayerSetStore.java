@@ -14,7 +14,7 @@ final class LayerSetStore {
     LayerSetStore(File directory)throws IOException {this.directory=directory;if(!directory.isDirectory()&&!directory.mkdirs())throw new IOException("Не удалось открыть Layer Set");}
     private File file(String id){if(id==null||!id.matches("[-a-f0-9]{36}"))throw new IllegalArgumentException("Неверный ID Layer Set");return new File(directory,id+".json");}
     private static void validate(JSONObject set)throws Exception {
-        if(!"fly-layer-set".equals(set.getString("type"))||set.getInt("layerVersion")!=1)throw new IllegalArgumentException("Неверный формат Layer Set");
+        if(!"fly-layer-set".equals(set.getString("type"))||(set.getInt("layerVersion")!=1&&set.getInt("layerVersion")!=2))throw new IllegalArgumentException("Неверный формат Layer Set");
         String name=set.getString("name"),notes=set.getString("notes"),system=set.getString("system");
         if(name.trim().isEmpty()||name.length()>80||notes.length()>500)throw new IllegalArgumentException("Неверное имя или заметка");
         if(!("nes".equals(system)||"sega".equals(system)||"gb".equals(system)||"snes".equals(system))||!set.getString("romHash").matches("[a-f0-9]{64}")||!set.getJSONObject("graph").getString("sha256").matches("[a-f0-9]{64}"))throw new IllegalArgumentException("Неверная платформа или SHA256");
@@ -48,4 +48,14 @@ final class LayerSetStore {
         return metadata;
     }
     synchronized void delete(String id)throws IOException {File path=file(id);if(path.exists()&&!path.delete())throw new IOException("Не удалось удалить Layer Set");}
+    /** Commit learned topology before the feedback acknowledgement, even in background. */
+    synchronized JSONObject updateFdb(String id,String system,String romHash,String graphSha,JSONArray sources,JSONArray targets,JSONObject fdb)throws Exception {
+        return save(withFdb(get(id),system,romHash,graphSha,sources,targets,fdb));
+    }
+    static JSONObject withFdb(JSONObject set,String system,String romHash,String graphSha,JSONArray sources,JSONArray targets,JSONObject fdb)throws Exception {
+        JSONObject configuration=set.getJSONObject("configuration");
+        if(!set.getString("system").equals(system)||!set.getString("romHash").equals(romHash)||!set.getJSONObject("graph").getString("sha256").equals(graphSha)||!configuration.getJSONArray("inputs").toString().equals(sources.toString())||!configuration.getJSONArray("outputs").toString().equals(targets.toString()))throw new IOException("Активный Layer Set не совпадает с FDB");
+        configuration.put("fdb",new JSONObject(fdb.toString()));
+        JSONObject key=new JSONObject(set.getString("key")),portable=new JSONObject(fdb.toString());portable.remove("growthState");portable.remove("learningState");key.getJSONObject("configuration").put("fdb",portable);set.put("key",key.toString()).put("layerVersion",2).put("updatedAt",System.currentTimeMillis());return set;
+    }
 }

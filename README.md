@@ -1,4 +1,14 @@
-## Version 2.0.0-alpha14: archive training and heldout imitation checks
+## Version 2.0.0-alpha15: learned Wexo and a second Male CNS model
+
+The existing FDB layer now supports action-conditioned temporal credit,
+reinforcement/depression, bounded birth/pruning and versioned durable topology.
+Neural Automode is selectable separately from external SARSA/imitation.
+The APK also bundles real Male CNS v1.0 Traced neurons across brain and VNC,
+alongside—not instead of—FlyWire v783. Model identity separates learned sets.
+See [FDB architecture, measured tests and limitations](docs/FDB-ARCHITECTURE.md)
+and [Male CNS data, licence and exact modelling choices](docs/MALE-CNS-DATA.md).
+
+## Previous alpha14: archive training and heldout imitation checks
 
 * Assign completed, compatible sessions to training or a disjoint heldout check. A fresh imitation candidate reads the complete archive in bounded pages, with cancellation and no changes to the active policy during the experiment.
 * Review full-action agreement, time-weighted agreement, a training-majority baseline and per-button precision/recall. These are stored-feature imitation metrics, not game-success, SARSA or FDB benchmarks. Apply the candidate explicitly; existing reward weights and FDB remain intact. Source provenance survives Policy v3 save/load.
