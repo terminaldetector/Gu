@@ -459,7 +459,7 @@ $('systemButtons').onchange=()=>{try{
  if(ready)nativeCall('systemButtons',JSON.stringify({mode:$('systemButtons').value,generation}));
  updateSystemButtonsInfo();status('Контроль системных кнопок изменён. Нейронное состояние сохранено.');
  }catch(error){status(error.message,true);}};
-function updateSystemButtonsInfo(){const names=labPlatform==='sega'?'Start':'Start / Select';$('systemButtonsStatus').textContent=$('systemButtons').value==='blocked'?names+' доступны только человеку. Нейронный выход, SARSA и случайная политика заблокированы; игровые кнопки доступны.':names+' разрешены модели через текущие выходы и политику. Автоматическое распознавание меню не подтверждено.';}
+function updateSystemButtonsInfo(){const names=labPlatform==='sega'?'Start / Mode':'Start / Select';$('systemButtonsStatus').textContent=$('systemButtons').value==='blocked'?names+' доступны только человеку. Нейронный выход, SARSA и случайная политика заблокированы; игровые кнопки доступны.':names+' разрешены модели через текущие выходы и политику. Автоматическое распознавание меню не подтверждено.';}
 window.labSystemButtons=data=>{if(data.generation!==generation)return;updateSystemButtonsInfo();};
 updateSystemButtonsInfo();
 updateGmodeHud();

@@ -6,7 +6,7 @@ const Sega=require('../app/src/main/assets/lab/sega-core.js'),Factory=require('.
  // Own 68K cartridge reads both hardware ports through the actual six-button TH handshake.
  const rom=Buffer.from(require('../app/src/main/assets/lab/demo-sega.json').base64,'base64');rom.fill(0,0x200);let pc=0x200;const labels={},fix=[];
  const words=(...a)=>a.forEach(v=>{rom.writeUInt16BE(v&65535,pc);pc+=2;});const long=v=>words(v>>>16,v);const mb=(v,addr)=>{words(0x13fc,v);long(addr);};const read=(addr,ram)=>{words(0x13f9);long(addr);long(ram);};const branch=(op,label)=>{words(op,0);fix.push([pc-2,label]);};
- words(0x46fc,0x2700);mb(0x40,0xa10009);mb(0x40,0xa1000b);mb(0x40,0xa10003);mb(0x40,0xa10005);
+ words(0x46fc,0x2700,0x33fc,0x8144);long(0xc00004);mb(0x40,0xa10009);mb(0x40,0xa1000b);mb(0x40,0xa10003);mb(0x40,0xa10005);
  labels.end=pc;words(0x3039);long(0xc00004);words(0x0800,3);branch(0x6600,'end');labels.blank=pc;words(0x3039);long(0xc00004);words(0x0800,3);branch(0x6700,'blank');
  for(let p=0;p<2;p++){const addr=0xa10003+p*2,ram=0xff0010+p*4;read(addr,ram);mb(0,addr);read(addr,ram+1);mb(0x40,addr);mb(0,addr);mb(0x40,addr);mb(0,addr);mb(0x40,addr);read(addr,ram+2);mb(0,addr);mb(0x40,addr);}
  branch(0x6000,'end');for(const [at,label] of fix)rom.writeInt16BE(labels[label]-at,at);

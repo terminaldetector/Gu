@@ -223,9 +223,10 @@ public final class NesLabActivity extends Activity {
                         if(checkpoint.getInt("version")!=1||!ids(next.inputs).toString().equals(checkpoint.getJSONArray("sources").toString())||!ids(next.outputs).toString().equals(checkpoint.getJSONArray("targets").toString()))throw new IllegalArgumentException("FDB checkpoint belongs to other ports");
                         JSONArray prior=checkpoint.optJSONArray("previous");int[] counts=prior==null?null:new int[prior.length()];
                         if(prior!=null)for(int i=0;i<counts.length;i++){if(!(prior.get(i) instanceof Number)||prior.getDouble(i)!=prior.getInt(i))throw new IllegalArgumentException("FDB counts must be integers");counts[i]=prior.getInt(i);}
+                        for(String k:new String[]{"windows","rng"})if(!(checkpoint.get(k) instanceof Number)||checkpoint.getDouble(k)!=checkpoint.getLong(k))throw new IllegalArgumentException("FDB checkpoint counters must be integers");
                         nextGrowth.restore(checkpoint.getLong("windows"),checkpoint.getLong("rng"),counts);
                     }
-                    if(reset)nextGrowth.reset(next.seed);
+                    if(data.optBoolean("reset",true))nextGrowth.reset(next.seed);
                 }
             }
             next.options.delta=layer;
