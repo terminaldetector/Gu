@@ -45,7 +45,9 @@ jobs:
           fi
       - name: Check portrait and landscape console layouts
         timeout-minutes: 3
-        run: NODE_PATH=/tmp/fly-ui/node_modules node tools/console_layout_check.cjs
+        run: |
+          NODE_PATH=/tmp/fly-ui/node_modules node tools/console_layout_check.cjs
+          NODE_PATH=/tmp/fly-ui/node_modules node tools/layer_ui_check.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

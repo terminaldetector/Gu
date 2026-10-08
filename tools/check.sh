@@ -24,6 +24,8 @@ node tools/two_player_mode_check.cjs
 python tools/gpu_shader_check.py
 
 node tools/learning_check.cjs
+node tools/layer_sets_check.cjs
+node --check app/src/main/assets/lab/layer-ui.js
 
 node tools/game_tools_check.cjs
 
@@ -35,6 +37,8 @@ open(sys.argv[1],'wb').write(b)
 PYJSON
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/InferenceProgram.java tools/InferenceCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.InferenceCheck
+javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/LayerSetStore.java tools/LayerSetStoreCheck.java
+java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.LayerSetStoreCheck
 node tools/sega_check.cjs
 node tools/sega_p2_check.cjs
 node tools/sega_six_button_check.cjs

@@ -107,7 +107,7 @@ public final class NesLabActivity extends Activity {
         if (system.equals(labSystem)) return;
         cancel.set(true);controlEpoch.incrementAndGet();
         worker.execute(()->{try{stopRecording();offeredRomHashes.clear();}catch(IOException ex){error(ex.getMessage());}});
-        web.evaluateJavascript("if(window.labPause)window.labPause();try{persistPolicy(false);document.getElementById('saveProfile').onclick();}catch(e){}", ignored -> {
+        web.evaluateJavascript("if(window.labPause)window.labPause();try{if(window.layerExperience)window.layerExperience.autosave();persistPolicy(false);document.getElementById('saveProfile').onclick();}catch(e){}", ignored -> {
             pageEpoch.incrementAndGet();if(controllers!=null)controllers.system("sega".equals(system));labSystem=system;pageReady=false;romHash="not-loaded";recording=new File(getFilesDir(),labSystem+"-experiment.csv");
             web.loadUrl(ORIGIN+"/lab/index.html?system="+labSystem);
         });
@@ -232,7 +232,7 @@ public final class NesLabActivity extends Activity {
             next.options.delta=layer;
         }
 
-        if(!reset&&fdb!=null&&experiment.options.delta!=null&&java.util.Arrays.equals(next.inputs,experiment.inputs)&&java.util.Arrays.equals(next.outputs,experiment.outputs)){
+        if(!reset&&!data.optBoolean("restoreGrowthState",false)&&fdb!=null&&experiment.options.delta!=null&&java.util.Arrays.equals(next.inputs,experiment.inputs)&&java.util.Arrays.equals(next.outputs,experiment.outputs)){
             JSONObject current=fdbState();
             JSONArray ds=fdb.optJSONArray("deltas"),es=fdb.optJSONArray("edges");
             if(current.getJSONArray("deltas").toString().equals(ds==null?"[]":ds.toString())&&current.getJSONArray("edges").toString().equals(es==null?"[]":es.toString())
@@ -464,11 +464,35 @@ public final class NesLabActivity extends Activity {
         @JavascriptInterface public void importModel() {
             runOnUiThread(() -> startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("*/*").addCategory(Intent.CATEGORY_OPENABLE), PICK_MODEL));
         }
+        @JavascriptInterface public void layerSets(String json) {
+            if(destroyed)return;
+            if(json.getBytes(StandardCharsets.UTF_8).length>LayerSetStore.MAX_BYTES+1024){error("Запрос Layer Set слишком велик");return;}
+            final long epoch=pageEpoch.get();
+            worker.execute(() -> {
+                taskPage.set(epoch);
+                long token=0;JSONObject response=new JSONObject();
+                try {
+                    JSONObject request=new JSONObject(json);token=request.getLong("token");
+                    LayerSetStore store=new LayerSetStore(new File(getFilesDir(),"layer-sets"));
+                    String operation=request.getString("op");Object result;
+                    switch(operation){
+                        case "list":result=store.list();break;
+                        case "get":result=store.get(request.getString("id"));break;
+                        case "save":result=store.save(request.getJSONObject("set"));break;
+                        case "delete":store.delete(request.getString("id"));result=new JSONObject().put("id",request.getString("id"));break;
+                        default:throw new IllegalArgumentException("Неизвестная операция Layer Set");
+                    }
+                    response.put("token",token).put("data",result);
+                } catch(Exception ex){try{response.put("token",token).put("error",ex.getMessage()==null?"Layer Set недоступен":ex.getMessage());}catch(Exception ignored){}}
+                emit("labLayerSets",response);
+                taskPage.remove();
+            });
+        }
         @JavascriptInterface public void exportModel(String json) {
             if(destroyed)return;if(json.getBytes(StandardCharsets.UTF_8).length>8*1024*1024){error("JSON превышает 8 МиБ");return;}
             submit(() -> {
                 try {
-                    JSONObject document=new JSONObject(json);final String suffix="fly-evaluation-report".equals(document.optString("type"))?"report":"model";
+                    JSONObject document=new JSONObject(json);final String suffix=document.optString("type").endsWith("-report")?"report":"fly-layer-set".equals(document.optString("type"))?"layer-set":"model";
                     modelExport = new File(getFilesDir(), labSystem+"-"+suffix+"-export.json");
                     try (Writer writer = new OutputStreamWriter(new FileOutputStream(modelExport), StandardCharsets.UTF_8)) { writer.write(json); }
                     runOnUiThread(() -> {
@@ -546,7 +570,7 @@ public final class NesLabActivity extends Activity {
 
     @Override protected void onPause() {
         if(controllers!=null)controllers.enabled(false);foreground=false;controlEpoch.incrementAndGet();cancel.set(true);
-        web.evaluateJavascript("if(window.labPause)window.labPause();", null);
+        web.evaluateJavascript("if(window.labPause)window.labPause();if(window.layerExperience)window.layerExperience.autosave();", null);
         super.onPause();
         web.onPause();
     }

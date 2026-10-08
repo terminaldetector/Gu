@@ -27,3 +27,9 @@ body.sega.game-mode .system-pad{width:150px}
 @media(orientation:portrait){body.sega.game-mode .actions button{width:calc(42px * var(--pad-scale));height:calc(42px * var(--pad-scale));font-size:17px}body.sega.game-mode .system-pad{width:200px}}
 /* Keep the taller six-button panel below telemetry on compact landscape screens. */
 @media(orientation:landscape) and (max-height:360px){body.sega.game-mode .micro-heading{margin-bottom:3px}body.sega.game-mode .neural-map{max-width:72px;gap:4px}body.sega.game-mode .micro-panel small{font-size:7px;line-height:1.15;margin-top:2px}}
+/* Named layers remain readable without expanding the video area. */
+#layerBadge{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#layerPanel .row,#experiencePanel .row{flex-wrap:wrap}
+#layerPanel .row button,#experiencePanel .row button{flex:1 1 120px}
+#layerSelectedInfo,#experienceStats{white-space:pre-wrap;overflow-wrap:anywhere}
+#layerNotes{min-height:64px}

@@ -42,7 +42,9 @@ class Learner {
   const actions=data.version===1?[0,1,2,16,32,64,128,129,17]:data.actions;
   const size=data.version===1?29:45;
   if(!Array.isArray(data.weights)||!Array.isArray(actions)||data.weights.length!==actions.length||data.weights.some(w=>!Array.isArray(w)||w.length!==size||w.some(x=>!Number.isFinite(x)||Math.abs(x)>20)))throw Error('Invalid weights');
-  for(const key of ['updates','episodes','totalReward','rng'])if(!Number.isFinite(data[key]))throw Error('Invalid policy counters');
+  for(const key of ['updates','episodes'])if(!Number.isSafeInteger(data[key])||data[key]<0)throw Error('Invalid policy counters');
+  if(!Number.isFinite(data.totalReward)||!Number.isInteger(data.rng)||data.rng<1||data.rng>4294967295)throw Error('Invalid policy counters');
+  if(actions.length<2||actions.length>64||new Set(actions).size!==actions.length||actions.some(x=>!Number.isInteger(x)||x<0||x>4095||(x&48)===48||(x&192)===192))throw Error('Invalid action set');
   this.reset(data.rng);this.setActions(actions);this.weights=data.weights.map(w=>data.version===1?[...w.slice(0,17),...new Array(16).fill(0),...w.slice(17)]:w.slice());this.updates=data.updates;this.episodes=data.episodes;this.totalReward=data.totalReward;this.boundary();
  }
 

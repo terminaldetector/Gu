@@ -1,8 +1,14 @@
 # Recursive Lab: next branch design
 
-Status: design, not implemented dual-agent inference in alpha07.
+Status: design for dual-agent inference; named single-agent Layer Set is implemented in alpha08.
 
 The console is an environment; human and agents are replaceable owners of P1/P2. The FlyWire graph supplies a seed topology. Acquired structure and runtime state must remain distinct, inspectable and versioned.
+
+## Available foundation: named Layer Set
+
+Alpha08 persists portable readout + FDB checkpoints as named sets with graph/ROM identities, neural ports, reward profile, growth state and an attributed experience journal. Multiple sets share the immutable graph; only one agent runs. A saved set can move between solo and human/agent P2 without changing the console state. In the dual-agent branch, each AgentSlot should load its own set rather than borrowing mutable state from the current slot.
+
+Use save-as to keep a baseline and a separate growing branch. Train the branch, annotate live observations (for example a Mortal Kombat continue/round), then evaluate both from the same captured start. Manual notes, RAM criteria and mere learning boundaries remain distinct. This prepares provenance for future branch selection/pruning; it does not yet implement the recursive mutations or arbiter below.
 
 ## Agent identity and two flies
 
