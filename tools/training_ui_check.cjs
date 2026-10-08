@@ -53,6 +53,13 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   const before=await page.evaluate(()=>learner.updates);await page.evaluate(()=>{rewardPending=1;learnedButtons({buttons:0,outputs:new Array(buttonNames.length).fill(0)});});
   assert.equal(await page.evaluate(()=>learner.updates),before,'manual intervention never receives automatic reward credit');
   await page.evaluate(()=>{manualMask=0;window.labPause();leaveGame('learning');});
+  await page.check('#humanAllSessions');
+  const allSessions=await page.evaluate(()=>humanTeaching.store.request('list'));if(system==='snes')assert(allSessions.some(m=>m.system==='nes'),'archive survives platform navigation');
+  await page.selectOption('#humanSessionSelect',shortTap.report.session.id);page.once('dialog',d=>d.dismiss());await page.click('#humanSessionDelete');
+  assert.equal((await page.evaluate(()=>humanTeaching.store.request('list'))).length,allSessions.length,'cancel preserves recording');
+  const keptWeights=await page.evaluate(()=>JSON.stringify(learner.save()));page.once('dialog',d=>d.accept());await page.click('#humanSessionDelete');await page.waitForFunction(()=>$('humanSessionStatus').textContent.includes('Выбранная сессия удалена'));
+  assert.equal((await page.evaluate(()=>humanTeaching.store.request('list'))).length,allSessions.length-1);assert.equal(await page.evaluate(()=>JSON.stringify(learner.save())),keptWeights,'archive deletion leaves learned weights intact');
+  await page.uncheck('#humanAllSessions');
   fs.mkdirSync('ui-preview',{recursive:true});await page.screenshot({path:'ui-preview/training-'+system+'-portrait.png',fullPage:true});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'learning page fits phone');
   await page.setViewportSize({width:844,height:390});await page.screenshot({path:'ui-preview/training-'+system+'-landscape.png',fullPage:true});await page.setViewportSize({width:390,height:844});
