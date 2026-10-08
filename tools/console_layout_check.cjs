@@ -16,7 +16,8 @@ async function checkHeldTouch(page){
   await page.waitForTimeout(1100);
   assert.equal(await page.evaluate(()=>manualMask),129,'long hold keeps direction and action pressed');
   assert.equal(await page.evaluate(()=>getSelection().toString()),'','holding controller text cannot select it');
-  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[right]});
+  // This protocol path names the released contact, not the remaining finger.
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[action]});
   await page.waitForFunction(()=>manualMask===128);
   await cdp.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
   await page.waitForFunction(()=>manualMask===0);
