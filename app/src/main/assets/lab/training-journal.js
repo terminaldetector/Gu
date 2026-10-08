@@ -4,7 +4,7 @@
  const store=new FlyTrainingSessions.Store(localStorage,window.FlyBridge);
  let capture=null,writer=null,wallStarted=0,previous=null,sessions=[],refreshSequence=0;
  window.labTrainingSessions=r=>store.receive(r);
- const active=()=>document.hasFocus()&&document.visibilityState==='visible'&&loaded&&ready&&playing&&connected&&!configuring&&!romLoading&&$('learnMode').value==='teach'&&!$('freeze').checked&&gmodeMode==='off'&&document.querySelector('main').dataset.tab==='game';
+ const active=()=>!benchmark&&document.hasFocus()&&document.visibilityState==='visible'&&loaded&&ready&&playing&&connected&&!configuring&&!romLoading&&$('learnMode').value==='teach'&&!$('freeze').checked&&gmodeMode==='off'&&document.querySelector('main').dataset.tab==='game';
  const contextMatches=m=>m.system===labPlatform&&m.romHash===romHash&&m.graphSha256===(graphIdentity&&graphIdentity.sha256);
  const round=a=>a.map(x=>Math.round(x*1e6)/1e6);
  function selection(){return sessions.find(m=>m.id===$('humanSessionSelect').value);}

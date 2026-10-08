@@ -743,7 +743,7 @@ $('benchmarkStart').onclick=()=>{try{
  if(gmodeMode!=='off')throw Error('Автоматический benchmark требует одиночного режима: ввод человека меняет результат');
  const attempts=Number($('benchmarkAttempts').value);if(!Number.isInteger(attempts)||attempts<1||attempts>100)throw Error('Попыток должно быть 1–100');
  const description=$('benchmarkCriterion').value.trim();if(!description)throw Error('Опишите, что именно означает победа');
- window.labPause();$('mode').value='closed';$('clock').value='lockstep';learner.setActions(FlyGameTools.actions(p.actionMasks,(labPlatform==='sega'||labPlatform==='snes')?4095:255));
+ window.labPause();$('learnMode').value='eval';$('mode').value='closed';$('clock').value='lockstep';learner.setActions(FlyGameTools.actions(p.actionMasks,(labPlatform==='sega'||labPlatform==='snes')?4095:255));
  const c=configuration();validateConfiguration(c);const evaluator=new FlyLearner(c.seed);evaluator.load(JSON.parse(JSON.stringify(learner.save())));evaluator.rng=c.seed>>>0||1;evaluator.setAllowedMask(agentAllowedMask());
  benchmark={game:$('benchmarkGame').value.trim()||'Unnamed',attempts,policy:$('benchmarkPolicy').value,seed:c.seed,evaluator,profile:p,configuration:c,weights:JSON.stringify(learner.weights),startFrame:startSnapshot.frame,criterion:{description,scope:$('benchmarkScope').value,source:p.rewardMode==='diagnostic'?'own-NES-diagnostic':'user-configured-RAM-byte',address:p.winAddress,value:p.winValue},trials:[]};
  restartEpisode();benchmarkReset();apply(true,false,true);playing=true;$('play').textContent='Пауза';$('benchmarkResult').textContent='Оценка 1/'+attempts+' · обучение выключено';

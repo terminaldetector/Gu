@@ -53,6 +53,15 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   const before=await page.evaluate(()=>learner.updates);await page.evaluate(()=>{rewardPending=1;learnedButtons({buttons:0,outputs:new Array(buttonNames.length).fill(0)});});
   assert.equal(await page.evaluate(()=>learner.updates),before,'manual intervention never receives automatic reward credit');
   await page.evaluate(()=>{manualMask=0;window.labPause();leaveGame('learning');});
+  const benchmarkFrozen=await page.evaluate(async()=>{
+   $('learnMode').value='teach';$('rewardMode').value='manual';$('winEnabled').checked=true;$('winAddress').value='100';$('winValue').value=String((nes.cpu.mem[100]+1)&255);$('episodeLength').value='10';$('benchmarkCriterion').value='Fixture RAM criterion';$('benchmarkAttempts').value='1';$('benchmarkPolicy').value='random';$('captureStart').onclick();
+   const before={weights:JSON.stringify([learner.weights,learner.demonstrationWeights]),samples:learner.demonstrations,sessions:(await humanTeaching.store.request('list')).length};
+   $('benchmarkStart').onclick();openGame();return before;
+  });
+  await page.waitForFunction(()=>!configuring);await page.waitForTimeout(300);
+  assert.equal(await page.evaluate(()=>$('learnMode').value),'eval','benchmark explicitly owns frozen evaluation');
+  assert.deepEqual(await page.evaluate(async()=>({weights:JSON.stringify([learner.weights,learner.demonstrationWeights]),samples:learner.demonstrations,sessions:(await humanTeaching.store.request('list')).length})),benchmarkFrozen,'benchmark cannot train or archive neutral frames after teaching');
+  await page.evaluate(()=>{window.labPause();leaveGame('learning');});
   await page.check('#humanAllSessions');
   const allSessions=await page.evaluate(()=>humanTeaching.store.request('list'));if(system==='snes')assert(allSessions.some(m=>m.system==='nes'),'archive survives platform navigation');
   await page.selectOption('#humanSessionSelect',shortTap.report.session.id);page.once('dialog',d=>d.dismiss());await page.click('#humanSessionDelete');
