@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /** Local-only WebView frontend; all connectome simulation runs on the worker. */
 public final class NesLabActivity extends Activity {
     private static final String ORIGIN = "https://flyconsole.local";
-    private static final int PICK_ROM = 10, EXPORT_CSV = 11, PICK_MODEL = 12, EXPORT_MODEL = 13;
+    private static final int PICK_ROM = 10, EXPORT_CSV = 11, PICK_MODEL = 12, EXPORT_MODEL = 13, EXPORT_SESSION = 14;
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
     private final AtomicBoolean cancel = new AtomicBoolean();
     private final AtomicLong pageEpoch=new AtomicLong(),controlEpoch=new AtomicLong();private final ThreadLocal<Long> taskPage=new ThreadLocal<>();private volatile boolean foreground;
@@ -55,6 +55,7 @@ public final class NesLabActivity extends Activity {
     private BufferedWriter recorder;
     private File recording;
     private File modelExport;
+    private String sessionExportId;
     private long recordedBytes;
     private boolean recordingOn;
 
@@ -528,6 +529,32 @@ public final class NesLabActivity extends Activity {
                 taskPage.remove();
             });
         }
+        @JavascriptInterface public void trainingSessions(String json) {
+            if(destroyed)return;
+            final long epoch=pageEpoch.get();
+            try{worker.execute(() -> {
+                taskPage.set(epoch);String token="";JSONObject response=new JSONObject();
+                try {
+                    if(json.getBytes(StandardCharsets.UTF_8).length>260*1024)throw new IllegalArgumentException("Запрос показа слишком велик");
+                    JSONObject request=new JSONObject(json);token=request.getString("token");
+                    TrainingSessionStore store=new TrainingSessionStore(new File(getFilesDir(),"human-sessions"));Object result;
+                    switch(request.getString("op")){
+                        case "list":result=store.list();break;
+                        case "begin":result=store.begin(request.getJSONObject("session"));break;
+                        case "append":result=store.append(request.getString("id"),request.getLong("sequence"),request.getJSONArray("events"));break;
+                        case "close":result=store.close(request.getString("id"),request.getLong("endedAt"),request.getString("reason"));break;
+                        case "delete":store.delete(request.getString("id"));result=new JSONObject().put("id",request.getString("id"));break;
+                        case "export":
+                            JSONObject session=store.get(request.getString("id"));result=session;
+                            runOnUiThread(() -> {sessionExportId=session.optString("id");Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("application/x-ndjson").addCategory(Intent.CATEGORY_OPENABLE);intent.putExtra(Intent.EXTRA_TITLE,"fly-"+session.optString("system")+"-human-session.jsonl");startActivityForResult(intent,EXPORT_SESSION);});
+                            break;
+                        default:throw new IllegalArgumentException("Неизвестная операция показа");
+                    }
+                    response.put("token",token).put("data",result);
+                } catch(Exception ex){try{response.put("token",token).put("error",ex.getMessage()==null?"Запись показа недоступна":ex.getMessage());}catch(Exception ignored){}}
+                emit("labTrainingSessions",response);taskPage.remove();
+            });}catch(java.util.concurrent.RejectedExecutionException ignored){}
+        }
         @JavascriptInterface public void exportModel(String json) {
             if(destroyed)return;if(json.getBytes(StandardCharsets.UTF_8).length>8*1024*1024){error("JSON превышает 8 МиБ");return;}
             submit(() -> {
@@ -597,6 +624,12 @@ public final class NesLabActivity extends Activity {
                         while ((n = in.read(buffer)) != -1) out.write(buffer, 0, n);
                     }
                     runOnUiThread(() -> Toast.makeText(this, "JSON сохранён", Toast.LENGTH_SHORT).show());
+                } else if (request == EXPORT_SESSION) {
+                    try(OutputStream out=getContentResolver().openOutputStream(uri,"wt")) {
+                        if(out==null)throw new IOException("Не удалось открыть файл экспорта");
+                        new TrainingSessionStore(new File(getFilesDir(),"human-sessions")).export(sessionExportId,out);
+                    }
+                    runOnUiThread(() -> Toast.makeText(this,"Сессия показа сохранена",Toast.LENGTH_SHORT).show());
                 } else if (request == EXPORT_CSV) {
                     try (InputStream in = new FileInputStream(recording); OutputStream out = getContentResolver().openOutputStream(uri,"wt")) {
                         byte[] buffer = new byte[8192]; int n;

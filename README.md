@@ -1,3 +1,10 @@
+## Version 2.0.0-alpha13: realtime teaching sessions
+
+* **Learning → Показываю сам** records human P1 actions while the current game continues. **Automode** uses saved imitation plus reward learning; **Проверка** freezes the learned weights and FDB. The independent research controls remain available. See [the training system and limits](docs/TRAINING.md).
+* Raw press/release changes are recorded separately from executed game frames. A tap between frames stays in the archive without inventing a training label; a one-frame action keeps its actual platform duration. Human control remains exclusive during teaching.
+* Full sessions live outside compact policies. Browse accepted/skipped actions, game time and button coverage, export a complete Android session as streaming NDJSON, or explicitly delete a selected archive after confirmation. The archive browser can include other ROMs/connectomes. Models and the live FDB handoff retain their bounded 200-example buffers; archive replay is future work.
+* Android uses an append-only private journal with atomic committed-prefix metadata, ordered/idempotent batches and visible storage errors: 32 MiB per session, 64 MiB total event data, 32 sessions. Unsent data may be lost on process termination. Policy v1/v2/v3 compatibility and NES/Sega/GB/SNES support are retained. Physical Android verification remains necessary.
+
 ## Version 2.0.0-alpha08: named Layer Set and live experience
 
 * **Network / 2P → Layer Set**: create a named set, update it, select/load, export/import JSON, or delete after an explicit second click. Each set contains SARSA action weights/counters/RNG, reward profile, neural ports/options, FDB structural layer and growth clock/RNG/source activity, plus a bounded experience journal. It does not contain a ROM, another copy of the base connectome, or the complete LIF state. Android stores sets atomically in app-private files (32 sets, 2 MiB each, 32 MiB total), outside the WebView storage quota. Browser fixtures use localStorage with errors surfaced without replacing the old checkpoint.

@@ -26,6 +26,9 @@ python tools/gpu_shader_check.py
 
 node tools/learning_check.cjs
 node tools/demonstration_check.cjs
+node tools/human_capture_check.cjs
+node tools/training_sessions_check.cjs
+node --check app/src/main/assets/lab/training-journal.js
 node tools/layer_sets_check.cjs
 node --check app/src/main/assets/lab/layer-ui.js
 
@@ -41,6 +44,8 @@ javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.InferenceCheck
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/LayerSetStore.java tools/LayerSetStoreCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.LayerSetStoreCheck
+javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/TrainingSessionStore.java tools/TrainingSessionStoreCheck.java
+java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.TrainingSessionStoreCheck
 node tools/sega_check.cjs
 node tools/sega_rom_check.cjs
 node tools/sega_p2_check.cjs

@@ -24,7 +24,21 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   await page.keyboard.down('ArrowRight');await page.waitForFunction(()=>learner.demonstrations>=10);await page.keyboard.up('ArrowRight');
   const taught=await page.evaluate(()=>({samples:learner.demonstrations,human:humanExamples.slice(),updates:learner.updates,policy:JSON.stringify(learner.save()),frame}));
   assert(taught.human.some(e=>e.mask===128));assert.equal(taught.updates,0,'teacher never creates reward updates');assert.equal(await page.evaluate(()=>brainMask),0,'neural buttons cannot interfere with the teacher');
+  const shortTap=await page.evaluate(async()=>{
+   playing=false;await window.humanTeaching.stop('fixture');const prior=new Set((await humanTeaching.store.request('list')).map(m=>m.id));
+   const code=labPlatform==='snes'?'KeyA':'KeyX',event={code,target:document.body,preventDefault(){}};const before=learner.demonstrations;
+   playing=true;window.onkeydown(event);window.onkeyup(event);playing=false;const added=learner.demonstrations-before;await humanTeaching.stop('fixture-tap');
+   const m=(await humanTeaching.store.request('list')).find(m=>!prior.has(m.id));const report=await humanTeaching.store.request('export',{id:m.id});playing=true;return {added,report};
+  });
+  assert.equal(shortTap.added,0);assert.equal(shortTap.report.session.samples,0);assert.deepEqual(shortTap.report.events.map(e=>e.mask),[1,0],'same-task tap survives without inventing a game frame');
+  const oneFrame=await page.evaluate(async()=>{
+   playing=false;await humanTeaching.stop('fixture');const prior=new Set((await humanTeaching.store.request('list')).map(m=>m.id)),code=labPlatform==='snes'?'KeyA':'KeyX',event={code,target:document.body,preventDefault(){}};
+   playing=true;window.onkeydown(event);advanceFrame(performance.now());window.onkeyup(event);playing=false;await humanTeaching.stop('fixture-one-frame');
+   const m=(await humanTeaching.store.request('list')).find(m=>!prior.has(m.id));const report=await humanTeaching.store.request('export',{id:m.id});playing=true;return {fps:labPlatform==='nes'?60:nes.fps,report};
+  });
+  const one=oneFrame.report.events.find(e=>e.kind==='sample');assert.equal(one.mask,1);assert.equal(one.frames,1);assert(Math.abs(one.seconds-1/oneFrame.fps)<1e-10);assert.equal(oneFrame.report.session.accepted,1);
   await page.evaluate(()=>leaveGame('learning'));await page.click('#trainingPause');
+  await page.waitForFunction(()=>$('humanSessionSelect').options.length>=3);assert(await page.locator('#humanSessionStats').textContent());
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('fly-policy-'+romHash)));assert.equal(saved.policy.version,3);assert(saved.experience.human.length>0);
   await page.evaluate(()=>{learner.reset();humanExamples=[];});await page.click('#loadPolicy');assert.equal(await page.evaluate(()=>learner.demonstrations),saved.policy.demonstration.samples);
   await page.locator('#fdbLearningPanel summary').click();await page.click('#trainingFdb');await page.waitForFunction(()=>connected&&!configuring);await page.click('#trainingStart');
@@ -43,5 +57,5 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'learning page fits phone');
   await page.setViewportSize({width:844,height:390});await page.screenshot({path:'ui-preview/training-'+system+'-landscape.png',fullPage:true});await page.setViewportSize({width:390,height:844});
  }
- assert.deepEqual(errors,[]);console.log('PASS: actual NES/SNES realtime teaching, P1 ownership, persistence, bounded FDB replay, frozen evaluation, manual reward exclusion and mobile learning layout');
+ assert.deepEqual(errors,[]);console.log('PASS: actual NES/SNES realtime teaching, raw sub-frame taps, one-frame actions, full session persistence/overview, P1 ownership, bounded FDB replay, frozen evaluation and mobile layout');
 })().catch(async e=>{if(page){fs.mkdirSync('ui-preview',{recursive:true});await page.screenshot({path:'ui-preview/training-failure.png',fullPage:true}).catch(()=>{});console.error(await page.evaluate(()=>({status:$('status').textContent,playing,connected,configuring,samples:learner.demonstrations})).catch(()=>null));}console.error(e);process.exitCode=1;}).finally(async()=>{if(browser)await browser.close();});

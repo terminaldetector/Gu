@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('node:assert/strict'),Capture=require('../app/src/main/assets/lab/human-capture.js');
+const events=[],c=new Capture(e=>events.push(e));
+const observation=(frame,mask,value=.25)=>({frame,mask,at:1000+frame,wallMs:frame*17,retina:new Array(16).fill(value),features:new Array(45).fill(value),outputs:new Array(8).fill(0)});
+c.input(0,observation(0,0));c.input(128,observation(0,128));c.input(0,observation(0,0));
+assert.equal(events.filter(e=>e.kind==='input').length,3);assert.equal(events.filter(e=>e.kind==='sample').length,0,'unexecuted tap must not invent a label');
+c.input(128,observation(0,128));c.commit(1/60,observation(0,128,.2));c.input(0,observation(1,0));
+const tap=events.find(e=>e.kind==='sample');assert.equal(tap.mask,128);assert.equal(tap.frames,1);assert.equal(tap.frame,0);assert.equal(tap.endFrame,1);assert.equal(tap.retina[0],.2,'pre-action observation survives');assert(Math.abs(tap.seconds-1/60)<1e-12);
+for(let i=1;i<=6;i++)c.commit(1/60,observation(i,0,.3));
+assert.equal(events.filter(e=>e.kind==='sample').length,2);const held=events.filter(e=>e.kind==='sample')[1];assert.equal(held.frames,6);assert(Math.abs(held.seconds-.1)<1e-12);
+c.input(0,observation(7,0));assert.equal(events.filter(e=>e.kind==='input').length,5,'repeated state is deduplicated');
+c.commit(1/60,observation(7,0));c.stop();assert.equal(events.filter(e=>e.kind==='sample').length,3,'pause flushes a partial hold');
+assert(events.every((e,i)=>e.sequence===i&&e.human));assert(Math.abs(c.gameMs-8*1000/60)<1e-9);
+const snes=[];const s=new Capture(e=>snes.push(e));for(let i=0;i<60;i++)s.commit(1/60.0988118623,observation(i,1));s.stop();
+assert.equal(snes.reduce((n,e)=>n+e.frames,0),60);assert(Math.abs(snes.reduce((n,e)=>n+e.seconds,0)-60/60.0988118623)<1e-12,'fractional platform timing is conserved');
+assert.throws(()=>s.commit(NaN,observation(0,0)));assert.throws(()=>s.commit(0,observation(0,0)));
+console.log('PASS: sub-frame raw taps, one-frame teaching, pre-action observations, pause flush, ordered provenance and fractional platform timing');
