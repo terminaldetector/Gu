@@ -21,11 +21,13 @@ static void definitions(const retro_core_option_definition *defs) {
     for (; defs->key; ++defs)
         if (defs->default_value) options[defs->key] = defs->default_value;
 }
+#ifdef RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2
 static void definitions_v2(const retro_core_option_v2_definition *defs) {
     if (!defs) return;
     for (; defs->key; ++defs)
         if (defs->default_value) options[defs->key] = defs->default_value;
 }
+#endif
 static bool environment(unsigned command, void *data) {
     switch (command) {
     case RETRO_ENVIRONMENT_GET_CAN_DUPE: *static_cast<bool *>(data) = true; return true;
@@ -36,11 +38,19 @@ static bool environment(unsigned command, void *data) {
     case RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY:
     case RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY:
         *static_cast<const char **>(data) = "/"; return true;
-    case RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION: *static_cast<unsigned *>(data) = 2; return true;
+    case RETRO_ENVIRONMENT_GET_CORE_OPTIONS_VERSION:
+#ifdef RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2
+        *static_cast<unsigned *>(data) = 2;
+#else
+        *static_cast<unsigned *>(data) = 1;
+#endif
+        return true;
     case RETRO_ENVIRONMENT_SET_CORE_OPTIONS: definitions(static_cast<retro_core_option_definition *>(data)); return true;
     case RETRO_ENVIRONMENT_SET_CORE_OPTIONS_INTL: definitions(static_cast<retro_core_options_intl *>(data)->us); return true;
+#ifdef RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2
     case RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2: definitions_v2(static_cast<retro_core_options_v2 *>(data)->definitions); return true;
     case RETRO_ENVIRONMENT_SET_CORE_OPTIONS_V2_INTL: definitions_v2(static_cast<retro_core_options_v2_intl *>(data)->us->definitions); return true;
+#endif
     case RETRO_ENVIRONMENT_SET_VARIABLES:
         for (auto *v = static_cast<retro_variable *>(data); v && v->key; ++v) {
             std::string value(v->value ? v->value : "");
@@ -68,7 +78,10 @@ static bool environment(unsigned command, void *data) {
     case RETRO_ENVIRONMENT_SET_PERFORMANCE_LEVEL:
     case RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME:
     case RETRO_ENVIRONMENT_SET_CORE_OPTIONS_DISPLAY:
-    case RETRO_ENVIRONMENT_SET_CORE_OPTIONS_UPDATE_DISPLAY_CALLBACK: return true;
+#ifdef RETRO_ENVIRONMENT_SET_CORE_OPTIONS_UPDATE_DISPLAY_CALLBACK
+    case RETRO_ENVIRONMENT_SET_CORE_OPTIONS_UPDATE_DISPLAY_CALLBACK:
+#endif
+        return true;
     default: return false;
     }
 }

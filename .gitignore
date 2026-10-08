@@ -8,3 +8,5 @@ local.properties
 __pycache__/
 *.fly.gz
 app/src/main/assets/brain.fly.json
+app/src/main/assets/lab/gb/
+app/src/main/assets/lab/snes/
