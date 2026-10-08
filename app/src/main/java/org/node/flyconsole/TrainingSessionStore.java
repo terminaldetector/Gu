@@ -106,6 +106,32 @@ final class TrainingSessionStore {
         out.write((header.toString()+"\n").getBytes(StandardCharsets.UTF_8));long remaining=m.getLong("storedBytes");
         try(InputStream in=new FileInputStream(new File(folder(id),"events.jsonl"))){byte[] buffer=new byte[65536];while(remaining>0){int n=in.read(buffer,0,(int)Math.min(buffer.length,remaining));if(n<0)throw new EOFException("Журнал повреждён");out.write(buffer,0,n);remaining-=n;}}out.flush();
     }
+    /** Bounded, immutable pages. Cursor offsets refer only to the committed prefix. */
+    synchronized JSONObject read(String id,String snapshot,JSONObject cursor)throws Exception {
+        JSONObject m=get(id);long committed=m.getLong("storedBytes"),count=m.getLong("events");
+        if(!"closed".equals(m.getString("status"))||!snapshot.equals(count+":"+committed))throw new IOException("Сессия изменилась или не завершена");
+        long offset=cursor==null?0:integer(cursor,"offset",0,committed),event=cursor==null?0:integer(cursor,"event",0,count);
+        if((offset==0)!=(event==0)||(offset==committed)!=(event==count))throw new IOException("Неверный курсор сессии");
+        File path=new File(folder(id),"events.jsonl");
+        if(offset>0)try(RandomAccessFile f=new RandomAccessFile(path,"r")){f.seek(offset-1);if(f.read()!='\n')throw new IOException("Курсор внутри события");}
+        JSONArray page=new JSONArray();int pageBytes=0;
+        try(FileInputStream file=new FileInputStream(path)){
+            file.getChannel().position(offset);
+            try(BufferedInputStream in=new BufferedInputStream(file,8192)){
+                while(offset<committed&&page.length()<32){
+                    ByteArrayOutputStream line=new ByteArrayOutputStream();long consumed=0;boolean end=false;
+                    while(offset+consumed<committed){int b=in.read();if(b<0)throw new EOFException("Журнал повреждён");consumed++;if(b=='\n'){end=true;break;}if(line.size()>=128*1024)throw new IOException("Событие слишком велико для чтения");line.write(b);}
+                    if(!end)throw new IOException("Незавершённое событие");
+                    if(page.length()>0&&pageBytes+consumed>128*1024)break;
+                    JSONObject e=new JSONObject(new String(line.toByteArray(),StandardCharsets.UTF_8));
+                    events(new JSONArray().put(e));if(e.getLong("sequence")!=event||event>=count)throw new IOException("Повреждён порядок событий");
+                    page.put(e);offset+=consumed;event++;pageBytes+=consumed;
+                }
+            }
+        }
+        if((offset==committed)!=(event==count))throw new IOException("Счётчики не совпадают с журналом");
+        return new JSONObject().put("events",page).put("next",offset==committed?JSONObject.NULL:new JSONObject().put("offset",offset).put("event",event)).put("snapshot",snapshot);
+    }
     synchronized void delete(String id)throws Exception {
         JSONObject m=get(id);if(!"closed".equals(m.getString("status")))throw new IOException("Сначала завершите сессию");
         File dir=folder(id);File[] files=dir.listFiles();if(files==null)throw new IOException("Сессия недоступна");

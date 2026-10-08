@@ -1,3 +1,9 @@
+## Version 2.0.0-alpha14: archive training and heldout imitation checks
+
+* Assign completed, compatible sessions to training or a disjoint heldout check. A fresh imitation candidate reads the complete archive in bounded pages, with cancellation and no changes to the active policy during the experiment.
+* Review full-action agreement, time-weighted agreement, a training-majority baseline and per-button precision/recall. These are stored-feature imitation metrics, not game-success, SARSA or FDB benchmarks. Apply the candidate explicitly; existing reward weights and FDB remain intact. Source provenance survives Policy v3 save/load.
+* The first training pass supplies only the last 200 samples for the existing explicit FDB handoff; full-archive FDB replay remains future work. See [training behavior and limits](docs/TRAINING.md).
+
 ## Version 2.0.0-alpha13: realtime teaching sessions
 
 * **Learning → Показываю сам** records human P1 actions while the current game continues. **Automode** uses saved imitation plus reward learning; **Проверка** freezes the learned weights and FDB. The independent research controls remain available. See [the training system and limits](docs/TRAINING.md).

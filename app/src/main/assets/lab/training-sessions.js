@@ -49,6 +49,19 @@ class Store {
    try{disk.setItem(key+'-meta',JSON.stringify(next));}catch(e){disk.removeItem(key+'-'+a.sequence);throw e;}return next;
   }
   if(op==='close'){if(!Number.isSafeInteger(a.endedAt)||a.endedAt<m.startedAt||typeof a.reason!=='string'||a.reason.length>100)throw Error('Неверное завершение');if(m.status==='closed')return m;const n={...m,status:'closed',endedAt:a.endedAt,reason:a.reason};disk.setItem(key+'-meta',JSON.stringify(n));return n;}
+  if(op==='read'){
+   if(m.status!=='closed'||a.snapshot!==m.events+':'+m.storedBytes)throw Error('Сессия изменилась или не завершена');
+   const c=a.cursor||{chunk:0,index:0,event:0};
+   if(['chunk','index','event'].some(k=>!Number.isSafeInteger(c[k])||c[k]<0)||c.chunk>m.nextSeq||c.index>=64||c.event>m.events||(c.chunk===0&&c.index===0)!==(c.event===0))throw Error('Неверный курсор сессии');
+   let chunk=c.chunk,index=c.index,event=c.event,total=0;const events=[];
+   while(chunk<m.nextSeq&&events.length<32){
+    const batch=JSON.parse(disk.getItem(key+'-'+chunk));validateEvents(batch);if(index>=batch.length)throw Error('Курсор вне пакета');
+    const e=batch[index],n=bytes(JSON.stringify(e));if(n>128*1024)throw Error('Событие слишком велико для чтения');if(events.length&&total+n>128*1024)break;
+    if(e.sequence!==event)throw Error('Повреждён порядок событий');events.push(e);total+=n;event++;index++;if(index===batch.length){chunk++;index=0;}
+   }
+   const done=chunk===m.nextSeq;if(done!==(event===m.events))throw Error('Счётчики не совпадают с журналом');
+   return {events,next:done?null:{chunk,index,event},snapshot:a.snapshot};
+  }
   if(op==='export'){const events=[];for(let i=0;i<m.nextSeq;i++)events.push(...JSON.parse(disk.getItem(key+'-'+i)));return {session:m,events};}
   if(op==='delete'){if(m.status!=='closed')throw Error('Сначала завершите сессию');for(let i=0;i<m.nextSeq;i++)disk.removeItem(key+'-'+i);disk.removeItem(key+'-meta');return {id:a.id};}
   throw Error('Неизвестная операция сессии');

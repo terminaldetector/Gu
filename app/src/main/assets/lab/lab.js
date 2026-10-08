@@ -52,7 +52,7 @@ function trainingView(){
  $('trainingFdbStatus').textContent=(f&&f.learning&&f.learning.enabled?(['teach','train'].includes(mode)&&!$('freeze').checked&&connected&&playing?'FDB принимает опыт':'FDB подключён · обучение на паузе'):'Обучение FDB выключено')+' · примеров '+(c?c.observations:0)+' (человек '+(c?c.human:0)+', auto '+(c?c.automatic:0)+') · очередь '+fdbExperience.length;
 }
 function startTrainingGame(){playing=true;controlsEnabled(true);$('play').textContent='Пауза';nativeCall('resume');openGame();updateGmodeHud();trainingView();}
-function learningStats(){ trainingView();$('learningStats').textContent='Примеров человека: '+learner.demonstrations+' · '+learner.demonstrationSeconds.toFixed(1)+' с · пропущено '+learner.skippedDemonstrations+' · обновлений по награде: '+learner.updates+' · эпизодов: '+learner.episodes+' · награда: '+episodeReward.toFixed(2)+' · шаг: '+episodeSteps+' · кнопки: '+brainMask;
+function learningStats(){ trainingView();$('learningStats').textContent='Обновлений подражания: '+learner.demonstrations+' · '+learner.demonstrationSeconds.toFixed(1)+' с · пропущено '+learner.skippedDemonstrations+(learner.archive?' · архив: '+learner.archive.train.length+' сесс., '+learner.archive.passes+' проход(а); после проверки добавлено '+learner.archive.additionalSamples+' живых примеров':'')+' · обновлений по награде: '+learner.updates+' · эпизодов: '+learner.episodes+' · награда: '+episodeReward.toFixed(2)+' · шаг: '+episodeSteps+' · кнопки: '+brainMask;
  if(window.layerExperience)window.layerExperience.refreshStats();
  const c=$('rewardChart').getContext('2d');c.fillStyle='#111626';c.fillRect(0,0,600,100);if(trials.length<2)return;const low=Math.min(0,...trials.map(t=>t.reward)),high=Math.max(1,...trials.map(t=>t.reward));c.strokeStyle='#b39bff';c.beginPath();trials.forEach((t,i)=>{const x=i*600/99,y=95-(t.reward-low)/(high-low)*85;i?c.lineTo(x,y):c.moveTo(x,y);});c.stroke();
 }
@@ -471,6 +471,7 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 window.labPause=function() {
+  if(window.humanArchive)window.humanArchive.cancel();
   if(window.humanTeaching)window.humanTeaching.stop('pause');
   if(benchmark)finishBenchmark('interrupted');window.startAfterConfig=false;window.startTrainingAfterConfig=false;fdbExperience.length=0;learningBoundary();
   playing=false;connected=false;configuring=false;generation++;pendingToken=null;

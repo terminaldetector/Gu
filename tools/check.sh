@@ -28,6 +28,8 @@ node tools/learning_check.cjs
 node tools/demonstration_check.cjs
 node tools/human_capture_check.cjs
 node tools/training_sessions_check.cjs
+node tools/archive_replay_check.cjs
+node --check app/src/main/assets/lab/archive-ui.js
 node --check app/src/main/assets/lab/training-journal.js
 node tools/layer_sets_check.cjs
 node --check app/src/main/assets/lab/layer-ui.js

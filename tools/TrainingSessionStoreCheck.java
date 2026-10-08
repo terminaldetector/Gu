@@ -29,6 +29,14 @@ public final class TrainingSessionStoreCheck {
             ByteArrayOutputStream exported=new ByteArrayOutputStream();store.export(id,exported);String[] lines=exported.toString(StandardCharsets.UTF_8).split("\n");require(lines.length==4&&!exported.toString(StandardCharsets.UTF_8).contains("uncommitted"),"stream exports committed prefix only");
             store.append(id,1,new JSONArray().put(sample(3,2,true)));require(log.length()>prefix&&!Files.readString(log.toPath()).contains("uncommitted"),"orphan tail recovery");
             store.close(id,2000,"pause");require("closed".equals(reopened.get(id).getString("status")),"close persisted");reject(()->store.append(id,2,new JSONArray().put(sample(4,0,true))));
+            JSONObject closed=store.get(id);String snap=closed.getLong("events")+":"+closed.getLong("storedBytes");
+            JSONObject page=store.read(id,snap,null);require(page.getJSONArray("events").length()==4&&page.isNull("next"),"bounded read after crash recovery");
+            reject(()->store.read(id,"stale",null));reject(()->store.read(id,snap,new JSONObject().put("offset",2).put("event",1)));
+            String pagedId=UUID.randomUUID().toString();store.begin(metadata(pagedId));
+            for(int b=0;b<9;b++){JSONArray pack=new JSONArray();for(int j=0;j<32;j++)pack.put(sample(b*32+j,128,true));store.append(pagedId,b,pack);}store.close(pagedId,2000,"test");
+            JSONObject paged=store.get(pagedId),cursor=null;String fixed=paged.getLong("events")+":"+paged.getLong("storedBytes");int seen=0,reads=0;
+            do{JSONObject part=store.read(pagedId,fixed,cursor);JSONArray events=part.getJSONArray("events");require(events.length()<=32&&part.toString().getBytes(StandardCharsets.UTF_8).length<200*1024,"page RPC bound");for(int j=0;j<events.length();j++)require(events.getJSONObject(j).getInt("sequence")==seen++,"page sequence");reads++;cursor=part.optJSONObject("next");}while(cursor!=null);
+            require(seen==288&&reads==9,"full native history beyond 200");store.delete(pagedId);
             String largeId=UUID.randomUUID().toString();store.begin(metadata(largeId));File largeDir=new File(root,largeId);JSONObject full=store.get(largeId).put("storedBytes",TrainingSessionStore.MAX_BYTES);
             Files.writeString(new File(largeDir,"meta.json").toPath(),full.toString());try(RandomAccessFile f=new RandomAccessFile(new File(largeDir,"events.jsonl"),"rw")){f.setLength(TrainingSessionStore.MAX_BYTES);}
             reject(()->store.append(largeId,0,new JSONArray().put(sample(0,0,true))));require(store.get(largeId).getLong("storedBytes")==TrainingSessionStore.MAX_BYTES,"capacity failure retains prior prefix");

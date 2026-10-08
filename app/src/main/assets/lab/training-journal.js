@@ -24,6 +24,7 @@
   }
   $('humanNeutral').textContent=m?'Без кнопок: '+(m.neutralMs/1000).toFixed(2)+' с. Удержания сочетаний входят в каждую кнопку. Длительность не показывает качество игры.':'';
   $('humanSessionIdentity').textContent=m?m.system.toUpperCase()+' · ROM '+m.romHash.slice(0,12)+' · граф '+m.graphSha256.slice(0,12):'';
+  if(window.humanArchive)window.humanArchive.sessions(sessions);
  }
  function state(w){
   const i=sessions.findIndex(m=>m.id===w.metadata.id);if(i>=0)sessions[i]=w.metadata;else if(w.metadata.events!==undefined)sessions.push(w.metadata);

@@ -543,6 +543,7 @@ public final class NesLabActivity extends Activity {
                         case "begin":result=store.begin(request.getJSONObject("session"));break;
                         case "append":result=store.append(request.getString("id"),request.getLong("sequence"),request.getJSONArray("events"));break;
                         case "close":result=store.close(request.getString("id"),request.getLong("endedAt"),request.getString("reason"));break;
+                        case "read":result=store.read(request.getString("id"),request.getString("snapshot"),request.optJSONObject("cursor"));break;
                         case "delete":store.delete(request.getString("id"));result=new JSONObject().put("id",request.getString("id"));break;
                         case "export":
                             JSONObject session=store.get(request.getString("id"));result=session;
