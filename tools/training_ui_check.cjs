@@ -11,7 +11,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   window.FlyBridge={demo:()=>window.fixtureDemo(new URL(location.href).searchParams.get('system')||'nes'),acceptRom(){},stop(){},resume(){},orientation(){},
    configure:raw=>{const c=JSON.parse(raw);configRequests.push(c);fixtureFdb=c.fdb;setTimeout(()=>window.labConfigured({generation:c.generation,reset:c.reset,configVersion:1,mode:c.mode,backend:c.backend}),0);},
    sample:raw=>{const r=JSON.parse(raw);trainingRequests.push(r);setTimeout(()=>{
-    const data={generation:r.generation,token:r.token,sequence:trainingRequests.length,buttons:2,outputs:new Array(new URL(location.href).searchParams.get('system')==='snes'?12:8).fill(0),spikes:0,active:0,wallMs:2,neuralGroups:[]};
+    const data={generation:r.generation,token:r.token,sequence:trainingRequests.length,buttons:2,outputs:new Array(new URL(location.href).searchParams.get('system')==='snes'?12:8).fill(0),spikes:0,active:0,wallMs:2,simMs:20,steps:200,backend:'cpu',neuralGroups:[]};
     if(fixtureFdb&&fixtureFdb.learning){const old=fixtureFdb.learningState||{version:1,observations:0,human:0,automatic:0,sources:configRequests.at(-1).inputs,targets:configRequests.at(-1).outputs};if(fixtureFdb.learning.enabled&&['teach','train'].includes(r.learningMode)&&!r.frozen)for(const e of r.experience){old.observations++;old[e.human?'human':'automatic']++;}fixtureFdb.learningState=old;data.fdbLearningState=old;}
     window.labResult(data);
    },5);}

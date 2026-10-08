@@ -610,7 +610,7 @@ public final class NesLabActivity extends Activity {
 
     @Override protected void onPause() {
         if(controllers!=null)controllers.enabled(false);foreground=false;controlEpoch.incrementAndGet();cancel.set(true);
-        web.evaluateJavascript("if(window.labPause)window.labPause();if(window.layerExperience)window.layerExperience.autosave();", null);
+        web.evaluateJavascript("if(window.labPause)window.labPause();if(window.layerExperience)window.layerExperience.autosave();try{if(loaded&&ready&&document.getElementById('autosavePolicy').checked)persistPolicy(false);}catch(e){if(window.console)console.warn(e.message);}", null);
         super.onPause();
         web.onPause();
     }
