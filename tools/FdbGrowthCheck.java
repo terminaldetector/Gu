@@ -26,6 +26,15 @@ public final class FdbGrowthCheck {
         GraphDelta hebb=new GraphDelta(3);FdbGrowth h=new FdbGrowth(g,hebb,new int[]{0},new int[]{1},1,1,1,8,false,false,1);
         require(h.observe(result(1,0,0),0,new int[0],false)==0,"no coactivity without explore");
         require(h.observe(result(0,1,0),0,new int[0],false)==1,"previous-window source, current-window target");
+        GraphDelta original=new GraphDelta(3),resume=new GraphDelta(3);
+        FdbGrowth first=new FdbGrowth(g,original,new int[]{0},new int[]{1,2},3,1,2,8,true,false,9);
+        first.observe(result(1,0,0),0,new int[0],false);first.observe(result(1,0,0),0,new int[0],false);
+        FdbGrowth second=new FdbGrowth(g,resume,new int[]{0},new int[]{1,2},3,1,2,8,true,false,99);
+        second.restore(first.windows(),first.rng(),first.previous());
+        require(first.observe(result(0,1,1),1,new int[0],false)==1&&second.observe(result(0,1,1),1,new int[0],false)==1,"checkpoint resumes scheduled window");
+        require(original.edges().get(0).target==resume.edges().get(0).target,"checkpoint preserves seeded candidate and previous activity");
+        require(first.previous().length==1,"checkpoint copies source activity, not entire connectome");
+        long at=first.windows(),rng=first.rng();first.observe(result(1,1,1),1,new int[0],true);require(first.windows()==at&&first.rng()==rng,"eval freezes growth clock and RNG");
         System.out.println("PASS: structural growth, seeded exploration, caps, reward gate, lesions, frozen state and actual CPU output");
     }
 }

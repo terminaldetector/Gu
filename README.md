@@ -1,3 +1,14 @@
+## Version 2.0.0-alpha07: Sega six-button and controller release
+
+* Dedicated Sega A/B/C + X/Y/Z touch pad, Start and Mode; stable legacy bits 0..7, new bits 8..11. Both physical emulated ports receive all 12 bits. Per-port auto/3/6-button protocol selection changes controller hardware without resetting ROM or connectome. Source rebuilt as API5; API4 snapshot tags accepted where the underlying state header/size matches.
+* Separate Sega keyboard (A/S/D, Q/W/E, Enter, Shift, arrows), per-platform key remapping, Android native gamepad keys and analog/hat axes with at least 25% deadzone. Choose the human's physical device; model Start/Select/Mode can be blocked. Lost pointer capture, device disconnect and lifecycle release held buttons. Android hardware testing still needed.
+* Bounded ZIP with a single cartridge, Sega SMD deinterleave and word-swap normalization before SHA identity. Stale ROM-end headers warn rather than reject a runnable cartridge. Corrupt vectors, ambiguous archives, CD/32X and oversized files remain rejected. NES mapper limitations are unchanged.
+* Sega automatic neural ports may expose 12 outputs; legacy 8-output profiles remain valid. The existing 45-feature SARSA readout uses the first eight neural channels plus retinal/motion features and can learn 12-bit actions. No trained policy is silently enlarged or overwritten.
+* FDB checkpoint includes growth-window counter, RNG and previous **source** activity (16 integers rather than a full graph-count copy). Evaluation freezes growth state. Base CSR is unchanged; the layer is portable only to matching graph and ports. This checkpoint is not a snapshot of all LIF voltages/pending events.
+* Realtime, continuous play, Solo/2P Boost, independent console/model resets, GPU and Code/JSON lab retained from alpha06.
+
+Commercial-game observations supplied by the author (Contra co-op, Mortal Kombat round, Dune/Pulseman) are interesting field observations, not controlled performance measurements. A phone with 6 GB RAM has been reported to work; a universal 6 GB minimum, thermal profile and game-completion rate are not certified.
+
 ## Version 1.0.1: Sega raster hotfix
 
 The upstream WASM custom blitter doubled pixels/rows while the frontend read native viewport dimensions. Worse, its second-row pointer mixed byte pitch with pixel indexing and wrote outside the framebuffer. Replaced it with one native-resolution RGBA row per emulated line; the frontend reads the actual byte pitch. Added framebuffer boundary guards checked each frame. This also corrects the retinal input derived from the image.
@@ -81,7 +92,7 @@ Install `FlyConsole-NES-0.2-debug.apk` (or the latest Actions artifact). This bu
 1. The original diagnostic NROM loads automatically; press **Запустить NES** and try the direction buttons. A changes sprite colour and gates a pulse tone. Import your `.nes` file with **Открыть .nes** (up to 4 MiB; unsupported mappers produce an error).
 2. Once the graph loads, choose **Наблюдение** or **Замкнутый**, then **Включить связь**. The default ports are technical selections, not labelled fly sensory or motor neurons.
 3. Try **Пошаговая связь**: one NES frame waits for one neural window. Async mode keeps the NES running while a bounded stream of screen samples is processed. Biological/network time is reported separately from NES frames and wall time.
-4. Under **Вмешательства и порты**, edit gain, negative-edge removal, deterministic input shuffle, frozen retinal input, lesions and explicit FlyWire IDs. **Применить** resets network state and RNG. Connectome synaptic plasticity is not implemented; the version 0.3 readout can learn.
+4. Under **Вмешательства и порты**, edit gain, negative-edge removal, deterministic input shuffle, frozen retinal input, lesions and explicit FlyWire IDs. **Применить** preserves neural state; the separate reset button resets dynamics and RNG. Connectome synaptic plasticity is not implemented; the version 0.3 readout can learn.
 5. **Запись CSV** resets the connectome by seed and records a new trial from the current NES frame. CSV includes ports/configuration, ROM SHA256, wall/network time, inputs, output spike counts, manual and neural button masks and frozen-input flag. Recording caps at 8 MiB. Export uses the Android document picker. CSV is observational, not a complete executable replay.
 6. **Снимок NES** saves one emulator slot locally, associated with the ROM hash. It does not save neural state; restoring resets the connectome. **Консоль** opens the original command interface, including graph import. The immutable graph is shared to avoid duplicating its large edge arrays.
 
@@ -145,3 +156,4 @@ Source code licence: MIT. FlyWire data have separate source licences/terms; cons
 Shiu v783: **138,639 neurons; 15,091,983 directed connection records**. Packed graph 122,399,548 bytes (116.73 MiB), gzip 53,119,189 bytes (50.66 MiB); estimated runtime array budget 136,817,992 bytes (130.48 MiB), plus runtime/UI overhead. Upstream source files total 104,131,989 bytes. 
 
 Full-data smoke run passed in a JVM limited to 256 MiB heap: 100 ms biological simulation took 0.381 s on the workspace CPU. This is not an Android-device benchmark. APK was compiled against Android 35, DEX-built and signature-verified locally. Physical-device execution and Brian2 comparison remain untested.
+

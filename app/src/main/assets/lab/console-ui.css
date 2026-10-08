@@ -18,3 +18,12 @@ body.game-mode .neural-map .neural-cube{padding:0;min-width:0;line-height:1;font
 #gamePlot{display:none}body.game-mode #gamePlot{display:flex;flex-direction:column;position:absolute;left:2px;top:82px;width:110px;height:100px;background:#111b22;border:1px solid #314a54;border-radius:5px;padding:5px;gap:4px;pointer-events:none;z-index:2}#gamePlot b{font-size:8px;font-weight:500;color:#9acfb8}#gameChart{width:100%;height:54px;min-height:0;flex:1;image-rendering:auto}#gameMetrics{font-size:8px;color:#b7c9c2;line-height:1.4;font-variant-numeric:tabular-nums}body.game-mode #gameToolbar{max-width:760px}body.game-mode #gameToolbar button{font-size:10px;padding:4px}
 @media(orientation:portrait){body.game-mode .screen-stage{grid-template-rows:auto minmax(0,1fr) 86px}body.game-mode .game-hud.right{grid-row:1/4}body.game-mode #gamePlot{position:static;grid-column:1;grid-row:3;width:100%;height:86px;padding:5px}body.game-mode #gameChart{height:44px}}
 @media(orientation:landscape) and (max-height:360px){body.game-mode #gamePlot{top:78px;height:61px;padding:3px;gap:2px}body.game-mode #gamePlot b{font-size:6px}body.game-mode #gameMetrics{font-size:6px;line-height:1.15}body.game-mode #gameChart{height:30px}}
+/* Sega owns a six-button action pad. NES retains its two-button layout. */
+body.sega .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+body.sega .actions [data-button="8"]{grid-column:1;grid-row:1}body.sega .actions [data-button="9"]{grid-column:2;grid-row:1}body.sega .actions [data-button="10"]{grid-column:3;grid-row:1}
+body.sega .actions [data-button="0"]{grid-column:1;grid-row:2}body.sega .actions [data-button="1"]{grid-column:2;grid-row:2}body.sega .actions [data-button="2"]{grid-column:3;grid-row:2}
+body.sega.game-mode .actions button{width:calc(35px * var(--pad-scale));height:calc(35px * var(--pad-scale));min-height:0;font-size:15px}
+body.sega.game-mode .system-pad{width:150px}
+@media(orientation:portrait){body.sega.game-mode .actions button{width:calc(42px * var(--pad-scale));height:calc(42px * var(--pad-scale));font-size:17px}body.sega.game-mode .system-pad{width:200px}}
+/* Keep the taller six-button panel below telemetry on compact landscape screens. */
+@media(orientation:landscape) and (max-height:360px){body.sega.game-mode .micro-heading{margin-bottom:3px}body.sega.game-mode .neural-map{max-width:72px;gap:4px}body.sega.game-mode .micro-panel small{font-size:7px;line-height:1.15;margin-top:2px}}

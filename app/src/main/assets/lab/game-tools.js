@@ -22,7 +22,8 @@ function readRam(mem,spec,limit=2048){
  return value;
 }
 function delta(current,previous,spec,wrap){let d=current-previous;if(wrap&&spec.format!=='signed'){const base=Math.pow(spec.format==='bcd'?100:256,Number(spec.width));if(d>base/2)d-=base;if(d<-base/2)d+=base;}return d;}
-function actions(text){const a=text.split(/[\s,;]+/).filter(Boolean).map(Number);if(a.length<2||a.length>64||new Set(a).size!==a.length||a.some(x=>!Number.isInteger(x)||x<0||x>255||(x&48)===48||(x&192)===192))throw Error('Нужно 2–64 уникальных маски 0–255 без противоположных направлений');return a;}
+function actions(text,maxMask=255){const a=text.split(/[\s,;]+/).filter(Boolean).map(Number);if(a.length<2||a.length>64||new Set(a).size!==a.length||a.some(x=>!Number.isInteger(x)||x<0||x>maxMask||(x&48)===48||(x&192)===192))throw Error('Нужно 2–64 уникальных маски 0–'+maxMask+' без противоположных направлений');return a;}
 function predicate(mem,address,value,limit=2048){const a=Number(address),v=Number(value);if(!Number.isInteger(a)||a<0||a>=limit||!Number.isInteger(v)||v<0||v>255)throw Error('Условие завершения: RAM 0–'+(limit-1)+', значение 0–255');return (mem[a]&255)===v;}
 const api={validateRom,readRam,delta,actions,predicate};root.FlyGameTools=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window==='undefined'?globalThis:window);
+

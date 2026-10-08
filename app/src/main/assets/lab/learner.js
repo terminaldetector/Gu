@@ -3,10 +3,10 @@
 'use strict';
 class Learner {
  constructor(seed=1){this.reset(seed);}
- reset(seed=1){this.allowedMask=255;this.actions=[0,1,2,16,32,64,128,129,17];this.rng=seed>>>0||1;this.weights=Array.from({length:9},()=>new Array(45).fill(0));this.traces=this.weights.map(w=>w.slice());this.previous=null;this.updates=0;this.episodes=0;this.totalReward=0;this.epsilon=.2;this.alpha=.04;this.gamma=.95;this.lambda=.7;}
+ reset(seed=1){this.allowedMask=4095;this.actions=[0,1,2,16,32,64,128,129,17];this.rng=seed>>>0||1;this.weights=Array.from({length:9},()=>new Array(45).fill(0));this.traces=this.weights.map(w=>w.slice());this.previous=null;this.updates=0;this.episodes=0;this.totalReward=0;this.epsilon=.2;this.alpha=.04;this.gamma=.95;this.lambda=.7;}
  random(){let x=this.rng;x^=x<<13;x^=x>>>17;x^=x<<5;this.rng=x>>>0;return this.rng/4294967296;}
- features(retina,outputs,position=null,previous=null){const current=retina.map(x=>Math.max(0,Math.min(1,x)));const motion=current.map((x,i)=>previous?x-previous[i]:0);return [1,...current,...motion,...outputs.map(x=>Math.tanh(x/100)),...(position||[0,0,0,0])];}
- setActions(actions){if(!Array.isArray(actions)||actions.length<2||actions.length>64||new Set(actions).size!==actions.length||actions.some(x=>!Number.isInteger(x)||x<0||x>255||(x&48)===48||(x&192)===192))throw Error('Invalid action set');const old=this.actions,weights=this.weights;this.weights=actions.map(mask=>old.includes(mask)?weights[old.indexOf(mask)].slice():new Array(45).fill(0));this.actions=actions.slice();this.boundary();}
+ features(retina,outputs,position=null,previous=null){const current=retina.map(x=>Math.max(0,Math.min(1,x)));const motion=current.map((x,i)=>previous?x-previous[i]:0);return [1,...current,...motion,...outputs.slice(0,8).map(x=>Math.tanh(x/100)),...(position||[0,0,0,0])];}
+ setActions(actions){if(!Array.isArray(actions)||actions.length<2||actions.length>64||new Set(actions).size!==actions.length||actions.some(x=>!Number.isInteger(x)||x<0||x>4095||(x&48)===48||(x&192)===192))throw Error('Invalid action set');const old=this.actions,weights=this.weights;this.weights=actions.map(mask=>old.includes(mask)?weights[old.indexOf(mask)].slice():new Array(45).fill(0));this.actions=actions.slice();this.boundary();}
  preset(seed=1){
   if(this.updates>0||this.weights.some(row=>row.some(weight=>Math.abs(weight)>1e-9)))return false;
   let x=(seed>>>0)||1;const rnd=()=>{x^=x<<13;x^=x>>>17;x^=x<<5;return (x>>>0)/4294967296;};
@@ -21,7 +21,7 @@ class Learner {
   });this.boundary();return true;
  }
 
- setAllowedMask(mask){if(!Number.isInteger(mask)||mask<0||mask>255||!this.actions.some(a=>(a&~mask)===0))throw Error('Нет разрешённых действий: добавьте нейтральную маску 0 или игровые кнопки');if(mask!==this.allowedMask){this.allowedMask=mask;this.boundary();}}
+ setAllowedMask(mask){if(!Number.isInteger(mask)||mask<0||mask>4095||!this.actions.some(a=>(a&~mask)===0))throw Error('Нет разрешённых действий: добавьте нейтральную маску 0 или игровые кнопки');if(mask!==this.allowedMask){this.allowedMask=mask;this.boundary();}}
  eligible(){return this.actions.map((mask,i)=>(mask&~this.allowedMask)===0?i:-1).filter(i=>i>=0);}
  q(f,a){return f.reduce((v,x,i)=>v+x*this.weights[a][i],0);}
  choose(f,train){const eligible=this.eligible();if(!eligible.length)throw Error("Нет разрешённых действий");if(train&&this.random()<this.epsilon)return eligible[Math.floor(this.random()*eligible.length)];const max=Math.max(...eligible.map(a=>this.q(f,a)));const ties=eligible.filter(a=>Math.abs(this.q(f,a)-max)<1e-9);return ties[Math.floor(this.random()*ties.length)];}

@@ -12,13 +12,13 @@ public final class Experiment {
     public String mode = "observe";
     public boolean scramble;
     /** I/O ownership only: neuron activity remains observable. */
-    public int agentButtonMask = 255;
+    public int agentButtonMask = 4095;
     public int windowMs = 20;
     public double maxHz = 150, thresholdHz = 30;
     public long seed = 1;
 
     public Experiment(int[] inputs, int[] outputs) {
-        if (inputs.length != 16 || outputs.length != 8) throw new IllegalArgumentException("Нужно 16 входов и 8 выходов");
+        if (inputs.length != 16 || (outputs.length != 8 && outputs.length != 12)) throw new IllegalArgumentException("Нужно 16 входов и 8/12 выходов");
         this.inputs = inputs.clone();
         this.outputs = outputs.clone();
         seedPermutation(1);
@@ -59,7 +59,9 @@ public final class Experiment {
         return mask & agentButtonMask;
     }
 
-    public static Experiment automatic(Graph graph) {
+    public static Experiment automatic(Graph graph) { return automatic(graph,8); }
+    public static Experiment automatic(Graph graph,int outputCount) {
+        if(outputCount!=8&&outputCount!=12||graph.ids.length<16+outputCount)throw new IllegalArgumentException("Недостаточно узлов для портов");
         if (graph.ids.length < 24) throw new IllegalArgumentException("Для NES нужны хотя бы 24 нейрона");
         int[] inputs = new int[16];
         Arrays.fill(inputs, -1);
@@ -73,10 +75,10 @@ public final class Experiment {
                 }
             }
         }
-        int[] outputs = new int[8];
+        int[] outputs = new int[outputCount];
         Arrays.fill(outputs, -1);
         // Strong positive postsynaptic targets of the selected inputs, without overlap.
-        for (int slot = 0; slot < 8; slot++) {
+        for (int slot = 0; slot < outputCount; slot++) {
             float best = 0;
             int candidate = -1;
             for (int input : inputs) for (int edge = graph.offsets[input]; edge < graph.offsets[input + 1]; edge++) {

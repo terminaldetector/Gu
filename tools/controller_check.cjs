@@ -1,0 +1,18 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const Pad=require('../app/src/main/assets/lab/controller.js'),Sega=require('../app/src/main/assets/lab/sega-core.js'),Tools=require('../app/src/main/assets/lab/game-tools.js'),Learner=require('../app/src/main/assets/lab/learner.js');
+assert.equal(Pad.keyboard('sega').KeyD,2);assert.equal(Pad.keyboard('sega').KeyE,10);assert.equal(Pad.keyboard('nes').KeyX,0);assert.equal(Pad.keyboard('sega',{KeyE:11}).KeyE,11);
+assert.equal(Pad.axis(.1,-.1),0);assert.equal(Pad.axis(1,-1),144);assert.equal(Pad.clean(48|192|256,true),256);assert.equal(Pad.clean(256,false),0);
+assert.deepEqual(Tools.actions('0,256,512,1024,2048',4095),[0,256,512,1024,2048]);assert.throws(()=>Tools.actions('0,256'));assert.throws(()=>Tools.actions('0,4096',4095));
+const policy=new Learner(1);policy.setActions([0,256,1024,2048]);policy.setAllowedMask(2039);policy.weights[3][0]=20;policy.weights[1][0]=10;
+const f=policy.features(new Array(16).fill(0),new Array(12).fill(0));assert.equal(f.length,45);assert.equal(policy.actions[policy.choose(f,false)],256,'Mode blocked, X allowed');const other=new Learner();other.load(JSON.parse(JSON.stringify(policy.save())));assert.equal(other.actions[1],256);
+const raw=Uint8Array.from(Buffer.from(require('../app/src/main/assets/lab/demo-sega.json').base64,'base64'));
+const swap=raw.slice();for(let i=0;i<raw.length;i+=2){swap[i]=raw[i+1];swap[i+1]=raw[i];}assert.deepEqual(Sega.normalizeRom(swap).bytes,raw);
+const smd=new Uint8Array(raw.length+512);for(let o=0;o<raw.length;o+=16384)for(let i=0;i<8192;i++){smd[512+o+i]=raw[o+2*i+1];smd[512+o+8192+i]=raw[o+2*i];}assert.deepEqual(Sega.normalizeRom(smd).bytes,raw);
+const mismatch=raw.slice();new DataView(mismatch.buffer).setUint32(0x1a4,0x3fffff);assert.equal(Sega.validateRom(mismatch).warnings.length,1,'inexact header size is a warning, not false incompatibility');
+const sp=raw.slice();new DataView(sp.buffer).setUint32(0,0x1000000);assert.doesNotThrow(()=>Sega.validateRom(sp));assert.throws(()=>Sega.validateRom(raw.slice(0,512)));
+const source=fs.readFileSync('app/src/main/assets/lab/lab.js','utf8'),events=[];
+const state={labPlatform:'sega',loaded:true,manualMask:256|1024,brainMask:512|2048|8,gmodeMode:'coop',appliedMask:0,appliedHumanMask:0,appliedAgentMask:0,$:()=>({value:'blocked'}),nes:{buttonDown:(p,b)=>events.push(['down',p,b]),buttonUp:(p,b)=>events.push(['up',p,b])}};
+vm.createContext(state);vm.runInContext(source.slice(source.indexOf('function agentAllowedMask'),source.indexOf('function rgbaAndRetina')),state);state.updateButtons();
+assert.deepEqual(events,[['down',1,8],['down',1,10],['down',2,9]],'independent six-button human/agent ports, blocked Start and Mode');state.releasePorts();assert.equal(events.filter(x=>x[0]==='up').length,24,'release all 12 buttons on both ports');
+console.log('PASS: Sega/NES keyboard isolation, 12-bit control ownership, axis deadzone, old readout persistence, SMD/byte swap and header compatibility');

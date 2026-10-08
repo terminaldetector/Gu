@@ -34,7 +34,7 @@ let browser;
   await page.setViewportSize({width:w,height:h});await page.waitForTimeout(100);
   const boxes=await page.evaluate(()=>{
    const rect=el=>{const r=el.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom};};
-   return {canvas:rect(screen),map:rect($('neuralMap')),plot:rect($('gamePlot')),micro:rect($('neuralMap').parentElement),toolbar:rect($('gameToolbar')),buttons:[...document.querySelectorAll('[data-button]')].map(rect),scroll:document.documentElement.scrollWidth,width:innerWidth,height:innerHeight,frame,generation};
+   return {canvas:rect(screen),map:rect($('neuralMap')),plot:rect($('gamePlot')),micro:rect($('neuralMap').parentElement),toolbar:rect($('gameToolbar')),buttons:[...document.querySelectorAll('[data-button]')].filter(el=>!el.hidden).map(rect),scroll:document.documentElement.scrollWidth,width:innerWidth,height:innerHeight,frame,generation};
   });
   assert(boxes.canvas.w>80&&boxes.canvas.h>80,`usable video ${w}x${h}`);
   assert(Math.abs(boxes.canvas.w/boxes.canvas.h-256/240)<.025,`preserve video ratio ${w}x${h}`);
@@ -56,9 +56,14 @@ let browser;
  await page.goto('https://flyconsole.local/lab/index.html?system=sega');await page.waitForFunction(()=>loaded,null,{timeout:30000});
  await page.click('#enterGame');await page.evaluate(()=>{for(let i=0;i<25;i++)nes.frame();$('gameNotice').classList.remove('visible');});
  assert.equal(await page.locator('[data-button="2"]').textContent(),'C','Sega must retain its third game button');
- for(const [w,h] of [[390,844],[844,390]]){
+ await page.keyboard.down('q');await page.keyboard.down('e');assert.equal(await page.evaluate(()=>manualMask),256|1024,'Sega dedicated keyboard X/Z');await page.keyboard.up('q');assert.equal(await page.evaluate(()=>manualMask),1024,'releasing one key preserves the other');await page.keyboard.up('e');
+ await page.evaluate(()=>window.labController({id:5,name:'Fixture pad',mask:512|128,connected:true}));assert.equal(await page.evaluate(()=>manualMask),512|128);await page.evaluate(()=>window.labController({id:5,name:'Fixture pad',mask:0,connected:false}));assert.equal(await page.evaluate(()=>manualMask),0,'disconnected controller releases all inputs');
+ await page.evaluate(()=>{gmodeMode='coop';brainMask=256|2048|8;updateButtons();});assert.equal(await page.evaluate(()=>nes.mask2),256,'P2 X executes and model Start/Mode blocked');await page.evaluate(()=>{releaseBrain();gmodeMode='off';});
+
+ for(const [w,h] of [[390,844],[844,390],[568,320],[640,360]]){
   await page.setViewportSize({width:w,height:h});await page.waitForTimeout(100);
-  const video=await page.evaluate(()=>{const r=screen.getBoundingClientRect();return {ratio:r.width/r.height,native:screen.width/screen.height};});
+  const video=await page.evaluate(()=>{const r=screen.getBoundingClientRect(),m=$('neuralMap').parentElement.getBoundingClientRect();return {ratio:r.width/r.height,native:screen.width/screen.height,map:{x:m.x,y:m.y,right:m.right,bottom:m.bottom},buttons:[...document.querySelectorAll('[data-button]')].filter(el=>!el.hidden).map(el=>{const b=el.getBoundingClientRect();return {x:b.x,y:b.y,right:b.right,bottom:b.bottom,w:b.width,h:b.height};})};});
+  assert.equal(video.buttons.length,12,'complete Sega action and system pad');for(const b of video.buttons){assert(b.w>=25&&b.h>=25&&b.x>=0&&b.right<=w+1&&b.bottom<=h+1,'Sega buttons visible');if(w>h){const m=video.map;assert(b.right<=m.x||b.x>=m.right||b.y>=m.bottom||b.bottom<=m.y,'Sega six-button panel clear of telemetry');}}
   assert(Math.abs(video.ratio-video.native)<.025,'Sega dynamic resolution must keep its aspect ratio');
   await page.screenshot({path:`ui-preview/sega-${w>h?'landscape':'portrait'}.png`});
  }

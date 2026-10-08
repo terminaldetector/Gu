@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild API4 from bundled licensed source; archive exactly the compiled source."""
+"""Rebuild API5 from bundled licensed source; archive exactly the compiled source."""
 import hashlib,json,re,subprocess,tempfile,zipfile
 from pathlib import Path
 root=Path(__file__).resolve().parents[1]
@@ -40,6 +40,10 @@ int EMSCRIPTEN_KEEPALIVE wasm_input_update(void) {
         c.write_text(text)
         p=source/'FLY_BUILD.md'
         p.write_text(p.read_text()+'\nAPI4: 64-float input buffer; independent pad[0]/pad[4] controllers; lab_core_api() = 4. Rebuild via tools/build_sega.py in Gu.\n')
+    text=c.read_text().replace('lab_core_api(void) { return 4; }','lab_core_api(void) { return 5; }')
+    if 'lab_set_pad_type' not in text:
+        text += '\nint EMSCRIPTEN_KEEPALIVE lab_set_pad_type(int player, int buttons) {\n if(player<0||player>1||(buttons!=0&&buttons!=3&&buttons!=6))return 0;\n config.input[player].padtype=buttons==6?DEVICE_PAD6B:buttons==3?DEVICE_PAD3B:(DEVICE_PAD2B|DEVICE_PAD3B|DEVICE_PAD6B);\n input_init();input_reset();return 1;\n}\n'
+    c.write_text(text)
     build=source/'build-fly';build.mkdir()
     subprocess.run(['emcmake','cmake','..'],cwd=build,check=True)
     subprocess.run(['emmake','make','-j4'],cwd=build,check=True)
@@ -54,8 +58,8 @@ int EMSCRIPTEN_KEEPALIVE wasm_input_update(void) {
                 info.compress_type=zipfile.ZIP_DEFLATED;info.external_attr=0o100644<<16
                 archive.writestr(info,path.read_bytes())
     meta=json.loads((assets/'source.json').read_text())
-    meta.update(core_api='genplus-fly-6090aff9-api4',compiler='Emscripten 3.1.57',controllers=2,
+    meta.update(core_api='genplus-fly-6090aff9-api5',compiler='Emscripten 3.1.57',controllers=2,
                 wasm_sha256=hashlib.sha256((assets/'genplus.wasm').read_bytes()).hexdigest(),
                 source_sha256=hashlib.sha256((assets/'genplus-source.zip').read_bytes()).hexdigest())
     (assets/'source.json').write_text(json.dumps(meta,indent=2)+'\n')
-print('Sega API4 built with independent physical controller ports and matching source archive')
+print('Sega API5 built with independent physical controller ports and matching source archive')

@@ -17,6 +17,9 @@ node tools/gmode_check.cjs
 node tools/system_controls_check.cjs
 node tools/console_reset_check.cjs
 node tools/runtime_flow_check.cjs
+node tools/controller_check.cjs
+javac -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/RomImport.java tools/RomImportCheck.java
+java -cp "$task_tmp/classes" org.node.flyconsole.RomImportCheck
 node tools/two_player_mode_check.cjs
 python tools/gpu_shader_check.py
 
@@ -34,6 +37,7 @@ javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.InferenceCheck
 node tools/sega_check.cjs
 node tools/sega_p2_check.cjs
+node tools/sega_six_button_check.cjs
 node tools/sega_render_check.cjs
 
 node tools/sega_learning_check.cjs
