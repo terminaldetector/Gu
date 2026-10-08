@@ -1,0 +1,25 @@
+name: Android signing tool
+on:
+  push:
+    paths:
+      - '.github/workflows/signing-tool.yml'
+  workflow_dispatch:
+jobs:
+  tool:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'build-tools;35.0.0'
+      - name: Copy official Android signing tool
+        run: cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" /tmp/flyconsole-apksigner.jar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FlyConsole-official-apksigner
+          path: /tmp/flyconsole-apksigner.jar
