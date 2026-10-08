@@ -13,6 +13,21 @@ public final class FdbGrowthCheck {
         Engine.Result changed=new Engine(g).advance(new int[]{0},new double[]{1000},100,o,new java.util.concurrent.atomic.AtomicBoolean());
         int target=layer.edges().get(0).target;
         require(baseline.counts[target]==0&&changed.counts[target]>0,"grown edge must execute in actual LIF engine");
+        long plasticVersion=layer.version();
+        require(layer.setGrowthWeight(0,target,32f),"grown weight updates");
+        require(layer.version()==plasticVersion+1,"weight revision propagates to runtimes");
+        require(layer.outgoing(0).get(0).weight==32f&&layer.edges().get(0).weight==32f,"adjacency and storage agree");
+        require(!layer.setGrowthWeight(0,target,32f),"unchanged weight is not a mutation");
+        Engine.Result weaker=new Engine(g).advance(new int[]{0},new double[]{1000},100,o,new java.util.concurrent.atomic.AtomicBoolean());
+        require(weaker.counts[target]<=changed.counts[target],"lower learned synapse cannot increase firing in this isolated excitatory fixture");
+        long cp=layer.checkpoint();
+        layer.setGrowthWeight(0,target,0f);
+        require(layer.outgoing(0).get(0).weight==0f,"synapse can be silenced");
+        layer.rollback(cp);
+        require(layer.outgoing(0).get(0).weight==32f,"plastic synapse rollback");
+        boolean rejected=false;
+        try{layer.setGrowthWeight(0,target,Float.NaN);}catch(IllegalArgumentException expected){rejected=true;}
+        require(rejected,"reject non-finite plasticity");
         long version=layer.version();growth.observe(result(1,1,1),1,new int[0],true);require(layer.version()==version,"frozen");
         for(int i=0;i<12;i++)growth.observe(result(1,1,1),1,new int[0],false);
         require(layer.growthCount()==2,"cap and no duplicates");
