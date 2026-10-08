@@ -52,7 +52,7 @@ function save(newCopy=false,automatic=false){
 }
 function validatePortable(set){
  S.validate(set);const probe=new FlyLearner();probe.load(set.policy);
- if(JSON.stringify(probe.actions)!==JSON.stringify(FlyGameTools.actions(set.profile.actionMasks,set.system==='sega'?4095:255)))throw Error('Действия и веса Layer Set не совпадают');
+ if(JSON.stringify(probe.actions)!==JSON.stringify(FlyGameTools.actions(set.profile.actionMasks,(set.system==='sega'||set.system==='snes')?4095:255)))throw Error('Действия и веса Layer Set не совпадают');
  const expected=JSON.stringify({romHash:set.romHash,inputs:set.configuration.inputs,outputs:set.configuration.outputs,system:set.system,graph_sha256:set.graph.sha256,profile:set.profile,configuration:policyConfiguration(set.configuration),gmode:set.configuration.gmode||'off'});
  if(!keysEqual(set.key,expected))throw Error('Подписи профиля Layer Set не совпадают');
  return set;

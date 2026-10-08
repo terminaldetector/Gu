@@ -11,14 +11,21 @@ public final class RomImport {
         ByteArrayOutputStream out=new ByteArrayOutputStream();byte[] buf=new byte[8192];int n;
         while((n=in.read(buf))!=-1){if(out.size()+n>limit)throw new IOException("ROM/архив превышает лимит");out.write(buf,0,n);}return out.toByteArray();
     }
-    public static byte[] unpack(byte[] file,boolean sega)throws IOException{
-        int limit=(sega?32:4)*1024*1024+(sega?512:0);
+    public static boolean validSystem(String system){return "nes".equals(system)||"sega".equals(system)||"gb".equals(system)||"snes".equals(system);}
+    public static String system(String value){return validSystem(value)?value:"nes";}
+    public static boolean wide(String system){return "sega".equals(system)||"snes".equals(system);}
+    public static int maxRomBytes(String system){return ("sega".equals(system)?32:"nes".equals(system)?4:8)*1024*1024;}
+    public static byte[] unpack(byte[] file,boolean sega)throws IOException{return unpack(file,sega?"sega":"nes");}
+    public static byte[] unpack(byte[] file,String system)throws IOException{
+        if(!validSystem(system))throw new IOException("Неизвестная платформа");
+        boolean sega="sega".equals(system);
+        int limit=maxRomBytes(system)+(sega||"snes".equals(system)?512:0);
         if(file.length>=4&&file[0]=='P'&&file[1]=='K'){
             byte[] selected=null;int entries=0,total=0;
             try(ZipInputStream zip=new ZipInputStream(new ByteArrayInputStream(file))){ZipEntry e;
                 while((e=zip.getNextEntry())!=null){if(++entries>128)throw new IOException("Слишком много файлов в ZIP");if(e.isDirectory())continue;
                     String name=e.getName().toLowerCase(Locale.ROOT);
-                    boolean match=sega?name.matches(".*\\.(bin|md|gen|smd|mdx|rom)$"):name.endsWith(".nes");
+                    boolean match=sega?name.matches(".*\\.(bin|md|gen|smd|mdx|rom)$"):"gb".equals(system)?name.matches(".*\\.(gb|gbc)$"):"snes".equals(system)?name.matches(".*\\.(sfc|smc)$"):name.endsWith(".nes");
                     byte[] content=read(zip,Math.min(match?limit:1024*1024,64*1024*1024-total));total+=content.length;
                     if(match){if(selected!=null)throw new IOException("ZIP содержит несколько ROM: оставьте одну игру в архиве");selected=content;}
                 }
@@ -29,7 +36,16 @@ public final class RomImport {
             try(GZIPInputStream gzip=new GZIPInputStream(new ByteArrayInputStream(file))){file=read(gzip,limit);}
         }
         if(file.length>limit)throw new IOException("Картридж превышает лимит режима");
-        return sega?normalizeSega(file):file;
+        return normalize(file,system);
+    }
+    public static byte[] normalize(byte[] file,String system)throws IOException{
+        if(!validSystem(system))throw new IOException("Неизвестная платформа");
+        if("sega".equals(system))return normalizeSega(file);
+        if("snes".equals(system)&&file.length%32768==512)file=Arrays.copyOfRange(file,512,file.length);
+        int minimum="gb".equals(system)?16384:"snes".equals(system)?65536:16;
+        if(file.length<minimum||file.length>maxRomBytes(system))throw new IOException("Неверный размер ROM "+system.toUpperCase(Locale.ROOT));
+        if("nes".equals(system)&&(file[0]!=78||file[1]!=69||file[2]!=83||file[3]!=26))throw new IOException("Ожидается NES/iNES ROM");
+        return file;
     }
     private static long word(byte[] b,int p){return ((long)(b[p]&255)<<24)|((long)(b[p+1]&255)<<16)|((b[p+2]&255)<<8)|(b[p+3]&255);}
     private static boolean vectors(byte[] b){

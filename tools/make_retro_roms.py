@@ -1,0 +1,51 @@
+"""Original cartridge diagnostics, not commercial game ROMs."""
+import base64
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1] / 'app/src/main/assets/lab'
+
+def gb(color=False):
+    rom = bytearray(32768)
+    rom[0x100:0x104] = bytes([0xc3, 0x50, 0x01, 0])
+    rom[0x104:0x134] = bytes.fromhex('CEED6666CC0D000B03730083000C000D0008111F8889000EDCCC6EE6DDDDD999BBBB67636E0EECCC DDDC999FBBB9333E'.replace(' ', ''))
+    rom[0x134:0x143] = b'FLY GB TEST'.ljust(15, b' ')
+    rom[0x143] = 0x80 if color else 0
+    rom[0x147] = 0  # ROM-only
+    rom[0x14d] = (-sum(rom[0x134:0x14d]) - 25) & 255
+    code = bytearray([0xf3, 0x31, 0xfe, 0xff])
+    def write(address, value):
+        code.extend([0x3e, value, 0xea, address & 255, address >> 8])
+    write(0xff40, 0)
+    for i in range(16): write(0x8000 + i, 255 if i % 2 == 0 else 0)
+    for address, value in [(0xff47,0xe4),(0xff68,0x80),(0xff69,0),(0xff69,0),(0xff69,0x1f),(0xff69,0),(0xff69,0xff),(0xff69,0x7f),(0xff69,0),(0xff69,0),(0xff26,0x80),(0xff24,0x77),(0xff25,0x11),(0xff11,0x80),(0xff12,0xf3),(0xff13,0x80),(0xff14,0x87),(0xff40,0x91)]: write(address,value)
+    loop = 0x150 + len(code)
+    # Poll the physical joypad and expose its active-low bits in work RAM.
+    code.extend([0x3e,0x20,0xe0,0,0xf0,0,0xea,1,0xc0,0x21,0,0xc0,0x34,0xc3,loop&255,loop>>8])
+    rom[0x150:0x150+len(code)] = code
+    return rom
+
+def snes():
+    rom = bytearray([0xff]) * 65536
+    code = bytearray([0x78,0x18,0xfb,0xc2,0x10,0xe2,0x20,0xa2,0xff,0x1f,0x9a])
+    def write(address, value): code.extend([0xa9,value,0x8d,address&255,address>>8])
+    for address,value in [(0x2100,0x80),(0x2121,0),(0x2122,0x1f),(0x2122,0),(0x4200,0),(0x2100,0x0f)]: write(address,value)
+    # Once per vblank: count frames and sample both real serial controller ports.
+    loop = len(code)
+    code.extend([0xad,0x12,0x42,0x10,0xfb,0xe6,0,0xa9,1,0x8d,0x16,0x40,0x9c,0x16,0x40,0xa2,0,0])
+    serial = len(code)
+    code.extend([0xad,0x16,0x40,0x29,1,0x9d,0x10,0,0xad,0x17,0x40,0x29,1,0x9d,0x30,0,0xe8,0xe0,12,0,0xd0])
+    code.append((serial-len(code)-1)&255)
+    code.extend([0xad,0x12,0x42,0x30,0xfb,0x4c,loop&255,0x80+(loop>>8)])
+    rom[:len(code)] = code
+    rom[0x7fc0:0x7fd5] = b'FLY SNES DIAGNOSTIC'.ljust(21,b' ')
+    rom[0x7fd5:0x7fdc] = bytes([0x20,0,6,0,1,0x33,0])
+    for address in range(0x7fe0,0x8000,2): rom[address:address+2]=bytes([0,0x80])
+    rom[0x7fdc:0x7fe0]=bytes(4)
+    checksum=(sum(rom)+510)&65535
+    rom[0x7fdc:0x7fe0]=(checksum^65535).to_bytes(2,'little')+checksum.to_bytes(2,'little')
+    return rom
+
+if __name__=='__main__':
+    for name,data in [('gb',gb()),('gbc',gb(True)),('snes',snes())]:
+        (ROOT/('demo-'+name+'.json')).write_text(json.dumps({'base64':base64.b64encode(data).decode()})+'\n')

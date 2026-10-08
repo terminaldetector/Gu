@@ -34,6 +34,8 @@ jobs:
         with:
           version: '3.1.57'
       - run: python tools/build_sega.py
+      - run: python tools/build_retro.py
+      - run: python tools/make_retro_roms.py
       - run: bash tools/check.sh
       - name: Install UI test browser
         run: |
@@ -48,6 +50,7 @@ jobs:
         run: |
           NODE_PATH=/tmp/fly-ui/node_modules node tools/console_layout_check.cjs
           NODE_PATH=/tmp/fly-ui/node_modules node tools/layer_ui_check.cjs
+          NODE_PATH=/tmp/fly-ui/node_modules node tools/platform_ui_check.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -71,7 +74,7 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           source = Path('app/build/outputs/apk/debug/app-debug.apk').read_bytes()
-          size = 24_000_000
+          size = 32_000_000
           for index, start in enumerate(range(0, len(source), size), 1):
               Path(f'/tmp/flyconsole-apk-part-{index}').write_bytes(source[start:start + size])
           PY

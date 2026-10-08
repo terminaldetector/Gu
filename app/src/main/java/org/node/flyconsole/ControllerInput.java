@@ -11,17 +11,18 @@ public final class ControllerInput implements InputManager.InputDeviceListener {
     public interface Sink { void send(JSONObject data); }
     private final InputManager manager;private final Sink sink;
     private final Map<Integer,Set<Integer>> keys=new HashMap<>();private final Map<Integer,Integer> axes=new HashMap<>();
-    private boolean sega,enabled=true;
+    private boolean sega,snes,enabled=true;
     public ControllerInput(Context context,Sink sink){this.sink=sink;manager=(InputManager)context.getSystemService(Context.INPUT_SERVICE);manager.registerInputDeviceListener(this,null);}
-    public void system(boolean value){clear();sega=value;}
+    public void system(boolean value){system(value?"sega":"nes");}
+    public void system(String value){clear();sega="sega".equals(value);snes="snes".equals(value);}
     public void enabled(boolean value){if(!value)clear();enabled=value;}
     private static boolean gamepad(InputEvent e){return (e.getSource()&InputDevice.SOURCE_GAMEPAD)==InputDevice.SOURCE_GAMEPAD||(e.getSource()&InputDevice.SOURCE_JOYSTICK)==InputDevice.SOURCE_JOYSTICK;}
     private int bit(int code){switch(code){
         case KeyEvent.KEYCODE_DPAD_UP:return 16;case KeyEvent.KEYCODE_DPAD_DOWN:return 32;case KeyEvent.KEYCODE_DPAD_LEFT:return 64;case KeyEvent.KEYCODE_DPAD_RIGHT:return 128;
         case KeyEvent.KEYCODE_BUTTON_A:return 1;case KeyEvent.KEYCODE_BUTTON_B:return 2;case KeyEvent.KEYCODE_BUTTON_C:return sega?4:0;
-        case KeyEvent.KEYCODE_BUTTON_X:return sega?256:1;case KeyEvent.KEYCODE_BUTTON_Y:return sega?512:2;case KeyEvent.KEYCODE_BUTTON_Z:return sega?1024:0;
-        case KeyEvent.KEYCODE_BUTTON_L1:return sega?4:0;case KeyEvent.KEYCODE_BUTTON_R1:return sega?1024:0;
-        case KeyEvent.KEYCODE_BUTTON_START:return 8;case KeyEvent.KEYCODE_BUTTON_SELECT:return sega?2048:4;default:return 0;
+        case KeyEvent.KEYCODE_BUTTON_X:return snes||sega?256:1;case KeyEvent.KEYCODE_BUTTON_Y:return snes?4:sega?512:2;case KeyEvent.KEYCODE_BUTTON_Z:return sega?1024:0;
+        case KeyEvent.KEYCODE_BUTTON_L1:return snes?512:sega?4:0;case KeyEvent.KEYCODE_BUTTON_R1:return snes||sega?1024:0;
+        case KeyEvent.KEYCODE_BUTTON_START:return 8;case KeyEvent.KEYCODE_BUTTON_SELECT:return snes||sega?2048:4;default:return 0;
     }}
     public boolean key(KeyEvent e){if(!enabled||!gamepad(e))return false;int bit=bit(e.getKeyCode());if(bit==0)return false;
         int id=e.getDeviceId();Set<Integer> held=keys.computeIfAbsent(id,k->new HashSet<>());

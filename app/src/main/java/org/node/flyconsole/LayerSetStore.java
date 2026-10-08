@@ -17,7 +17,7 @@ final class LayerSetStore {
         if(!"fly-layer-set".equals(set.getString("type"))||set.getInt("layerVersion")!=1)throw new IllegalArgumentException("Неверный формат Layer Set");
         String name=set.getString("name"),notes=set.getString("notes"),system=set.getString("system");
         if(name.trim().isEmpty()||name.length()>80||notes.length()>500)throw new IllegalArgumentException("Неверное имя или заметка");
-        if(!("nes".equals(system)||"sega".equals(system))||!set.getString("romHash").matches("[a-f0-9]{64}")||!set.getJSONObject("graph").getString("sha256").matches("[a-f0-9]{64}"))throw new IllegalArgumentException("Неверная платформа или SHA256");
+        if(!("nes".equals(system)||"sega".equals(system)||"gb".equals(system)||"snes".equals(system))||!set.getString("romHash").matches("[a-f0-9]{64}")||!set.getJSONObject("graph").getString("sha256").matches("[a-f0-9]{64}"))throw new IllegalArgumentException("Неверная платформа или SHA256");
         for(String key:new String[]{"createdAt","updatedAt"})if(!(set.get(key) instanceof Number)||set.getDouble(key)!=set.getLong(key)||set.getLong(key)<0)throw new IllegalArgumentException("Неверная дата");
         set.getJSONObject("configuration");set.getJSONObject("profile");set.getJSONObject("runtime");set.getJSONObject("policy");
         if(set.getJSONArray("journal").length()>200)throw new IllegalArgumentException("Журнал превышает 200 записей");

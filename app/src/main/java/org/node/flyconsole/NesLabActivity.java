@@ -47,6 +47,7 @@ public final class NesLabActivity extends Activity {
     private final java.util.ArrayDeque<String> offeredRomHashes = new java.util.ArrayDeque<>();
     private long sequence, configVersion;
     private boolean neuralConfigured;
+    private volatile boolean platformPortsPending=true;
     private ControllerInput controllers;
     private int latestMask;
     private BufferedWriter recorder;
@@ -57,7 +58,7 @@ public final class NesLabActivity extends Activity {
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
-        labSystem="sega".equals(getIntent().getStringExtra("system"))?"sega":"nes";
+        labSystem=RomImport.system(getIntent().getStringExtra("system"));
         web = new WebView(this);
         web.setBackgroundColor(android.graphics.Color.rgb(8,10,19));
         web.getSettings().setJavaScriptEnabled(true);
@@ -85,7 +86,7 @@ public final class NesLabActivity extends Activity {
                 submit(() -> { pageReady = true; if(engine==null)loadGraph();else announce(); });
             }
         });
-        controllers=new ControllerInput(this,data->emit("labController",data));controllers.system("sega".equals(labSystem));
+        controllers=new ControllerInput(this,data->emit("labController",data));controllers.system(labSystem);
         UiInsets.attachWeb(this,web);recording=new File(getFilesDir(),labSystem+"-experiment.csv");
         submit(this::loadGraph);
         web.loadUrl(ORIGIN + "/lab/index.html?system="+labSystem);
@@ -102,17 +103,17 @@ public final class NesLabActivity extends Activity {
         return response;
     }
 
-    @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);switchSystem("sega".equals(intent.getStringExtra("system"))?"sega":"nes");}
+    @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);switchSystem(RomImport.system(intent.getStringExtra("system")));}
     private void switchSystem(String system){
         if (system.equals(labSystem)) return;
         cancel.set(true);controlEpoch.incrementAndGet();
         worker.execute(()->{try{stopRecording();offeredRomHashes.clear();}catch(IOException ex){error(ex.getMessage());}});
         web.evaluateJavascript("if(window.labPause)window.labPause();try{if(window.layerExperience)window.layerExperience.autosave();persistPolicy(false);document.getElementById('saveProfile').onclick();}catch(e){}", ignored -> {
-            pageEpoch.incrementAndGet();if(controllers!=null)controllers.system("sega".equals(system));labSystem=system;pageReady=false;romHash="not-loaded";recording=new File(getFilesDir(),labSystem+"-experiment.csv");
+            pageEpoch.incrementAndGet();if(controllers!=null)controllers.system(system);labSystem=system;platformPortsPending=true;pageReady=false;romHash="not-loaded";recording=new File(getFilesDir(),labSystem+"-experiment.csv");
             web.loadUrl(ORIGIN+"/lab/index.html?system="+labSystem);
         });
     }
-    private void loadGraph(){neuralConfigured=false;try{long free=Runtime.getRuntime().maxMemory()-Runtime.getRuntime().totalMemory()+Runtime.getRuntime().freeMemory();Graph loaded=GraphCache.load(new File(getFilesDir(),"connectome.fly"),()->{try{return getAssets().open("brain.fly.gz");}catch(IOException ex){return getAssets().open("brain.fly");}},free*2/3);Experiment next=Experiment.automatic(loaded,"sega".equals(labSystem)&&loaded.ids.length>=28?12:8);Engine nextEngine=new Engine(loaded);closeGpu();graph=loaded;graphKind=GraphCache.kind;experiment=next;engine=nextEngine;backend="cpu";initialError=null;announce();}catch(Exception|OutOfMemoryError ex){engine=null;graph=null;error("Коннектом не загрузился: "+ex.getMessage()+". Эмулятор доступен вручную.");}}
+    private void loadGraph(){neuralConfigured=false;try{long free=Runtime.getRuntime().maxMemory()-Runtime.getRuntime().totalMemory()+Runtime.getRuntime().freeMemory();Graph loaded=GraphCache.load(new File(getFilesDir(),"connectome.fly"),()->{try{return getAssets().open("brain.fly.gz");}catch(IOException ex){return getAssets().open("brain.fly");}},free*2/3);Experiment next=Experiment.automatic(loaded,RomImport.wide(labSystem)&&loaded.ids.length>=28?12:8);Engine nextEngine=new Engine(loaded);closeGpu();graph=loaded;graphKind=GraphCache.kind;experiment=next;engine=nextEngine;backend="cpu";initialError=null;announce();}catch(Exception|OutOfMemoryError ex){engine=null;graph=null;error("Коннектом не загрузился: "+ex.getMessage()+". Эмулятор доступен вручную.");}}
 
     private void announce() {
         if (!pageReady) return;
@@ -120,7 +121,8 @@ public final class NesLabActivity extends Activity {
         try {
             JSONObject info = new JSONObject();
             info.put("system",labSystem).put("neurons", graph.ids.length).put("edges", graph.targets.length).put("kind", graphKind);
-            info.put("inputs", ids(experiment.inputs)).put("outputs", ids(experiment.outputs));
+            Experiment ports=platformPortsPending?Experiment.automatic(graph,RomImport.wide(labSystem)&&graph.ids.length>=28?12:8):experiment;
+            info.put("inputs", ids(ports.inputs)).put("outputs", ids(ports.outputs));platformPortsPending=false;
             info.put("diagnostics",LabDiagnostics.describe(this,graph)).put("graph_sha256",graph.fingerprint()).put("notice",GraphCache.notice);
             info.put("heapMiB", Runtime.getRuntime().maxMemory() / 1048576).put("backend", backend).put("gpuAvailable", Build.VERSION.SDK_INT >= 21);
             emit("labReady", info);
@@ -165,7 +167,7 @@ public final class NesLabActivity extends Activity {
         if (!requestedBackend.equals("cpu")&&!requestedBackend.equals("gpu")) throw new IllegalArgumentException("Неизвестный backend");
         if(!reset&&!requestedBackend.equals(backend))throw new IllegalArgumentException("Смена CPU/GPU требует явного сброса сети; ROM сохранён");
         if (requestedBackend.equals("gpu") && Build.VERSION.SDK_INT < 21) throw new IllegalArgumentException("GPU backend требует Android 5.0+");
-        Experiment next = new Experiment(parsePorts(data.getJSONArray("inputs"), 16), parsePorts(data.getJSONArray("outputs"), "sega".equals(labSystem)&&data.getJSONArray("outputs").length()==12?12:8));
+        Experiment next = new Experiment(parsePorts(data.getJSONArray("inputs"), 16), parsePorts(data.getJSONArray("outputs"), RomImport.wide(labSystem)&&data.getJSONArray("outputs").length()==12?12:8));
         for (int input : next.inputs) for (int output : next.outputs)
             if (input == output) throw new IllegalArgumentException("Вход и выход не должны совпадать");
         next.mode = data.getString("mode");
@@ -252,8 +254,8 @@ public final class NesLabActivity extends Activity {
     }
 
     private int systemButtonMask(String mode){
-        if(mode.equals("auto"))return "sega".equals(labSystem)?4095:255;
-        if(mode.equals("blocked"))return "sega".equals(labSystem)?2039:243;
+        if(mode.equals("auto"))return RomImport.wide(labSystem)?4095:255;
+        if(mode.equals("blocked"))return RomImport.wide(labSystem)?2039:243;
         throw new IllegalArgumentException("Неизвестный режим Start/Select");
     }
 
@@ -323,7 +325,7 @@ public final class NesLabActivity extends Activity {
             .append(',').append(result.spikes).append(',').append(result.active).append(',').append(mask).append(',').append(request.optInt("manualMask", 0)).append(',').append(request.optBoolean("frozen", false) ? 1 : 0);
         row.append(',').append(request.optInt("controllerMask", 0)).append(',').append(request.optString("learningMode", "off").replaceAll("[^a-z]", "")).append(',').append(request.optDouble("learningReward", 0));
         for (double rate : rates) row.append(',').append(String.format(Locale.US, "%.3f", rate));
-        for(int i=0;i<("sega".equals(labSystem)?12:8);i++)row.append(',').append(i<experiment.outputs.length?result.counts[experiment.outputs[i]]:0);
+        for(int i=0;i<(RomImport.wide(labSystem)?12:8);i++)row.append(',').append(i<experiment.outputs.length?result.counts[experiment.outputs[i]]:0);
         row.append('\n');
         recorder.write(row.toString());
         recordedBytes += row.length();
@@ -345,7 +347,7 @@ public final class NesLabActivity extends Activity {
         recorder.write("# recording_start,config_version="+configVersion+",sequence="+sequence+",state_preserved=true\n");
         StringBuilder header = new StringBuilder("wall_epoch_ms,config_version,sequence,emulator_frame,sim_ms,compute_ms,spikes,active,buttons_mask,manual_mask,frozen_retina,controller_mask,learning_mode,learning_reward");
         for (int i = 0; i < 16; i++) header.append(",input_hz_").append(i);
-        String[] names="sega".equals(labSystem)?new String[]{"A","B","C","Start","Up","Down","Left","Right","X","Y","Z","Mode"}:Experiment.BUTTONS;
+        String[] names="snes".equals(labSystem)?new String[]{"A","B","Y","Start","Up","Down","Left","Right","X","L","R","Select"}:"sega".equals(labSystem)?new String[]{"A","B","C","Start","Up","Down","Left","Right","X","Y","Z","Mode"}:Experiment.BUTTONS;
         for(String name:names)header.append(",spikes_").append(name);
         recorder.write(header.append('\n').toString());
         recordingOn = true;
@@ -370,8 +372,7 @@ public final class NesLabActivity extends Activity {
     }
 
     private void loadRom(byte[] bytes, String name) throws Exception {
-        if (bytes.length < 16 || bytes.length > ("sega".equals(labSystem)?32:4) * 1024 * 1024 || (!"sega".equals(labSystem) && (bytes[0] != 78 || bytes[1] != 69 || bytes[2] != 83 || bytes[3] != 26)))
-            throw new IllegalArgumentException("Неверный размер/заголовок ROM (NES ≤4 МиБ, Sega ≤32 МиБ)");
+        bytes=RomImport.normalize(bytes,labSystem);
         StringBuilder hash = new StringBuilder();
         for (byte b : MessageDigest.getInstance("SHA-256").digest(bytes)) hash.append(String.format(Locale.US, "%02x", b & 255));
         String candidateHash = hash.toString();
@@ -386,7 +387,7 @@ public final class NesLabActivity extends Activity {
 
     public final class Bridge {
         @JavascriptInterface public void controls(boolean enabled){runOnUiThread(()->{if(controllers!=null)controllers.enabled(enabled&&foreground);});}
-        @JavascriptInterface public void switchSystem(String system){if(!system.equals("nes")&&!system.equals("sega"))return;runOnUiThread(()->NesLabActivity.this.switchSystem(system));}
+        @JavascriptInterface public void switchSystem(String system){if(!RomImport.validSystem(system))return;runOnUiThread(()->NesLabActivity.this.switchSystem(system));}
         @JavascriptInterface public void acceptRom(String sha256) {
             if (destroyed || sha256.length() != 64) return;
             submit(() -> {
@@ -446,9 +447,9 @@ public final class NesLabActivity extends Activity {
         }
         @JavascriptInterface public void demo() {
             submit(() -> {
-                try (InputStream in = getAssets().open("sega".equals(labSystem)?"lab/demo-sega.json":"lab/demo-rom.json")) {
+                try (InputStream in = getAssets().open("nes".equals(labSystem)?"lab/demo-rom.json":"lab/demo-"+labSystem+".json")) {
                     JSONObject data = new JSONObject(readText(in, 100000));
-                    loadRom(Base64.decode(data.getString("base64"), Base64.DEFAULT), "sega".equals(labSystem)?"Fly MD original diagnostic":"Fly NES diagnostic / NROM-0");
+                    loadRom(Base64.decode(data.getString("base64"), Base64.DEFAULT), "Fly "+labSystem.toUpperCase(Locale.ROOT)+" original diagnostic");
                 } catch (Exception ex) { error(ex.getMessage()); }
             });
         }
@@ -545,8 +546,8 @@ public final class NesLabActivity extends Activity {
             try {
                 if (request == PICK_ROM) {
                     byte[] bytes;
-                    try(InputStream in=getContentResolver().openInputStream(uri)){bytes=RomImport.unpack(RomImport.read(in,RomImport.MAX_FILE),"sega".equals(labSystem));}
-                    loadRom(bytes,"sega".equals(labSystem)?"Imported Mega Drive":"Imported .nes");
+                    try(InputStream in=getContentResolver().openInputStream(uri)){bytes=RomImport.unpack(RomImport.read(in,RomImport.MAX_FILE),labSystem);}
+                    loadRom(bytes,"Imported "+labSystem.toUpperCase(Locale.ROOT));
                 } else if (request == PICK_MODEL) {
                     try (InputStream in = getContentResolver().openInputStream(uri)) {
                         emit("labImportModel", new JSONObject(readText(in, 8 * 1024 * 1024)));
