@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const Sega=require('../app/src/main/assets/lab/sega-core.js'),Factory=require('../app/src/main/assets/lab/sega/genplus.js');
 (async()=>{
- const s=await Sega.create({},Factory,{wasmBinary:fs.readFileSync('app/src/main/assets/lab/sega/genplus.wasm')});assert.equal(s.g._lab_core_api(),5);
+ const s=await Sega.create({},Factory,{wasmBinary:fs.readFileSync('app/src/main/assets/lab/sega/genplus.wasm')});assert.equal(s.g._lab_core_api(),6);
  // Own 68K cartridge reads both hardware ports through the actual six-button TH handshake.
  const rom=Buffer.from(require('../app/src/main/assets/lab/demo-sega.json').base64,'base64');rom.fill(0,0x200);let pc=0x200;const labels={},fix=[];
  const words=(...a)=>a.forEach(v=>{rom.writeUInt16BE(v&65535,pc);pc+=2;});const long=v=>words(v>>>16,v);const mb=(v,addr)=>{words(0x13fc,v);long(addr);};const read=(addr,ram)=>{words(0x13f9);long(addr);long(ram);};const branch=(op,label)=>{words(op,0);fix.push([pc-2,label]);};

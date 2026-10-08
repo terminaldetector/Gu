@@ -167,3 +167,12 @@ Shiu v783: **138,639 neurons; 15,091,983 directed connection records**. Packed g
 
 Full-data smoke run passed in a JVM limited to 256 MiB heap: 100 ms biological simulation took 0.381 s on the workspace CPU. This is not an Android-device benchmark. APK was compiled against Android 35, DEX-built and signature-verified locally. Physical-device execution and Brian2 comparison remain untested.
 
+## Version 2.0.0-alpha09: Mega Drive cartridge compatibility
+
+* Upgrade the Genesis Plus GX core to pinned `49c584764893b0505ac7f768a754f97330fa4392`, with API6 controller/region/snapshot adapters. CI rebuilds the engine before testing and packaging; `python tools/build_sega.py` is also required before using the checked-in frontend locally. The build verifies the downloaded upstream SHA256 and bundles the exact modified source and component licences in the APK.
+* Cartridge import accepts valid zero/wrapped initial stack pointers, nonstandard executable homebrew headers, copier headers, headerless/headered SMD, word-swapped dumps, MDX and bounded ZIP/GZIP. Normalization occurs before ROM SHA identity. Limit increased from 8 to 32 MiB; malformed formats still produce an explicit error.
+* Sega settings expose Auto/USA/Europe/Japan NTSC/Japan PAL and detected region, framerate and both controller types. Auto remains the default. Applying a region deliberately restarts the console while retaining the connectome/FDB/learned weights.
+* API6 console-state snapshots require recapture; named Layer Set weights/FDB remain independent of emulator snapshots. The APK uses the persistent alpha08 release key for updates.
+
+Regression coverage includes zero-SSP cartridge boot, format identity, actual >8 MiB WASM loading, region pacing, P1/P2 six-button buses, video/audio and snapshot roundtrip. Elemental Master and Comix Zone dumps were not supplied, so exact-ROM/device verification and a whole-library compatibility claim remain outstanding. Sega CD/32X are separate systems and remain unsupported.
+

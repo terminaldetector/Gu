@@ -370,8 +370,8 @@ public final class NesLabActivity extends Activity {
     }
 
     private void loadRom(byte[] bytes, String name) throws Exception {
-        if (bytes.length < 16 || bytes.length > ("sega".equals(labSystem)?8:4) * 1024 * 1024 || (!"sega".equals(labSystem) && (bytes[0] != 78 || bytes[1] != 69 || bytes[2] != 83 || bytes[3] != 26)))
-            throw new IllegalArgumentException("Неверный размер/заголовок ROM (NES ≤4 МиБ, Sega ≤8 МиБ)");
+        if (bytes.length < 16 || bytes.length > ("sega".equals(labSystem)?32:4) * 1024 * 1024 || (!"sega".equals(labSystem) && (bytes[0] != 78 || bytes[1] != 69 || bytes[2] != 83 || bytes[3] != 26)))
+            throw new IllegalArgumentException("Неверный размер/заголовок ROM (NES ≤4 МиБ, Sega ≤32 МиБ)");
         StringBuilder hash = new StringBuilder();
         for (byte b : MessageDigest.getInstance("SHA-256").digest(bytes)) hash.append(String.format(Locale.US, "%02x", b & 255));
         String candidateHash = hash.toString();

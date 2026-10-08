@@ -9,6 +9,13 @@ public final class RomImportCheck {
   byte[] raw=new byte[16384];raw[0]=(byte)0;raw[1]=(byte)255;raw[2]=(byte)255;raw[3]=0;raw[6]=2;raw[256]='S';raw[257]='E';raw[258]='G';raw[259]='A';byte[] swapped=raw.clone(),smd=new byte[raw.length+512];
   for(int i=0;i<raw.length;i+=2){swapped[i]=raw[i+1];swapped[i+1]=raw[i];}for(int i=0;i<8192;i++){smd[512+i]=raw[2*i+1];smd[512+8192+i]=raw[2*i];}
   if(!Arrays.equals(raw,RomImport.normalizeSega(swapped))||!Arrays.equals(raw,RomImport.normalizeSega(smd)))throw new AssertionError("canonical ROM identity");
+  byte[] zeroStack=raw.clone();Arrays.fill(zeroStack,0,4,(byte)0);if(!Arrays.equals(zeroStack,RomImport.normalizeSega(zeroStack)))throw new AssertionError("zero initial SSP rejected");
+  byte[] copier=new byte[raw.length+512];System.arraycopy(raw,0,copier,512,raw.length);if(!Arrays.equals(raw,RomImport.normalizeSega(copier)))throw new AssertionError("copier header");
+  byte[] headerlessSmd=Arrays.copyOfRange(smd,512,smd.length);if(!Arrays.equals(raw,RomImport.normalizeSega(headerlessSmd)))throw new AssertionError("headerless SMD");
+  byte[] mdx=new byte[raw.length+5];for(int i=0;i<raw.length;i++)mdx[i+4]=(byte)(raw[i]^0x40);if(!Arrays.equals(raw,RomImport.normalizeSega(mdx)))throw new AssertionError("MDX identity");
+  ByteArrayOutputStream gz=new ByteArrayOutputStream();try(GZIPOutputStream stream=new GZIPOutputStream(gz)){stream.write(raw);}if(!Arrays.equals(raw,RomImport.unpack(gz.toByteArray(),true)))throw new AssertionError("GZIP identity");
+  byte[] large=new byte[9*1024*1024];System.arraycopy(raw,0,large,0,raw.length);if(RomImport.normalizeSega(large).length!=large.length)throw new AssertionError("old 8MiB limit");
+  try{RomImport.normalizeSega(new byte[16384]);throw new AssertionError("garbage cartridge accepted");}catch(IOException expected){}
   System.out.println("PASS: bounded ZIP, ambiguity rejection, path-free unpack and canonical Sega SMD/byte-swap identity");
  }
 }

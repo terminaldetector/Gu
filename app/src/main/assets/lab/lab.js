@@ -261,7 +261,7 @@ window.labLoadRom=async function(data) {
     const output=opts.onAudioSample;opts.onAudioSample=(l,r)=>{if(committed)output(l,r);};
     const candidate=labPlatform==='sega'?await SegaConsole.create(opts,window.GenPlusFactory,{locateFile:path=>'sega/'+path}):new jsnes.NES(opts);
     if(sequence!==romLoadSequence)return;
-    candidate.loadROM(bytes);if(labPlatform==='sega'&&candidate.g._lab_set_pad_type)candidate.configurePads([Number($('padP1').value),Number($('padP2').value)]);for(let i=0;i<5;i++)candidate.frame();
+    if(labPlatform==='sega')candidate.configureRegion(Number($('segaRegion').value));candidate.loadROM(bytes);if(labPlatform==='sega'&&candidate.g._lab_set_pad_type)candidate.configurePads([Number($('padP1').value),Number($('padP2').value)]);for(let i=0;i<5;i++)candidate.frame();
     if(sequence!==romLoadSequence)return;
     const actions=FlyGameTools.actions($('actionMasks').value,labPlatform==='sega'?4095:255),changedRom=romHash!==data.sha256;
     if(loaded&&learner.updates){try{persistPolicy(false);}catch(error){log('Перед сменой ROM: '+error.message);}}
@@ -274,6 +274,7 @@ window.labLoadRom=async function(data) {
     $('romName').textContent=data.name+' · '+romHash.slice(0,12);
     status('ROM загружен. Ручное управление доступно; связь включается отдельно.');updateGmodeHud();
     nativeCall('acceptRom',romHash);log('ROM SHA256: '+romHash+' · '+(labPlatform==='sega'?'Genesis Plus GX, '+nes.fps+' FPS':'mapper '+info.mapper));
+    if(labPlatform==='sega'){$('segaCompatibility').textContent='Genesis Plus GX · '+nes.regionName+' · '+nes.fps+' FPS · P1/P2 '+nes.controllerTypes.join('/')+' кнопок · '+info.format;log('Mega Drive: '+info.format+' · '+bytes.length+' байт · регион ROM '+(info.region||'не указан')+' · '+nes.regionName+' · P1/P2 '+nes.controllerTypes.join('/'));}
     if(info.submapper)log('NES2 submapper '+info.submapper+': специальная совместимость не гарантирована.');
     if(info.warnings)info.warnings.forEach(log);
     if(info.timing)log('PAL/Dendy: NES ядро работает с NTSC таймингом.');
@@ -526,6 +527,7 @@ window.onblur=()=>{holding.clear();controllerMasks.clear();refreshManual();relea
 window.onfocus=()=>controlsEnabled(document.querySelector('main').dataset.tab==='game');
 document.addEventListener('focusin',event=>{if(['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName))controlsEnabled(false);});
 document.addEventListener('focusout',()=>controlsEnabled(document.querySelector('main').dataset.tab==='game'));
+$('applySegaRegion').onclick=()=>{try{if(labPlatform!=='sega'||!loaded)throw Error('Сначала загрузите Sega ROM');window.labPause();nes.configureRegion(Number($('segaRegion').value));nes.loadROM(nes.romData);nes.configurePads([Number($('padP1').value),Number($('padP2').value)]);restartEpisodeFromRom();startSnapshot=null;learningBoundary();updateStartInfo();$('segaCompatibility').textContent=nes.regionName+' · '+nes.fps+' FPS · P1/P2 '+nes.controllerTypes.join('/')+' кнопок';status('Регион применён. Sega перезапущена; коннектом, FDB и веса сохранены.');}catch(e){status(e.message,true);}};
 for(const id of ['padP1','padP2'])$(id).onchange=()=>{if(labPlatform==='sega'&&loaded){try{releasePorts();nes.configurePads([Number($('padP1').value),Number($('padP2').value)]);updateButtons();status('Тип контроллеров изменён; ROM и сеть сохранены.');}catch(error){status(error.message,true);}}};
 $('learnMode').onchange=()=>{window.labPause();learningBoundary();if($('learnMode').value!=='off'){$('mode').value='closed';if($('clock').value==='async')$('clock').value='realtime';}status('Политика изменена. Включите связь и запустите NES.');};
 $('rewardMode').onchange=()=>{window.labPause();learningBoundary();};
@@ -618,7 +620,7 @@ if(labPlatform==='sega'){
  for(const id of ['rewardAddress','deathAddress','winAddress'])$(id).max='65535';
  $('ramLabel').textContent='RAM смещение 0–65535 (0 соответствует $FF0000)';
  $('maskLabel').textContent='Маски Sega: A=1, B=2, C=4, Start=8, ↑=16, ↓=32, ←=64, →=128, X=256, Y=512, Z=1024, Mode=2048';
- $('platformFooter').textContent='Genesis Plus GX · WebAssembly · некоммерческая лицензия. Mega Drive raw / byte-swapped / SMD / ZIP с одной игрой. CD/32X не поддерживаются. Регион и PAL/NTSC выбирает ядро автоматически. Снимки и RAM доступны; battery .sav отдельно не экспортируется.';
+ $('platformFooter').textContent='Genesis Plus GX · WebAssembly · некоммерческая лицензия. Mega Drive до 32 МиБ · BIN/MD/GEN/ROM/MDX, byte-swapped, SMD, ZIP и gzip. CD/32X не поддерживаются. Регион и PAL/NTSC выбирает ядро автоматически. Снимки и RAM доступны; battery .sav отдельно не экспортируется.';
 }
 // Evaluation runs use a separate frozen readout so learner counters/RNG stay unchanged.
 function benchmarkTrial(outcome){

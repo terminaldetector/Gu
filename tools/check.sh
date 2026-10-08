@@ -40,6 +40,7 @@ java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.InferenceChe
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/LayerSetStore.java tools/LayerSetStoreCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.LayerSetStoreCheck
 node tools/sega_check.cjs
+node tools/sega_rom_check.cjs
 node tools/sega_p2_check.cjs
 node tools/sega_six_button_check.cjs
 node tools/sega_render_check.cjs
