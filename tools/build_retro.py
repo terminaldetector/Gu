@@ -37,9 +37,13 @@ def build(system, settings):
         work = source / directory
         shutil.copy2(ROOT / 'tools/retro/bridge.cpp', source / 'fly_bridge.cpp')
         run('emmake', 'make', '-f', makefile, 'platform=emscripten', 'CC=emcc', 'CXX=em++', 'AR=emar', 'HAVE_NETWORK=0', '-j' + str(min(4, os.cpu_count() or 2)), cwd=work)
+        # Upstream calls the emar static archive .bc; modern em++ parses that
+        # suffix as LLVM input. Preserve its bytes with the archive suffix.
+        library = work / (name + '_libretro_emscripten.a')
+        shutil.copy2(work / (name + '_libretro_emscripten.bc'), library)
         output = ROOT / 'app/src/main/assets/lab' / system
         output.mkdir(parents=True, exist_ok=True)
-        command = ['em++', str(work / (name + '_libretro_emscripten.bc')), str(source / 'fly_bridge.cpp'), '-I' + str(source / include), '-std=c++17', '-O3', '--no-entry', '-sMODULARIZE=1', '-sEXPORT_NAME=' + factory, '-sENVIRONMENT=web,node', '-sALLOW_MEMORY_GROWTH=1', '-sINITIAL_MEMORY=33554432', '-sMAXIMUM_MEMORY=268435456', '-sSTACK_SIZE=2097152', '-sEXPORTED_FUNCTIONS=' + json.dumps(['_' + symbol for symbol in EXPORTS]), '-o', str(output / 'core.js')]
+        command = ['em++', str(source / 'fly_bridge.cpp'), str(library), '-I' + str(source / include), '-std=c++17', '-O3', '--no-entry', '-sMODULARIZE=1', '-sEXPORT_NAME=' + factory, '-sENVIRONMENT=web,node', '-sALLOW_MEMORY_GROWTH=1', '-sINITIAL_MEMORY=33554432', '-sMAXIMUM_MEMORY=268435456', '-sSTACK_SIZE=2097152', '-sEXPORTED_FUNCTIONS=' + json.dumps(['_' + symbol for symbol in EXPORTS]), '-o', str(output / 'core.js')]
         if system == 'gb':
             command.append('-DFLY_GB')
         run(*command, cwd=source)

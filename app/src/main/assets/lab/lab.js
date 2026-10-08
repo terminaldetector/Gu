@@ -554,7 +554,7 @@ function validateConfiguration(c){
  if(c.fdb)validateFdb(c.fdb,graphIdentity&&graphIdentity.sha256,c.inputs,c.outputs);
  if(c.gmode!==undefined&&!['off','coop','coop-reverse'].includes(c.gmode))throw Error('Неверный GMode');
  if(c.gmodeBoost!==undefined&&typeof c.gmodeBoost!=='boolean')throw Error('Неверный режим усиленного старта');
- if((labPlatform==='gb'||((labPlatform==='sega'||labPlatform==='snes')&&nes&&!nes.twoPlayerSupported))&&c.gmode&&c.gmode!=='off')throw Error('Sega P2 unavailable');
+ if((labPlatform==='gb'||((labPlatform==='sega'||labPlatform==='snes')&&nes&&!nes.twoPlayerSupported))&&c.gmode&&c.gmode!=='off')throw Error('P2 недоступен для текущей платформы');
  for(const [id,min,max] of [['maxHz',0,500],['thresholdHz',1,500],['windowMs',1,100],['seed',0,2147483647],['gain',0,2]])if(!Number.isFinite(c[id])||c[id]<min||c[id]>max||(['windowMs','seed'].includes(id)&&!Number.isInteger(c[id])))throw Error('Неверная конфигурация сети: '+id);
  if(!['closed','observe','sham'].includes(c.mode)||typeof c.disableInhibition!=='boolean'||typeof c.scramble!=='boolean'||!['cpu','gpu'].includes(c.backend||'cpu'))throw Error('Неверная конфигурация сети');
  for(const [id,len] of [['inputs',16],['outputs',8],['lesions',null]])if(!Array.isArray(c[id])||(len!==null&&c[id].length!==len&&!(id==='outputs'&&(labPlatform==='sega'||labPlatform==='snes')&&c[id].length===12))||c[id].length>256||new Set(c[id]).size!==c[id].length||c[id].some(x=>typeof x!=='string'||!/^\d+$/.test(x)))throw Error('Неверные ID портов');
@@ -643,6 +643,7 @@ if(labPlatform==='gb'||labPlatform==='snes'){
  for(const el of document.querySelectorAll('p.note'))if(el.textContent.includes('стартовый снимок NES'))el.textContent='Экспорт включает профиль, стартовый снимок '+labPlatform.toUpperCase()+' и модель. RAM победы/смерти задаётся вручную.';
  $('ramLabel').textContent=labPlatform==='gb'?'Смещение в WRAM GB: 0 = $C000; GBC содержит все банки WRAM':'Смещение в WRAM SNES: 0 = $7E0000; 131072 байта';
  $('outputIds').previousElementSibling.textContent=(labPlatform==='snes'?'8 или 12':'8')+' выходных ID: '+buttonNames.join(', ');
+ $('maskLabel').textContent='Маски '+labPlatform.toUpperCase()+': '+buttonNames.map((name,i)=>name+'='+(1<<i)).join(', ');
  $('gmodeStatus').textContent=labPlatform==='gb'?'GB: один контроллер P1; человек и сеть. GB link/P2 не подключён.':'SNES: независимые P1/P2, 12 кнопок на порт.';
  if(labPlatform==='gb'){for(const o of $('gmode').options)if(o.value!=='off')o.disabled=true;$('gmodeLaunch').disabled=true;}
  if(labPlatform==='snes')$('actionMasks').value='0,1,2,4,16,32,64,128,129,17,256,512,1024,257,513,1025';

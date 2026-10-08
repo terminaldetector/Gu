@@ -35,6 +35,14 @@ jobs:
           version: '3.1.57'
       - run: python tools/build_sega.py
       - run: python tools/build_retro.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: FlyConsole-retro-cores
+          path: |
+            app/src/main/assets/lab/gb/
+            app/src/main/assets/lab/snes/
+            app/src/main/assets/lab/sega/
       - run: python tools/make_retro_roms.py
       - run: bash tools/check.sh
       - name: Install UI test browser
