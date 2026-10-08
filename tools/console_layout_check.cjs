@@ -4,6 +4,34 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright');
 const assets=path.resolve('app/src/main/assets'),demo=JSON.parse(fs.readFileSync(path.join(assets,'lab/demo-rom.json')));
 let browser;
+async function checkHeldTouch(page){
+ const cdp=await page.context().newCDPSession(page);
+ const point=async(button,id)=>{const r=await page.locator(`[data-button="${button}"]`).boundingBox();return {x:r.x+r.width/2,y:r.y+r.height/2,id};};
+ const right=await point(7,1),action=await point(0,2);
+ try{
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[right]});
+  await page.waitForFunction(()=>manualMask===128);
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[right,action]});
+  await page.waitForFunction(()=>manualMask===129);
+  await page.waitForTimeout(1100);
+  assert.equal(await page.evaluate(()=>manualMask),129,'long hold keeps direction and action pressed');
+  assert.equal(await page.evaluate(()=>getSelection().toString()),'','holding controller text cannot select it');
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[right]});
+  await page.waitForFunction(()=>manualMask===128);
+  await cdp.send('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
+  await page.waitForFunction(()=>manualMask===0);
+  const defaults=await page.evaluate(()=>{
+   const button=document.querySelector('[data-button="7"]'),field=$('inputIds');
+   const prevented=['contextmenu','selectstart','dragstart'].every(type=>!button.dispatchEvent(new Event(type,{bubbles:true,cancelable:true})));
+   return {prevented,selection:getComputedStyle(button).userSelect,fieldSelection:getComputedStyle(field).userSelect,fieldContext:field.dispatchEvent(new Event('contextmenu',{bubbles:true,cancelable:true}))};
+  });
+  assert(defaults.prevented,'gamepad blocks native text menu, selection and drag');assert.equal(defaults.selection,'none');
+  assert.notEqual(defaults.fieldSelection,'none','settings fields remain selectable');assert(defaults.fieldContext,'settings retain their text context menu');
+  await page.mouse.move(right.x,right.y);await page.mouse.down();await page.waitForTimeout(700);
+  assert.equal(await page.evaluate(()=>manualMask),128,'mouse hold remains input');assert.equal(await page.evaluate(()=>getSelection().toString()),'');
+  await page.mouse.move(1,1);await page.mouse.up();await page.waitForFunction(()=>manualMask===0);
+ }finally{await cdp.detach();}
+}
 (async()=>{
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE});
  const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
@@ -25,6 +53,7 @@ let browser;
  await page.click('[data-tab="info"]');assert(await page.locator('#passport').count());
  const preservation=await page.evaluate(()=>{const before={frame,weights:JSON.stringify(learner.weights),generation};openGame();leaveGame('network');openGame();return before.frame===frame&&before.weights===JSON.stringify(learner.weights)&&before.generation===generation;});
  assert(preservation,'presentation navigation must not reset console or network session');
+ await checkHeldTouch(page);
  await page.evaluate(()=>{connected=true;updateNeuralMap({backend:'gpu',active:16,fdbEdges:4,neuralGroups:Array.from({length:16},(_,i)=>({hz:i*20,spikes:i,active:i,neurons:100}))});});
  assert((await page.textContent('#mapStats')).includes('GPU'));
  const colors=await page.locator('.neural-cube').evaluateAll(c=>c.map(el=>el.style.getPropertyValue('--cell')));assert.notEqual(colors[0],colors[15]);
@@ -56,6 +85,7 @@ let browser;
  await page.goto('https://flyconsole.local/lab/index.html?system=sega');await page.waitForFunction(()=>loaded,null,{timeout:30000});
  await page.click('#enterGame');await page.evaluate(()=>{for(let i=0;i<25;i++)nes.frame();$('gameNotice').classList.remove('visible');});
  assert.equal(await page.locator('[data-button="2"]').textContent(),'C','Sega must retain its third game button');
+ await checkHeldTouch(page);
  await page.keyboard.down('q');await page.keyboard.down('e');assert.equal(await page.evaluate(()=>manualMask),256|1024,'Sega dedicated keyboard X/Z');await page.keyboard.up('q');assert.equal(await page.evaluate(()=>manualMask),1024,'releasing one key preserves the other');await page.keyboard.up('e');
  await page.evaluate(()=>window.labController({id:5,name:'Fixture pad',mask:512|128,connected:true}));assert.equal(await page.evaluate(()=>manualMask),512|128);await page.evaluate(()=>window.labController({id:5,name:'Fixture pad',mask:0,connected:false}));assert.equal(await page.evaluate(()=>manualMask),0,'disconnected controller releases all inputs');
  await page.evaluate(()=>{gmodeMode='coop';brainMask=256|2048|8;updateButtons();});assert.equal(await page.evaluate(()=>nes.mask2),256,'P2 X executes and model Start/Mode blocked');await page.evaluate(()=>{releaseBrain();gmodeMode='off';});

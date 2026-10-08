@@ -56,6 +56,12 @@ jobs:
       - run: python tools/gpu_runtime_check.py
       - run: python tools/bundle_data.py
       - run: gradle assembleDebug lintDebug
+      - name: Collect official APK signing tool
+        run: cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" /tmp/flyconsole-apksigner.jar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FlyConsole-apksigner
+          path: /tmp/flyconsole-apksigner.jar
       - uses: actions/upload-artifact@v4
         with:
           name: FlyConsole-debug-apk

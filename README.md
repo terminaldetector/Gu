@@ -176,3 +176,7 @@ Full-data smoke run passed in a JVM limited to 256 MiB heap: 100 ms biological s
 
 Regression coverage includes zero-SSP cartridge boot, format identity, actual >8 MiB WASM loading, region pacing, P1/P2 six-button buses, video/audio and snapshot roundtrip. Elemental Master and Comix Zone dumps were not supplied, so exact-ROM/device verification and a whole-library compatibility claim remain outstanding. Sega CD/32X are separate systems and remain unsupported.
 
+## Version 2.0.0-alpha10: held touchscreen buttons
+
+Prevent Android text selection, drag and Copy/Share actions on the NES/Sega gamepad. Long holds remain controller input; simultaneous touches, pointer cancellation and release remain independent. Text fields and research logs retain their normal selection behavior. UI coverage exercises held and simultaneous touches through Chromium's touch input protocol; physical Android verification remains necessary.
+

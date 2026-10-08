@@ -514,6 +514,9 @@ $('resetKeys').onclick=()=>{customKeys={};keys=FlyController.keyboard(labPlatfor
 for(const [i,name] of buttonNames.entries()){const o=document.createElement('option');o.value=i;o.textContent=name;$('keyButton').appendChild(o);}keyboardInfo();
 document.querySelectorAll('[data-button]').forEach(element=>{
  const button=Number(element.dataset.button);
+ // Android WebView long presses must remain held game inputs, not text actions.
+ for(const type of ['contextmenu','selectstart','dragstart'])element.addEventListener(type,event=>event.preventDefault());
+ element.addEventListener('touchstart',event=>event.preventDefault(),{passive:false});
  element.onpointerdown=event=>{event.preventDefault();element.setPointerCapture(event.pointerId);holding.set(event.pointerId,button);refreshManual();};
  element.onpointerup=element.onpointercancel=element.onlostpointercapture=event=>{holding.delete(event.pointerId);refreshManual();};
 });

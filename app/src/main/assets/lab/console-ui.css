@@ -33,3 +33,4 @@ body.sega.game-mode .system-pad{width:150px}
 #layerPanel .row button,#experiencePanel .row button{flex:1 1 120px}
 #layerSelectedInfo,#experienceStats{white-space:pre-wrap;overflow-wrap:anywhere}
 #layerNotes{min-height:64px}
+button,.controller,.controller *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-user-drag:none}
