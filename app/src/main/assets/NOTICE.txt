@@ -2,6 +2,21 @@ Bundled dataset: Shiu Drosophila brain model, FlyWire v783.
 Source: https://github.com/philshiu/Drosophila_brain_model
 FlyWire data have separate applicable dataset terms; see https://zenodo.org/records/10676866.
 
+Bundled emulator engines have their own licenses:
+- JSNES: MIT; lab/JSNES-LICENSE.txt.
+- Genesis Plus GX: noncommercial license; lab/sega/LICENSE.txt and
+  lab/sega/genplus-source.zip contain the applicable terms and full source.
+- Gambatte (GB/GBC): GPL-2.0-or-later; lab/gb/source.zip contains the
+  upstream license and complete corresponding source at the revision in
+  lab/gb/source.json.
+- Snes9x (SNES/SFC): Snes9x noncommercial license; lab/snes/source.zip
+  contains the applicable terms and complete corresponding source at the
+  revision in lab/snes/source.json.
+The FlyConsole libretro frontend is MIT; its full license is bundled as
+lab/gb/FLY-LICENSE.txt and lab/snes/FLY-LICENSE.txt and in each source archive.
+The bundled diagnostic cartridges are original FlyConsole test programs.
+Commercial game ROMs are not bundled.
+
 MIT License
 
 Copyright (c) 2023 Philip Shiu and Nico Spiller

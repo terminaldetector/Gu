@@ -1,4 +1,5 @@
-// FlyConsole libretro frontend. SPDX-License-Identifier: GPL-2.0-or-later
+// FlyConsole libretro frontend. SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Fly Console contributors.
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
