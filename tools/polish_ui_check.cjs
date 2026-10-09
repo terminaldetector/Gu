@@ -26,6 +26,8 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
  await page.selectOption('#padP1','3');await page.selectOption('#padP2','6');await page.selectOption('#segaRegion','2');
  await page.locator('summary').filter({hasText:'Клавиатура · назначение кнопок'}).click();await page.selectOption('#keyButton','2');await page.click('#bindKey');await page.keyboard.press('a');
  assert.equal(await page.evaluate(()=>keys.KeyA),2);assert.equal(await page.evaluate(()=>keys.KeyD),undefined);
+ await page.keyboard.down('a');assert.equal(await page.evaluate(()=>manualMask),0,'settings do not send gameplay keys');await page.keyboard.up('a');
+ await page.click('#bindKey');await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>keys.KeyA),2,'Escape cancels assignment');
  await page.click('[data-tab="network"]');await page.fill('#seed','42');await page.locator('#seed').blur();
  await page.evaluate(()=>{learner.updates=17;learner.weights[0][0]=.625;$('learnMode').value='teach';$('mode').value='closed';$('fdbJson').value=JSON.stringify({version:2,graph_sha256:graphIdentity.sha256,deltas:[],edges:[{source:ids('inputIds')[0],target:ids('outputIds')[0],weight:7}],learning:{enabled:true,rate:.05,maxEdges:256,maxWeight:32}});});
  await page.evaluate(()=>window.labState.prepare());const fly=await page.evaluate(()=>({weights:JSON.stringify(learner.weights),fdb:$('fdbJson').value}));

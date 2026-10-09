@@ -635,7 +635,7 @@ function keyboardInfo(){
  buttonNames.forEach((name,button)=>{const row=document.createElement('tr'),label=document.createElement('th'),value=document.createElement('td'),edit=document.createElement('button');label.scope='row';label.textContent=name;edit.textContent=Object.entries(keys).filter(([,v])=>v===button).map(([k])=>k).join(' / ')||'Не назначена';edit.onclick=()=>{$('keyButton').value=String(button);$('bindKey').click();};value.append(edit);row.append(label,value);table.append(row);});
 }
 $('bindKey').onclick=()=>{bindingKey=true;$('bindKey').textContent='Нажмите клавишу…';};
-$('resetKeys').onclick=()=>{customKeys={};keys=FlyController.keyboard(labPlatform);localStorage.removeItem('fly-keys-'+labPlatform);holding.clear();refreshManual();keyboardInfo();};
+$('resetKeys').onclick=()=>{bindingKey=false;$('bindKey').textContent='Назначить клавишу';customKeys={};keys=FlyController.keyboard(labPlatform);localStorage.removeItem('fly-keys-'+labPlatform);holding.clear();refreshManual();keyboardInfo();};
 $('unbindKey').onclick=()=>{customKeys=FlyController.bind(labPlatform,customKeys,Number($('keyButton').value));keys=FlyController.keyboard(labPlatform,customKeys);localStorage.setItem('fly-keys-'+labPlatform,JSON.stringify(customKeys));holding.clear();refreshManual();keyboardInfo();};
 for(const [i,name] of buttonNames.entries()){const o=document.createElement('option');o.value=i;o.textContent=name;$('keyButton').appendChild(o);}keyboardInfo();
 document.querySelectorAll('[data-button]').forEach(element=>{
@@ -656,6 +656,7 @@ dpad.onpointermove=event=>{if(dpad.hasPointerCapture(event.pointerId))movePad(ev
 dpad.onpointerup=dpad.onpointercancel=dpad.onlostpointercapture=event=>{holding.delete(event.pointerId);refreshManual();};
 window.onkeydown=event=>{
  if(bindingKey){event.preventDefault();if(event.code!=='Escape'){if(!event.code)return;customKeys=FlyController.bind(labPlatform,customKeys,Number($('keyButton').value),event.code);keys=FlyController.keyboard(labPlatform,customKeys);localStorage.setItem('fly-keys-'+labPlatform,JSON.stringify(customKeys));}bindingKey=false;holding.clear();refreshManual();$('bindKey').textContent='Назначить клавишу';keyboardInfo();return;}
+ if(document.querySelector('main').dataset.tab!=='game'||$('quickMenu').open)return;
  if(['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName)||event.target.isContentEditable)return;
  const code=event.code||event.key,button=keys[code];if(button!==undefined){event.preventDefault();holding.set('key-'+code,1<<button);refreshManual();}
 };
