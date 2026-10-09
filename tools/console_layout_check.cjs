@@ -89,7 +89,7 @@ async function checkHeldTouch(page){
  await checkHeldTouch(page);
  await page.keyboard.down('q');await page.keyboard.down('e');assert.equal(await page.evaluate(()=>manualMask),256|1024,'Sega dedicated keyboard X/Z');await page.keyboard.up('q');assert.equal(await page.evaluate(()=>manualMask),1024,'releasing one key preserves the other');await page.keyboard.up('e');
  await page.evaluate(()=>window.labController({id:5,name:'Fixture pad',mask:512|128,connected:true}));assert.equal(await page.evaluate(()=>manualMask),512|128);await page.evaluate(()=>window.labController({id:5,name:'Fixture pad',mask:0,connected:false}));assert.equal(await page.evaluate(()=>manualMask),0,'disconnected controller releases all inputs');
- await page.evaluate(()=>{gmodeMode='coop';brainMask=256|2048|8;updateButtons();});assert.equal(await page.evaluate(()=>nes.mask2),256,'P2 X executes and model Start/Mode blocked');await page.evaluate(()=>{releaseBrain();gmodeMode='off';});
+ const routed=await page.evaluate(()=>{gmodeMode='coop';brainMask=256|2048|8;lastResponse=performance.now();updateButtons();return nes.mask2;});assert.equal(routed,256,'P2 X executes and model Start/Mode blocked');await page.evaluate(()=>{releaseBrain();gmodeMode='off';});
 
  for(const [w,h] of [[390,844],[844,390],[568,320],[640,360]]){
   await page.setViewportSize({width:w,height:h});await page.waitForTimeout(100);

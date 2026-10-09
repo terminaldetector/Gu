@@ -21,7 +21,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   const options=await page.locator('#gmode option').evaluateAll(nodes=>nodes.filter(n=>n.value!=='off').map(n=>n.disabled));assert(options.every(v=>v===(system==='gb')));
   await page.click('#enterGame');await page.evaluate(()=>{$('gameNotice').classList.remove('visible');});
   await page.keyboard.down(system==='gb'?'x':'q');assert.equal(await page.evaluate(()=>manualMask),system==='gb'?1:256);await page.keyboard.up(system==='gb'?'x':'q');assert.equal(await page.evaluate(()=>manualMask),0);
-  if(system==='snes'){await page.evaluate(()=>{gmodeMode='coop';brainMask=256|512|1024;updateButtons();});assert.equal(await page.evaluate(()=>nes.mask2),256|512|1024);await page.evaluate(()=>{releaseBrain();gmodeMode='off';});}
+  if(system==='snes'){const routed=await page.evaluate(()=>{gmodeMode='coop';brainMask=256|512|1024;lastResponse=performance.now();updateButtons();return nes.mask2;});assert.equal(routed,256|512|1024);await page.evaluate(()=>{releaseBrain();gmodeMode='off';});}
   for(const [w,h] of [[390,844],[844,390],[568,320]]){
    await page.setViewportSize({width:w,height:h});await page.waitForTimeout(80);
    const layout=await page.evaluate(()=>{const r=screen.getBoundingClientRect();return {ratio:r.width/r.height,native:screen.width/screen.height,scroll:document.documentElement.scrollWidth,buttons:[...document.querySelectorAll('[data-button]')].filter(e=>!e.hidden).map(e=>{const b=e.getBoundingClientRect();return {text:e.textContent,w:b.width,h:b.height,x:b.x,right:b.right,bottom:b.bottom};})};});
