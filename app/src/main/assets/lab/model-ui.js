@@ -53,6 +53,7 @@
   say('Останавливаю опыт и сохраняю обучение текущего графа…');
   try{
    window.labPause();
+   if(window.labState)await window.labState.prepare();
    if(window.dualAgents&&window.dualAgents.active()&&!await window.dualAgents.exit())throw Error('Не удалось сохранить обе сети перед выбором одиночной модели.');
    if(window.fdbAgent){await window.fdbAgent.drain();if(window.fdbAgent.error&&window.fdbAgent.error())throw Error(window.fdbAgent.error());}
    // No game policy exists until a ROM is loaded. Model choice must also work before that.

@@ -12,7 +12,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
    configure:raw=>{const c=JSON.parse(raw);configRequests.push(c);fixtureFdb=c.fdb;setTimeout(()=>window.labConfigured({generation:c.generation,reset:c.reset,configVersion:1,mode:c.mode,backend:c.backend}),0);},
    sample:raw=>{const r=JSON.parse(raw);trainingRequests.push(r);setTimeout(()=>{
     const data={generation:r.generation,token:r.token,sequence:trainingRequests.length,buttons:2,outputs:new Array(new URL(location.href).searchParams.get('system')==='snes'?12:8).fill(0),spikes:0,active:0,wallMs:2,simMs:20,steps:200,backend:'cpu',neuralGroups:[]};
-    if(fixtureFdb&&fixtureFdb.learning){const old=fixtureFdb.learningState||{version:1,observations:0,human:0,automatic:0,sources:configRequests.at(-1).inputs,targets:configRequests.at(-1).outputs};if(fixtureFdb.learning.enabled&&['teach','train'].includes(r.learningMode)&&!r.frozen)for(const e of r.experience){old.observations++;old[e.human?'human':'automatic']++;}fixtureFdb.learningState=old;data.fdbLearningState=old;}
+    if(fixtureFdb&&fixtureFdb.learning){const old=fixtureFdb.learningState||{version:1,observations:0,human:0,automatic:0,sources:configRequests.at(-1).inputs,targets:configRequests.at(-1).outputs};if(fixtureFdb.learning.enabled&&['teach','train'].includes(r.learningMode)&&!r.frozen)for(const e of r.experience){old.observations++;old[e.human?'human':'automatic']++;}fixtureFdb.learningState=old;data.fdbLearningState=JSON.parse(JSON.stringify(old));}
     window.labResult(data);
    },5);}
   };
@@ -42,6 +42,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem(modelStorageKey('fly-policy-'))));assert.equal(saved.policy.version,3);assert(saved.experience.human.length>0);
   await page.evaluate(()=>{learner.reset();humanExamples=[];});await page.click('#loadPolicy');assert.equal(await page.evaluate(()=>learner.demonstrations),saved.policy.demonstration.samples);
   const archives=await page.evaluate(()=>humanTeaching.store.request('list')),trainArchive=archives.find(m=>m.system===system&&m.accepted>=10);
+  await page.locator('#archiveLearningPanel > summary').click();
   await page.locator('#archiveSessionRoles select[data-session="'+trainArchive.id+'"]').selectOption('train');
   await page.locator('#archiveSessionRoles select[data-session="'+oneFrame.report.session.id+'"]').selectOption('test');
   const archiveBefore=await page.evaluate(()=>({policy:JSON.stringify(learner.save()),frame,fdb:JSON.stringify(fdbConfiguration())}));
@@ -72,7 +73,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   assert.equal(await page.evaluate(()=>$('learnMode').value),'eval','benchmark explicitly owns frozen evaluation');
   assert.deepEqual(await page.evaluate(async()=>({weights:JSON.stringify([learner.weights,learner.demonstrationWeights]),samples:learner.demonstrations,sessions:(await humanTeaching.store.request('list')).length})),benchmarkFrozen,'benchmark cannot train or archive neutral frames after teaching');
   await page.evaluate(()=>{window.labPause();leaveGame('learning');});
-  await page.check('#humanAllSessions');
+  await page.locator('#humanSessionsPanel > summary').click();await page.check('#humanAllSessions');
   const allSessions=await page.evaluate(()=>humanTeaching.store.request('list'));if(system==='snes')assert(allSessions.some(m=>m.system==='nes'),'archive survives platform navigation');
   await page.selectOption('#humanSessionSelect',shortTap.report.session.id);page.once('dialog',d=>d.dismiss());await page.click('#humanSessionDelete');
   assert.equal((await page.evaluate(()=>humanTeaching.store.request('list'))).length,allSessions.length,'cancel preserves recording');

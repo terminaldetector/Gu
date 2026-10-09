@@ -64,6 +64,7 @@ jobs:
           NODE_PATH=/tmp/fly-ui/node_modules node tools/platform_ui_check.cjs || ui_status=1
           NODE_PATH=/tmp/fly-ui/node_modules node tools/training_ui_check.cjs || ui_status=1
           NODE_PATH=/tmp/fly-ui/node_modules node tools/dual_layout_check.cjs || ui_status=1
+          NODE_PATH=/tmp/fly-ui/node_modules node tools/polish_ui_check.cjs || ui_status=1
           exit "$ui_status"
       - uses: actions/upload-artifact@v4
         if: always()

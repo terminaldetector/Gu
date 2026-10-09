@@ -2,7 +2,7 @@
 'use strict';
 (() => {
 const S=FlyLayerSets,store=new S.Store(localStorage,window.FlyBridge);
-let entries=[],active=null,journal=[],busy=false,deleteId=null,saveQueue=Promise.resolve(),contextKey=null;
+let entries=[],active=null,journal=[],busy=false,deleteId=null,saveQueue=Promise.resolve(),contextKey=null,checkpointJob=null;
 const ctx=()=>({system:labPlatform,romHash,graphSha256:graphIdentity&&graphIdentity.sha256});
 const message=(text,error=false)=>{$('layerStatus').textContent=text;$('layerStatus').className=error?'note error':'note';};
 const selected=()=>entries.find(e=>e.id===$('layerSelect').value);
@@ -34,9 +34,9 @@ function refreshStats(){
 function append(event){journal.push({at:Date.now(),updates:learner.updates,frame,layer:active&&active.id||null,note:'',...event});if(journal.length>200)journal.shift();refreshStats();}
 function packageSet(newCopy=false,automatic=false){
  const base=automatic?active:selected(),old=newCopy?null:base;
- if(!newCopy&&!old)throw Error('Выберите набор для обновления');if(old&&!S.compatible(old,ctx()))throw Error('Обновление набора другого ROM / графа запрещено');
+ if(!newCopy&&!old&&!automatic)throw Error('Выберите набор для обновления');if(old&&!S.compatible(old,ctx()))throw Error('Обновление набора другого ROM / графа запрещено');
  const packet=policyPackage(false),now=Date.now();
- return S.validate(S.clone({...packet,type:S.TYPE,layerVersion:2,id:old?old.id:S.id(),name:automatic?old.name:$('layerName').value.trim(),notes:automatic?old.notes:$('layerNotes').value.trim(),createdAt:old?old.createdAt:now,updatedAt:now,graph:graphIdentity,runtime:{clock:$('clock').value,runMode:$('runMode').value,learnMode:$('learnMode').value},journal}));
+ return S.validate(S.clone({...packet,type:S.TYPE,layerVersion:2,id:old?old.id:S.id(),name:automatic?(old?old.name:'Продолжение · '+labPlatform.toUpperCase()+' · '+(graphIdentity.modelId||'коннектом')):$('layerName').value.trim(),notes:automatic?(old?old.notes:'Автоматический набор для продолжения этой игры и модели.'):$('layerNotes').value.trim(),createdAt:old?old.createdAt:now,updatedAt:now,graph:graphIdentity,runtime:{clock:$('clock').value,runMode:$('runMode').value,learnMode:$('learnMode').value},journal}));
 }
 async function save(newCopy=false,automatic=false){
  if(!automatic&&window.fdbAgent){await window.fdbAgent.drain();if(window.fdbAgent.error())throw Error(window.fdbAgent.error());}
@@ -45,7 +45,7 @@ async function save(newCopy=false,automatic=false){
  saveQueue=saveQueue.catch(()=>{}).then(async()=>{
   busy=true;renderSelected();
   try{const metadata=await store.request('save',{set:packet});
-   if(S.compatible(metadata,ctx())&&context.romHash===romHash){active=metadata;if(!automatic){$('layerName').value=metadata.name;$('layerNotes').value=metadata.notes;}refreshStats();}
+   if(S.compatible(metadata,ctx())&&context.romHash===romHash){active=metadata;localStorage.setItem(resumeKey(),metadata.id);if(!automatic){$('layerName').value=metadata.name;$('layerNotes').value=metadata.notes;}refreshStats();}
    await refresh(automatic?$('layerSelect').value:packet.id);message((automatic?'Автосохранён: ':'Сохранён: ')+packet.name);return true;
   }catch(e){message(e.message,true);log('Layer Set: '+e.message);return false;}
   finally{busy=false;renderSelected();}
@@ -58,9 +58,9 @@ function validatePortable(set){
  if(!keysEqual(set.key,expected))throw Error('Подписи профиля Layer Set не совпадают');
  return set;
 }
-async function load(){
+async function load(entry=selected(),resume=false){
  window.labPause();if(window.fdbAgent)await window.fdbAgent.drain();await saveQueue.catch(()=>{});
- const entry=selected();if(!entry||!S.compatible(entry,ctx()))throw Error('Выберите набор текущего ROM и графа');
+ if(!entry||!S.compatible(entry,ctx()))throw Error('Выберите набор текущего ROM и графа');
  const before=ctx();const set=validatePortable(await store.request('get',{id:entry.id}));
  if(!S.compatible(S.summary(set),ctx())||before.romHash!==romHash)throw Error('ROM или граф изменился во время загрузки');
  validateModelPackage(set);
@@ -74,30 +74,45 @@ async function load(){
  restoreGrowthStatePending=true;configurationApplied=false;
  const diagnostic=$('rewardMode').value==='diagnostic';terminalLatch={success:diagnostic?nes.cpu.mem[0]>=200&&Math.abs(nes.cpu.mem[1]-100)<=4:$('winEnabled').checked&&FlyGameTools.predicate(nes.cpu.mem,$('winAddress').value,$('winValue').value,ramLimit),death:$('deathEnabled').checked&&FlyGameTools.predicate(nes.cpu.mem,$('deathAddress').value,$('deathValue').value,ramLimit)};
  active=S.summary(set);journal=S.clone(set.journal);$('layerName').value=set.name;$('layerNotes').value=set.notes;refreshStats();
- const text='Загружен «'+set.name+'». ROM сохранён; связь остановлена. '+(requiresReset?'Другой seed / CPU–GPU: примените кнопкой «Сбросить только сеть».':'Включите связь для применения FDB без сброса динамики.');
+ localStorage.setItem(resumeKey(),set.id);
+ if(window.labState)window.labState.accepted();
+ const text=(resume?'Восстановлен ':'Загружен ')+ '«'+set.name+'». ROM сохранён; связь остановлена. '+(requiresReset?'Другой seed / CPU–GPU: примените кнопкой «Сбросить только сеть».':'Включите связь для применения FDB без сброса динамики.');
  message(text);status(text);
 }
 async function importSet(data){
  try{const imported=S.clone(validatePortable(data));imported.id=S.id();imported.createdAt=imported.updatedAt=Date.now();await store.request('save',{set:imported});await refresh(imported.id);$('layerName').value=imported.name;$('layerNotes').value=imported.notes;message('Импортирован «'+imported.name+'». Текущее обучение не изменено.');}catch(e){message(e.message,true);status(e.message,true);}
 }
 function autosave(){if(active&&$('layerAutosave').checked)return save(false,true);return Promise.resolve(false);}
+function resumeKey(){return 'fly-resume-v1-'+labPlatform+'-'+romHash+'-'+(graphIdentity&&graphIdentity.sha256);}
+function checkpoint(){
+ if(checkpointJob)return checkpointJob;
+ checkpointJob=(async()=>{
+  await saveQueue.catch(()=>{});
+  if(!ready||!loaded||!$('autosavePolicy').checked||!/^\w{64}$/.test(romHash)||!graphIdentity||!/^\w{64}$/.test(graphIdentity.sha256))return true;
+  if(active&&!$('layerAutosave').checked)return true;
+  // Use the same native Layer Set store and save queue as named presets.
+  if(window.fdbAgent){await window.fdbAgent.drain();if(window.fdbAgent.error())throw Error(window.fdbAgent.error());}
+  const okay=await save(false,true);if(!okay)throw Error('Не удалось сохранить продолжение обучения');return true;
+ })().finally(()=>{checkpointJob=null;});return checkpointJob;
+}
+async function resume(){const id=localStorage.getItem(resumeKey());if(!id)return false;const entry=S.summary(await store.request('get',{id}));await load(entry,true);await refresh(id);return true;}
 function contextChanged(){
  const key=JSON.stringify(ctx());if(key===contextKey){renderList();refreshStats();return;}contextKey=key;
  if(active&&!S.compatible(active,ctx())){active=null;journal=[];message('Контекст изменён: выберите Layer Set нужного ROM и коннектома.');}
  if(!active)journal=[];renderList();refreshStats();
 }
 window.labLayerSets=response=>store.receive(response);
-window.layerExperience={activeId:()=>active&&active.id||null,refreshStats,contextChanged,importSet,autosave,terminal:event=>{append(event);if(event.mode==='train'||event.mode==='teach')autosave();}};
+window.layerExperience={activeId:()=>active&&active.id||null,refreshStats,contextChanged,importSet,autosave,checkpoint,resume,terminal:event=>{append(event);if(event.mode==='train'||event.mode==='teach')autosave();}};
 const act=fn=>async()=>{if(busy)return;busy=true;renderSelected();try{await fn();}catch(e){message(e.message,true);status(e.message,true);}finally{busy=false;renderSelected();}};
 // Save owns its queue and busy state; other actions are serialized by their UI controls.
  $('layerNew').onclick=()=>save(true);$('layerUpdate').onclick=()=>save(false);
- $('layerLoad').onclick=act(load);$('layerRefresh').onclick=act(()=>refresh());
+ $('layerLoad').onclick=act(()=>load());$('layerRefresh').onclick=act(()=>refresh());
  $('layerExport').onclick=act(async()=>{const entry=selected();if(!entry)throw Error('Выберите набор');const set=await store.request('get',{id:entry.id});nativeCall('exportModel',JSON.stringify(set));});
  $('layerImport').onclick=()=>nativeCall('importModel');
  $('layerSelect').onchange=()=>{deleteId=null;const entry=selected();if(entry){$('layerName').value=entry.name;$('layerNotes').value=entry.notes;}renderSelected();};
  $('layerDelete').onclick=()=>{deleteId=$('layerSelect').value;renderSelected();};
  $('layerDeleteCancel').onclick=()=>{deleteId=null;renderSelected();};
- $('layerDeleteConfirm').onclick=act(async()=>{const id=deleteId;if(!id||id!==$('layerSelect').value)throw Error('Выберите набор для удаления');await store.request('delete',{id});if(active&&active.id===id)active=null;deleteId=null;await refresh();refreshStats();message('Набор удалён; текущие веса продолжают работать.');});
+ $('layerDeleteConfirm').onclick=act(async()=>{const id=deleteId;if(!id||id!==$('layerSelect').value)throw Error('Выберите набор для удаления');await store.request('delete',{id});if(localStorage.getItem(resumeKey())===id)localStorage.removeItem(resumeKey());if(active&&active.id===id)active=null;deleteId=null;await refresh();refreshStats();message('Набор удалён; текущие веса продолжают работать.');});
  for(const outcome of ['win','loss','continue','note'])$('experience-'+outcome).onclick=()=>{if(!loaded){message('Сначала загрузите ROM',true);return;}append({source:'manual',outcome,note:$('experienceNote').value.trim().slice(0,500),mode:$('learnMode').value});$('experienceNote').value='';autosave();};
  $('experienceExport').onclick=()=>{if(!ready||!loaded){status('Дождитесь ROM и коннектома',true);return;}nativeCall('exportModel',JSON.stringify({version:1,type:'fly-experience-report',system:labPlatform,romHash,graph:graphIdentity,layer:active,configuration:configuration(),profile:profileValues(),updates:learner.updates,journal:S.clone(journal),summary:S.stats(journal)}));};
  refreshStats();refresh().catch(e=>message(e.message,true));

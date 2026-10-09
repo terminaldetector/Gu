@@ -78,7 +78,7 @@ async function checkHeldTouch(page){
   if(w>h){const m=boxes.micro;for(const b of boxes.buttons)assert(b.right<=m.x||b.x>=m.right||b.y>=m.bottom||b.bottom<=m.y,`telemetry clear of controls ${w}x${h}: ${JSON.stringify({micro:m,button:b})}`);}
   if(w===390||w===844)await page.screenshot({path:`ui-preview/${w>h?'landscape':'portrait'}.png`});
  }
- await page.click('#gameExit');await page.screenshot({path:'ui-preview/menu.png'});await page.click('#enterGame');
+ await page.click('#gameExit');assert(await page.locator('#quickMenu').isVisible());await page.screenshot({path:'ui-preview/menu.png'});await page.click('[data-quick-tab="info"]');await page.click('#enterGame');
  await page.click('#gameSettings');assert(await page.locator('#orientation').isVisible());
  await page.selectOption('#orientation','portrait');assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('fly-display')).orientation),'portrait');
  await page.evaluate(()=>{playing=false;connected=false;updateGmodeHud();});assert((await page.textContent('#brainBadge')).includes('OFF'));

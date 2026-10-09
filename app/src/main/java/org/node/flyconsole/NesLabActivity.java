@@ -71,7 +71,9 @@ public final class NesLabActivity extends Activity {
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
-        labSystem=RomImport.system(getIntent().getStringExtra("system"));
+        String requestedSystem=getIntent().getStringExtra("system");
+        labSystem=RomImport.system(requestedSystem==null?getSharedPreferences("flyconsole-ui",MODE_PRIVATE).getString("system","nes"):requestedSystem);
+        getSharedPreferences("flyconsole-ui",MODE_PRIVATE).edit().putString("system",labSystem).apply();
         web = new WebView(this);
         web.setBackgroundColor(android.graphics.Color.rgb(8,10,19));
         web.getSettings().setJavaScriptEnabled(true);
@@ -117,14 +119,21 @@ public final class NesLabActivity extends Activity {
     }
 
     @Override protected void onNewIntent(Intent intent){super.onNewIntent(intent);setIntent(intent);switchSystem(RomImport.system(intent.getStringExtra("system")));}
+    private String pendingSystem=null;
     private void switchSystem(String system){
-        if (system.equals(labSystem)) return;
+        if(system.equals(labSystem)||pendingSystem!=null)return;
+        pendingSystem=system;
+        // evaluateJavascript's callback does not await JS promises. The bridge acknowledgement does.
+        web.evaluateJavascript("if(window.labPrepareSystemSwitch)window.labPrepareSystemSwitch("+JSONObject.quote(system)+");else if(window.FlyBridge)FlyBridge.finishSystemSwitch("+JSONObject.quote(system)+",false)",null);
+    }
+    private void finishSystemSwitch(String system,boolean okay){
+        if(!system.equals(pendingSystem))return;
+        if(!okay){pendingSystem=null;return;}
         cancel.set(true);controlEpoch.incrementAndGet();
-        worker.execute(()->{try{stopRecording();pauseDualNative();clearDualNative();offeredRomHashes.clear();}catch(Exception ex){error(ex.getMessage());}});
-        web.evaluateJavascript("if(window.labPause)window.labPause();try{if(window.layerExperience)window.layerExperience.autosave();persistPolicy(false);document.getElementById('saveProfile').onclick();}catch(e){}", ignored -> {
-            pageEpoch.incrementAndGet();if(controllers!=null)controllers.system(system);labSystem=system;platformPortsPending=true;pageReady=false;romHash="not-loaded";recording=new File(getFilesDir(),labSystem+"-experiment.csv");
-            web.loadUrl(ORIGIN+"/lab/index.html?system="+labSystem);
-        });
+        worker.execute(()->{try{
+            stopRecording();pauseDualNative();clearDualNative();offeredRomHashes.clear();
+            runOnUiThread(()->{if(destroyed)return;pageEpoch.incrementAndGet();if(controllers!=null)controllers.system(system);labSystem=system;getSharedPreferences("flyconsole-ui",MODE_PRIVATE).edit().putString("system",system).apply();pendingSystem=null;platformPortsPending=true;pageReady=false;romHash="not-loaded";activeFdbLayerId="";recording=new File(getFilesDir(),labSystem+"-experiment.csv");web.loadUrl(ORIGIN+"/lab/index.html?system="+labSystem);});
+        }catch(Exception ex){runOnUiThread(()->pendingSystem=null);error("Платформа не переключена: "+ex.getMessage());}});
     }
     private long graphBudget(){return Math.max(0,Runtime.getRuntime().maxMemory()-Runtime.getRuntime().totalMemory()+Runtime.getRuntime().freeMemory())*2/3;}
     private void installGraph(Graph loaded,Engine nextEngine,Experiment next,String id){
@@ -544,6 +553,7 @@ public final class NesLabActivity extends Activity {
         }
         @JavascriptInterface public void controls(boolean enabled){runOnUiThread(()->{if(controllers!=null)controllers.enabled(enabled&&foreground);});}
         @JavascriptInterface public void switchSystem(String system){if(!RomImport.validSystem(system))return;runOnUiThread(()->NesLabActivity.this.switchSystem(system));}
+        @JavascriptInterface public void finishSystemSwitch(String system,boolean okay){if(destroyed||!RomImport.validSystem(system))return;runOnUiThread(()->NesLabActivity.this.finishSystemSwitch(system,okay));}
         @JavascriptInterface public void acceptRom(String sha256) {
             if (destroyed || sha256.length() != 64) return;
             submit(() -> {
@@ -779,9 +789,13 @@ public final class NesLabActivity extends Activity {
         });
     }
 
+    @Override public void onBackPressed(){
+        if(web==null){super.onBackPressed();return;}
+        web.evaluateJavascript("Boolean(window.labBack&&window.labBack())",value->{if(!destroyed&&!"true".equals(value))NesLabActivity.super.onBackPressed();});
+    }
     @Override protected void onPause() {
         if(controllers!=null)controllers.enabled(false);foreground=false;controlEpoch.incrementAndGet();cancel.set(true);
-        web.evaluateJavascript("if(window.labPause)window.labPause();if(window.layerExperience)window.layerExperience.autosave();try{if(loaded&&ready&&document.getElementById('autosavePolicy').checked)persistPolicy(false);}catch(e){if(window.console)console.warn(e.message);}", null);
+        web.evaluateJavascript("if(window.labPause)window.labPause();if(window.labState)window.labState.checkpoint().catch(e=>console.warn(e.message));", null);
         submit(()->{try{pauseDualNative();}catch(Exception ex){error("Dual checkpoint: "+ex.getMessage());}});
         super.onPause();
         web.onPause();
