@@ -13,6 +13,7 @@ let image = context.createImageData(256,240);
 let nes, loaded = false, playing = false, connected = false, ready = false, configuring = false;
 let romHash = '', frame = 0, generation = 0, token = 0, pendingToken = null;
 let manualMask = 0, brainMask = 0, appliedMask = 0, appliedHumanMask = 0, appliedAgentMask = 0, lastResponse = 0;
+let appliedDualMasks=[0,0],dualOverrides=[false,false];
 let gmodeMode = 'off';
 let gmodeBoost = false, gmodeBoostBackup = null;
 let liveFps=0,fpsFrames=0,fpsAt=performance.now(),lastWindowWall=0,emulatorRestarts=0;
@@ -138,6 +139,13 @@ function updateGmodeHud(){
  const active=gmodeMode!=='off',coop=gmodeMode==='coop';
  const badge=$('gmodeBadge'),left=$('gmodeLeft'),right=$('gmodeRight'),brain=$('brainBadge'),state=$('gameState');
  if(!badge)return;
+ if(window.dualAgents&&window.dualAgents.active()){
+  badge.textContent='ДВЕ СЕТИ · CPU';badge.className='hud-live';
+  left.textContent=window.dualAgents.label(1);right.textContent=window.dualAgents.label(2);
+  const running=window.dualAgents.running();brain.textContent=running?'СЕТИ ON':'СЕТИ · ПАУЗА';brain.className=running?'hud-live':'hud-idle';
+  state.textContent='Независимый FDB для каждого порта';const connect=$('gameConnect');if(connect)connect.textContent='Одиночная сеть';
+  updateMapFreshness();return;
+ }
  badge.textContent=active?'GMODE 2P':'SOLO';badge.className=active?'hud-live':'hud-idle';
  left.textContent=active?(coop?'P1 · ЧЕЛОВЕК':'P1 · СЕТЬ'):connected?'P1 · ЧЕЛОВЕК + СЕТЬ':'P1 · РУЧНОЙ';
  right.textContent=active?(coop?'P2 · КОННЕКТОМ':'P2 · ЧЕЛОВЕК'):connected?'АГЕНТ P1':'СЕТЬ ВЫКЛ.';
@@ -150,7 +158,7 @@ function updateGmodeHud(){
 let mapReceivedAt=0;
 function updateMapFreshness(){
  const state=$('mapState');if(!state)return;
- const paused=!connected||(!playing&&pendingToken===null),stale=paused||!mapReceivedAt||performance.now()-mapReceivedAt>2000;
+ const paused=window.dualAgents&&window.dualAgents.active()?!window.dualAgents.running():!connected||(!playing&&pendingToken===null),stale=paused||!mapReceivedAt||performance.now()-mapReceivedAt>2000;
  state.textContent=!mapReceivedAt?'Ожидает расчёта':paused?'Пауза · окно сети':stale?(pendingToken!==null?'Считает новое окно':'Ждём новое окно'):'Живое окно сети';
  state.parentElement.classList.toggle('stale',stale);
 }
@@ -235,6 +243,7 @@ function releasePorts() {
   if(!nes)return;
   for(const port of [1,2])for(let i=0;i<((labPlatform==='sega'||labPlatform==='snes')?12:8);i++)nes.buttonUp(port,i);
   appliedMask=appliedHumanMask=appliedAgentMask=0;
+  appliedDualMasks=[0,0];dualOverrides=[false,false];
 }
 function applyPortMask(port,mask,old) {
   if(!loaded)return;
@@ -243,6 +252,15 @@ function applyPortMask(port,mask,old) {
   }
 }
 function updateButtons() {
+  if(typeof window!=='undefined'&&window.dualAgents&&window.dualAgents.active()){
+    const masks=window.dualAgents.route().map(mask=>normalizeMask(filterAgentMask(mask))),port=window.dualAgents.manualPort()||1;
+    dualOverrides=[false,false];dualOverrides[port-1]=Boolean(manualMask);masks[port-1]|=manualMask;
+    if(manualMask&16)masks[port-1]&=~32;if(manualMask&32)masks[port-1]&=~16;
+    if(manualMask&64)masks[port-1]&=~128;if(manualMask&128)masks[port-1]&=~64;
+    masks[port-1]=normalizeMask(masks[port-1]);
+    applyPortMask(1,masks[0],appliedDualMasks[0]);applyPortMask(2,masks[1],appliedDualMasks[1]);
+    appliedDualMasks=masks;appliedHumanMask=manualMask;appliedAgentMask=appliedMask=0;return;
+  }
   const showing=$('learnMode').value==='teach';
   if(manualMask&&gmodeMode==='off'&&!showing)agentIntervened=true;
   let human=normalizeMask(manualMask),agent=showing?0:normalizeMask(filterAgentMask(brainMask));
@@ -310,6 +328,7 @@ window.labLoadRom=async function(data) {
   const sequence=++romLoadSequence;romLoading=true;
   try {
     window.labPause();
+    if(window.dualAgents&&window.dualAgents.active()&&!await window.dualAgents.exit())throw Error('Не удалось сохранить обе сети перед сменой ROM');
     const bytes=Uint8Array.from(atob(data.base64),c=>c.charCodeAt(0));
     const info=labPlatform==='nes'?FlyGameTools.validateRom(bytes):labPlatform==='sega'?SegaConsole.validateRom(bytes):RetroConsole.validateRom(bytes,labPlatform);
     let committed=false,bootFrame=null;
@@ -340,7 +359,7 @@ window.labLoadRom=async function(data) {
     if(!data.name.includes('diagnostic')){$('rewardMode').value='manual';$('learnMode').value='off';status('Внешний ROM загружен. Откройте «Обучение»: покажите приёмы сами или выберите Automode и оценку результата.');}
     trials.length=0;transitions.length=0;learningStats();
   }catch(error){status('ROM не запущен: '+error.message,true);log(error.stack||error.message);}
-  finally{if(sequence===romLoadSequence)romLoading=false;}
+  finally{if(sequence===romLoadSequence)romLoading=false;if(window.dualAgents)window.dualAgents.refresh();}
 };
 window.labReady=function(data) {
   const changed=ready&&(graphIdentity.sha256||'')!==(data.graph_sha256||'');
@@ -348,6 +367,7 @@ window.labReady=function(data) {
   if(!ready||changed){$('inputIds').value=data.inputs.join(', ');$('outputIds').value=data.outputs.join(', ');}
   graphIdentity={modelId:data.modelId,kind:data.kind,neurons:data.neurons,edges:data.edges,sha256:data.graph_sha256,diagnostics:data.diagnostics};ready=true;
   if(window.connectomeModels)window.connectomeModels.ready(data);
+  if(window.dualAgents)window.dualAgents.refresh();
   if(window.layerExperience)window.layerExperience.contextChanged();
   $('brainInfo').textContent=data.neurons.toLocaleString('ru')+' нейронов · '+(data.edges/1e6).toFixed(2)+' млн связей';
   const be=$('backend');if(be){be.value=data.backend||'cpu';const go=be.querySelector('option[value="gpu"]');if(go)go.disabled=data.gpuAvailable===false;}
@@ -360,6 +380,7 @@ window.labReady=function(data) {
   log(data.kind+'; heap '+data.heapMiB+' МиБ. Автопорты — технические.');if(data.notice)log(data.notice);
 };
 window.labError=function(data) {
+  if(window.dualAgents&&window.dualAgents.active())window.dualAgents.pause('native-error');
   if(window.fdbAgent)window.fdbAgent.boundary();sampledFdbOutcome=null;status(data.message,true);log(data.message);$('console').disabled=false;connected=false;configuring=false;pendingToken=null;window.startAfterConfig=false;window.startTrainingAfterConfig=false;if(benchmark)finishBenchmark('error');
   $('brainToggle').textContent='Включить связь';releaseBrain();updateGmodeHud();
 };
@@ -408,6 +429,7 @@ function neuralConfiguration(value){
   const copy=JSON.parse(JSON.stringify(value));delete copy.gmode;delete copy.gmodeBoost;delete copy.systemButtons;delete copy.controllerSource;return copy;
 }
 function apply(start=false,restoreStart=true,reset=false) {
+  if(window.dualAgents&&window.dualAgents.active())return window.dualAgents.exit().then(ok=>{if(ok)return apply(start,restoreStart,reset);});
   try {
     if(!ready)throw Error('Коннектом ещё не готов');if(romLoading)throw Error('Дождитесь загрузки ROM');
     resetSession();configuring=true;configurationApplied=false;window.startAfterConfig=start;
@@ -418,6 +440,7 @@ function apply(start=false,restoreStart=true,reset=false) {
   }catch(error){status(error.message,true);configuring=false;}
 }
 function connectBrain(restoreStart=true){
+ if(window.dualAgents&&window.dualAgents.active())return window.dualAgents.exit().then(ok=>{if(ok)return connectBrain(restoreStart);});
  try{
   if(!ready||romLoading||configuring)throw Error('Дождитесь ROM и конфигурации');
   const current=configuration();validateConfiguration(current);
@@ -448,6 +471,7 @@ function sampleRewardMemory(){
  return result;
 }
 function sampleFrame(now,force=false) {
+  if(window.dualAgents&&window.dualAgents.active()){window.dualAgents.sample({retina:retina.slice(),frame,now,force});return;}
   if(!connected||!ready||pendingToken!==null||configuring)return;
   const interval=$('clock').value==='realtime'?Math.max(50,Math.min(1000,lastWindowWall*1.25)):$('clock').value==='async'?200:0;
   if(!force&&now-lastSample<interval)return;
@@ -478,6 +502,16 @@ window.labResult=function(data) {
   $('timing').textContent=(labPlatform.toUpperCase()+': ')+frame+' кадров · сеть: '+data.simMs.toFixed(1)+' мс · '+(data.backend||'cpu')+' · '+$('clock').selectedOptions[0].textContent;
   if(performance.now()-lastTelemetry>1000){log('окно '+data.sequence+': '+data.spikes+' импульсов; активных '+data.active+'; кнопки '+data.buttons);lastTelemetry=performance.now();}
 };
+window.labDualTelemetry=function(data){
+ if(!window.dualAgents||!window.dualAgents.active()||!Array.isArray(data.agents))return;
+ const agents=data.agents,p1=agents.find(a=>a.id==='p1'),spikes=agents.reduce((n,a)=>n+(a.spikes||0),0),active=agents.reduce((n,a)=>n+(a.active||0),0);
+ if(Number.isFinite(data.wallMs)){lastWindowWall=data.wallMs;measuredWindows++;measuredNetworkMs+=data.wallMs;}
+ $('spikes').textContent=spikes;$('active').textContent=active;$('compute').textContent=lastWindowWall.toFixed(1);
+ if(p1&&p1.neuralGroups){updateNeuralMap({...p1,backend:'cpu',fdbEdges:p1.fdbState&&p1.fdbState.edges?p1.fdbState.edges.length:0});$('mapStats').textContent='P1 · CPU · активных '+(p1.active||0)+' · Wexo '+(p1.fdbState&&p1.fdbState.edges?p1.fdbState.edges.length:0);}
+ history.push(Math.log10(1+spikes));if(history.length>100)history.shift();drawHistory();
+ $('performance').textContent='Измерено: '+measuredFrames+' кадров · '+measuredWindows+' парных окон · эмуляция '+measuredCpuMs.toFixed(1)+' мс · два CPU '+measuredNetworkMs.toFixed(1)+' мс.';
+ $('timing').textContent=labPlatform.toUpperCase()+': '+frame+' кадров · P1 / P2 · realtime';updateGmodeHud();
+};
 function drawHistory() {
   for(const id of ['activity','gameChart']){const canvas=$(id);if(!canvas)continue;const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height;c.fillStyle='#111626';c.fillRect(0,0,w,h);
   c.strokeStyle='#283249';for(let y=20;y<100;y+=20){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();}
@@ -486,8 +520,8 @@ function drawHistory() {
 }
 function advanceFrame(now,forceSample=false) {
   if(!loaded||romLoading)return;
-  try {updateButtons();const observation=window.humanTeaching?window.humanTeaching.beforeFrame():null;const started=performance.now();nes.frame();const elapsed=performance.now()-started;measuredCpuMs+=elapsed;measuredFrames++;if(benchmark){benchmark.frames++;benchmark.emulatorMs+=elapsed;}frame++;if(window.fdbAgent)window.fdbAgent.frame(appliedAgentMask,1/(labPlatform==='nes'?60:nes.fps));if(window.humanTeaching)window.humanTeaching.commit(1/(labPlatform==='nes'?60:nes.fps),observation);sampleFrame(now,forceSample);}
-  catch(error){if(window.humanTeaching)window.humanTeaching.stop('error');playing=false;connected=false;releaseBrain();status('Эмуляция остановлена: '+error.message,true);$('play').textContent='Запустить эмулятор';}
+  try {updateButtons();const dual=window.dualAgents&&window.dualAgents.active(),observation=!dual&&window.humanTeaching?window.humanTeaching.beforeFrame():null;const started=performance.now();nes.frame();const elapsed=performance.now()-started;measuredCpuMs+=elapsed;measuredFrames++;if(benchmark){benchmark.frames++;benchmark.emulatorMs+=elapsed;}frame++;const dt=1/(labPlatform==='nes'?60:nes.fps);if(dual)window.dualAgents.frame({masks:appliedDualMasks.slice(),dt,overrides:dualOverrides.slice()});else{if(window.fdbAgent)window.fdbAgent.frame(appliedAgentMask,dt);if(window.humanTeaching)window.humanTeaching.commit(dt,observation);}sampleFrame(now,forceSample);}
+  catch(error){if(window.dualAgents&&window.dualAgents.active())window.dualAgents.pause('emulator-error');if(window.humanTeaching)window.humanTeaching.stop('error');playing=false;connected=false;releaseBrain();status('Эмуляция остановлена: '+error.message,true);$('play').textContent='Запустить эмулятор';}
 }
 function loop(now) {
   if((pendingToken!==null||configuring)&&now-pendingSince>30000)window.labError({message:'Нет ответа сети более 30 секунд: опыт остановлен'});
@@ -504,6 +538,7 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 window.labPause=function() {
+  if(window.dualAgents&&window.dualAgents.active())window.dualAgents.pause('pause');
   if(window.humanArchive)window.humanArchive.cancel();
   if(window.humanTeaching)window.humanTeaching.stop('pause');
   if(benchmark)finishBenchmark('interrupted');window.startAfterConfig=false;window.startTrainingAfterConfig=false;fdbExperience.length=0;learningBoundary();
@@ -511,7 +546,7 @@ window.labPause=function() {
   manualMask=0;holding.clear();controllerMasks.clear();controlsEnabled(false);releasePorts();releaseBrain();audioRead=audioWrite;
   $('play').textContent='Запустить эмулятор';$('brainToggle').textContent='Включить связь';nativeCall('stop');updateGmodeHud();
 };
-$('play').onclick=()=>{if(benchmark){window.labPause();return;}if(!loaded||romLoading){status('Сначала загрузите ROM',true);return;}if(playing&&window.humanTeaching)window.humanTeaching.stop('pause');playing=!playing;$('play').textContent=playing?'Пауза':'Запустить эмулятор';if(playing){controlsEnabled(true);nativeCall('resume');}else{generation++;pendingToken=null;learningBoundary();releaseBrain();nativeCall('stop');}updateGmodeHud();};
+$('play').onclick=()=>{if(benchmark){window.labPause();return;}if(!loaded||romLoading){status('Сначала загрузите ROM',true);return;}if(playing&&window.humanTeaching)window.humanTeaching.stop('pause');playing=!playing;$('play').textContent=playing?'Пауза':'Запустить эмулятор';if(playing){controlsEnabled(true);nativeCall('resume');if(window.dualAgents&&window.dualAgents.active())window.dualAgents.resume();}else{if(window.dualAgents&&window.dualAgents.active())window.dualAgents.pause('pause');generation++;pendingToken=null;learningBoundary();releaseBrain();nativeCall('stop');}updateGmodeHud();};
 $('step').onclick=()=>{if(!playing&&pendingToken===null){nativeCall('resume');advanceFrame(performance.now(),true);}};
 $('console').onclick=()=>nativeCall('console');
 $('demo').onclick=()=>nativeCall('demo');$('import').onclick=()=>nativeCall('pickRom');$('audio').onclick=toggleSound;
@@ -560,7 +595,7 @@ $('backend').onchange=()=>{window.labPause();status('Смена backend треб
 $('brainToggle').onclick=()=>{if(connected){connected=false;resetSession();nativeCall('stop');status('Связь отключена; эмулятор доступен вручную.');updateGmodeHud();}else connectBrain();};
 $('resetNes').onclick=()=>{if(loaded){window.labPause();restartEpisodeFromRom();learningBoundary();status(labPlatform.toUpperCase()+' сброшена. Коннектом, FDB и веса сохранены; связь можно возобновить.');}};
 $('gain').oninput=()=>$('gainLabel').textContent=Number($('gain').value).toFixed(2);
-$('freeze').onchange=()=>{if(window.fdbAgent)window.fdbAgent.boundary();sampledFdbOutcome=null;if(benchmark)window.labPause();if(window.humanTeaching)window.humanTeaching.stop('freeze');frozen=null;log('Freeze retina: '+$('freeze').checked);};
+$('freeze').onchange=()=>{if(window.dualAgents&&window.dualAgents.active())window.dualAgents.boundary('freeze');if(window.fdbAgent)window.fdbAgent.boundary();sampledFdbOutcome=null;if(benchmark)window.labPause();if(window.humanTeaching)window.humanTeaching.stop('freeze');frozen=null;log('Freeze retina: '+$('freeze').checked);};
 $('saveState').onclick=()=>{try{if(!loaded)throw Error('ROM не загружен');localStorage.setItem(labPlatform+'-slot',JSON.stringify({hash:romHash,system:labPlatform,frame,state:JSON.parse(JSON.stringify(nes.toJSON()))}));status('Снимок '+labPlatform.toUpperCase()+' сохранён. Состояние коннектома не входит в снимок.');}catch(error){status(error.message,true);}};
 $('loadState').onclick=()=>{try{const saved=JSON.parse(localStorage.getItem(labPlatform+'-slot')||(labPlatform==='nes'?localStorage.getItem('nes-slot'):null));validateSnapshot(saved);if(!saved||saved.hash!==romHash)throw Error('Снимок отсутствует или относится к другому ROM');window.labPause();nes.fromJSON(saved.state);frame=Number.isSafeInteger(saved.frame)?saved.frame:0;if(labPlatform==='nes')rgbaAndRetina(nes.ppu.buffer);releasePorts();updateButtons();learningBoundary();status(labPlatform.toUpperCase()+' восстановлена. Коннектом, FDB и веса сохранены.');}catch(error){status(error.message,true);}};
 $('record').onclick=()=>{if(benchmark)window.labPause();nativeCall('recording',!recording);};$('export').onclick=()=>nativeCall('exportCsv');
@@ -607,7 +642,7 @@ window.onkeydown=event=>{
  const code=event.code||event.key,button=keys[code];if(button!==undefined){event.preventDefault();holding.set('key-'+code,button);refreshManual();}
 };
 window.onkeyup=event=>{holding.delete('key-'+(event.code||event.key));refreshManual();};
-window.onblur=()=>{if(window.fdbAgent)window.fdbAgent.boundary();sampledFdbOutcome=null;if(window.humanTeaching)window.humanTeaching.stop('blur');holding.clear();controllerMasks.clear();refreshManual();releaseBrain();controlsEnabled(false);};
+window.onblur=()=>{if(window.dualAgents&&window.dualAgents.active())window.dualAgents.pause('blur');if(window.fdbAgent)window.fdbAgent.boundary();sampledFdbOutcome=null;if(window.humanTeaching)window.humanTeaching.stop('blur');holding.clear();controllerMasks.clear();refreshManual();releaseBrain();controlsEnabled(false);};
 window.onfocus=()=>controlsEnabled(document.querySelector('main').dataset.tab==='game');
 document.addEventListener('focusin',event=>{if(['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName))controlsEnabled(false);});
 document.addEventListener('focusout',()=>controlsEnabled(document.querySelector('main').dataset.tab==='game'));

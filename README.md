@@ -1,4 +1,10 @@
-## Version 2.0.0-alpha15: learned Wexo and a second Male CNS model
+## Version 2.0.0-alpha16: independent FlyWire / Male CNS players
+
+Select either full connectome independently for P1 and P2 in **Network / 2P → Две нейронные модели**. Each CPU controller owns its own FDB, reward, RNG and durable Layer Set; same-model slots share only immutable W₀. Train/Eval and manual/RAM reward are separate for each player. Preferences restore per ROM without auto-start. Mixed-model operation requires substantial Java heap; GB remains a single controller platform.
+
+See [dual-model behavior, persistence, real-core tests and limits](docs/DUAL-MODEL-ARCHITECTURE.md). The emulator runs in realtime; neural update speed depends on CPU and is measured separately. Physical Android and commercial-game improvement remain to be evaluated.
+
+## Previous alpha15: learned Wexo and a second Male CNS model
 
 The existing FDB layer now supports action-conditioned temporal credit,
 reinforcement/depression, bounded birth/pruning and versioned durable topology.

@@ -56,13 +56,14 @@ jobs:
             /tmp/fly-ui/node_modules/.bin/playwright install chromium
           fi
       - name: Check portrait and landscape console layouts
-        timeout-minutes: 3
+        timeout-minutes: 5
         run: |
           ui_status=0
           NODE_PATH=/tmp/fly-ui/node_modules node tools/console_layout_check.cjs || ui_status=1
           NODE_PATH=/tmp/fly-ui/node_modules node tools/layer_ui_check.cjs || ui_status=1
           NODE_PATH=/tmp/fly-ui/node_modules node tools/platform_ui_check.cjs || ui_status=1
           NODE_PATH=/tmp/fly-ui/node_modules node tools/training_ui_check.cjs || ui_status=1
+          NODE_PATH=/tmp/fly-ui/node_modules node tools/dual_layout_check.cjs || ui_status=1
           exit "$ui_status"
       - uses: actions/upload-artifact@v4
         if: always()
@@ -76,6 +77,8 @@ jobs:
           male_test_classes=$(mktemp -d)
           javac -d "$male_test_classes" app/src/main/java/org/node/flyconsole/Graph.java app/src/main/java/org/node/flyconsole/GraphDelta.java app/src/main/java/org/node/flyconsole/Engine.java tools/MaleCnsGraphCheck.java
           java -Xmx512m -cp "$male_test_classes" org.node.flyconsole.MaleCnsGraphCheck app/src/main/assets/male-cns.fly.gz
+      - name: Check two full models and real two-port games
+        run: bash tools/check_full_dual.sh
       - run: gradle assembleDebug lintDebug
       - name: Collect official APK signing tool
         run: cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" /tmp/flyconsole-apksigner.jar

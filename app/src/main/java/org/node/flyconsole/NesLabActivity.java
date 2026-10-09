@@ -60,6 +60,14 @@ public final class NesLabActivity extends Activity {
     private String sessionExportId;
     private long recordedBytes;
     private boolean recordingOn;
+    private volatile DualAgentContext[] dualAgents;
+    private DualLayerStore.Binding[] dualBindings;
+    private DualLayerStore dualStore;
+    private volatile long dualEpoch=-1;
+    private long dualSequence;
+    private volatile DualRequestGuard dualGuard;
+    private volatile String dualSession="";
+    private String dualRom="",dualSystem="";
 
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -112,7 +120,7 @@ public final class NesLabActivity extends Activity {
     private void switchSystem(String system){
         if (system.equals(labSystem)) return;
         cancel.set(true);controlEpoch.incrementAndGet();
-        worker.execute(()->{try{stopRecording();offeredRomHashes.clear();}catch(IOException ex){error(ex.getMessage());}});
+        worker.execute(()->{try{stopRecording();pauseDualNative();clearDualNative();offeredRomHashes.clear();}catch(Exception ex){error(ex.getMessage());}});
         web.evaluateJavascript("if(window.labPause)window.labPause();try{if(window.layerExperience)window.layerExperience.autosave();persistPolicy(false);document.getElementById('saveProfile').onclick();}catch(e){}", ignored -> {
             pageEpoch.incrementAndGet();if(controllers!=null)controllers.system(system);labSystem=system;platformPortsPending=true;pageReady=false;romHash="not-loaded";recording=new File(getFilesDir(),labSystem+"-experiment.csv");
             web.loadUrl(ORIGIN+"/lab/index.html?system="+labSystem);
@@ -169,6 +177,7 @@ public final class NesLabActivity extends Activity {
     }
 
     private void configure(JSONObject data) throws Exception {
+        if(dualAgents!=null){pauseDualNative();clearDualNative();}
         if(data.has("reset")&&!(data.get("reset") instanceof Boolean))throw new IllegalArgumentException("Reset must be boolean");
         boolean initial=!neuralConfigured;
         boolean reset=initial||data.optBoolean("reset",true);
@@ -290,6 +299,66 @@ public final class NesLabActivity extends Activity {
         if(mode.equals("blocked"))return RomImport.wide(labSystem)?2039:243;
         throw new IllegalArgumentException("Неизвестный режим Start/Select");
     }
+
+    private static long dualRequestEpoch(JSONObject request)throws Exception {return DualAgentContext.integer(request,"epoch",0,9007199254740991L);}
+    private JSONObject dualEnvelope(JSONObject request)throws Exception {
+        Object token=request.get("token");DualRequestGuard.serial(token);
+        long epoch=dualRequestEpoch(request);return new JSONObject().put("epoch",epoch).put("generation",request.optLong("generation",epoch)).put("token",token);
+    }
+    private void requireDual(JSONObject request)throws Exception {
+        if(dualAgents==null||dualRequestEpoch(request)!=dualEpoch||!(request.get("sessionId") instanceof String)||!dualSession.equals(request.getString("sessionId")))throw new IllegalStateException("Stale dual session");
+        if(!dualRom.equals(romHash)||!dualSystem.equals(labSystem))throw new IllegalStateException("Dual ROM/platform changed");
+    }
+    private boolean matchesDualRequest(String raw){try{JSONObject request=new JSONObject(raw);DualRequestGuard guard=dualGuard;return dualAgents!=null&&guard!=null&&dualRequestEpoch(request)==dualEpoch&&request.get("sessionId") instanceof String&&dualSession.equals(request.getString("sessionId"))&&guard.fresh(request.get("token"));}catch(Exception ex){return false;}}
+    private boolean freshDualConfiguration(String raw){try{JSONObject request=new JSONObject(raw);DualRequestGuard.serial(request.get("token"));DualRequestGuard guard=dualGuard;return dualAgents==null||dualRequestEpoch(request)>dualEpoch&&guard!=null&&guard.fresh(request.get("token"));}catch(Exception ex){return false;}}
+    private static JSONObject[] dualDescriptors(JSONArray values)throws Exception {
+        if(values.length()!=2)throw new IllegalArgumentException("Exactly two agents required");JSONObject[] result=new JSONObject[2];for(int i=0;i<2;i++){JSONObject value=values.getJSONObject(i);String id=value.getString("id");int slot="p1".equals(id)?0:"p2".equals(id)?1:-1;if(slot<0||result[slot]!=null)throw new IllegalArgumentException("Unique P1/P2 required");result[slot]=value;}return result;
+    }
+    private static long graphArrayBytes(Graph graph){return 12L*graph.ids.length+8L*graph.targets.length+4;}
+    private long dualEstimatedBytes(){if(dualAgents==null)return 0;long bytes=0;java.util.HashSet<Graph> seen=new java.util.HashSet<>();for(DualAgentContext agent:dualAgents){if(seen.add(agent.graph))bytes+=graphArrayBytes(agent.graph);bytes+=104L*agent.graph.ids.length+agent.layer.memoryBytes()+agent.learning.memoryBytes();}return bytes;}
+    private static long heapAvailable(){Runtime runtime=Runtime.getRuntime();return Math.max(0,runtime.maxMemory()-runtime.totalMemory()+runtime.freeMemory());}
+    private void configureDual(JSONObject request)throws Exception {
+        JSONObject response=dualEnvelope(request);if("gb".equals(labSystem))throw new IllegalArgumentException("GB has one controller; two neural ports require NES, Sega or SNES");
+        if(dualAgents!=null&&(dualRequestEpoch(request)<=dualEpoch||!dualGuard.fresh(request.get("token"))))throw new IllegalArgumentException("Stale dual configuration epoch/token");
+        if(!labSystem.equals(request.getString("system"))||!romHash.matches("[a-f0-9]{64}")||!romHash.equals(request.getString("romHash")))throw new IllegalArgumentException("Dual configuration ROM/platform mismatch");
+        JSONObject[] descriptors=dualDescriptors(request.getJSONArray("agents"));if(request.has("team")&&!(request.get("team") instanceof Boolean))throw new IllegalArgumentException("Team reward must be boolean");boolean team=request.optBoolean("team",false);
+        String[] models=new String[2];JSONObject[] manifests=new JSONObject[2];java.util.HashMap<String,Graph> candidates=new java.util.HashMap<>();java.util.HashSet<String> missing=new java.util.HashSet<>();long extra=0;
+        for(int i=0;i<2;i++){
+            JSONObject descriptor=descriptors[i];models[i]=descriptor.getString("modelId");if(!ConnectomeStore.valid(models[i]))throw new IllegalArgumentException("Unknown connectome model");String mode=descriptor.getString("mode");if(!("train".equals(mode)||"eval".equals(mode)))throw new IllegalArgumentException("Agent mode");DualAgentContext.number(descriptor,"epsilon",0,1);if(descriptor.has("resume")&&!(descriptor.get("resume") instanceof Boolean))throw new IllegalArgumentException("Resume must be boolean");descriptor.getJSONObject("config");descriptor.put("teamReward",team);
+            manifests[i]=ConnectomeStore.manifest(this,models[i]);String expected=manifests[i].optString("graph_sha256","");Graph candidate=GraphCache.findNamed(models[i],expected);if(candidate!=null)candidates.put(models[i],candidate);
+            long n=candidate==null?DualAgentContext.integer(manifests[i],"neurons",24,500000):candidate.ids.length;extra+=104L*n;
+            if(candidate==null&&missing.add(models[i]))extra+=12L*n+8L*DualAgentContext.integer(manifests[i],"edges",0,100000000)+4;
+        }
+        long available=heapAvailable(),reserve=64L*1024*1024;if(extra+reserve>available)throw new IOException("Two CPU models require additional "+(extra/1048576)+" MiB plus 64 MiB reserve; available "+(available/1048576)+" MiB");
+        for(String model:missing){Graph loaded=ConnectomeStore.candidate(this,model,graphBudget());candidates.put(model,loaded);}
+        DualLayerStore store=new DualLayerStore(getFilesDir());DualAgentContext[] next=new DualAgentContext[2];DualLayerStore.Binding[] bindings=new DualLayerStore.Binding[2];
+        for(int i=0;i<2;i++){Graph candidate=candidates.get(models[i]);Experiment defaults=ConnectomeStore.ports(this,candidate,RomImport.wide(labSystem)&&candidate.ids.length>=28?12:8,models[i]);bindings[i]=store.prepare(labSystem,romHash,candidate.fingerprint(),"p"+(i+1),models[i],descriptors[i].optBoolean("resume",true));next[i]=DualAgentContext.create("p"+(i+1),models[i],candidate,defaults,descriptors[i],bindings[i].checkpoint,bindings[i].id);}
+        // Checkpoints and the pair binding must commit before the live pair is replaced.
+        store.commitPair(bindings,next,labSystem,romHash);if(dualAgents!=null)for(DualAgentContext old:dualAgents)old.boundary();
+        dualAgents=next;dualBindings=bindings;dualStore=store;dualEpoch=dualRequestEpoch(request);dualSession=java.util.UUID.randomUUID().toString().replace("-","");dualRom=romHash;dualSystem=labSystem;dualSequence=0;dualGuard=new DualRequestGuard(request.get("token"));
+        for(int i=0;i<2;i++)GraphCache.rememberNamed(models[i],next[i].graph);closeGpu();backend="cpu";neuralConfigured=false;latestMask=0;if(fdbLearning!=null)fdbLearning.boundary();
+        JSONArray agents=new JSONArray();for(DualAgentContext agent:next)agents.put(agent.metadata().put("saved",true));response.put("ok",true).put("sessionId",dualSession).put("agents",agents).put("estimatedBytes",dualEstimatedBytes()).put("heapAvailableBytes",heapAvailable()).put("backend","cpu").put("paused",true).put("singleResetRequired",true);emit("labDualReady",response);
+    }
+    private void saveDual(JSONObject[] results)throws Exception {
+        for(int i=0;i<2;i++)try{dualStore.save(dualAgents[i],dualSystem,dualRom,dualBindings[i].createdAt);results[i].put("saved",true);}catch(Exception ex){results[i].put("saved",false).put("saveError",ex.getMessage()==null?"Checkpoint save failed":ex.getMessage());}
+    }
+    private void sampleDual(JSONObject request)throws Exception {
+        long started=System.nanoTime();JSONObject response=dualEnvelope(request);requireDual(request);if(cancel.get())throw new IllegalStateException("Dual session paused");
+        JSONObject[] descriptors=dualDescriptors(request.getJSONArray("agents"));for(int i=0;i<2;i++)dualAgents[i].validateRequest(descriptors[i]);
+        JSONArray values=request.getJSONArray("retina");if(values.length()!=16)throw new IllegalArgumentException("16 retinal observations required");double[] retina=new double[16];for(int i=0;i<16;i++){Object value=values.get(i);if(!(value instanceof Number))throw new IllegalArgumentException("Retina number required");retina[i]=((Number)value).doubleValue();if(!Double.isFinite(retina[i])||retina[i]<0||retina[i]>1)throw new IllegalArgumentException("Retina range");}
+        long frame=DualAgentContext.integer(request,"frame",0,9007199254740991L);dualGuard.sample(request.get("token"),frame);dualSequence++;JSONObject[] results=new JSONObject[2];
+        try{for(int i=0;i<2;i++)results[i]=dualAgents[i].sample(descriptors[i],retina,dualSession+":"+dualAgents[i].id+":"+dualSequence,cancel);}
+        catch(Exception|OutOfMemoryError ex){cancel.set(true);for(int i=0;i<2;i++){dualAgents[i].boundary();results[i]=dualAgents[i].metadata();}saveDual(results);throw ex;}
+        saveDual(results);JSONArray agents=new JSONArray();double wall=0;boolean failed=false;for(JSONObject result:results){agents.put(result);wall+=result.optDouble("wallMs",0);failed|=result.has("saveError");}if(failed)cancel.set(true);
+        response.put("ok",true).put("sessionId",dualSession).put("frame",frame).put("agents",agents).put("wallMs",wall).put("pipelineWallMs",(System.nanoTime()-started)/1e6).put("estimatedBytes",dualEstimatedBytes()).put("backend","cpu");emit("labDualResult",response);
+    }
+    private void boundaryDual(JSONObject request)throws Exception {
+        JSONObject response=dualEnvelope(request);requireDual(request);dualGuard.boundary(request.get("token"));JSONObject[] results=new JSONObject[2];for(int i=0;i<2;i++){dualAgents[i].boundary();results[i]=dualAgents[i].metadata();}saveDual(results);response.put("sessionId",dualSession).put("ok",true).put("paused",true).put("agents",new JSONArray(results));emit("labDualBoundary",response);
+    }
+    private void pauseDualNative()throws Exception {if(dualAgents==null)return;JSONObject[] results=new JSONObject[2];for(int i=0;i<2;i++){dualAgents[i].boundary();results[i]=dualAgents[i].metadata();}saveDual(results);for(JSONObject result:results)if(result.has("saveError"))throw new IOException(result.getString("saveError"));}
+    private void clearDualNative(){dualAgents=null;dualBindings=null;dualStore=null;dualGuard=null;dualEpoch=-1;dualSequence=0;dualSession="";dualRom="";dualSystem="";}
+    private void exitDual(JSONObject request)throws Exception {JSONObject response=dualEnvelope(request);requireDual(request);dualGuard.boundary(request.get("token"));pauseDualNative();response.put("sessionId",dualSession).put("ok",true).put("paused",true);clearDualNative();emit("labDualExited",response);}
+    private void emitDualFailure(String method,String raw,Throwable ex){try{JSONObject response=dualEnvelope(new JSONObject(raw)).put("ok",false).put("error",ex.getMessage()==null?"Dual operation failed":ex.getMessage());if(!dualSession.isEmpty())response.put("sessionId",dualSession);emit(method,response);}catch(Exception ignored){error("Dual request failed: "+ex.getMessage());}}
 
     private void sample(JSONObject request) throws Exception {
         if (engine == null) throw new IllegalStateException("Коннектом недоступен");
@@ -455,9 +524,14 @@ public final class NesLabActivity extends Activity {
     @Override public boolean dispatchGenericMotionEvent(android.view.MotionEvent event){return controllers!=null&&controllers.motion(event)||super.dispatchGenericMotionEvent(event);}
 
     public final class Bridge {
+        @JavascriptInterface public void dualConfigure(String json){if(destroyed||json.length()>512*1024)return;if(freshDualConfiguration(json)){cancel.set(true);controlEpoch.incrementAndGet();}submit(()->{try{configureDual(new JSONObject(json));}catch(Exception|OutOfMemoryError ex){emitDualFailure("labDualReady",json,ex);}});}
+        @JavascriptInterface public void dualSample(String json){if(destroyed||json.length()>65536)return;submit(()->{try{sampleDual(new JSONObject(json));}catch(Exception|OutOfMemoryError ex){if(matchesDualRequest(json))cancel.set(true);emitDualFailure("labDualResult",json,ex);}});}
+        @JavascriptInterface public void dualBoundary(String json){if(destroyed||json.length()>8192)return;if(matchesDualRequest(json)){cancel.set(true);controlEpoch.incrementAndGet();}submit(()->{try{boundaryDual(new JSONObject(json));}catch(Exception|OutOfMemoryError ex){emitDualFailure("labDualBoundary",json,ex);}});}
+        @JavascriptInterface public void dualExit(String json){if(destroyed||json.length()>8192)return;if(matchesDualRequest(json)){cancel.set(true);controlEpoch.incrementAndGet();}submit(()->{try{exitDual(new JSONObject(json));}catch(Exception|OutOfMemoryError ex){emitDualFailure("labDualExited",json,ex);}});}
         @JavascriptInterface public void selectConnectome(String id){
             if(destroyed||!ConnectomeStore.valid(id))return;cancel.set(true);final long epoch=controlEpoch.incrementAndGet();
             submit(()->{JSONObject response=new JSONObject();try{
+                if(dualAgents!=null){pauseDualNative();clearDualNative();}
                 if(!id.equals(modelId)||graph==null){
                     Graph loaded=ConnectomeStore.candidate(NesLabActivity.this,id,graphBudget());
                     Experiment next=ConnectomeStore.ports(NesLabActivity.this,loaded,RomImport.wide(labSystem)&&loaded.ids.length>=28?12:8,id);
@@ -708,17 +782,18 @@ public final class NesLabActivity extends Activity {
     @Override protected void onPause() {
         if(controllers!=null)controllers.enabled(false);foreground=false;controlEpoch.incrementAndGet();cancel.set(true);
         web.evaluateJavascript("if(window.labPause)window.labPause();if(window.layerExperience)window.layerExperience.autosave();try{if(loaded&&ready&&document.getElementById('autosavePolicy').checked)persistPolicy(false);}catch(e){if(window.console)console.warn(e.message);}", null);
+        submit(()->{try{pauseDualNative();}catch(Exception ex){error("Dual checkpoint: "+ex.getMessage());}});
         super.onPause();
         web.onPause();
     }
     @Override protected void onResume() {
         super.onResume();foreground=true;if(controllers!=null)controllers.enabled(true); if (web != null) web.onResume();
-        if (GraphCache.current != null && !GraphCache.same(GraphCache.current, graph)) submit(this::loadGraph);
+        if (dualAgents==null&&GraphCache.current != null && !GraphCache.same(GraphCache.current, graph)) submit(this::loadGraph);
     }
     @Override protected void onDestroy() {
         if(controllers!=null)controllers.close();destroyed = true;
         cancel.set(true);
-        worker.execute(() -> { try { stopRecording(); } catch (IOException ignored) { } closeGpu(); });
+        worker.execute(() -> { try { stopRecording();pauseDualNative(); } catch (Exception ignored) { } closeGpu();clearDualNative(); });
         worker.shutdown();
         web.removeJavascriptInterface("FlyBridge");
         web.destroy();

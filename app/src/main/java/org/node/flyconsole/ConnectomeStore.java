@@ -13,7 +13,7 @@ final class ConnectomeStore {
     static void select(Context c,String id)throws IOException{if(!valid(id))throw new IOException("Неизвестная модель коннектома");if(!c.getSharedPreferences("connectome-model",0).edit().putString("selected",id).commit())throw new IOException("Выбор модели не сохранён");}
     static InputStream source(Context c,String id)throws IOException{
         if(IMPORTED.equals(id))return new FileInputStream(new File(c.getFilesDir(),"connectome.fly"));
-        if(MALE.equals(id))return c.getAssets().open("male-cns.fly.gz");
+        if(MALE.equals(id)){try{return c.getAssets().open("male-cns.fly.gz");}catch(IOException ex){return c.getAssets().open("male-cns.fly");}}
         try{return c.getAssets().open("brain.fly.gz");}catch(IOException ex){return c.getAssets().open("brain.fly");}
     }
     static JSONObject manifest(Context c,String id)throws Exception{

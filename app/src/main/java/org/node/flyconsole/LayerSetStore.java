@@ -25,6 +25,7 @@ final class LayerSetStore {
     private static JSONObject summary(JSONObject set)throws Exception {
         validate(set);JSONObject policy=set.getJSONObject("policy"),fdb=set.getJSONObject("configuration").optJSONObject("fdb");
         JSONObject result=new JSONObject();for(String key:new String[]{"id","name","notes","system","romHash","createdAt","updatedAt"})result.put(key,set.get(key));
+        for(String key:new String[]{"actorKind","actorSlot","modelId"})if(set.has(key))result.put(key,set.get(key));
         return result.put("graphSha256",set.getJSONObject("graph").getString("sha256")).put("updates",policy.getLong("updates")).put("episodes",policy.getLong("episodes")).put("fdbEdges",length(fdb,"edges")).put("fdbDeltas",length(fdb,"deltas"));
     }
     private static int length(JSONObject obj,String key){JSONArray a=obj==null?null:obj.optJSONArray(key);return a==null?0:a.length();}
@@ -39,6 +40,7 @@ final class LayerSetStore {
     }
     synchronized JSONObject save(JSONObject set)throws Exception {
         validate(set);File target=file(set.getString("id"));JSONObject metadata=summary(set);byte[] bytes=set.toString().getBytes(StandardCharsets.UTF_8);
+        if(target.exists()){JSONObject old=get(set.getString("id"));if("dual-neural".equals(old.optString("actorKind"))&&(!"dual-neural".equals(set.optString("actorKind"))||!old.getString("actorSlot").equals(set.optString("actorSlot"))||!old.getString("modelId").equals(set.optString("modelId"))))throw new IOException("Dual Layer Set belongs to its actor slot");}
         if(bytes.length>MAX_BYTES)throw new IOException("Layer Set превышает 2 МиБ");
         long total=bytes.length;int count=0;File[] files=directory.listFiles();if(files==null)throw new IOException("Layer Set недоступны");
         for(File path:files)if(path.getName().matches("[-a-f0-9]{36}\\.json")){count++;if(!path.equals(target))total+=path.length();}

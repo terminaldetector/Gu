@@ -1,5 +1,7 @@
 package org.node.flyconsole;
 import java.io.*;
+import java.lang.ref.WeakReference;
+import java.util.HashMap;
 /** Serialize first load so concurrent activities never allocate the full graph twice. */
 public final class GraphCache {
  private GraphCache(){}
@@ -8,6 +10,9 @@ public final class GraphCache {
  public static volatile String kind="FlyWire v783 / Shiu signed model";
  public static volatile String notice="";
  public static volatile String modelId="flywire-v783";
+ private static final HashMap<String,WeakReference<Graph>> namedGraphs=new HashMap<>();
+ public static synchronized Graph findNamed(String id,String expectedSha){Graph graph=id.equals(modelId)?current:null;if(graph==null){WeakReference<Graph> ref=namedGraphs.get(id);if(ref!=null)graph=ref.get();}return graph!=null&&(expectedSha==null||expectedSha.isEmpty()||expectedSha.equals(graph.fingerprint()))?graph:null;}
+ public static synchronized void rememberNamed(String id,Graph graph){namedGraphs.put(id,new WeakReference<>(graph));}
  /** Named models share one cache slot, never a silently substituted second graph. */
  public static synchronized Graph loadNamed(String id,Source source,long budget,String description,String expectedSha)throws IOException{
   if(current!=null&&id.equals(modelId))return current;
@@ -17,7 +22,7 @@ public final class GraphCache {
   Graph loaded;try(InputStream in=source.open()){loaded=Graph.read(in,budget);}
   if(expectedSha!=null&&!expectedSha.isEmpty()&&!loaded.fingerprint().equals(expectedSha))throw new IOException("SHA256 коннектома не совпадает с паспортом");return loaded;
  }
- public static synchronized void installNamed(Graph loaded,String id,String description){install(loaded,description);modelId=id;}
+ public static synchronized void installNamed(Graph loaded,String id,String description){notice="";kind=description;current=loaded;modelId=id;rememberNamed(id,loaded);}
  public static synchronized Graph load(File model,Source bundled,long budget)throws IOException{
   if(current!=null)return current;Graph loaded;String description;String warning="";
   if(model.exists()){
@@ -26,7 +31,7 @@ public final class GraphCache {
   }else try(InputStream in=bundled.open()){loaded=Graph.read(in,budget);description="FlyWire v783 / Shiu signed model";}
   loaded.fingerprint();install(loaded,description);notice=warning;return loaded;
  }
- public static synchronized void install(Graph loaded,String description){notice="";kind=description;current=loaded;modelId=description.equals("Imported graph")?"imported":"flywire-v783";}
+ public static synchronized void install(Graph loaded,String description){notice="";kind=description;current=loaded;modelId=description.equals("Imported graph")?"imported":"flywire-v783";rememberNamed(modelId,loaded);}
  public static boolean same(Graph left, Graph right){
   if(left==right)return true;
   if(left==null||right==null)return false;
