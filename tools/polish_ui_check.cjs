@@ -28,7 +28,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
  assert.equal(await page.evaluate(()=>keys.KeyA),2);assert.equal(await page.evaluate(()=>keys.KeyD),undefined);
  await page.keyboard.down('a');assert.equal(await page.evaluate(()=>manualMask),0,'settings do not send gameplay keys');await page.keyboard.up('a');
  await page.click('#bindKey');await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>keys.KeyA),2,'Escape cancels assignment');
- await page.click('[data-tab="network"]');await page.fill('#seed','42');await page.locator('#seed').blur();
+ await page.click('[data-tab="network"]');await page.locator('#singleSettings > summary').click();await page.fill('#seed','42');await page.locator('#seed').blur();
  await page.evaluate(()=>{learner.updates=17;learner.weights[0][0]=.625;$('learnMode').value='teach';$('mode').value='closed';$('fdbJson').value=JSON.stringify({version:2,graph_sha256:graphIdentity.sha256,deltas:[],edges:[{source:ids('inputIds')[0],target:ids('outputIds')[0],weight:7}],learning:{enabled:true,rate:.05,maxEdges:256,maxWeight:32}});});
  await page.evaluate(()=>window.labState.prepare());const fly=await page.evaluate(()=>({weights:JSON.stringify(learner.weights),fdb:$('fdbJson').value}));
  await page.selectOption('#connectomeModel','male-cns-v1.0');await page.click('#applyConnectomeModel');await page.waitForFunction(()=>graphIdentity.modelId==='male-cns-v1.0');await page.evaluate(()=>window.labState.settle());

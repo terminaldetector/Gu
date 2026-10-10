@@ -1,0 +1,90 @@
+/* A game surface and a separate settings surface, sharing the same local engines. */
+body:not(.game-mode) .tab-bar{border-radius:8px;background:#20272d;padding:0;border:0;border-bottom:2px solid #374740;top:0}
+body:not(.game-mode) .tab-bar button{border-radius:0;min-height:56px}
+body:not(.game-mode) .panel{border-radius:10px;box-shadow:none}
+.partner-panel{padding:16px;border:1px solid var(--line);border-radius:10px;margin:16px 0;background:#15221d}
+.partner-panel h3{color:var(--mint);margin-top:0}
+#liveTrainingBar{display:none}
+body.game-mode #gamePanel{padding:6px;grid-template-rows:38px 32px minmax(0,1fr);gap:4px}
+body.game-mode #gameToolbar{max-width:none;grid-row:1;width:100%;margin:0;gap:6px}
+body.game-mode #gameToolbar button{min-height:38px;border-radius:8px;font-size:12px;padding:4px 8px}
+body.game-mode #gameToolbar #gameSettings,body.game-mode #gameToolbar #gameTraining{display:none}
+body.game-mode #gameToolbar #gameConnect{flex:2}
+body.game-mode #liveTrainingBar{grid-row:2;display:flex;gap:6px;align-items:center;min-width:0;font-size:11px;z-index:4;background:#122019;border-radius:6px;padding:2px 6px}
+#liveTrainingMode{min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#ceeedc}
+#liveSpeed{font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--mint)}
+#liveTrainingBar button{min-height:28px;padding:3px 8px;font-size:10px;border-radius:5px;flex:0 0 auto}
+body.game-mode .screen-stage{grid-row:3}
+body.game-mode .game-hud.left{padding-top:0}
+body.game-mode #gamePlot{display:none}
+body.game-mode .micro-panel{display:none}
+body.game-mode.game-details #gamePlot,body.game-mode.game-details .micro-panel{display:flex}
+body.game-mode.game-details .micro-panel{flex-direction:column}
+body.game-mode .playback{top:82px;left:8px;width:110px}
+body.game-mode .game-hud.left{padding-top:38px}
+body.game-mode .game-hud b,body.game-mode .game-hud span{font-size:10px;line-height:1.35;white-space:normal}
+@media(orientation:landscape){
+ body.game-mode .screen-stage{grid-template-columns:clamp(152px,21vw,260px) minmax(0,1fr) clamp(158px,23vw,284px);align-items:stretch;gap:8px}
+ body.game-mode .controller{left:8px;right:8px;bottom:10px}
+ body.game-mode .dpad{--key-size:min(calc(46px * var(--pad-scale)),calc((100dvh - 94px)/3));grid-template-columns:repeat(3,var(--key-size));grid-template-rows:repeat(3,var(--key-size))}
+ body.game-mode .actions button,body.sega.game-mode .actions button{--key-size:min(calc(48px * var(--pad-scale)),calc((100dvh - 98px)/2));height:var(--key-size);width:var(--key-size);font-size:20px;min-height:0;padding:0}
+ body.game-mode .actions{gap:6px}
+ body.game-mode .system-pad{bottom:10px;width:min(190px,30vw);gap:6px}
+ body.game-mode .system-pad button{min-height:36px;font-size:12px}
+ body.game-mode .game-hud{max-height:calc(100dvh - 92px - 160px);overflow:hidden}
+ body.game-mode.game-details #gamePlot{top:36px;left:0;right:auto;width:100%;height:64px;z-index:2}
+ body.game-mode.game-details .game-hud.left{padding-top:0}
+ body.game-mode.game-details .game-hud.right{padding-top:0}
+ body.game-mode.game-details .micro-panel{margin-top:2px;padding:3px 0}
+ body.game-mode.game-details .micro-heading,body.game-mode.game-details .map-legend,body.game-mode.game-details #mapStats{display:none}
+ body.game-mode.game-details .neural-map{display:none}
+ body.game-mode.game-details #mapState{font-size:9px;margin:0}
+ body.game-mode #gmodeLeft,body.game-mode #trainingBadge,body.game-mode #layerBadge{display:none}
+ body.game-mode #gameState{font-size:9px}
+}
+@media(orientation:landscape) and (max-width:700px){
+ body.game-mode .screen-stage{grid-template-columns:144px minmax(0,1fr) 150px;gap:4px}
+ body.game-mode #liveTrainingBar{gap:4px}
+ #liveTrainingBar button{font-size:9px;padding:3px 5px}
+ body.game-mode .game-hud.right #gameState{display:none}
+ body.game-mode .system-pad{width:132px}
+ body.game-mode .system-pad button{min-height:32px;font-size:10px}
+}
+@media(orientation:portrait){
+ body.game-mode #gamePanel{grid-template-rows:38px 64px minmax(0,1fr) auto auto 40px;padding:8px;gap:8px}
+ body.game-mode #liveTrainingBar{display:grid;grid-template-columns:1fr auto auto;grid-template-rows:26px 28px;gap:4px}
+ #liveTrainingMode{grid-column:1/3}#liveSpeed{grid-column:3;grid-row:1}#liveRecord,#liveAuto,#liveHintsButton{grid-row:2}#liveDetails{display:none}#liveHintTarget{grid-column:1/4;grid-row:2}
+ body.game-mode .screen-stage{grid-row:3;grid-template-columns:minmax(0,1fr);grid-template-rows:34px minmax(0,1fr)}
+ body.game-mode .game-hud.left{grid-column:1;grid-row:1;flex-direction:row;padding:0;overflow:hidden}
+ body.game-mode .game-hud.right{display:none}
+ body.game-mode .screen{grid-column:1;grid-row:2}
+ body.game-mode .controller{grid-row:4;gap:8px}
+ body.game-mode .dpad{--key-size:min(calc(46px * var(--pad-scale)),13vw);grid-template-columns:repeat(3,var(--key-size));grid-template-rows:repeat(3,var(--key-size))}
+ body.sega.game-mode .actions button{--key-size:min(calc(46px * var(--pad-scale)),13vw);width:var(--key-size);height:var(--key-size);font-size:19px}
+ body.game-mode .system-pad{grid-row:5;min-height:36px}
+ body.game-mode .playback{position:static;grid-row:6;width:100%}
+ body.game-mode #gamePlot{display:none!important}
+ body.game-mode #gameNotice.visible{left:10px;right:10px;bottom:220px}
+}
+@media(max-height:340px) and (orientation:landscape){
+ body.game-mode #gamePanel{grid-template-rows:32px 28px minmax(0,1fr);gap:3px}
+ body.game-mode #gameToolbar button{min-height:32px}
+ body.game-mode .playback{top:72px}
+ body.game-mode .game-hud{max-height:50px}
+ body.game-mode .game-hud.right #gameState{display:none}
+}
+@media(orientation:landscape){
+ body.game-mode .screen-stage{--left-rail:clamp(152px,21vw,260px);grid-template-columns:var(--left-rail) minmax(0,1fr) clamp(158px,23vw,284px)}
+ body.game-mode.game-details #gamePlot{width:var(--left-rail);height:clamp(40px,calc(100dvh - 274px),64px)}
+}
+@media(orientation:landscape) and (max-width:700px){body.game-mode .screen-stage{--left-rail:144px;grid-template-columns:var(--left-rail) minmax(0,1fr) 150px}}
+
+@media(orientation:landscape){
+ body.game-mode .screen-stage{--right-rail:clamp(158px,23vw,284px);grid-template-columns:var(--left-rail) minmax(0,1fr) var(--right-rail)}
+ body.game-mode .dpad{--key-size:min(calc(56px * var(--pad-scale)),calc((100dvh - 94px)/3),calc((var(--left-rail,177px) - 12px)/3))}
+ body.game-mode .actions button,body.sega.game-mode .actions button{--key-size:min(calc(56px * var(--pad-scale)),calc((100dvh - 98px)/2),calc((var(--right-rail,180px) - 12px)/3))}
+}
+@media(orientation:landscape) and (max-width:700px){body.game-mode .screen-stage{--right-rail:150px}}
+
+@media(orientation:landscape){body.game-mode #gamePanel{--left-rail:clamp(152px,21vw,260px);--right-rail:clamp(158px,23vw,284px)}}
+@media(orientation:landscape) and (max-width:700px){body.game-mode #gamePanel{--left-rail:144px;--right-rail:150px}}

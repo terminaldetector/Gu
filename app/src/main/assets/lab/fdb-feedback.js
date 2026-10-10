@@ -38,7 +38,7 @@
  function remember(data,rewardState=null){
   if(!blocked&&$('learnerController').value==='exo'&&$('learnMode').value==='train'&&!$('freeze').checked&&data.fdbDecision){if(!linked)capturedAt=gameSeconds;linked=true;current={id:data.fdbDecision.id,mask:data.fdbDecision.mask,frames:0,seconds:0,valid:true,rewardStart:rewardCopy(rewardState)};}
  }
- function frame(mask,seconds){gameSeconds+=seconds;if(current){current.frames++;current.seconds+=seconds;if(mask!==current.mask||(gmodeMode==='off'&&manualMask)||agentIntervened)current.valid=false;}}
+ function frame(mask,seconds){gameSeconds+=seconds;if(current){current.frames++;current.seconds+=seconds;if(mask!==current.mask||(gmodeMode==='off'&&manualMask&&$('liveHints')?.checked!==false)||agentIntervened)current.valid=false;}}
  function capture(rewardState=null){const previous=current;current=null;if(!previous||!previous.frames)return null;const elapsed=gameSeconds-capturedAt;capturedAt=gameSeconds;return {...previous,elapsed,rewardEnd:rewardCopy(rewardState)};}
  function settle(outcome,reward,interrupted){
   if(!outcome||blocked)return Promise.resolve();

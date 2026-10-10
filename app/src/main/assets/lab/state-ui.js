@@ -3,7 +3,7 @@
 (()=>{
 const fields=['mode','clock','maxHz','thresholdHz','windowMs','gain','seed','disableInhibition','scramble','lesions','inputIds','outputIds','backend','systemButtons','learnerController'];
 const capture=()=>Object.fromEntries(fields.map(id=>[id,$(id).type==='checkbox'?$(id).checked:$(id).value]));
-const defaults=capture(),gameDefaults=Object.fromEntries([...profileFields,'learnMode','runMode','autosavePolicy','layerAutosave'].map(id=>[id,$(id).type==='checkbox'?$(id).checked:$(id).value]));let lastGraph=null,restored=null,restoreJob=Promise.resolve(),restoring=false,saveJob=null,blocked=null;
+const defaults=capture(),gameDefaults=Object.fromEntries([...profileFields,'learnMode','runMode','liveHints','autosavePolicy','layerAutosave'].map(id=>[id,$(id).type==='checkbox'?$(id).checked:$(id).value]));let lastGraph=null,restored=null,restoreJob=Promise.resolve(),restoring=false,saveJob=null,blocked=null;
 const context=()=>ready&&loaded?labPlatform+'|'+romHash+'|'+graphIdentity.sha256:null;
 function write(){if(ready&&graphIdentity?.sha256){validateConfiguration(configuration());FlySettings.write(localStorage,labPlatform,graphIdentity.sha256,capture());}}
 function applyFields(values){

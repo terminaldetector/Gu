@@ -22,6 +22,7 @@ node tools/controller_check.cjs
 node tools/settings_check.cjs
 node --check app/src/main/assets/lab/state-ui.js
 node --check app/src/main/assets/lab/shell-ui.js
+node --check app/src/main/assets/lab/training-flow.js
 javac -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/RomImport.java tools/RomImportCheck.java
 java -cp "$task_tmp/classes" org.node.flyconsole.RomImportCheck
 node tools/two_player_mode_check.cjs

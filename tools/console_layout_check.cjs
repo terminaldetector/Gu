@@ -48,8 +48,8 @@ async function checkHeldTouch(page){
  await page.addInitScript(()=>{window.FlyBridge={demo:()=>window.fixtureDemo(new URL(location.href).searchParams.get('system')),acceptRom(){},orientation(){},stop(){},resume(){}};});
  await page.goto('https://flyconsole.local/lab/index.html');await page.waitForFunction(()=>loaded);
  assert.equal(await page.locator('#neuralMap .neural-cube').count(),16);
- await page.click('[data-tab="network"]');assert(await page.locator('#mode').isVisible());assert(!await page.locator('#gamePanel').isVisible());
- await page.click('[data-tab="learning"]');assert(await page.locator('#learnMode').isVisible());
+ await page.click('[data-tab="network"]');await page.locator('#singleSettings > summary').click();assert(await page.locator('#mode').isVisible());assert(!await page.locator('#gamePanel').isVisible());
+ await page.click('[data-tab="learning"]');assert(await page.locator('#trainingKind').isVisible());
  await page.click('[data-tab="research"]');assert(await page.locator('#benchmarkStart').isVisible());
  await page.click('[data-tab="info"]');assert(await page.locator('#passport').count());
  const preservation=await page.evaluate(()=>{const before={frame,weights:JSON.stringify(learner.weights),generation};openGame();leaveGame('network');openGame();return before.frame===frame&&before.weights===JSON.stringify(learner.weights)&&before.generation===generation;});
@@ -68,7 +68,7 @@ async function checkHeldTouch(page){
   });
   assert(boxes.canvas.w>80&&boxes.canvas.h>80,`usable video ${w}x${h}`);
   assert(Math.abs(boxes.canvas.w/boxes.canvas.h-256/240)<.025,`preserve video ratio ${w}x${h}`);
-  assert(boxes.plot.w>60&&boxes.plot.h>=40,'live trace occupies spare portrait space or left landscape panel');
+  assert.equal(boxes.plot.h,0,'research trace is hidden on the default play surface');
   const plot=boxes.plot,video=boxes.canvas;assert(plot.right<=video.x+1||plot.bottom<=video.y+1||plot.y>=video.bottom-1,'trace does not cover the ROM');
   assert(boxes.scroll<=w+1,`no horizontal overflow ${w}x${h}`);
   for(const b of boxes.buttons)assert(b.w>=25&&b.h>=25&&b.x>=0&&b.right<=w+1&&b.bottom<=h+1,`all human buttons visible ${w}x${h}`);
@@ -79,7 +79,7 @@ async function checkHeldTouch(page){
   if(w===390||w===844)await page.screenshot({path:`ui-preview/${w>h?'landscape':'portrait'}.png`});
  }
  await page.click('#gameExit');assert(await page.locator('#quickMenu').isVisible());await page.screenshot({path:'ui-preview/menu.png'});await page.click('[data-quick-tab="info"]');await page.click('#enterGame');
- await page.click('#gameSettings');assert(await page.locator('#orientation').isVisible());
+ await page.click('#gameExit');await page.click('[data-quick-tab="info"]');assert(await page.locator('#orientation').isVisible());
  await page.selectOption('#orientation','portrait');assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('fly-display')).orientation),'portrait');
  await page.evaluate(()=>{playing=false;connected=false;updateGmodeHud();});assert((await page.textContent('#brainBadge')).includes('OFF'));
  await page.uncheck('#showMap');await page.click('#enterGame');assert(!await page.locator('#neuralMap').isVisible());

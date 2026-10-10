@@ -74,7 +74,7 @@
   if(data.ok!==true){failure(data.error||'Модель не загружена; текущий граф сохранён.');return;}
   pending.ack=true;finish();
  };
- window.connectomeModels={ready(data){
+ window.connectomeModels={select(id){$('connectomeModel').value=id;return select();},pending:()=>!!pending,ready(data){
   if(!data||typeof data!=='object')return;
   // Older UI fixtures have no model ID; they describe the pre-existing FlyWire build.
   activeId=typeof data.modelId==='string'?data.modelId:'flywire-v783';

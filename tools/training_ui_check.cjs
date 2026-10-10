@@ -19,7 +19,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
  });
  for(const system of ['nes','snes']){
   await page.goto('https://flyconsole.local/lab/index.html?system='+system);await page.waitForFunction(()=>loaded);
-  await page.evaluate(()=>{window.labReady({kind:'fixture',neurons:64,edges:100,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:buttonNames.length},(_,i)=>String(i+17)),backend:'cpu'});showTab('learning');$('rewardMode').value='manual';});
+  await page.evaluate(()=>{window.labReady({kind:'fixture',neurons:64,edges:100,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:buttonNames.length},(_,i)=>String(i+17)),backend:'cpu'});showTab('learning');$('trainingEngineSettings').open=true;$('rewardMode').value='manual';});
   await page.selectOption('#learnMode','teach');await page.click('#trainingStart');await page.waitForFunction(()=>playing&&connected);
   await page.keyboard.down('ArrowRight');await page.waitForFunction(()=>learner.demonstrations>=10);await page.keyboard.up('ArrowRight');
   const taught=await page.evaluate(()=>({samples:learner.demonstrations,human:humanExamples.slice(),updates:learner.updates,policy:JSON.stringify(learner.save()),frame}));
