@@ -19,7 +19,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
  });
  for(const system of ['nes','snes']){
   await page.goto('https://flyconsole.local/lab/index.html?system='+system);await page.waitForFunction(()=>loaded);
-  await page.evaluate(()=>{window.labReady({kind:'fixture',neurons:64,edges:100,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:buttonNames.length},(_,i)=>String(i+17)),backend:'cpu'});showTab('learning');$('trainingEngineSettings').open=true;$('rewardMode').value='manual';});
+  await page.evaluate(()=>{window.labReady({kind:'fixture',neurons:64,edges:100,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:buttonNames.length},(_,i)=>String(i+17)),backend:'cpu'});showTab('learning');$('trainingEngineSettings').open=true;$('learnerController').value='adaptive';$('rewardMode').value='manual';});
   await page.selectOption('#learnMode','teach');await page.click('#trainingStart');await page.waitForFunction(()=>playing&&connected);
   await page.keyboard.down('ArrowRight');await page.waitForFunction(()=>learner.demonstrations>=10);await page.keyboard.up('ArrowRight');
   const taught=await page.evaluate(()=>({samples:learner.demonstrations,human:humanExamples.slice(),updates:learner.updates,policy:JSON.stringify(learner.save()),frame}));
@@ -57,12 +57,13 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   await page.waitForFunction(()=>fdbConfiguration().learningState?.human>0);
   await page.evaluate(()=>leaveGame('learning'));await page.selectOption('#learnMode','eval');
   const frozen=await page.evaluate(()=>({weights:JSON.stringify([learner.weights,learner.demonstrationWeights]),samples:learner.demonstrations,state:JSON.stringify(fdbConfiguration().learningState)}));
-  await page.click('#trainingStart');await page.waitForFunction(()=>playing&&connected);await page.waitForTimeout(400);
+  await page.click('#trainingStart');await page.waitForFunction(()=>playing&&connected&&trainingRequests.at(-1)?.learningMode==='eval'&&pendingToken===null);
+  // Finish work submitted before the mode boundary before measuring frozen evaluation.
+  Object.assign(frozen,await page.evaluate(()=>({weights:JSON.stringify([learner.weights,learner.demonstrationWeights]),samples:learner.demonstrations,state:JSON.stringify(fdbConfiguration().learningState)})));await page.waitForTimeout(400);
   assert.deepEqual(await page.evaluate(()=>({weights:JSON.stringify([learner.weights,learner.demonstrationWeights]),samples:learner.demonstrations,state:JSON.stringify(fdbConfiguration().learningState)})),frozen);
   await page.evaluate(()=>leaveGame('learning'));await page.selectOption('#learnMode','train');await page.click('#trainingStart');await page.waitForFunction(()=>playing&&connected);
-  await page.evaluate(()=>{manualMask=128;updateButtons();agentIntervened=true;});
-  const before=await page.evaluate(()=>learner.updates);await page.evaluate(()=>{rewardPending=1;learnedButtons({buttons:0,outputs:new Array(buttonNames.length).fill(0)});});
-  assert.equal(await page.evaluate(()=>learner.updates),before,'manual intervention never receives automatic reward credit');
+  const intervention=await page.evaluate(()=>{$('liveHints').checked=true;manualMask=128;updateButtons();agentIntervened=true;const before=learner.updates;rewardPending=1;learnedButtons({buttons:0,outputs:new Array(buttonNames.length).fill(0)});return {before,after:learner.updates};});
+  assert.equal(intervention.after,intervention.before,'manual intervention never receives automatic reward credit');
   await page.evaluate(()=>{manualMask=0;window.labPause();leaveGame('learning');});
   const benchmarkFrozen=await page.evaluate(async()=>{
    $('learnMode').value='teach';$('rewardMode').value='manual';$('winEnabled').checked=true;$('winAddress').value='100';$('winValue').value=String((nes.cpu.mem[100]+1)&255);$('episodeLength').value='10';$('benchmarkCriterion').value='Fixture RAM criterion';$('benchmarkAttempts').value='1';$('benchmarkPolicy').value='random';$('captureStart').onclick();

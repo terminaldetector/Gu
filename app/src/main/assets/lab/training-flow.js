@@ -6,7 +6,8 @@ let busy=false,selectedGraph=null,visibleDetails=false;
 const phase=()=>$('learnMode').value==='teach'?'rec':$('learnMode').value==='train'?($('liveHints').checked?'assist':'auto'):$('learnMode').value==='eval'?'eval':'off';
 const pair=()=>window.dualAgents?.active();
 function refresh(){
- const kind=phase(),running=pair()?window.dualAgents.running():playing&&connected;
+ const kind=phase(),running=pair()?window.dualAgents.running():playing&&connected;document.body.dataset.trainingKind=kind;
+ for(const id of ['liveRewardPlus','liveRewardMinus']){$(id).hidden=kind!=='assist'||pair();$(id).disabled=busy||!running;}
  $('trainingKind').value=kind;$('liveTrainingMode').textContent=pair()?'P1 '+$('dual1Mode').value.toUpperCase()+' · P2 '+$('dual2Mode').value.toUpperCase():labels[kind]+(running?'':' · пауза');
  const actual=playing&&liveFps>0?(liveFps/(labPlatform==='nes'?60:nes.fps)).toFixed(2):'—';
  $('liveSpeed').textContent='×'+emulationRate+(emulationRate>1?' · факт '+actual+'×':'');$('gameBoost').textContent='×'+emulationRate;$('gameBoost').classList.toggle('active',emulationRate>1);
@@ -40,6 +41,7 @@ function fdb(){
 function choose(kind){
  if(!Object.hasOwn(modes,kind))throw Error('Неизвестный формат обучения');
  if(pair()&&['rec','assist'].includes(kind))throw Error('Для REC / подсказок завершите две сети и выберите одного нейронного игрока.');
+ if(window.labState.restoring())throw Error('Дождитесь восстановления приобретённых весов.');
  window.labPause();$('learnMode').value=modes[kind];$('liveHints').checked=kind==='assist';$('hintAgent').checked=false;
  if(kind==='rec'){gmodeMode='off';$('gmode').value='off';rate(1);}
  if(kind!=='off'){$('mode').value='closed';$('clock').value='realtime';$('runMode').value='continuous';}
@@ -57,7 +59,7 @@ async function start(){
  }catch(e){status(e.message,true);}finally{busy=false;refresh();}
 }
 const waitSample=()=>new Promise((resolve,reject)=>{const started=performance.now();function check(){if(pendingToken===null&&!configuring)return resolve();if(performance.now()-started>30000)return reject(Error('Сеть не подтвердила конец записи'));setTimeout(check,20);}check();});
-async function stopRec(){
+async function stopRec(next='auto'){
  if(busy)return;busy=true;refresh();
  try{
   playing=false;await window.humanTeaching.stop('rec-stop');if(window.humanTeaching.error())throw Error(window.humanTeaching.error());
@@ -66,11 +68,11 @@ async function stopRec(){
   while(fdbExperience.length&&connected){sampleFrame(performance.now(),true);await waitSample();}
   await window.fdbAgent.drain();if(window.fdbAgent.error())throw Error(window.fdbAgent.error());
   await window.labState.checkpoint();if($('autosavePolicy').checked)persistPolicy(false);
-  choose('auto');fdb();startOriginal();status('Запись сохранена. AUTO продолжает с текущего кадра.');
+  choose(next);fdb();startOriginal();status('Запись сохранена. '+labels[next]+' продолжает с текущего кадра.');
  }catch(e){window.labPause();status('Запись остановлена; переход в AUTO: '+e.message,true);}finally{busy=false;refresh();}
 }
 async function switchLive(kind){
- if(phase()==='rec'&&playing&&connected)return stopRec();
+ if(phase()==='rec'&&playing&&connected)return stopRec(kind);
  try{choose(kind);await start();}catch(e){status(e.message,true);}
 }
 $('trainingKind').onchange=()=>{try{choose($('trainingKind').value);}catch(e){status(e.message,true);refresh();}};
@@ -80,7 +82,7 @@ $('gameBoost').onclick=()=>{try{const rates=[1,2,3,5,10];rate(rates[(rates.index
 $('liveRecord').onclick=()=>phase()==='rec'&&playing&&connected?stopRec():switchLive('rec');$('liveAuto').onclick=()=>switchLive('auto');$('liveHintsButton').onclick=()=>switchLive('assist');
 $('liveHintTarget').onclick=()=>{holding.clear();controllerMasks.clear();refreshManual();$('hintAgent').checked=!$('hintAgent').checked;learningBoundary();refresh();};
 $('liveDetails').onclick=()=>{visibleDetails=!visibleDetails;document.body.classList.toggle('game-details',visibleDetails);$('liveDetails').setAttribute('aria-pressed',String(visibleDetails));fitVideo();};
-for(const [id,value]of [['rewardPlus',1],['rewardMinus',-1]])$(id).onclick=()=>{if(phase()==='assist'&&!pair())rewardPending+=value;};
+for(const [id,value]of [['rewardPlus',1],['rewardMinus',-1],['liveRewardPlus',1],['liveRewardMinus',-1]])$(id).onclick=()=>{if(phase()==='assist'&&!pair())rewardPending+=value;};
 $('gmodeBoost').onchange=()=>{if($('learnerController').value==='exo'&&$('gmodeBoost').checked){$('gmodeBoost').checked=false;status('Стартовая эвристика относится к SARSA. Выберите внешний адаптер для её использования.');return;}setGmodeBoost($('gmodeBoost').checked);refresh();};
 $('gmodeLaunch').onclick=async()=>{
  if(busy)return;busy=true;refresh();

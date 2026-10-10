@@ -23,7 +23,8 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
  for(const system of ['nes','sega','snes','gb']){
   await page.goto('https://flyconsole.local/lab/index.html?system='+system);await page.waitForFunction(()=>loaded);
   await page.evaluate(()=>flowAnnounce(localStorage.getItem('flow-model')||'flywire-v783'));await page.evaluate(()=>labState.settle());
-  await page.evaluate(()=>{window.labPause();$('learnMode').value='off';$('liveHints').checked=false;$('learnerController').value='exo';$('rewardMode').value='manual';openGame();});
+  await page.evaluate(()=>{window.labPause();$('learnMode').value='off';$('liveHints').checked=false;$('rewardMode').value='manual';openGame();});
+  assert.equal(await page.inputValue('#learnerController'),'exo','fresh model uses neural FDB by default');
   // Fast-forward really advances the emulator, without changing policy or network seed.
   const baseline=await page.evaluate(()=>({policy:JSON.stringify(learner.save()),seed:$('seed').value,frame}));
   await page.evaluate(()=>{learningUI.rate(10);$('play').click();});await page.waitForTimeout(350);await page.evaluate(()=>labPause());
@@ -37,14 +38,16 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   const after=await page.evaluate(async()=>({frame,restarts:emulatorRestarts,sessions:await humanTeaching.store.request('list'),submitted:flowRequests.flatMap(r=>r.experience).filter(e=>e.human),taught:learner.demonstrations,kind:learningUI.phase()}));
   assert(after.frame>=rec.frame);assert.equal(after.restarts,rec.restarts,'STOP -> AUTO preserves ROM');assert.equal(after.kind,'auto');assert(after.sessions.some(s=>s.accepted>=rec.count&&s.status==='closed'));assert.equal(after.submitted.length,after.taught,'STOP submits every executed label once');assert(after.submitted.some(e=>e.mask===128),'executed REC labels reach native FDB');
   await page.waitForFunction(()=>flowRequests.some(r=>r.learningMode==='train'));
+  assert(await page.evaluate(()=>{const before=rewardPending;$('liveRewardPlus').onclick();return $('liveRewardPlus').hidden&&rewardPending===before;}),'pure automation has no manual reward channel');
   const humanCount=await page.evaluate(()=>learner.demonstrations);
   await page.keyboard.down('ArrowLeft');await page.waitForTimeout(130);
   assert.equal(await page.evaluate(()=>appliedAgentMask&64),0,'pure automation ignores human gameplay hints');assert.equal(await page.evaluate(()=>learner.demonstrations),humanCount);await page.keyboard.up('ArrowLeft');
   // Accelerated closed loop never stretches a cached decision past its eligibility interval.
-  await page.evaluate(()=>{flowFeedback=[];flowDelay=120;learningUI.rate(10);});await page.waitForTimeout(700);
+  await page.evaluate(()=>{flowFeedback=[];flowDelay=120;learningUI.rate(10);learningBoundary();});await page.waitForTimeout(700);
   const outcomes=await page.evaluate(()=>flowFeedback.filter(q=>q.op==='reward'));
-  assert(outcomes.length>1);assert(outcomes.every(q=>q.seconds>0&&q.seconds<=.12&&q.frames>0),'accelerated rewards follow bounded executed game intervals');
+  assert(outcomes.length>1);assert(outcomes.every(q=>q.seconds>0&&q.seconds<=.12&&q.frames>0),'accelerated rewards follow bounded executed game intervals: '+JSON.stringify(outcomes.map(q=>({seconds:q.seconds,frames:q.frames,decision:q.decision}))));
   await page.click('#liveHintsButton');await page.waitForFunction(()=>playing&&connected&&$('liveHints').checked);await page.evaluate(()=>learningUI.rate(1));
+  assert(await page.evaluate(()=>{const before=rewardPending;$('liveRewardPlus').onclick();const plus=rewardPending;$('liveRewardMinus').onclick();return !$('liveRewardPlus').hidden&&plus===before+1&&rewardPending===before;}),'streaming rewards are available inside the game');
   const assisted=await page.evaluate(()=>learner.demonstrations);await page.keyboard.down('ArrowLeft');await page.waitForFunction(n=>learner.demonstrations>n,assisted);
   assert.equal(await page.evaluate(()=>appliedAgentMask),64,'teacher action replaces, rather than labels a mixture with agent A');await page.keyboard.up('ArrowLeft');
   await page.waitForFunction(()=>flowRequests.some(q=>q.learningMode==='train'&&q.experience.some(e=>e.mask===64&&e.human)));
@@ -56,6 +59,8 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
    await page.click('[data-tab="network"]');await page.selectOption('#partnerModel','male-cns-v1.0');await page.selectOption('#gmode','coop');await page.click('#gmodeLaunch');await page.waitForFunction(()=>playing&&connected&&graphIdentity.modelId==='male-cns-v1.0');assert.equal(await page.evaluate(()=>gmodeMode),'coop');await page.waitForFunction(()=>brainMask===1);assert.equal(await page.evaluate(()=>nes.mask2),1,'selected Male CNS model routes to actual Sega P2');
    await page.click('#liveHintsButton');await page.waitForFunction(()=>playing&&connected&&$('liveHints').checked);await page.click('#liveHintTarget');const n=await page.evaluate(()=>learner.demonstrations);await page.keyboard.down('ArrowRight');await page.waitForFunction(n=>learner.demonstrations>n,n);assert.equal(await page.evaluate(()=>nes.mask2),128);assert.equal(await page.evaluate(()=>nes.mask),0,'explicit P2 hint does not masquerade as human P1');await page.keyboard.up('ArrowRight');
    await page.evaluate(()=>labPause());await page.screenshot({path:'ui-preview/alpha18-sega-flow-landscape.png'});
+   await page.setViewportSize({width:390,height:844});await page.screenshot({path:'ui-preview/alpha18-sega-flow-portrait.png'});
+   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'portrait streaming controls fit');await page.setViewportSize({width:844,height:390});
   }
  }
  // Large pad and optional instrumentation must remain clear of all touch targets.

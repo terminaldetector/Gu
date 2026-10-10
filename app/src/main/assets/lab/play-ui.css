@@ -88,3 +88,11 @@ body.game-mode .game-hud b,body.game-mode .game-hud span{font-size:10px;line-hei
 
 @media(orientation:landscape){body.game-mode #gamePanel{--left-rail:clamp(152px,21vw,260px);--right-rail:clamp(158px,23vw,284px)}}
 @media(orientation:landscape) and (max-width:700px){body.game-mode #gamePanel{--left-rail:144px;--right-rail:150px}}
+
+body.game-mode[data-training-kind=assist] #liveRecord,body.game-mode[data-training-kind=assist] #liveHintsButton{display:none}
+@media(orientation:portrait){
+ body.game-mode[data-training-kind=assist] #liveRewardPlus,body.game-mode[data-training-kind=assist] #liveRewardMinus{grid-row:2}
+ body.game-mode[data-training-kind=assist] #liveAuto{grid-row:2;grid-column:3}
+ body.game-mode[data-training-kind=assist] #liveHintTarget{grid-row:1;grid-column:2}
+ body.game-mode[data-training-kind=assist] #liveTrainingMode{grid-column:1}
+}
