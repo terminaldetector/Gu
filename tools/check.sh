@@ -18,6 +18,7 @@ node tools/gmode_check.cjs
 node tools/system_controls_check.cjs
 node tools/console_reset_check.cjs
 node tools/runtime_flow_check.cjs
+node tools/emulation_clock_check.cjs
 node tools/controller_check.cjs
 node tools/score_search_check.cjs
 node --check app/src/main/assets/lab/score-ui.js
@@ -57,8 +58,9 @@ javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.InferenceCheck
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/LayerSetStore.java tools/LayerSetStoreCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.LayerSetStoreCheck
-javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/FdbCheckpoint.java tools/FdbCheckpointCheck.java tools/FdbGameBridge.java
+javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/FdbCheckpoint.java tools/FdbCheckpointCheck.java tools/FdbPlasticityCheck.java tools/FdbGameBridge.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbCheckpointCheck
+java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbPlasticityCheck
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/DualAgentContext.java app/src/main/java/org/node/flyconsole/DualLayerStore.java app/src/main/java/org/node/flyconsole/DualRequestGuard.java tools/DualAgentCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.DualAgentCheck
 CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/fdb_game_check.cjs

@@ -17,6 +17,8 @@ let appliedDualMasks=[0,0],dualOverrides=[false,false];
 let gmodeMode = 'off';
 let gmodeBoost = false, gmodeBoostBackup = null;
 let emulationRate=1,acceleratedFrames=0,deferredVideo=false,videoDirty=false,latestVideo=null,observationDirty=false,brainGameAge=0,brainExpired=false;
+const emulationClock=new FlyEmulationClock();
+let emulationMeasureState='';
 let liveFps=0,fpsFrames=0,fpsAt=performance.now(),lastWindowWall=0,emulatorRestarts=0;
 let lastFrame = 0, lastSample = 0, lastTelemetry = 0, frozen = null, retina = new Array(16).fill(0);
 let audioContext = null, audioNode = null, soundEnabled = false;
@@ -50,8 +52,8 @@ function trainingView(){
  $('rewardGuide').textContent=source==='manual'?($('liveHints').checked?'Отмечайте полезные действия и ошибки. Нажатия модели и подсказки человека имеют раздельный credit.':'Чистая автоматика без ручных наград. Выберите «Поиск scores» или RAM-профиль; без награды модель исследует без критерия успеха.'):source==='score'?'Награда по подтверждённому счёту игры. Рост очков поощряется; сброс счёта не наказывает.':source==='ram'?'Автооценка по RAM: проверьте адрес, формат и знак изменения на вашей игре.': 'Автооценка относится только к встроенному тесту NES; для внешней игры выберите ручную оценку или RAM.';
  $('trainingStatus').textContent=(connected&&playing?'Работает':connected?'Связь включена, игра на паузе':'На паузе')+' · '+labels[mode]+' · '+$('clock').value+' · '+($('runMode').value==='continuous'?'непрерывная игра':'эпизодический опыт');
  const badge=$('trainingBadge');if(badge){badge.textContent=(mode==='teach'?'ПОКАЗ':mode==='train'?'AUTO':mode==='eval'?'ПРОВЕРКА':'ИГРА')+' · '+(connected&&playing?'LIVE':'ПАУЗА');badge.className=connected&&playing?'hud-live':'hud-idle';}
- let f=null;try{f=fdbConfiguration();}catch(_){}const c=f&&f.learningState;
- $('trainingFdbStatus').textContent=(f&&f.learning&&f.learning.enabled?(['teach','train'].includes(mode)&&!$('freeze').checked&&connected&&playing?'FDB принимает опыт':'FDB подключён · обучение на паузе'):'Обучение FDB выключено')+' · примеров '+(c?c.observations:0)+' (человек '+(c?c.human:0)+', auto '+(c?c.automatic:0)+') · создано '+(c&&c.born||0)+' · удалено '+(c&&c.pruned||0)+' · отклонено '+(c&&c.rejected||0)+' · очередь '+fdbExperience.length;
+ let f=null;try{f=fdbConfiguration();}catch(_){}const c=f&&f.learningState;if($('trainingBase'))$('trainingBase').checked=!f?.learning||f.learning.trainBase!==false;
+ $('trainingFdbStatus').textContent=(f&&f.learning&&f.learning.enabled?(['teach','train'].includes(mode)&&!$('freeze').checked&&connected&&playing?'FDB принимает опыт':'FDB подключён · обучение на паузе'):'Обучение FDB выключено')+' · примеров '+(c?c.observations:0)+' (человек '+(c?c.human:0)+', auto '+(c?c.automatic:0)+') · обновлений ΔW '+(c&&c.baseUpdates||0)+' · исходных связей в обучении '+(c&&c.baseCandidates||0)+' · создано '+(c&&c.born||0)+' · удалено '+(c&&c.pruned||0)+' · отклонено '+(c&&c.rejected||0)+' · очередь '+fdbExperience.length;
 }
 function startTrainingGame(){playing=true;controlsEnabled(true);$('play').textContent='Пауза';nativeCall('resume');openGame();updateGmodeHud();trainingView();}
 function learningStats(){ trainingView();$('learningStats').textContent='Обновлений подражания: '+learner.demonstrations+' · '+learner.demonstrationSeconds.toFixed(1)+' с · пропущено '+learner.skippedDemonstrations+(learner.archive?' · архив: '+learner.archive.train.length+' сесс., '+learner.archive.passes+' проход(а); после проверки добавлено '+learner.archive.additionalSamples+' живых примеров':'')+' · обновлений по награде: '+learner.updates+' · эпизодов: '+learner.episodes+' · награда: '+episodeReward.toFixed(2)+' · шаг: '+episodeSteps+' · кнопки: '+brainMask;
@@ -155,7 +157,7 @@ function updateGmodeHud(){
  brain.textContent=connected?(playing?'СЕТЬ ON':'СЕТЬ · ПАУЗА'):'СЕТЬ OFF';brain.className=connected?'hud-live':'hud-idle';
  state.textContent=active?'2P · '+(connected?'связь активна':'ожидает связи'):'Одиночный режим';
  const connect=$('gameConnect');if(connect)connect.textContent=connected?'Отключить сеть':'Подключить сеть';
- const boost=$('gameBoost');if(boost){boost.textContent='×'+emulationRate;boost.classList.toggle('active',emulationRate>1);}
+ const boost=$('gameBoost');if(boost){boost.textContent=emulationSpeedLabel();boost.classList.toggle('active',emulationRate>1);}
  updateMapFreshness();
 }
 let mapReceivedAt=0;
@@ -389,7 +391,7 @@ window.labReady=function(data) {
   if(labPlatform==='sega'&&$('gmodeStatus'))$('gmodeStatus').textContent='Sega: независимые P1/P2; человек и сеть могут играть вместе.';
   updateGmodeHud();
   const d=data.diagnostics||{},device=d.device||{};
-  $('passport').textContent='Fly Console Lab '+(d.version||'test')+' · '+labPlatform.toUpperCase()+'\n'+data.kind+'\nНейронов: '+data.neurons+' · связей: '+data.edges+'\nSHA256 графа: '+(data.graph_sha256||'не предоставлен')+'\nМодель: LIF · dt '+(d.dt_ms||.1)+' мс · задержка '+(d.synaptic_delay_ms||1.8)+' мс · W₀ фиксирован; ΔW и Wexo подключаются отдельно\nОценка графа и одного состояния: '+(d.graph_memory_mib||'—')+' МиБ · предел Java heap: '+data.heapMiB+' МиБ\nУстройство: '+(device.model||'тестовая среда')+' · Android '+(device.android||'—')+' / API '+(device.sdk||'—')+'\nWebView: '+(device.webview||'—')+' · ABI '+(device.abis||[]).join(', ')+'\nБиологическая эквивалентность не подтверждена. SARSA обучает внешний адаптер. Нейронный режим обучает Wexo через действия и награду.';
+  $('passport').textContent='Fly Console Lab '+(d.version||'test')+' · '+labPlatform.toUpperCase()+'\n'+data.kind+'\nНейронов: '+data.neurons+' · связей: '+data.edges+'\nSHA256 графа: '+(data.graph_sha256||'не предоставлен')+'\nМодель: LIF · dt '+(d.dt_ms||.1)+' мс · задержка '+(d.synaptic_delay_ms||1.8)+' мс · W₀ фиксирован; ΔW и Wexo подключаются отдельно\nОценка графа и одного состояния: '+(d.graph_memory_mib||'—')+' МиБ · предел Java heap: '+data.heapMiB+' МиБ\nУстройство: '+(device.model||'тестовая среда')+' · Android '+(device.android||'—')+' / API '+(device.sdk||'—')+'\nWebView: '+(device.webview||'—')+' · ABI '+(device.abis||[]).join(', ')+'\nБиологическая эквивалентность не подтверждена. SARSA обучает внешний адаптер. Нейронный режим обучает ΔW и Wexo через действия и награду; W₀ сохраняется.';
   ['apply','resetBrain','brainToggle','record','console'].forEach(id=>$(id).disabled=false);
   log(data.kind+'; heap '+data.heapMiB+' МиБ. Автопорты — технические.');if(data.notice)log(data.notice);if(window.labState){window.labState.ready(data,changed);return window.labState.settle();}
 };
@@ -414,10 +416,11 @@ function validateFdb(value,graphSha,inputs=null,outputs=null){
   for(const x of list)if(!x||typeof x.source!=='string'||typeof x.target!=='string'||!/^\d+$/.test(x.source)||!/^\d+$/.test(x.target)||!Number.isFinite(x.weight)||Math.abs(x.weight)>127)throw Error('FDB: неверный ID или вес');
  }
  validateGrowth(value.growth);
- const l=value.learning;if(l!==undefined){if(!l||typeof l!=='object'||Array.isArray(l)||typeof l.enabled!=='boolean')throw Error('FDB learning: неверный объект');if(l.enabled&&(!Number.isFinite(l.rate)||l.rate<.001||l.rate>.2||!Number.isInteger(l.maxEdges)||l.maxEdges<1||l.maxEdges>1024||!Number.isFinite(l.maxWeight)||l.maxWeight<=0||l.maxWeight>127))throw Error('FDB learning: неверные границы');}
- if(value.learningState){const c=value.learningState;if(![1,2].includes(c.version)||!Array.isArray(c.sources)||!Array.isArray(c.targets)||['observations','human','automatic'].some(k=>!Number.isSafeInteger(c[k])||c[k]<0)||c.observations!==c.human+c.automatic||(inputs&&JSON.stringify(c.sources)!==JSON.stringify(inputs))||(outputs&&JSON.stringify(c.targets)!==JSON.stringify(outputs)))throw Error('Неверный checkpoint обучения FDB');
-  if(c.version===2){const seen=new Set();if(c.algorithm!=='action-conditioned window eligibility'||!Number.isInteger(c.rng)||c.rng<1||c.rng>4294967295||!Number.isFinite(c.baseline)||Math.abs(c.baseline)>20||['born','pruned','rejected'].some(k=>!Number.isSafeInteger(c[k])||c[k]<0)||!Array.isArray(c.traces)||c.traces.length>1216)throw Error('Неверное состояние пластичности FDB');
-   for(const t of c.traces){const key=t.source+':'+t.target;if(typeof t.source!=='string'||typeof t.target!=='string'||!/^\d+$/.test(t.source)||!/^\d+$/.test(t.target)||t.source===t.target||seen.has(key)||!Number.isFinite(t.eligibility)||Math.abs(t.eligibility)>2||!Number.isFinite(t.utility)||Math.abs(t.utility)>4||!Number.isFinite(t.support)||t.support<0||t.support>4||!Number.isSafeInteger(t.evidence)||t.evidence<0||!Number.isInteger(t.bad)||t.bad<0||t.bad>2147483647)throw Error('Неверный след FDB');seen.add(key);}
+ const l=value.learning;if(l!==undefined){if(!l||typeof l!=='object'||Array.isArray(l)||typeof l.enabled!=='boolean'||l.trainBase!==undefined&&typeof l.trainBase!=='boolean')throw Error('FDB learning: неверный объект');if(l.enabled&&(!Number.isFinite(l.rate)||l.rate<.001||l.rate>.2||!Number.isInteger(l.maxEdges)||l.maxEdges<1||l.maxEdges>1024||!Number.isFinite(l.maxWeight)||l.maxWeight<=0||l.maxWeight>127))throw Error('FDB learning: неверные границы');}
+ if(value.learningState){const c=value.learningState;if(![1,2,3].includes(c.version)||!Array.isArray(c.sources)||!Array.isArray(c.targets)||['observations','human','automatic'].some(k=>!Number.isSafeInteger(c[k])||c[k]<0)||c.observations!==c.human+c.automatic||(inputs&&JSON.stringify(c.sources)!==JSON.stringify(inputs))||(outputs&&JSON.stringify(c.targets)!==JSON.stringify(outputs)))throw Error('Неверный checkpoint обучения FDB');
+  if(c.version===3&&(!Number.isSafeInteger(c.baseUpdates)||c.baseUpdates<0||!Number.isInteger(c.baseCandidates)||c.baseCandidates<0||c.baseCandidates>512))throw Error('Неверное состояние исходных весов FDB');
+  if(c.version>=2){const seen=new Set();if(c.algorithm!==(c.version===2?'action-conditioned window eligibility':'mixed-path eligibility v3')||!Number.isInteger(c.rng)||c.rng<1||c.rng>4294967295||!Number.isFinite(c.baseline)||Math.abs(c.baseline)>20||['born','pruned','rejected'].some(k=>!Number.isSafeInteger(c[k])||c[k]<0)||!Array.isArray(c.traces)||c.traces.length>(c.version===2?1216:2048))throw Error('Неверное состояние пластичности FDB');
+   for(const t of c.traces){const key=t.source+':'+t.target;if(typeof t.source!=='string'||typeof t.target!=='string'||!/^\d+$/.test(t.source)||!/^\d+$/.test(t.target)||t.source===t.target||seen.has(key)||!Number.isFinite(t.eligibility)||Math.abs(t.eligibility)>2||!Number.isFinite(t.utility)||Math.abs(t.utility)>4||!Number.isFinite(t.support)||t.support<(c.version===2?0:-4)||t.support>4||!Number.isSafeInteger(t.evidence)||t.evidence<0||!Number.isInteger(t.bad)||t.bad<0||t.bad>2147483647)throw Error('Неверный след FDB');seen.add(key);}
   }
  }
 
@@ -539,28 +542,47 @@ function advanceFrame(now,forceSample=false) {
   try {updateButtons();const dual=window.dualAgents&&window.dualAgents.active(),observation=!dual&&window.humanTeaching?window.humanTeaching.beforeFrame():null;const started=performance.now();nes.frame();const elapsed=performance.now()-started;measuredCpuMs+=elapsed;measuredFrames++;if(benchmark){benchmark.frames++;benchmark.emulatorMs+=elapsed;}frame++;const dt=1/(labPlatform==='nes'?60:nes.fps);if(dual)window.dualAgents.frame({masks:appliedDualMasks.slice(),dt,overrides:dualOverrides.slice()});else{if(window.fdbAgent)window.fdbAgent.frame(appliedAgentMask,dt);if(window.humanTeaching)window.humanTeaching.commit(dt,observation);}if(!dual&&connected){brainGameAge+=dt;if(!brainExpired&&brainGameAge>=.25){brainExpired=true;if(brainMask&&pendingToken===null)agentIntervened=true;releaseBrain();}}sampleFrame(now,forceSample);}
   catch(error){if(window.dualAgents&&window.dualAgents.active())window.dualAgents.pause('emulator-error');if(window.humanTeaching)window.humanTeaching.stop('error');playing=false;connected=false;releaseBrain();status('Эмуляция остановлена: '+error.message,true);$('play').textContent='Запустить эмулятор';}
 }
+function emulationSpeedLabel(){
+ const nominal=labPlatform!=='nes'&&nes?nes.fps:60,actual=liveFps/nominal;
+ if(!playing||liveFps===0)return 'Цель ×'+emulationRate;
+ return Math.abs(actual-emulationRate)<=emulationRate*.05?'×'+emulationRate:actual.toFixed(2)+'× / '+emulationRate+'×';
+}
 function loop(now) {
   if((pendingToken!==null||configuring)&&now-pendingSince>30000)window.labError({message:'Нет ответа сети более 30 секунд: опыт остановлен'});
   const dual=window.dualAgents&&window.dualAgents.active(),fps=labPlatform!=='nes'&&nes?nes.fps:60;
   if(brainMask&&emulationRate===1&&now-lastResponse>500){agentIntervened=true;releaseBrain();}
   const lockstep=connected&&$('clock').value==='lockstep';
   if(now-fpsAt>=1000){liveFps=(measuredFrames-fpsFrames)*1000/(now-fpsAt);fpsFrames=measuredFrames;fpsAt=now;updateGmodeHud();const label=$('gameMetrics');if(label)label.textContent=liveFps.toFixed(1)+' FPS · '+(liveFps/fps).toFixed(2)+'× · сеть '+lastWindowWall.toFixed(1)+' мс';if(window.learningUI)window.learningUI.refresh();}
-  const interval=1000/(fps*emulationRate),waiting=dual?window.dualAgents.waiting():pendingToken!==null;
-  if(!playing||configuring||(lockstep&&waiting)){lastFrame=now;}
-  else {
-    const cap=emulationRate===1?3:Math.min(30,Math.ceil(emulationRate*3)),quantum=Math.max(1,Math.round(fps*.1)),started=performance.now();
-    lastFrame=Math.max(lastFrame,now-interval*cap);
-    const count=Math.min(lockstep?1:cap,Math.floor((now-lastFrame+.01)/interval));deferredVideo=true;
-    for(let i=0;i<count&&playing&&!configuring;i++){
-      if(lockstep&&(dual?window.dualAgents.waiting():pendingToken!==null))break;
-      lastFrame+=interval;acceleratedFrames++;advanceFrame(now,lockstep||(emulationRate>1&&acceleratedFrames>=quantum));
-      if(acceleratedFrames>=quantum)acceleratedFrames=0;
-      if(performance.now()-started>=4)break;
-    }
-    deferredVideo=false;presentVideo();
-  }
+  presentVideo();
   requestAnimationFrame(loop);
 }
+// Computation is paced by real time, never by requestAnimationFrame. A short
+// MessageChannel continuation yields to input/rendering without the nested timer
+// clamp imposing a false speed ceiling. Video presentation stays on RAF.
+const emulationChannel=new MessageChannel();
+function emulationPump(){
+ const now=performance.now(),fps=labPlatform!=='nes'&&nes?nes.fps:60,dual=window.dualAgents&&window.dualAgents.active();
+ const lockstep=connected&&$('clock').value==='lockstep',waiting=()=>dual?window.dualAgents.waiting():pendingToken!==null;
+ const active=playing&&loaded&&!romLoading&&!configuring&&!document.hidden&&!(lockstep&&waiting());
+ emulationClock.configure(now,fps,emulationRate,active);
+ const measureState=[playing&&!romLoading&&!document.hidden,fps,emulationRate].join(':');
+ if(measureState!==emulationMeasureState){emulationMeasureState=measureState;fpsFrames=measuredFrames;fpsAt=now;liveFps=0;}
+ const quantum=Math.max(1,Math.round(fps*.1)),started=now;
+ deferredVideo=true;
+ try{
+  while(emulationClock.due(performance.now())&&playing&&!romLoading&&!configuring){
+   if(lockstep&&waiting())break;
+   emulationClock.step();acceleratedFrames++;
+   advanceFrame(performance.now(),lockstep||(emulationRate>1&&acceleratedFrames>=quantum));
+   if(acceleratedFrames>=quantum)acceleratedFrames=0;
+   if(lockstep||performance.now()-started>=4)break;
+  }
+ }finally{deferredVideo=false;}
+ const delay=emulationClock.delay(performance.now());
+ if(active&&delay<=0)emulationChannel.port2.postMessage(0);else setTimeout(emulationPump,Math.min(16,Math.max(1,delay)));
+}
+emulationChannel.port1.onmessage=emulationPump;
+setTimeout(emulationPump,0);
 window.labPause=function() {
   if(window.dualAgents&&window.dualAgents.active())window.dualAgents.pause('pause');
   if(window.humanArchive)window.humanArchive.cancel();

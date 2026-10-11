@@ -269,7 +269,9 @@ public final class NesLabActivity extends Activity {
                 nextLearningConfig=new JSONObject(learning.toString());
                 if(learning.getBoolean("enabled")||learning.has("rate")){
                     if(!(learning.get("maxEdges") instanceof Number)||learning.getDouble("maxEdges")!=learning.getInt("maxEdges"))throw new IllegalArgumentException("FDB learning edge cap");
-                    nextLearning=new FdbLearning(graph,layer,next.inputs,next.outputs,learning.getDouble("rate"),learning.getInt("maxEdges"),(float)learning.getDouble("maxWeight"));
+                    if(learning.has("trainBase")&&!(learning.get("trainBase") instanceof Boolean))throw new IllegalArgumentException("FDB trainBase must be boolean");
+                    nextLearningConfig.put("trainBase",learning.optBoolean("trainBase",true));
+                    nextLearning=new FdbLearning(graph,layer,next.inputs,next.outputs,learning.getDouble("rate"),learning.getInt("maxEdges"),(float)learning.getDouble("maxWeight"),learning.optBoolean("trainBase",true));
                     nextLearning.seed(next.seed);
                     JSONObject state=fdb.optJSONObject("learningState");
                     if(state!=null){

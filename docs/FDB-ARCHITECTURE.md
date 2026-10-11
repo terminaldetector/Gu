@@ -1,4 +1,6 @@
-# Alpha15: acquired computation, not only sparse inference
+# FDB: acquired computation and root adaptation
+
+Alpha20 changes are specified in [learned roots and synthetic structure](ALPHA20-FDB-SPEED.md), including research references, v3 migration, exact limits and measurements. The sections below describe the original alpha15 foundation where not superseded.
 
 ## Implemented architecture
 
@@ -10,12 +12,12 @@ growth weights still update adjacency and revision, and their CPU checks remain.
 | Level | Storage | Simulation / learning |
 |---|---|---|
 | W₀ | Original signed FLY1 CSR `Graph` | CPU/GPU read it; learning never writes its arrays |
-| ΔW | `GraphDelta` deltas on existing W₀ pairs | Applied by both backends; explicitly configured, not automatically reward-trained here |
+| ΔW | `GraphDelta` deltas on existing W₀ pairs | Applied by both backends; alpha20 learns a bounded selection through action credit |
 | Wexo | Additional `GraphDelta` edges between existing neuron IDs | Actual delayed synaptic current, supervised consolidation, action-conditioned reward learning and pruning |
 
 `W_effective = W₀ + ΔW + Wexo`. The public Java arrays are a read-only
 architectural contract, not a Java-language immutable-array type. Tests check
-that the implemented learning paths preserve W₀ and explicit ΔW.
+that learning preserves W₀; alpha20 trains selected effective weights through ΔW. Explicit deltas outside the learning region are retained.
 
 ## Two controllers, three learning modes
 
@@ -98,7 +100,7 @@ Profiles and local policy files are now keyed by ROM **and graph SHA256**;
 legacy files remain readable only after normal identity validation. Named
 Layer Sets reject another ROM, graph, platform or ordered-port identity.
 
-## Measured checks
+## Original alpha15 measured checks
 
 `tools/fdb_game_check.cjs` runs actual bundled WASM Sega, SNES and GB cartridges,
 4×4 video observations, production Java CPU LIF, neural action selection,

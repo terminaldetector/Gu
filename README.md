@@ -1,3 +1,9 @@
+## alpha20 · trainable roots and measured fast-forward
+
+FDB now trains bounded changes to selected original synapses (ΔW) together with signed exogenous weights (Wexo), preserving the original W₀. Mixed-path action credit, repeated evidence before structural birth, internal growth candidates and version 3 learning checkpoints work through the existing single/dual model architecture. Root learning can be switched independently for P1/P2. See [mechanisms, research sources, migration and measured checks](docs/ALPHA20-FDB-SPEED.md).
+
+Emulation now follows an independent wall-clock scheduler. Real NES/MD/SNES/GB cores measured approximately 3.00× when set to ×3, including a pending-model fixture. Display refresh no longer imposes the former 4-ms ceiling; hardware-limited operation shows achieved / requested speed. This is not a guarantee that every Android device sustains ×10.
+
 ## alpha19 · ROM, realtime and score discovery
 
 ROM replacement preserves the previous console on failure and accepts only the latest overlapping request. Streaming hints share one archive session; archive quota/errors cannot block switching games or saving learned weights. Archives remain explicit, bounded and user managed (128 sessions, existing byte limits).

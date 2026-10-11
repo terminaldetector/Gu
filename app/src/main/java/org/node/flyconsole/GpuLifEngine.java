@@ -61,7 +61,8 @@ public final class GpuLifEngine implements AutoCloseable {
     private GraphDelta uploadedLayer;
     private long uploadedVersion=-1;
     private final double[] incomingMagnitude;
-    private final java.util.HashSet<Integer> patchedWeights=new java.util.HashSet<>();
+    private final java.util.HashMap<Integer,Float> patchedWeights=new java.util.HashMap<>();
+    private java.util.List<GraphDelta.Edge> uploadedExtras=java.util.Collections.emptyList();
 
     public GpuLifEngine(Graph graph) {
         if (graph == null || graph.ids.length == 0) throw new IllegalArgumentException("Пустой граф");
@@ -167,21 +168,30 @@ public final class GpuLifEngine implements AutoCloseable {
         for(GraphDelta.Edge d:deltas)for(int e=graph.offsets[d.source];e<graph.offsets[d.source+1];e++)if(graph.targets[e]==d.target)magnitude[d.target]+=Math.abs(graph.weights[e]+d.weight)-Math.abs(graph.weights[e]);
         for(GraphDelta.Edge e:extras)magnitude[e.target]+=Math.abs(e.weight);
         for(double sum:magnitude)if(!Double.isFinite(sum)||sum>4_000_000)throw new IllegalArgumentException("FDB exceeds GPU delayed-event range");
-        // Restore previous sparse patches before applying the new revision.
-        for(int e:patchedWeights)patchWeight(e,graph.weights[e]);patchedWeights.clear();
+        // Root learning changes weights frequently: patch only changed values,
+        // without first restoring every trained synapse to W0 on each window.
+        java.util.HashMap<Integer,Float> nextWeights=new java.util.HashMap<>();
         for(GraphDelta.Edge d:deltas) {
             boolean found=false;
             for(int e=graph.offsets[d.source];e<graph.offsets[d.source+1];e++)if(graph.targets[e]==d.target){
-                patchWeight(e,graph.weights[e]+d.weight);patchedWeights.add(e);found=true;
+                float value=graph.weights[e]+d.weight;nextWeights.put(e,value);
+                if(!patchedWeights.containsKey(e)||patchedWeights.get(e)!=value)patchWeight(e,value);found=true;
             }
             if(!found)throw new IllegalArgumentException("FDB delta requires base edge");
         }
+        for(int e:patchedWeights.keySet())if(!nextWeights.containsKey(e))patchWeight(e,graph.weights[e]);
+        patchedWeights.clear();patchedWeights.putAll(nextWeights);
+        boolean same=extras.size()==uploadedExtras.size();
+        for(int i=0;same&&i<extras.size();i++){GraphDelta.Edge a=extras.get(i),b=uploadedExtras.get(i);same=a.source==b.source&&a.target==b.target&&a.weight==b.weight;}
+        if(!same){
         int[] a=new int[n+1+extras.size()*2], counts=new int[n];
         for(GraphDelta.Edge e:extras)counts[e.source]++;
         a[0]=n+1;for(int i=0;i<n;i++)a[i+1]=a[i]+2*counts[i];
         int[] cursor=Arrays.copyOf(a,n);
         for(GraphDelta.Edge e:extras){int pos=cursor[e.source];a[pos]=e.target;a[pos+1]=Float.floatToIntBits(e.weight);cursor[e.source]+=2;}
-        uploadInt(4,a);checkGl("FDB upload");uploadedLayer=layer;uploadedVersion=revision;
+        uploadInt(4,a);uploadedExtras=extras;
+        }
+        checkGl("FDB upload");uploadedLayer=layer;uploadedVersion=revision;
     }
     private void patchWeight(int edge,float weight){
         if(!Float.isFinite(weight)||Math.abs(weight)>4_000_000f)throw new IllegalArgumentException("GPU event weight out of range");
