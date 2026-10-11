@@ -126,4 +126,8 @@ jobs:
         with:
           name: FlyConsole-apk-part-6
           path: /tmp/flyconsole-apk-part-6
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FlyConsole-apk-part-7
+          path: /tmp/flyconsole-apk-part-7
 
