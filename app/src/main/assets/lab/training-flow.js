@@ -11,7 +11,7 @@ function refresh(){
  $('trainingKind').value=kind;$('liveTrainingMode').textContent=pair()?'P1 '+$('dual1Mode').value.toUpperCase()+' · P2 '+$('dual2Mode').value.toUpperCase():labels[kind]+(running?'':' · пауза');
  const actual=playing&&liveFps>0?(liveFps/(labPlatform==='nes'?60:nes.fps)).toFixed(2):'—';
  $('liveSpeed').textContent='×'+emulationRate+(emulationRate>1?' · факт '+actual+'×':'');$('gameBoost').textContent='×'+emulationRate;$('gameBoost').classList.toggle('active',emulationRate>1);
- $('speedStatus').textContent='Выбрано ×'+emulationRate+' · фактически '+actual+'×. Ускорение исполняет игровые кадры; при расчёте модели ждёт новое решение. Звук при ×2–×10 приглушён.';
+ $('speedStatus').textContent='Выбрано ×'+emulationRate+' · фактически '+actual+'×. Ускорение исполняет игровые кадры; RT продолжает игру, пока GPU/CPU рассчитывает решение. Устаревшее действие снимается через 0.25 с игры. Звук при ×2–×10 приглушён.';
  $('liveRecord').textContent=kind==='rec'&&running?'STOP → AUTO':'REC · показать';$('liveRecord').disabled=busy||pair();$('liveAuto').disabled=$('liveHintsButton').disabled=busy;$('liveHintsButton').disabled=busy||pair();
  $('trainingStart').disabled=busy;$('trainingKind').disabled=busy;
  for(const option of $('trainingKind').options)option.disabled=pair()&&['rec','assist'].includes(option.value);
@@ -62,13 +62,13 @@ const waitSample=()=>new Promise((resolve,reject)=>{const started=performance.no
 async function stopRec(next='auto'){
  if(busy)return;busy=true;refresh();
  try{
-  playing=false;await window.humanTeaching.stop('rec-stop');if(window.humanTeaching.error())throw Error(window.humanTeaching.error());
+  playing=false;await window.humanTeaching.stop('rec-stop');if(window.humanTeaching.error())log('Полная запись недоступна: '+window.humanTeaching.error()+'. Сохраняю приобретённые веса и отправленные примеры.');
   await waitSample();
   // Flush only unsubmitted, executed human labels; never replay the whole archive twice.
   while(fdbExperience.length&&connected){sampleFrame(performance.now(),true);await waitSample();}
   await window.fdbAgent.drain();if(window.fdbAgent.error())throw Error(window.fdbAgent.error());
   await window.labState.checkpoint();if($('autosavePolicy').checked)persistPolicy(false);
-  choose(next);fdb();startOriginal();status('Запись сохранена. '+labels[next]+' продолжает с текущего кадра.');
+  choose(next);fdb();startOriginal();status((window.humanTeaching.error()?'Приобретённые веса сохранены; полная запись недоступна. ':'Запись сохранена. ')+labels[next]+' продолжает с текущего кадра.');
  }catch(e){window.labPause();status('Запись остановлена; переход в AUTO: '+e.message,true);}finally{busy=false;refresh();}
 }
 async function switchLive(kind){

@@ -28,6 +28,7 @@ public final class NesLabActivity extends Activity {
     private static final String ORIGIN = "https://flyconsole.local";
     private static final int PICK_ROM = 10, EXPORT_CSV = 11, PICK_MODEL = 12, EXPORT_MODEL = 13, EXPORT_SESSION = 14;
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
+    private final ScoreOcr scoreOcr=new ScoreOcr();
     private final AtomicBoolean cancel = new AtomicBoolean();
     private final AtomicLong pageEpoch=new AtomicLong(),controlEpoch=new AtomicLong();private final ThreadLocal<Long> taskPage=new ThreadLocal<>();private volatile boolean foreground;
     private WebView web;
@@ -676,6 +677,10 @@ public final class NesLabActivity extends Activity {
                 taskPage.remove();
             });
         }
+        @JavascriptInterface public void recognizeScore(String json) {
+            if(destroyed)return;final long epoch=pageEpoch.get();
+            scoreOcr.recognize(json,response->runOnUiThread(()->{if(!destroyed&&epoch==pageEpoch.get())emit("labScoreText",response);}));
+        }
         @JavascriptInterface public void trainingSessions(String json) {
             if(destroyed)return;
             final long epoch=pageEpoch.get();
@@ -805,6 +810,7 @@ public final class NesLabActivity extends Activity {
         if (dualAgents==null&&GraphCache.current != null && !GraphCache.same(GraphCache.current, graph)) submit(this::loadGraph);
     }
     @Override protected void onDestroy() {
+        scoreOcr.close();
         if(controllers!=null)controllers.close();destroyed = true;
         cancel.set(true);
         worker.execute(() -> { try { stopRecording();pauseDualNative(); } catch (Exception ignored) { } closeGpu();clearDualNative(); });

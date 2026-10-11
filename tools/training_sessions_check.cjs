@@ -24,6 +24,7 @@ const sample=(sequence,mask=128,accepted=true)=>({kind:'sample',sequence,frame:s
  assert.deepEqual(requests.map(r=>r.op),['begin','append','close'],'background flush submits FIFO without waiting for WebView callbacks');
  native.receive({token:'stale',data:{}});for(const r of requests)native.receive({token:r.token,data:{...meta,id:r.session?.id||r.id,events:r.op==='begin'?0:1,status:r.op==='close'?'closed':'recording'}});
  await closing;await Promise.resolve();assert.equal(w.pending,0);assert.equal(w.writes.size,0,'settled promise references stay bounded');
+ const failures=[],badStore=new Store(null,{trainingSessions:raw=>failures.push(JSON.parse(raw))}),failed=new Writer(badStore,{...meta,id:undefined});failed.add(sample(0));const failedClose=failed.close('swap');for(const r of failures)badStore.receive({token:r.token,error:r.op==='begin'?'Архив заполнен':'Сессия отсутствует или повреждена'});await failedClose;assert.equal(failed.error,'Архив заполнен','first archive failure survives later append/close errors');
  const denied=new Writer(new Store(new Disk()),{...meta,romHash:'wrong'});await Promise.all([...denied.writes]);assert.equal(denied.failed,true);denied.add(sample(0));assert.equal(denied.buffer.length,0);
  console.log('PASS: session reopen/export, action coverage, ordered/idempotent chunks, rejected gaps, quota rollback, old-prefix retention and background bridge FIFO');
 })().catch(e=>{console.error(e);process.exitCode=1;});

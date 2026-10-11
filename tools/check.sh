@@ -19,6 +19,8 @@ node tools/system_controls_check.cjs
 node tools/console_reset_check.cjs
 node tools/runtime_flow_check.cjs
 node tools/controller_check.cjs
+node tools/score_search_check.cjs
+node --check app/src/main/assets/lab/score-ui.js
 node tools/settings_check.cjs
 node --check app/src/main/assets/lab/state-ui.js
 node --check app/src/main/assets/lab/shell-ui.js

@@ -4,6 +4,7 @@ const Pad=require('../app/src/main/assets/lab/controller.js'),Sega=require('../a
 assert.equal(Pad.keyboard('sega').KeyD,2);assert.equal(Pad.keyboard('sega').KeyE,10);assert.equal(Pad.keyboard('nes').KeyX,0);assert.equal(Pad.keyboard('sega',{KeyE:11}).KeyE,11);
 assert.equal(Pad.axis(.1,-.1),0);assert.equal(Pad.axis(1,-1),144);assert.equal(Pad.clean(48|192|256,true),256);assert.equal(Pad.clean(256,false),0);
 assert.deepEqual(Tools.actions('0,256,512,1024,2048',4095),[0,256,512,1024,2048]);assert.throws(()=>Tools.actions('0,256'));assert.throws(()=>Tools.actions('0,4096',4095));
+for(const system of ['nes','gb','snes','sega']){const extended=['snes','sega'].includes(system);assert.equal(Pad.gamepad(1,true,extended),2);assert.equal(Pad.gamepad(2,true,extended),1);assert.equal(Pad.gamepad(3|128,true,extended),3|128);assert.equal(Pad.gamepad(1,false,extended),1);}
 const policy=new Learner(1);policy.setActions([0,256,1024,2048]);policy.setAllowedMask(2039);policy.weights[3][0]=20;policy.weights[1][0]=10;
 const f=policy.features(new Array(16).fill(0),new Array(12).fill(0));assert.equal(f.length,45);assert.equal(policy.actions[policy.choose(f,false)],256,'Mode blocked, X allowed');const other=new Learner();other.load(JSON.parse(JSON.stringify(policy.save())));assert.equal(other.actions[1],256);
 const raw=Uint8Array.from(Buffer.from(require('../app/src/main/assets/lab/demo-sega.json').base64,'base64'));

@@ -1,6 +1,7 @@
 'use strict';
 // Production UI and real game cores. Native replies are explicit fixtures, not biological tests.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+const nesFrameRate=system=>system==='gb'?59.7275:60;
 const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets');let browser;
 (async()=>{
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE});
@@ -12,7 +13,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   window.flowAnnounce=id=>{const male=id==='male-cns-v1.0',offset=male?100:0;labReady({modelId:id,kind:id,neurons:64,edges:100,heapMiB:512,graph_sha256:(male?'c':'b').repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1+offset)),outputs:Array.from({length:buttonNames.length},(_,i)=>String(i+17+offset)),backend:'cpu'});};
   window.FlyBridge={demo:()=>fixtureDemo(new URL(location.href).searchParams.get('system')||'nes'),acceptRom(){},stop(){},resume(){},orientation(){},
    configure(raw){const q=JSON.parse(raw);flowConfig=q;flowFdb=q.fdb;setTimeout(()=>labConfigured({generation:q.generation,reset:q.reset,configVersion:1,mode:q.mode,backend:q.backend}),1);},
-   sample(raw){const q=JSON.parse(raw);flowRequests.push(q);const delay=flowDelay;setTimeout(()=>{
+   sample(raw){const q=JSON.parse(raw);flowRequests.push(q);const delay=flowDelay;window.flowPendingDelay=delay;setTimeout(()=>{
     if(flowFdb?.learning){const s=flowFdb.learningState||{version:1,sources:flowConfig.inputs,targets:flowConfig.outputs,observations:0,human:0,automatic:0};if(!q.frozen&&['teach','train'].includes(q.learningMode))for(const e of q.experience){s.observations++;s[e.human?'human':'automatic']++;}flowFdb.learningState=s;}
     labResult({generation:q.generation,token:q.token,sequence:flowRequests.length,buttons:1,outputs:new Array(buttonNames.length).fill(1),spikes:1,active:1,wallMs:delay,simMs:20,steps:200,backend:'cpu',neuralGroups:[],...(flowFdb?{fdbState:JSON.parse(JSON.stringify(flowFdb))}:{}),...(q.controllerSource==='exo'&&q.learningMode!=='teach'?{fdbDecision:{id:q.generation+':'+q.token,mask:1}}:{})});
    },delay);},
@@ -42,10 +43,11 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   const humanCount=await page.evaluate(()=>learner.demonstrations);
   await page.keyboard.down('ArrowLeft');await page.waitForTimeout(130);
   assert.equal(await page.evaluate(()=>appliedAgentMask&64),0,'pure automation ignores human gameplay hints');assert.equal(await page.evaluate(()=>learner.demonstrations),humanCount);await page.keyboard.up('ArrowLeft');
-  // Accelerated closed loop never stretches a cached decision past its eligibility interval.
+  // RT continues while the backend is busy; observed credit excludes the expired tail.
   await page.evaluate(()=>{flowFeedback=[];flowDelay=120;learningUI.rate(10);learningBoundary();});await page.waitForTimeout(700);
+  await page.evaluate(()=>{flowDelay=400;});await page.waitForFunction(()=>pendingToken!==null&&flowPendingDelay===400&&performance.now()-pendingSince<25);const during=await page.evaluate(()=>frame);await page.waitForTimeout(170);const tail=await page.evaluate(()=>({frame,mask:brainMask}));assert(tail.frame>during+10,'RT game clock continues while model is pending');assert.equal(tail.mask,0,'expired neural buttons are released in game time');await page.evaluate(()=>{flowDelay=120;});
   const outcomes=await page.evaluate(()=>flowFeedback.filter(q=>q.op==='reward'));
-  assert(outcomes.length>1);assert(outcomes.every(q=>q.seconds>0&&q.seconds<=.12&&q.frames>0),'accelerated rewards follow bounded executed game intervals: '+JSON.stringify(outcomes.map(q=>({seconds:q.seconds,frames:q.frames,decision:q.decision}))));
+  assert(outcomes.length>1);assert(outcomes.every(q=>q.seconds>0&&q.seconds<=2&&q.frames>0&&q.frames<=Math.ceil(nesFrameRate(system)*.12)),'accelerated credit covers observed action frames and real elapsed time: '+JSON.stringify(outcomes.map(q=>({seconds:q.seconds,frames:q.frames,decision:q.decision}))));
   await page.click('#liveHintsButton');await page.waitForFunction(()=>playing&&connected&&$('liveHints').checked);await page.evaluate(()=>learningUI.rate(1));
   assert(await page.evaluate(()=>{const before=rewardPending;$('liveRewardPlus').onclick();const plus=rewardPending;$('liveRewardMinus').onclick();return !$('liveRewardPlus').hidden&&plus===before+1&&rewardPending===before;}),'streaming rewards are available inside the game');
   const assisted=await page.evaluate(()=>learner.demonstrations);await page.keyboard.down('ArrowLeft');await page.waitForFunction(n=>learner.demonstrations>n,assisted);
@@ -67,5 +69,5 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
  await page.setViewportSize({width:844,height:390});await page.evaluate(()=>openGame());await page.click('#liveDetails');
  const geometry=await page.evaluate(()=>{const rect=e=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,w:r.width,h:r.height};};return{plot:rect($('gamePlot')),video:rect(screen),buttons:[...document.querySelectorAll('[data-button]')].filter(e=>!e.hidden).map(rect)};});
  assert(geometry.buttons.every(b=>b.w>=36&&b.h>=30));assert(geometry.plot.right<=geometry.video.x+1);for(const b of geometry.buttons)assert(b.right<=geometry.plot.x||b.x>=geometry.plot.right||b.y>=geometry.plot.bottom||b.bottom<=geometry.plot.y);
- assert.deepEqual(errors,[]);await browser.close();console.log('PASS: real NES/MD/SNES/GB acceleration, paced reward intervals, durable REC -> AUTO, pure automation, exclusive streaming hints, frozen evaluation, paused guidance restore, selected Male CNS Sega P2 and explicit P2 demonstration');
+ assert.deepEqual(errors,[]);await browser.close();console.log('PASS: real NES/MD/SNES/GB acceleration, continuous RT with released expired actions and bounded observed credit, durable REC -> AUTO, pure automation, exclusive streaming hints, frozen evaluation, paused guidance restore, selected Male CNS Sega P2 and explicit P2 demonstration');
 })().catch(async e=>{console.error(e);if(browser)await browser.close();process.exitCode=1;});

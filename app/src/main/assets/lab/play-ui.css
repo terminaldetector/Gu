@@ -96,3 +96,13 @@ body.game-mode[data-training-kind=assist] #liveRecord,body.game-mode[data-traini
  body.game-mode[data-training-kind=assist] #liveHintTarget{grid-row:1;grid-column:2}
  body.game-mode[data-training-kind=assist] #liveTrainingMode{grid-column:1}
 }
+
+#archiveIssue{color:#f1bc89!important;border-color:#946d43!important}
+body.game-mode[data-training-kind=assist] #liveTrainingBar{flex-wrap:wrap}
+@media(orientation:portrait){
+ body.game-mode[data-training-kind=assist] #liveTrainingBar{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto}
+ body.game-mode[data-training-kind=assist] #liveRewardPlus{grid-column:1}
+ body.game-mode[data-training-kind=assist] #liveRewardMinus{grid-column:2}
+ #archiveIssue{max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ body.game-mode #liveTrainingMode{min-width:0}
+}

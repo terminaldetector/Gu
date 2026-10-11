@@ -41,7 +41,7 @@ function prepare(){
  saveJob=(async()=>{
   await restoreJob;if(blocked)throw blocked;write();window.labPause();
   if(window.dualAgents?.active()){if(!await window.dualAgents.exit())throw Error('Не удалось сохранить два коннектома');}
-  if(window.humanTeaching){await window.humanTeaching.stop();if(window.humanTeaching.error())throw Error(window.humanTeaching.error());}
+  if(window.humanTeaching){await window.humanTeaching.stop();if(window.humanTeaching.error())log('Архив показа: '+window.humanTeaching.error()+'. Смена ROM сохраняет веса независимо от архива.');}
   if(window.fdbAgent){await window.fdbAgent.drain();if(window.fdbAgent.error())throw Error(window.fdbAgent.error());}
   if(ready&&loaded&&$('autosavePolicy').checked){if(window.layerExperience)await window.layerExperience.checkpoint();persistPolicy(false);}
  })().finally(()=>{saveJob=null;});return saveJob;

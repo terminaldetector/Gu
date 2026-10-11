@@ -4,7 +4,8 @@
  const store=new FlyTrainingSessions.Store(localStorage,window.FlyBridge);
  let capture=null,writer=null,wallStarted=0,previous=null,sessions=[],refreshSequence=0;
  window.labTrainingSessions=r=>store.receive(r);
- const active=()=>!benchmark&&document.hasFocus()&&document.visibilityState==='visible'&&loaded&&ready&&playing&&connected&&!configuring&&!romLoading&&($('learnMode').value==='teach'||($('learnMode').value==='train'&&$('liveHints').checked&&Boolean(manualMask&agentAllowedMask())))&&!$('freeze').checked&&(gmodeMode==='off'||$('hintAgent').checked)&&document.querySelector('main').dataset.tab==='game';
+ const eligible=()=>!benchmark&&document.hasFocus()&&document.visibilityState==='visible'&&loaded&&ready&&playing&&connected&&!configuring&&!romLoading&&($('learnMode').value==='teach'||($('learnMode').value==='train'&&$('liveHints').checked))&&!$('freeze').checked&&(gmodeMode==='off'||$('hintAgent').checked)&&document.querySelector('main').dataset.tab==='game';
+ const active=()=>eligible()&&($('learnMode').value==='teach'||Boolean(manualMask&agentAllowedMask()));
  const contextMatches=m=>m.system===labPlatform&&m.romHash===romHash&&m.graphSha256===(graphIdentity&&graphIdentity.sha256);
  const round=a=>a.map(x=>Math.round(x*1e6)/1e6);
  function selection(){return sessions.find(m=>m.id===$('humanSessionSelect').value);}
@@ -28,9 +29,9 @@
  }
  function state(w){
   const i=sessions.findIndex(m=>m.id===w.metadata.id);if(i>=0)sessions[i]=w.metadata;else if(w.metadata.events!==undefined)sessions.push(w.metadata);
-  if(w.failed){$('humanSessionStatus').textContent='Ошибка записи: '+w.error+'. Сохранённая часть доступна для экспорта.';if(!w.reported){w.reported=true;log('Сессия показа: '+w.error);status('Запись показа: '+w.error,true);}}
+  if(w.failed){$('humanSessionStatus').textContent='Архив: '+w.error+' Приобретённые веса продолжают обучаться и сохраняться. Сохранённые записи доступны для экспорта и удаления.';if(!w.reported){w.reported=true;log('Архив показа: '+w.error);}}
   else $('humanSessionStatus').textContent=(w.closed?'Сессия завершена':'Запись показа')+' · подтверждено '+(w.metadata.events||0)+' событий'+(w.pending?' · сохраняется '+w.pending+' пак.':w.buffer.length?' · ожидает '+w.buffer.length+' событий':' · сохранено');
-  render();
+  const issue=$('archiveIssue');if(issue){issue.hidden=!w.failed;issue.textContent=w.failed?'Архив недоступен · открыть записи':'';}render();
  }
  async function refresh(){
   const sequence=++refreshSequence;
@@ -51,7 +52,8 @@
   writer.add(e);
  }
  function ensure(){
-  if(!active())return false;if(capture)return true;
+  if(!eligible()||(!active()&&!capture))return false;if(capture)return true;
+  if(writer&&!writer.closed){capture=new FlyHumanCapture(received);capture.sequence=writer.eventSequence||0;capture.gameMs=writer.gameMs||0;return true;}
   wallStarted=performance.now();previous=null;
   const configuration=policyConfiguration();if(configuration.fdb){configuration.fdb.edgeCount=(configuration.fdb.edges||[]).length;configuration.fdb.deltaCount=(configuration.fdb.deltas||[]).length;delete configuration.fdb.edges;delete configuration.fdb.deltas;}
   writer=new FlyTrainingSessions.Writer(store,{system:labPlatform,romHash,graphSha256:graphIdentity.sha256,name:($('benchmarkGame').value.trim()||labPlatform.toUpperCase()+' · '+romHash.slice(0,12)).slice(0,100),startedAt:Date.now(),clock:$('clock').value,configuration,profile:profileValues(),captureVersion:1},state);
@@ -59,15 +61,19 @@
  }
  function input(){if(!ensure())return;capture.input(normalizeMask(manualMask),{frame,at:Date.now(),wallMs:Math.max(0,performance.now()-wallStarted)});}
  function beforeFrame(){
-  if(!active()){stop('inactive');return null;}input();
+  if(!eligible()){stop('inactive');return null;}input();
+  if(!active()){if(capture){capture.stop();writer.eventSequence=capture.sequence;writer.gameMs=capture.gameMs;capture=null;previous=null;}return null;}
+  observeVideo();
   return {frame,at:Date.now(),wallMs:Math.max(0,performance.now()-wallStarted),mask:normalizeMask(appliedMask),retina:retina.slice(),features:learner.features(retina,latestOutputs,null,previous),outputs:latestOutputs.slice(),networkAgeMs:lastResponse?Math.max(0,performance.now()-lastResponse):null};
  }
  function commit(seconds,observation){if(capture&&observation)capture.commit(seconds,observation);}
  function stop(reason='pause'){
-  if(!capture)return writer?Promise.all([...writer.writes]):Promise.resolve();capture.stop();capture=null;previous=null;
-  const old=writer;const done=old.close(reason);state(old);return done;
+  if(capture){capture.stop();capture=null;previous=null;}
+  if(!writer)return Promise.resolve();const old=writer;const done=old.close(reason);state(old);return done;
  }
  window.humanTeaching={input,beforeFrame,commit,stop,refresh,store,error:()=>writer&&writer.failed?writer.error:null};
+ if($('archiveIssue'))$('archiveIssue').onclick=()=>{window.labPause();leaveGame('learning');$('humanSessionsPanel').open=true;$('humanAllSessions').checked=true;refresh();};
+ if($('humanSessionRetry'))$('humanSessionRetry').onclick=async()=>{await stop('retry');writer=null;capture=null;previous=null;if($('archiveIssue'))$('archiveIssue').hidden=true;await refresh();$('humanSessionStatus').textContent='Повтор записи при следующем REC или подсказке. Сохранённые веса не меняются.';};
  $('humanSessionRefresh').onclick=refresh;$('humanSessionSelect').onchange=render;
  $('humanAllSessions').onchange=render;
  $('humanSessionExport').onclick=async()=>{

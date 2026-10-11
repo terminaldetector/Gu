@@ -42,7 +42,8 @@
  function capture(rewardState=null){const previous=current;current=null;if(!previous||!previous.frames)return null;const elapsed=gameSeconds-capturedAt;capturedAt=gameSeconds;return {...previous,elapsed,rewardEnd:rewardCopy(rewardState)};}
  function settle(outcome,reward,interrupted){
   if(!outcome||blocked)return Promise.resolve();
-  if(outcome.elapsed>2||outcome.elapsed<=0){invalidate('интервал результата вне окна пластичности');recover();return Promise.resolve();}
+  if(outcome.elapsed>2){linked=false;current=null;gameSeconds=capturedAt=0;blocked=true;recovering=true;return send('boundary',{},true);}
+  if(outcome.elapsed<=0){invalidate('интервал результата вне окна пластичности');recover();return Promise.resolve();}
   return send('reward',{decision:outcome.id,mask:outcome.mask,frames:outcome.frames,seconds:outcome.elapsed,reward,valid:outcome.valid&&!interrupted,frozen:$('freeze').checked||$('learnMode').value!=='train'});
  }
  async function drain(){while(waiting.size){await Promise.all([...waiting.values()].map(p=>new Promise(resolve=>{const old=p.resolve;p.resolve=()=>{old();resolve();};})));}}

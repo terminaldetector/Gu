@@ -1,3 +1,11 @@
+## alpha19 · ROM, realtime and score discovery
+
+ROM replacement preserves the previous console on failure and accepts only the latest overlapping request. Streaming hints share one archive session; archive quota/errors cannot block switching games or saving learned weights. Archives remain explicit, bounded and user managed (128 sessions, existing byte limits).
+
+Realtime acceleration continues during pending CPU/GPU windows, expires stale neural buttons in game time and presents one complete final frame per animation callback. In-game pause menu adds a console reset that preserves model weights/FDB. External gamepad A/B can be swapped per platform; touch/keyboard mappings are independent. Code Lab now uses the same navigation vocabulary and returns to the selected platform.
+
+Experimental **Поиск scores** discovers a visible score with bundled offline OCR, confirms its growth against synchronized RAM observations and connects the verified counter to existing reward/FDB paths. It preserves proof in game profiles and Layer Sets, rejects ambiguity and rebases score resets. Unsupported fonts/storage formats remain possible; good gameplay and universal ×10 performance are not claimed. See [training flow](docs/TRAINING-FLOW.md) and [training guide](docs/TRAINING.md).
+
 ## Version 2.0.0-alpha16: independent FlyWire / Male CNS players
 
 Select either full connectome independently for P1 and P2 in **Network / 2P → Две нейронные модели**. Each CPU controller owns its own FDB, reward, RNG and durable Layer Set; same-model slots share only immutable W₀. Train/Eval and manual/RAM reward are separate for each player. Preferences restore per ROM without auto-start. Mixed-model operation requires substantial Java heap; GB remains a single controller platform.

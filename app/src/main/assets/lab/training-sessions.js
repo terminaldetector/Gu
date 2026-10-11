@@ -37,7 +37,7 @@ class Store {
   const disk=this.storage,key=PREFIX+a.id;if(!disk)throw Error('Хранилище показа недоступно');
   if(op==='list'){const out=[];for(let i=0;i<disk.length;i++){const k=disk.key(i);if(k.startsWith(PREFIX)&&k.endsWith('-meta'))try{const m=JSON.parse(disk.getItem(k));validateSummary(m);out.push(m);}catch(_){} }return out;}
   if(op==='begin'){
-   validateMetadata(a.session);const k=PREFIX+a.session.id+'-meta';if(disk.getItem(k))throw Error('Сессия уже существует');if(this.local('list',{}).length>=32)throw Error('Хранилище: максимум 32 сессии');
+   validateMetadata(a.session);const k=PREFIX+a.session.id+'-meta';if(disk.getItem(k))throw Error('Сессия уже существует');if(this.local('list',{}).length>=128)throw Error('Архив заполнен: 128 сессий. Освободите место в «Записях обучения».');
    const m={...clone(a.session),events:0,inputChanges:0,samples:0,accepted:0,skipped:0,gameMs:0,neutralMs:0,buttonMs:new Array(12).fill(0),nextSeq:0,lastEvent:-1,storedBytes:0,status:'recording'};disk.setItem(k,JSON.stringify(m));return m;
   }
   if(!ID.test(a.id))throw Error('Неверный ID сессии');const m=JSON.parse(disk.getItem(key+'-meta'));validateSummary(m);
@@ -73,7 +73,10 @@ class Writer {
   this.send('begin',{session:this.metadata});
  }
  send(op,args){
-  this.pending++;const p=this.store.request(op,args).then(m=>{if(m&&m.id)this.metadata=m;this.pending--;this.onState(this);return m;}).catch(e=>{this.pending--;this.failed=true;this.error=e.message;this.onState(this);return null;});this.writes.add(p);p.then(()=>this.writes.delete(p));return p;
+  if(this.failed)return Promise.resolve(null);
+  // Native storage already serializes requests. Submit the durable tail even if
+  // background WebView callbacks are suspended, while retaining the FIRST error.
+  this.pending++;const p=this.store.request(op,args).then(m=>{if(m&&m.id)this.metadata=m;this.pending--;this.onState(this);return m;}).catch(e=>{this.pending--;this.failed=true;this.error=this.error||e.message;this.onState(this);return null;});this.writes.add(p);p.then(()=>this.writes.delete(p));return p;
  }
  add(e){if(this.failed||this.closed)return;this.buffer.push(clone(e));if(this.buffer.length>=32)this.flush();}
  flush(){if(!this.buffer.length||this.failed)return;if(this.pending>=16){this.failed=true;this.error='Запись не успевает: сохранённая часть сессии доступна';this.onState(this);return;}const events=this.buffer.splice(0,64);this.send('append',{id:this.metadata.id,sequence:this.sequence++,events});}

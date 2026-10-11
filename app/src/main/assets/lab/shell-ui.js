@@ -6,7 +6,7 @@ function close(){menu.close();controlsEnabled(document.body.classList.contains('
 function quick(){
  if(menu.open)return;wantedPlay=playing;wantedLink=connected;window.labPause();holding.clear();refreshManual();controlsEnabled(false);
  $('quickContext').textContent=FlyPlatforms[labPlatform].label+' · '+$('romName').textContent+' · '+(graphIdentity?.modelId||'модель загружается');
- $('quickSave').disabled=$('quickLoad').disabled=$('quickResume').disabled=!loaded;
+ $('quickSave').disabled=$('quickLoad').disabled=$('quickReset').disabled=$('quickResume').disabled=!loaded;
  $('quickSaveStatus').textContent='Сохраняю подтверждённое обучение…';menu.showModal();
  window.labState.checkpoint().then(()=>{$('quickSaveStatus').textContent='Настройки и обучение сохранены.';$('quickSaveStatus').className='note';}).catch(e=>{$('quickSaveStatus').textContent='Сохранение: '+e.message;$('quickSaveStatus').className='note error';});
 }
@@ -14,6 +14,7 @@ $('gameExit').onclick=quick;$('gameSettings').onclick=()=>{window.labPause();lea
 $('quickDismiss').onclick=close;menu.addEventListener('cancel',event=>{event.preventDefault();close();});
 $('quickResume').onclick=()=>{close();openGame();if(wantedLink&&!window.dualAgents?.active())connectBrain();if(wantedPlay&&!playing)$('play').click();};
 for(const [quickId,original]of [['quickSave','saveState'],['quickLoad','loadState']])$(quickId).onclick=()=>{$(original).click();$('quickSaveStatus').textContent=$('status').textContent;};
+$('quickReset').onclick=()=>{$('resetNes').click();$('quickSaveStatus').textContent=$('status').textContent;};
 menu.querySelectorAll('[data-quick-tab]').forEach(button=>button.onclick=()=>{close();leaveGame(button.dataset.quickTab);});
 document.querySelector('.app-header .eyebrow').textContent='CONNECTOME CONSOLE';
 document.querySelector('.app-header h1').textContent='FlyConsole';$('console').textContent='Код · LAB';

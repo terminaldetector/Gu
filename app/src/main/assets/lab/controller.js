@@ -7,5 +7,6 @@ function bind(system,custom,button,code=null){const result={...custom};for(const
 // Three zones per axis, with a neutral centre. Leaving the pad releases only this contact.
 function dpad(x,y){if(!Number.isFinite(x)||!Number.isFinite(y)||x<0||x>1||y<0||y>1)return 0;return (x<1/3?64:x>2/3?128:0)|(y<1/3?16:y>2/3?32:0);}
 function axis(x,y,dead=.25){return (y < -dead?16:y > dead?32:0)|(x < -dead?64:x > dead?128:0);}
-root.FlyController={clean,keyboard,bind,dpad,axis};if(typeof module!=='undefined')module.exports=root.FlyController;
+function gamepad(mask,swap=false,extended=false){if(swap)mask=(mask&~3)|((mask&1)<<1)|((mask&2)>>1);return clean(mask,extended);}
+root.FlyController={clean,keyboard,bind,dpad,axis,gamepad};if(typeof module!=='undefined')module.exports=root.FlyController;
 })(typeof window==='undefined'?globalThis:window);

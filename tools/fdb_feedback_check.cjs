@@ -25,6 +25,7 @@ function fixture(){
  function outcome(id='decision-A',mask=128){decision(id,mask);frames(mask);return context.fdbAgent.capture();}
  return {context,nodes,calls,statuses,timers,state,ack,decision,frames,outcome,agent:context.fdbAgent,counts:()=>({persisted,autosaved,views})};
 }
+const watchdog=setTimeout(()=>{console.error('FDB check left an unresolved protocol promise');process.exit(1);},10000);
 let checks=0;function check(name,fn){return Promise.resolve().then(fn).then(()=>{checks++;console.log('PASS: '+name);});}
 (async()=>{
  await check('captured outcome is an immutable interval snapshot, excluding backend tail',async()=>{
@@ -125,9 +126,9 @@ let checks=0;function check(name,fn){return Promise.resolve().then(fn).then(()=>
   assert.equal(JSON.parse(f.nodes.fdbJson.value).edges[0].weight,2);assert.equal(f.agent.error(),'disk full');assert.match(f.statuses.at(-1).message,/Layer Set/);f.ack(f.calls[1]);
  });
  await check('out-of-window result clears native credit before accepting the already-produced next decision',async()=>{
-  const f=fixture();f.decision();f.frames(128,121);const result=f.agent.capture();await f.agent.settle(result,1,false);
+  const f=fixture();f.decision();f.frames(128,121);const result=f.agent.capture();const expired=f.agent.settle(result,1,false);
   assert.equal(f.calls[0].op,'boundary');f.decision('already-produced-B');f.frames();assert.equal(f.agent.capture(),null);
-  f.ack();f.decision('after-boundary-C');f.frames();assert.equal(f.agent.capture().id,'after-boundary-C');
+  assert.equal(f.agent.error(),null,'expired RT result is expected, not a storage warning');f.ack();await expired;f.decision('after-boundary-C');f.frames();assert.equal(f.agent.capture().id,'after-boundary-C');
  });
  await check('bounded queue fails closed, recovery waits for capacity and drain includes recovery acknowledgement',async()=>{
   const f=fixture();for(let i=0;i<9;i++)f.agent.settle(f.outcome('decision-'+i),1,false);
@@ -166,5 +167,5 @@ let checks=0;function check(name,fn){return Promise.resolve().then(fn).then(()=>
  await check('missing bridge is a no-op and no empty outcome is invented',async()=>{
   const f=fixture();delete f.context.FlyBridge;await f.agent.settle(f.outcome(),1,false);await f.agent.drain();assert.equal(f.calls.length,0);
  });
- console.log('PASS: '+checks+' production FDB observation/credit protocol checks; these tests do not claim neural or gameplay improvement');
+ clearTimeout(watchdog);console.log('PASS: '+checks+' production FDB observation/credit protocol checks; these tests do not claim neural or gameplay improvement');
 })().catch(error=>{console.error(error);process.exitCode=1;});

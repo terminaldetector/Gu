@@ -10,7 +10,7 @@ import java.security.MessageDigest;
 
 /** Append-only human observations. Metadata commits the durable prefix of the journal. */
 final class TrainingSessionStore {
-    static final int MAX_BYTES=32*1024*1024,TOTAL_BYTES=64*1024*1024,MAX_SESSIONS=32;
+    static final int MAX_BYTES=32*1024*1024,TOTAL_BYTES=64*1024*1024,MAX_SESSIONS=128;
     private static final String ID="[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}";
     private final File directory;
     TrainingSessionStore(File directory)throws IOException {this.directory=directory;if(!directory.isDirectory()&&!directory.mkdirs())throw new IOException("Хранилище показа недоступно");}
@@ -68,7 +68,7 @@ final class TrainingSessionStore {
     synchronized JSONObject begin(JSONObject session)throws Exception {
         metadata(session);if(session.toString().getBytes(StandardCharsets.UTF_8).length>60*1024)throw new IOException("Описание сессии превышает 60 КиБ");File dir=folder(session.getString("id"));if(dir.exists())throw new IOException("Сессия уже существует");
         int count=0;File[] dirs=directory.listFiles();if(dirs==null)throw new IOException("Хранилище показа недоступно");for(File f:dirs)if(f.isDirectory()&&f.getName().matches(ID))count++;
-        if(count>=MAX_SESSIONS)throw new IOException("Хранилище: максимум 32 сессии; экспортируйте сохранённый опыт");
+        if(count>=MAX_SESSIONS)throw new IOException("Архив заполнен: 128 сессий. Освободите место в «Записях обучения».");
         JSONObject m=new JSONObject(session.toString());for(String k:new String[]{"events","inputChanges","samples","accepted","skipped","gameMs","neutralMs","nextSeq","storedBytes"})m.put(k,0);
         JSONArray buttons=new JSONArray();for(int i=0;i<12;i++)buttons.put(0);m.put("buttonMs",buttons).put("lastEvent",-1).put("status","recording");
         if(!dir.mkdir())throw new IOException("Не удалось создать сессию");File log=new File(dir,"events.jsonl");

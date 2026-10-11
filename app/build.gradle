@@ -1,8 +1,9 @@
 plugins { id 'com.android.application' }
 android { namespace 'org.node.flyconsole'; compileSdk 35
- defaultConfig { applicationId 'org.node.flyconsole.nes'; minSdk 26; targetSdk 35; versionCode 26; versionName '2.0.0-alpha18' }
+ defaultConfig { applicationId 'org.node.flyconsole.nes'; minSdk 26; targetSdk 35; versionCode 27; versionName '2.0.0-alpha19' }
  compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
  // Graphs and source bundles are already compressed; do not inflate packaging heap.
  androidResources { noCompress += ['gz', 'zip'] }
 }
+dependencies { implementation 'com.google.mlkit:text-recognition:16.0.1' }
 
