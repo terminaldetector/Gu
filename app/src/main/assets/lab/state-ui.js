@@ -39,7 +39,7 @@ function restore(){
 function prepare(){
  if(saveJob)return saveJob;
  saveJob=(async()=>{
-  await restoreJob;if(blocked)throw blocked;write();window.labPause();
+  await restoreJob;if(blocked)throw blocked;window.scoreRewards?.abortDraft();write();window.labPause();
   if(window.dualAgents?.active()){if(!await window.dualAgents.exit())throw Error('Не удалось сохранить два коннектома');}
   if(window.humanTeaching){await window.humanTeaching.stop();if(window.humanTeaching.error())log('Архив показа: '+window.humanTeaching.error()+'. Смена ROM сохраняет веса независимо от архива.');}
   if(window.fdbAgent){await window.fdbAgent.drain();if(window.fdbAgent.error())throw Error(window.fdbAgent.error());}

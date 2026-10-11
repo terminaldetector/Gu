@@ -1,18 +1,19 @@
 'use strict';
 (()=>{
 let token=0,pending=null,snapshot=null,rows=[],choices=[],first=null,last=null,proof=null,context=null;
+let draftBackup=null,priorMode=$('rewardMode').value;
 const identity=()=>labPlatform+'|'+romHash,key=()=> 'fly-score-'+identity();
 const note=s=>$('scoreStatus').textContent=s;
 function refresh(){
  if(context!==identity()){context=identity();snapshot=null;rows=[];choices=[];first=last=proof=null;$('scoreNumbers').replaceChildren();$('scoreCounters').replaceChildren();}
- $('scorePanel').hidden=$('rewardMode').value!=='score';$('scoreFind').disabled=!loaded||romLoading||!!pending;
+ $('scorePanel').hidden=$('rewardMode').value!=='score';$('scoreFind').disabled=!loaded||romLoading||!!pending||!!window.dualAgents?.active();
  $('scoreConfirm').disabled=!snapshot||!!pending;$('scorePlay').disabled=!loaded||romLoading||!!pending;
- $('scoreTrack').disabled=!loaded||romLoading||!!pending||!first;$('scoreUse').disabled=!!pending||!last||last.score<=first?.score||choices.length!==1;
- if(proof)$('scoreUse').disabled=true;
+ $('scoreTrack').disabled=!loaded||romLoading||!!pending||!first||!!window.dualAgents?.active();$('scoreUse').disabled=!!pending||!last||last.score<=first?.score||choices.length!==1;
+ if(proof||window.dualAgents?.active())$('scoreUse').disabled=true;if(window.dualAgents?.active()&&$('rewardMode').value==='score')note('Поиск подключает награду одной модели. Для двух независимых сетей настройте награды на карточках P1/P2 или завершите парный режим.');
 }
 function memory(){const m=new Uint8Array(ramLimit),source=nes.cpu.mem;for(let i=0;i<ramLimit;i++)m[i]=source[i]||0;return m;}
 async function capture(){
- if(pending)throw Error('Дождитесь распознавания');window.labPause();await window.labState.settle();presentVideo();
+ if(pending)throw Error('Дождитесь распознавания');if(window.dualAgents?.active())throw Error('Сначала завершите парный режим в разделе моделей P1/P2.');window.labPause();await window.labState.settle();presentVideo();
  if(!loaded||romLoading)throw Error('Сначала запустите игру');
  const q={identity:identity(),sequence:romLoadSequence,frame,mem:memory()};snapshot=q;
  if(!window.FlyBridge?.recognizeScore){note('Распознавание доступно в Android. Можно ввести видимый счёт ниже.');return q;}
@@ -40,16 +41,17 @@ function confirm(){
  renderRows();
 }
 function reset(){first=last=proof=null;rows=[];choices=[];snapshot=null;renderRows();}
-async function find(){if(pending)return;try{refresh();reset();await capture();}catch(e){note(e.message);refresh();}}
+async function find(){if(pending)return;try{refresh();if(proof)draftBackup=JSON.parse(JSON.stringify(profileValues()));reset();await capture();}catch(e){note(e.message);refresh();}}
 async function track(){try{await capture();}catch(e){note(e.message);refresh();}}
 async function use(){try{
  if(!first||!last||last.score<=first.score||choices.length!==1)throw Error('Нужен один счётчик после проверки роста счёта.');
  window.labPause();await window.fdbAgent.drain();if(window.fdbAgent.error())throw Error(window.fdbAgent.error());const counter=choices[0];$('rewardAddress').value=String(counter.address);$('ramWidth').value=String(counter.width);$('ramFormat').value=counter.format;$('ramEndian').value=counter.endian;$('ramWrap').checked=false;$('rewardScale').value=String(.001*counter.multiplier);$('rewardMode').value='score';
- proof={version:1,system:labPlatform,romHash,counter,evidence:[first,last]};FlyScoreSearch.validate(proof,profileValues(),labPlatform,romHash,ramLimit);localStorage.setItem(key(),JSON.stringify(proof));learningBoundary();trainingView();await window.labState.checkpoint();note('Награда подключена: +0.001 за одно очко. Сброс счёта не наказывает модель. Профиль сохраняется вместе с обучением.');refresh();
+ proof={version:1,system:labPlatform,romHash,counter,evidence:[first,last]};FlyScoreSearch.validate(proof,profileValues(),labPlatform,romHash,ramLimit);localStorage.setItem(key(),JSON.stringify(proof));learningBoundary();trainingView();await window.labState.checkpoint();draftBackup=null;priorMode='score';note('Награда подключена: +0.001 за одно очко. Сброс счёта не наказывает модель. Профиль сохраняется вместе с обучением.');refresh();
  }catch(e){note(e.message);refresh();}}
 $('scoreFind').onclick=find;$('scoreTrack').onclick=track;$('scoreConfirm').onclick=()=>{try{confirm();}catch(e){note(e.message);refresh();}};$('scoreUse').onclick=use;
 $('scoreNumbers').onchange=()=>{$('scoreVisible').value=$('scoreNumbers').value;};
 $('scorePlay').onclick=()=>{if(!loaded)return;window.labPause();openGame();$('play').click();};
-$('rewardMode').addEventListener('change',refresh);
-window.scoreRewards={refresh,proof:()=>proof,restore:value=>{proof=value||null;snapshot=null;rows=[];choices=[];first=last=null;context=identity();refresh();},find,track,confirm,use};refresh();
+$('rewardMode').addEventListener('change',()=>{const mode=$('rewardMode').value;if(mode==='score'&&!proof){draftBackup=profileValues();draftBackup.rewardMode=priorMode==='score'?'manual':priorMode;delete draftBackup.scoreSource;}else{draftBackup=null;priorMode=mode;}refresh();});
+function abortDraft(){if($('rewardMode').value!=='score'||proof)return;const backup=draftBackup;for(const id of profileFields)if(backup){const e=$(id);if(e.type==='checkbox')e.checked=backup[id];else e.value=backup[id];}if(!backup)$('rewardMode').value='manual';proof=backup?.scoreSource||null;draftBackup=null;priorMode=$('rewardMode').value;refresh();}
+window.scoreRewards={refresh,proof:()=>proof,abortDraft,restore:value=>{draftBackup=null;priorMode=$('rewardMode').value;proof=value||null;snapshot=null;rows=[];choices=[];first=last=null;context=identity();refresh();},find,track,confirm,use};refresh();
 })();

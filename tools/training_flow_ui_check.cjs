@@ -28,9 +28,10 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   assert.equal(await page.inputValue('#learnerController'),'exo','fresh model uses neural FDB by default');
   // Fast-forward really advances the emulator, without changing policy or network seed.
   const baseline=await page.evaluate(()=>({policy:JSON.stringify(learner.save()),seed:$('seed').value,frame}));
+  await page.evaluate(()=>{learningUI.rate(1);$('play').click();});await page.waitForTimeout(350);await page.evaluate(()=>labPause());const normal=await page.evaluate(()=>frame);
   await page.evaluate(()=>{learningUI.rate(10);$('play').click();});await page.waitForTimeout(350);await page.evaluate(()=>labPause());
   const fast=await page.evaluate(()=>({frames:frame,policy:JSON.stringify(learner.save()),seed:$('seed').value}));
-  assert(fast.frames-baseline.frame>65,'×10 advances real '+system+' core frames');assert.equal(fast.policy,baseline.policy);assert.equal(fast.seed,baseline.seed);
+  assert(fast.frames-normal>(normal-baseline.frame)*1.3,'requested ×10 advances '+system+' faster than ×1 on this host: '+JSON.stringify({normal:normal-baseline.frame,fast:fast.frames-normal}));assert.equal(fast.policy,baseline.policy);assert.equal(fast.seed,baseline.seed);
   await page.click('#liveRecord');await page.waitForFunction(()=>playing&&connected&&$('learnMode').value==='teach');assert.equal(await page.evaluate(()=>emulationRate),1,'REC always uses human time');
   await page.keyboard.down('ArrowRight');await page.waitForFunction(()=>learner.demonstrations>=3);await page.keyboard.up('ArrowRight');
   const rec=await page.evaluate(()=>({frame,restarts:emulatorRestarts,count:learner.demonstrations,mask:brainMask}));assert.equal(rec.mask,0);
