@@ -403,7 +403,7 @@ window.labError=function(data) {
 function ids(id) { return $(id).value.split(/[\s,;]+/).filter(Boolean); }
 function fdbConfiguration(){
  const raw=$('fdbJson').value.trim();if(!raw)return null;
- if(raw.length>512*1024)throw Error('FDB JSON слишком большой');
+ if(raw.length>4*1024*1024)throw Error('FDB JSON слишком большой');
  const value=JSON.parse(raw);
  return validateFdb(value,graphIdentity&&graphIdentity.sha256);
 }
