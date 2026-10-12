@@ -58,12 +58,14 @@ javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.InferenceCheck
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/LayerSetStore.java tools/LayerSetStoreCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.LayerSetStoreCheck
-javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/FdbCheckpoint.java tools/FdbCheckpointCheck.java tools/FdbPlasticityCheck.java tools/FdbGameBridge.java
+javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/FdbCheckpoint.java tools/FdbCheckpointCheck.java tools/FdbPlasticityCheck.java tools/ExpandedPlasticityCheck.java tools/FdbGameBridge.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbCheckpointCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbPlasticityCheck
+java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.ExpandedPlasticityCheck
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/DualAgentContext.java app/src/main/java/org/node/flyconsole/DualLayerStore.java app/src/main/java/org/node/flyconsole/DualRequestGuard.java tools/DualAgentCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.DualAgentCheck
 CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/fdb_game_check.cjs
+FDB_EXPANDED_FIXTURE=1 CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/expanded_game_check.cjs
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/TrainingSessionStore.java tools/TrainingSessionStoreCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.TrainingSessionStoreCheck
 node tools/sega_check.cjs

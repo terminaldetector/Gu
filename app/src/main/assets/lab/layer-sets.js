@@ -1,7 +1,7 @@
 /* Portable named readout/FDB checkpoints. The immutable connectome and ROM are not copied. */
 (function(root){
 'use strict';
-const TYPE='fly-layer-set',PREFIX='fly-layer-set-',MAX_BYTES=2*1024*1024,MAX_SETS=32;
+const TYPE='fly-layer-set',PREFIX='fly-layer-set-',MAX_BYTES=4*1024*1024,MAX_SETS=32;
 const clone=value=>JSON.parse(JSON.stringify(value));
 const bytes=text=>typeof TextEncoder==='undefined'?unescape(encodeURIComponent(text)).length:new TextEncoder().encode(text).length;
 function id(){return typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.floor(Math.random()*16);return (c==='x'?r:(r&3)|8).toString(16);});}
@@ -16,7 +16,7 @@ function validate(set){
  for(const e of set.journal){
   if(!e||!['manual','ram','diagnostic','boundary'].includes(e.source)||!['win','loss','continue','note','timeout','finished'].includes(e.outcome)||typeof e.note!=='string'||e.note.length>500||!Number.isSafeInteger(e.at)||e.at<0||!Number.isSafeInteger(e.updates)||e.updates<0)throw Error('Неверная запись опыта');
  }
- if(bytes(JSON.stringify(set))>MAX_BYTES)throw Error('Layer Set превышает 2 МиБ');
+ if(bytes(JSON.stringify(set))>MAX_BYTES)throw Error('Layer Set превышает 4 МиБ');
  return set;
 }
 function summary(set){validate(set);const fdb=set.configuration.fdb;return {id:set.id,name:set.name,notes:set.notes,system:set.system,romHash:set.romHash,graphSha256:set.graph.sha256,createdAt:set.createdAt,updatedAt:set.updatedAt,updates:set.policy.updates,episodes:set.policy.episodes,fdbEdges:fdb&&fdb.edges?fdb.edges.length:0,fdbDeltas:fdb&&fdb.deltas?fdb.deltas.length:0};}

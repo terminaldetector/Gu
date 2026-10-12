@@ -43,7 +43,7 @@ public final class GpuLifEngine implements AutoCloseable {
         "for(int k=0;k<inputCount;k++)if(inputIds[k]==i)driven=true;\n" +
         "if(r[i]>0){r[i]--;}else{x=-52.+(x+52.)*0.9950124791926823+cur*0.004937935295309022;cur*=0.9801986733067553;}\n" +
         "for(int k=0;k<inputCount;k++)if(inputIds[k]==i){uint q=h32(uint(seed)^(uint(tick)*1103515245u)^(u*2654435761u));if(float(q&16777215u)/16777216.<inputProb[k])x+=68.75;}\n" +
-        "if(x>-45.){x=-52.;cur=0.;r[i]=driven?0:22;counts[i]++;int future=((tick+18)%19)*N;for(int e=off[i];e<off[i+1]&&e<edges;e++){float w=weight[e];if(lesion[target[e]]!=0u||(disableInhibition!=0&&w<0.))continue;atomicAdd(pi[future+target[e]],int(round(w*gain*256.)));}for(uint e=extra[i];e<extra[i+1];e+=2u){int t=int(extra[e]);float w=uintBitsToFloat(extra[e+1u]);if(lesion[t]!=0u||(disableInhibition!=0&&w<0.))continue;atomicAdd(pi[future+t],int(round(w*gain*256.)));}}\n" +
+        "if(x>-45.+uintBitsToFloat(lesion[N+i])){x=-52.;cur=0.;r[i]=driven?0:22;counts[i]++;int future=((tick+18)%19)*N;for(int e=off[i];e<off[i+1]&&e<edges;e++){float w=weight[e];if(lesion[target[e]]!=0u||(disableInhibition!=0&&w<0.))continue;atomicAdd(pi[future+target[e]],int(round(w*gain*256.)));}for(uint e=extra[i];e<extra[i+1];e+=2u){int t=int(extra[e]);float w=uintBitsToFloat(extra[e+1u]);if(lesion[t]!=0u||(disableInhibition!=0&&w<0.))continue;atomicAdd(pi[future+t],int(round(w*gain*256.)));}}\n" +
         "v[i]=x;c[i]=cur;}\n";
     private static final String CLEAR =
         "#version 310 es\nlayout(local_size_x=64) in;layout(std430,binding=0) buffer X{int x[];};uniform int N;void main(){uint i=gl_GlobalInvocationID.x;if(i<uint(N))x[i]=0;}\n";
@@ -62,6 +62,8 @@ public final class GpuLifEngine implements AutoCloseable {
     private long uploadedVersion=-1;
     private final double[] incomingMagnitude;
     private final java.util.HashMap<Integer,Float> patchedWeights=new java.util.HashMap<>();
+    private int[] uploadedLesions;
+    private final java.util.Map<Integer,Float> uploadedThresholds=new java.util.HashMap<>();
     private java.util.List<GraphDelta.Edge> uploadedExtras=java.util.Collections.emptyList();
 
     public GpuLifEngine(Graph graph) {
@@ -91,7 +93,7 @@ public final class GpuLifEngine implements AutoCloseable {
         seed = (int)(newSeed ^ (newSeed >>> 32)); tick = 0L;
         uploadFloat(0, filled(n, -52f)); uploadFloat(1, new float[n]);
         uploadInt(2, new int[n]); uploadInt(3, new int[Math.multiplyExact(n,19)]);
-        uploadInt(5, new int[n]); uploadInt(9, new int[n]);checkGl("state reset");
+        uploadInt(5, new int[n]); uploadInt(9, new int[2*n]);uploadedLesions=null;uploadedThresholds.clear();checkGl("state reset");
     }
 
     public synchronized Engine.Result advance(int[] inputs, double[] rates, int durationMs,
@@ -105,7 +107,7 @@ public final class GpuLifEngine implements AutoCloseable {
             throw new IllegalArgumentException("Неверный gain");
         syncLayer(options.delta);
         uploadInputs(inputs, rates);
-        uploadInt(9, lesionWords(options.lesions));
+        syncParameters(options.lesions,options.delta);
         clear(5);
         long started = System.nanoTime();
         int steps = durationMs * 10, done = 0;
@@ -227,7 +229,19 @@ public final class GpuLifEngine implements AutoCloseable {
         GLES31.glDispatchCompute((n+LOCAL-1)/LOCAL,1,1);GLES31.glMemoryBarrier(GLES31.GL_SHADER_STORAGE_BARRIER_BIT);
         GLES31.glUseProgram(stepProgram);bindAll();
     }
-    private int[] lesionWords(int[] lesions){int[] out=new int[n];if(lesions!=null)for(int id:lesions){if(id<0||id>=n)throw new IllegalArgumentException("Неверная абляция");out[id]=1;}return out;}
+    /** Keep the existing ten bindings: lesion flags and float32 threshold bits share L.
+     * Patch sparse threshold changes; do not double the full mask upload each window. */
+    private void syncParameters(int[] lesions,GraphDelta layer){
+        if(!Arrays.equals(uploadedLesions,lesions)){
+            int[] words=new int[n];if(lesions!=null)for(int i:lesions){if(i<0||i>=n)throw new IllegalArgumentException("Invalid lesion");words[i]=1;}
+            GLES31.glBindBuffer(GLES31.GL_SHADER_STORAGE_BUFFER,buffers[9]);GLES31.glBufferSubData(GLES31.GL_SHADER_STORAGE_BUFFER,0,4*n,directInts(words));uploadedLesions=lesions==null?new int[0]:lesions.clone();
+        }
+        java.util.Map<Integer,Float> next=layer==null?java.util.Collections.emptyMap():layer.thresholds();
+        for(java.util.Map.Entry<Integer,Float> e:next.entrySet())if(!e.getValue().equals(uploadedThresholds.get(e.getKey())))patchThreshold(e.getKey(),e.getValue());
+        for(int i:uploadedThresholds.keySet())if(!next.containsKey(i))patchThreshold(i,0);
+        uploadedThresholds.clear();uploadedThresholds.putAll(next);checkGl("threshold parameters");
+    }
+    private void patchThreshold(int neuron,float value){GLES31.glBindBuffer(GLES31.GL_SHADER_STORAGE_BUFFER,buffers[9]);GLES31.glBufferSubData(GLES31.GL_SHADER_STORAGE_BUFFER,4*(n+neuron),4,directInts(new int[]{Float.floatToIntBits(value)}));}
     private void uploadFloat(int i,float[] a){GLES31.glBindBuffer(GLES31.GL_SHADER_STORAGE_BUFFER,buffers[i]);GLES31.glBufferData(GLES31.GL_SHADER_STORAGE_BUFFER,a.length*4,directFloats(a),GLES31.GL_DYNAMIC_DRAW);}
     private void uploadInt(int i,int[] a){GLES31.glBindBuffer(GLES31.GL_SHADER_STORAGE_BUFFER,buffers[i]);GLES31.glBufferData(GLES31.GL_SHADER_STORAGE_BUFFER,a.length*4,directInts(a),GLES31.GL_DYNAMIC_DRAW);}
     private int[] readInts(int i,int len){

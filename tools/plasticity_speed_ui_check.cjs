@@ -38,11 +38,19 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
    assert.equal(await page.evaluate(()=>playing||connected),false);
    await page.reload();await page.waitForFunction(()=>loaded);await page.evaluate(()=>labReady({modelId:'flywire-v783',kind:'fixture',neurons:30,edges:1,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:8},(_,i)=>String(i+17)),backend:'cpu'}));await page.evaluate(()=>labState.settle());
    assert.equal(await page.isChecked('#trainingBase'),false,'root choice restored from Layer Set');
+   await page.evaluate(()=>{const f=fdbConfiguration();f.neuronDynamics={version:1,thresholdOffsets:[{neuron:'17',offsetMv:-1.25}]};$('fdbJson').value=JSON.stringify(f);$('trainingPlasticity').value='expanded';return $('trainingPlasticity').onchange();});
+   assert.equal(await page.evaluate(()=>lastRootConfig.fdb.learning.plasticityMode),'expanded');
+   assert.equal(await page.evaluate(()=>lastRootConfig.fdb.learning.maxEdges),2048);
+   await page.reload();await page.waitForFunction(()=>loaded);await page.evaluate(()=>labReady({modelId:'flywire-v783',kind:'fixture',neurons:30,edges:1,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:8},(_,i)=>String(i+17)),backend:'cpu'}));await page.evaluate(()=>labState.settle());
+   assert.equal(await page.inputValue('#trainingPlasticity'),'expanded','expanded mode restored from Layer Set');
+   await page.evaluate(()=>{$('trainingPlasticity').value='base';return $('trainingPlasticity').onchange();});
+   assert.equal(await page.evaluate(()=>lastRootConfig.fdb.neuronDynamics.thresholdOffsets[0].offsetMv),-1.25,'disabling expanded mode retains acquired threshold');
+
   }
   if(system!=='gb'){
-   const config=await page.evaluate(()=>{$('dual1Base').checked=false;$('dual2Base').checked=true;$('dual1Base').dispatchEvent(new Event('change'));return JSON.parse(localStorage.getItem('fly-dual-preferences-'+labPlatform+'-'+romHash));});
-   assert.equal(config.agents[0].trainBase,false);assert.equal(config.agents[1].trainBase,true);
+   const config=await page.evaluate(()=>{$('dual1Base').checked=false;$('dual2Base').checked=true;$('dual1Plasticity').value='root';$('dual2Plasticity').value='expanded';$('dual1Base').dispatchEvent(new Event('change'));return JSON.parse(localStorage.getItem('fly-dual-preferences-'+labPlatform+'-'+romHash));});
+   assert.equal(config.agents[0].trainBase,false);assert.equal(config.agents[1].trainBase,true);assert.equal(config.agents[0].plasticityMode,'root');assert.equal(config.agents[1].plasticityMode,'expanded');
   }
  }
- assert.deepEqual(errors,[]);fs.mkdirSync('ui-preview',{recursive:true});fs.writeFileSync('ui-preview/alpha20-speed.json',JSON.stringify({kind:'real-core-wall-clock-speed',native:'acknowledgement fixtures',rows},null,2));console.log(JSON.stringify(rows));await browser.close();console.log('PASS: measured ×1/×3 on real NES/MD/SNES/GB, pending GPU fixture, overloaded speed honesty, persisted root choice and independent P1/P2 configuration');
+ assert.deepEqual(errors,[]);fs.mkdirSync('ui-preview',{recursive:true});fs.writeFileSync('ui-preview/alpha20-speed.json',JSON.stringify({kind:'real-core-wall-clock-speed',native:'acknowledgement fixtures',rows},null,2));console.log(JSON.stringify(rows));await browser.close();console.log('PASS: measured ×1/×3 on real NES/MD/SNES/GB, pending GPU fixture, overloaded speed honesty, persisted root choice and independent P1/P2 configuration, expanded mode reload and retained thresholds when disabled');
 })().catch(async e=>{console.error(e);if(browser)await browser.close();process.exitCode=1;});

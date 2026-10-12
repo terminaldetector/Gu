@@ -92,6 +92,8 @@ public final class Engine {
         }
         long start = System.nanoTime(), spikes = 0;
         int[] counts = new int[voltage.length];
+        float[] thresholdOffsets=options.delta==null?null:options.delta.thresholdOffsets();
+        if(thresholdOffsets!=null)for(int i=0;i<thresholdOffsets.length;i++)thresholdOffsets[i]=-45f+thresholdOffsets[i];
         int steps = durationMs * 10, done = 0;
         for (; done < steps && !cancel.get(); done++, tick++) {
             float[] due = pending[(int) (tick % 19)];
@@ -108,7 +110,7 @@ public final class Engine {
                     voltage[inputs[k]] += .275 * 250;
             }
             for (int i = 0; i < voltage.length; i++) {
-                if (lesioned[i] || voltage[i] <= -45) continue;
+                if (lesioned[i] || voltage[i] <= (thresholdOffsets==null?-45f:thresholdOffsets[i])) continue;
                 counts[i]++;
                 spikes++;
                 voltage[i] = -52;

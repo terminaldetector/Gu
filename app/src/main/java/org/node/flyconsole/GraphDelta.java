@@ -22,9 +22,10 @@ public final class GraphDelta {
     private static final class Snapshot {
         final HashMap<Long,Float> deltas;
         final ArrayList<Edge> edges;
+        final HashMap<Integer,Float> thresholds;
         final long version;
-        Snapshot(HashMap<Long,Float> d, ArrayList<Edge> e, long v) {
-            deltas=new HashMap<>(d); edges=new ArrayList<>(e); version=v;
+        Snapshot(HashMap<Long,Float> d, ArrayList<Edge> e, HashMap<Integer,Float> t, long v) {
+            deltas=new HashMap<>(d); edges=new ArrayList<>(e); thresholds=new HashMap<>(t); version=v;
         }
     }
     private final int neuronCount;
@@ -32,6 +33,7 @@ public final class GraphDelta {
     private final HashMap<Long,Float> weightDeltas = new HashMap<>();
     private final ArrayList<Edge> growth = new ArrayList<>();
     private final HashMap<Integer,ArrayList<Edge>> bySource = new HashMap<>();
+    private final HashMap<Integer,Float> thresholds=new HashMap<>();
     private long version;
     public GraphDelta(int neuronCount) { this(neuronCount, DEFAULT_MAX_GROWTH); }
     public GraphDelta(int neuronCount, int maxGrowth) {
@@ -41,6 +43,16 @@ public final class GraphDelta {
     private void check(int source,int target){if(source<0||source>=neuronCount||target<0||target>=neuronCount)throw new IllegalArgumentException("Неверная вершина FDB");}
     private static long key(int source,int target){return (((long)source)<<32)^(target&0xffffffffL);}
     public synchronized long version(){return version;}
+    public int capacity(){return maxGrowth;}
+    public synchronized float thresholdOffset(int neuron){check(neuron,neuron);Float x=thresholds.get(neuron);return x==null?0:x;}
+    public synchronized java.util.Map<Integer,Float> thresholds(){return new java.util.TreeMap<>(thresholds);}
+    public synchronized float[] thresholdOffsets(){float[] a=new float[neuronCount];for(java.util.Map.Entry<Integer,Float> e:thresholds.entrySet())a[e.getKey()]=e.getValue();return a;}
+    public synchronized void setThresholdOffset(int neuron,float offset){
+        check(neuron,neuron);if(!Float.isFinite(offset)||Math.abs(offset)>5)throw new IllegalArgumentException("Threshold offset must be ±5 mV");
+        if(thresholdOffset(neuron)==offset)return;
+        if(offset!=0&&!thresholds.containsKey(neuron)&&thresholds.size()>=2048)throw new IllegalStateException("Threshold parameter limit");
+        if(offset==0)thresholds.remove(neuron);else thresholds.put(neuron,offset);version++;
+    }
     public synchronized int growthCount(){return growth.size();}
     public synchronized int deltaCount(){return weightDeltas.size();}
     public synchronized List<Edge> deltas(){
@@ -100,20 +112,20 @@ public final class GraphDelta {
             throw new IllegalStateException("FDB adjacency index inconsistent");
         }return false;
     }
-    public synchronized long memoryBytes(){return 64L*weightDeltas.size()+64L*growth.size();}
+    public synchronized long memoryBytes(){return 64L*weightDeltas.size()+64L*growth.size()+48L*thresholds.size();}
     public synchronized long checkpoint(){
         if(checkpoints.size()>=16)throw new IllegalStateException("Лимит 16 контрольных точек FDB");
-        checkpoints.add(new Snapshot(weightDeltas,growth,version));return checkpoints.size()-1;
+        checkpoints.add(new Snapshot(weightDeltas,growth,thresholds,version));return checkpoints.size()-1;
     }
     public synchronized void rollback(long token){
         if(token<0||token>=checkpoints.size())throw new IllegalArgumentException("Неизвестная контрольная точка FDB");
-        Snapshot s=checkpoints.get((int)token);weightDeltas.clear();weightDeltas.putAll(s.deltas);growth.clear();growth.addAll(s.edges);bySource.clear();
+        Snapshot s=checkpoints.get((int)token);weightDeltas.clear();weightDeltas.putAll(s.deltas);thresholds.clear();thresholds.putAll(s.thresholds);growth.clear();growth.addAll(s.edges);bySource.clear();
         for(Edge e:growth){ArrayList<Edge> list=bySource.get(e.source);if(list==null){list=new ArrayList<>();bySource.put(e.source,list);}list.add(e);}version++;
     }
     public synchronized String genome(){
         StringBuilder out=new StringBuilder("FDB1;v=").append(version).append(";d=");
         boolean first=true;for(java.util.Map.Entry<Long,Float> e:new java.util.TreeMap<>(weightDeltas).entrySet()){if(!first)out.append('|');first=false;out.append((int)(e.getKey()>>32)).append(':').append((int)(long)e.getKey()).append(':').append(String.format(Locale.US,"%.6g",e.getValue()));}
-        out.append(";e=");for(int i=0;i<growth.size();i++){if(i>0)out.append('|');Edge e=growth.get(i);out.append(e.source).append(':').append(e.target).append(':').append(String.format(Locale.US,"%.6g",e.weight));}return out.toString();
+        out.append(";e=");for(int i=0;i<growth.size();i++){if(i>0)out.append('|');Edge e=growth.get(i);out.append(e.source).append(':').append(e.target).append(':').append(String.format(Locale.US,"%.6g",e.weight));}if(!thresholds.isEmpty()){out.append(";t=");boolean start=true;for(java.util.Map.Entry<Integer,Float> t:new java.util.TreeMap<>(thresholds).entrySet()){if(!start)out.append('|');start=false;out.append(t.getKey()).append(':').append(String.format(Locale.US,"%.6g",t.getValue()));}}return out.toString();
     }
     private final ArrayList<Snapshot> checkpoints = new ArrayList<>();
 }

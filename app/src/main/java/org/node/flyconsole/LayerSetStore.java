@@ -9,7 +9,7 @@ import java.nio.file.StandardCopyOption;
 
 /** App-private bounded checkpoints; each replacement is atomic. No ROM or base graph bytes. */
 final class LayerSetStore {
-    static final int MAX_BYTES=2*1024*1024,MAX_SETS=32,TOTAL_BYTES=32*1024*1024;
+    static final int MAX_BYTES=4*1024*1024,MAX_SETS=32,TOTAL_BYTES=32*1024*1024;
     private final File directory;
     LayerSetStore(File directory)throws IOException {this.directory=directory;if(!directory.isDirectory()&&!directory.mkdirs())throw new IOException("Не удалось открыть Layer Set");}
     private File file(String id){if(id==null||!id.matches("[-a-f0-9]{36}"))throw new IllegalArgumentException("Неверный ID Layer Set");return new File(directory,id+".json");}
@@ -41,7 +41,7 @@ final class LayerSetStore {
     synchronized JSONObject save(JSONObject set)throws Exception {
         validate(set);File target=file(set.getString("id"));JSONObject metadata=summary(set);byte[] bytes=set.toString().getBytes(StandardCharsets.UTF_8);
         if(target.exists()){JSONObject old=get(set.getString("id"));if("dual-neural".equals(old.optString("actorKind"))&&(!"dual-neural".equals(set.optString("actorKind"))||!old.getString("actorSlot").equals(set.optString("actorSlot"))||!old.getString("modelId").equals(set.optString("modelId"))))throw new IOException("Dual Layer Set belongs to its actor slot");}
-        if(bytes.length>MAX_BYTES)throw new IOException("Layer Set превышает 2 МиБ");
+        if(bytes.length>MAX_BYTES)throw new IOException("Layer Set превышает 4 МиБ");
         long total=bytes.length;int count=0;File[] files=directory.listFiles();if(files==null)throw new IOException("Layer Set недоступны");
         for(File path:files)if(path.getName().matches("[-a-f0-9]{36}\\.json")){count++;if(!path.equals(target))total+=path.length();}
         if(!target.exists()&&count>=MAX_SETS)throw new IOException("Максимум 32 Layer Set");if(total>TOTAL_BYTES)throw new IOException("Хранилище Layer Set заполнено");

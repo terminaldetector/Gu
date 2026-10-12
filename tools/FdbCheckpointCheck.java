@@ -17,6 +17,6 @@ public final class FdbCheckpointCheck {
   JSONObject fdb=new JSONObject().put("version",2).put("graph_sha256",g.fingerprint()).put("deltas",new JSONArray()).put("edges",new JSONArray().put(new JSONObject().put("source","1").put("target","17").put("weight",22))).put("learningState",state);
   store.updateFdb(id,"sega",set.getString("romHash"),g.fingerprint(),in,out,fdb);JSONObject loaded=new LayerSetStore(root).get(id);require(loaded.getInt("layerVersion")==2&&loaded.getJSONObject("configuration").getJSONObject("fdb").toString().equals(fdb.toString()),"atomic full topology survives reopen");require(!new JSONObject(loaded.getString("key")).getJSONObject("configuration").getJSONObject("fdb").has("learningState"),"portable signature excludes temporal state");
   before=loaded.toString();rejected=false;try{store.updateFdb(id,"gb",set.getString("romHash"),g.fingerprint(),in,out,fdb);}catch(Exception expected){rejected=true;}require(rejected&&before.equals(store.get(id).toString()),"mismatching platform cannot corrupt active preset");for(File file:root.listFiles())file.delete();root.delete();
-  System.out.println("PASS: FDB v3 exact checkpoint, reproducible resumed training, v1 migration, malformed-state rollback and atomic Layer Set topology / identity");
+  System.out.println("PASS: FDB v4 exact checkpoint, reproducible resumed training, v1 migration, malformed-state rollback and atomic Layer Set topology / identity");
  }
 }

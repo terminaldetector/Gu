@@ -1,3 +1,7 @@
+## Alpha21: Expanded FDB Plasticity
+
+Experimental five-way ablation on the existing learner: base FDB, 2048 deterministic root candidates, learned threshold offsets ±5 mV, 2048 Wexo capacity, and all combined. Expanded modes share a normalized update budget. Acquired parameters survive disabling and Layer Set reload. CPU and GLES apply the same float32 threshold on every tick. Diagnostic games currently saturate across all five modes; no intelligence improvement is claimed. See [design, migration and measured limits](docs/EXPANDED-FDB-PLASTICITY.md).
+
 ## alpha20 · trainable roots and measured fast-forward
 
 FDB now trains bounded changes to selected original synapses (ΔW) together with signed exogenous weights (Wexo), preserving the original W₀. Mixed-path action credit, repeated evidence before structural birth, internal growth candidates and version 3 learning checkpoints work through the existing single/dual model architecture. Root learning can be switched independently for P1/P2. See [mechanisms, research sources, migration and measured checks](docs/ALPHA20-FDB-SPEED.md).

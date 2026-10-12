@@ -47,10 +47,10 @@ def upload(index,values,typ=I):
 def read(index,length,typ=F):
     bind(SSBO,buffers[index]);p=mapping(SSBO,0,length*4,1);assert p
     values=list((typ*length).from_buffer_copy(C.string_at(p,length*4)));assert unmap(SSBO);return values
-def run(weight=120,prob=1,gain=1,disable=0,lesions=(0,0),extra=0,delta=0,mutate=False,revisions=None,ticks=40,history=None):
+def run(weight=120,prob=1,gain=1,disable=0,lesions=(0,0),extra=0,delta=0,mutate=False,revisions=None,ticks=40,history=None,threshold_offsets=(0,0)):
     upload(0,[-52,-52],F);upload(1,[0,0],F);upload(2,[0,0])
     upload(3,[0]*38);upload(5,[0,0]);upload(6,[0,1,1]);upload(7,[1])
-    upload(8,[weight+delta],F);upload(9,lesions)
+    upload(8,[weight+delta],F);upload(9,list(lesions)+[struct.unpack("i",struct.pack("f",v))[0] for v in threshold_offsets])
     bits=lambda x:struct.unpack("I",struct.pack("f",x))[0]
     upload(4,[3,5,5,1,bits(extra)] if extra else [3,3,3],U)
     use(program)
@@ -71,6 +71,9 @@ def run(weight=120,prob=1,gain=1,disable=0,lesions=(0,0),extra=0,delta=0,mutate=
             if "extra" in revision:
                 extra=revision["extra"]
                 upload(4,[3,5,5,1,bits(extra)] if extra else [3,3,3],U)
+            if "threshold_offsets" in revision:
+                threshold_offsets=revision["threshold_offsets"]
+                upload(9,list(lesions)+[struct.unpack("i",struct.pack("f",v))[0] for v in threshold_offsets])
             if "delta" in revision:
                 delta=revision["delta"];upload(8,[weight+delta],F)
         ui(loc(program,b"tick"),tick);dispatch(1,1,1);barrier(0x2000|0x200)
@@ -83,7 +86,7 @@ def run(weight=120,prob=1,gain=1,disable=0,lesions=(0,0),extra=0,delta=0,mutate=
             else:v[i]=-52+(v[i]+52)*ev+cur[i]*coupling;cur[i]*=eg
         if prob and not lesions[0]:v[0]+=68.75
         for i in range(2):
-            if lesions[i] or v[i]<=-45:continue
+            if lesions[i] or v[i]<=struct.unpack("f",struct.pack("f",-45+struct.unpack("f",struct.pack("f",threshold_offsets[i]))[0]))[0]:continue
             counts[i]+=1;v[i]=-52;cur[i]=0;ref[i]=0 if i==0 else 22
             if i==0 and not lesions[1]:
                 for w in [weight+delta,extra]:
@@ -126,3 +129,9 @@ assert run(weight=0,revisions={10:{"extra":120},20:{"extra":0}},ticks=60)==[60,2
 assert run(weight=0,extra=-120,revisions={10:{"extra":-60},20:{"extra":0}},ticks=60)==[60,0]
 print("PASS: actual GLES31 production shader ("+version+"); CPU-equation LIF trajectory, exact delayed queue, inhibition/gain/lesions, Wexo reinforcement/depression/pruning, ΔW restore, in-flight event preservation, float32 weights >128")
 
+
+# Same threshold is applied on every tick, including changes during a live trajectory.
+for offset in [-5,-2,-.1234567,0,.1234567,2,5]:run(weight=32,ticks=400,threshold_offsets=(0,offset))
+run(weight=32,ticks=400,revisions={80:{"threshold_offsets":(0,-5)},160:{"threshold_offsets":(0,5)},240:{"threshold_offsets":(0,0)}})
+assert run(prob=0,ticks=400,threshold_offsets=(-5,-5))==[0,0]
+print("PASS: actual GLES threshold offsets -5..5 mV, every-tick CPU-equation parity, live revisions, restored zero and resting stability")

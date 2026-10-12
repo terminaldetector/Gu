@@ -223,12 +223,12 @@ public final class NesLabActivity extends Activity {
         JSONObject fdb=data.optJSONObject("fdb");
         if(data.has("fdb")&&!data.isNull("fdb")&&fdb==null)throw new IllegalArgumentException("FDB must be JSON object");
         if(fdb!=null) {
-            if(fdb.has("version")&&(!(fdb.get("version") instanceof Number)||fdb.getDouble("version")!=fdb.getInt("version")||(fdb.getInt("version")!=1&&fdb.getInt("version")!=2)))throw new IllegalArgumentException("FDB format version");
+            if(fdb.has("version")&&(!(fdb.get("version") instanceof Number)||fdb.getDouble("version")!=fdb.getInt("version")||(fdb.getInt("version")<1||fdb.getInt("version")>3)))throw new IllegalArgumentException("FDB format version");
             if(!graph.fingerprint().equals(fdb.getString("graph_sha256")))throw new IllegalArgumentException("FDB belongs to another connectome");
             GraphDelta layer=new GraphDelta(graph.ids.length);
             for(String kind:new String[]{"deltas","edges"}){
                 JSONArray links=fdb.optJSONArray(kind);if(links==null){if(fdb.has(kind))throw new IllegalArgumentException("FDB list must be array");continue;}
-                if(links.length()>1024)throw new IllegalArgumentException("FDB UI limit: 1024 links per list");
+                if(links.length()>2048)throw new IllegalArgumentException("FDB UI limit: 2048 links per list");
                 for(int k=0;k<links.length();k++){
                     JSONObject link=links.getJSONObject(k);
                     if(!(link.get("source") instanceof String)||!(link.get("target") instanceof String))throw new IllegalArgumentException("FDB IDs must be strings");
@@ -242,6 +242,7 @@ public final class NesLabActivity extends Activity {
                     }else layer.addEdge(source,target,(float)value);
                 }
             }
+            FdbCheckpoint.restoreThresholds(layer,fdb,graph);
             JSONObject growth=fdb.optJSONObject("growth");
             if(fdb.has("growth")&&growth==null)throw new IllegalArgumentException("FDB growth must be object");
             if(growth!=null) {
@@ -270,8 +271,8 @@ public final class NesLabActivity extends Activity {
                 if(learning.getBoolean("enabled")||learning.has("rate")){
                     if(!(learning.get("maxEdges") instanceof Number)||learning.getDouble("maxEdges")!=learning.getInt("maxEdges"))throw new IllegalArgumentException("FDB learning edge cap");
                     if(learning.has("trainBase")&&!(learning.get("trainBase") instanceof Boolean))throw new IllegalArgumentException("FDB trainBase must be boolean");
-                    nextLearningConfig.put("trainBase",learning.optBoolean("trainBase",true));
-                    nextLearning=new FdbLearning(graph,layer,next.inputs,next.outputs,learning.getDouble("rate"),learning.getInt("maxEdges"),(float)learning.getDouble("maxWeight"),learning.optBoolean("trainBase",true));
+                    nextLearningConfig.put("trainBase",learning.optBoolean("trainBase",true)).put("plasticityMode",FdbLearning.validateMode(learning.optString("plasticityMode","base")));
+                    nextLearning=new FdbLearning(graph,layer,next.inputs,next.outputs,learning.getDouble("rate"),learning.getInt("maxEdges"),(float)learning.getDouble("maxWeight"),learning.optBoolean("trainBase",true),nextLearningConfig.getString("plasticityMode"));
                     nextLearning.seed(next.seed);
                     JSONObject state=fdb.optJSONObject("learningState");
                     if(state!=null){
@@ -291,6 +292,7 @@ public final class NesLabActivity extends Activity {
             JSONObject current=fdbState();
             JSONArray ds=fdb.optJSONArray("deltas"),es=fdb.optJSONArray("edges");
             if(current.getJSONArray("deltas").toString().equals(ds==null?"[]":ds.toString())&&current.getJSONArray("edges").toString().equals(es==null?"[]":es.toString())
+                &&current.getJSONObject("neuronDynamics").getJSONArray("thresholdOffsets").toString().equals(fdb.optJSONObject("neuronDynamics")==null?"[]":fdb.getJSONObject("neuronDynamics").getJSONArray("thresholdOffsets").toString())
                 &&String.valueOf(nextGrowthConfig).equals(String.valueOf(growthConfiguration))&&String.valueOf(nextLearningConfig).equals(String.valueOf(learningConfiguration))){next.options.delta=experiment.options.delta;nextGrowth=fdbGrowth;nextGrowthConfig=growthConfiguration;nextLearning=fdbLearning;nextLearningConfig=learningConfiguration;}
         }
         if (requestedBackend.equals("gpu")) {
@@ -338,7 +340,7 @@ public final class NesLabActivity extends Activity {
         for(int i=0;i<2;i++){
             JSONObject descriptor=descriptors[i];models[i]=descriptor.getString("modelId");if(!ConnectomeStore.valid(models[i]))throw new IllegalArgumentException("Unknown connectome model");String mode=descriptor.getString("mode");if(!("train".equals(mode)||"eval".equals(mode)))throw new IllegalArgumentException("Agent mode");DualAgentContext.number(descriptor,"epsilon",0,1);if(descriptor.has("resume")&&!(descriptor.get("resume") instanceof Boolean))throw new IllegalArgumentException("Resume must be boolean");descriptor.getJSONObject("config");descriptor.put("teamReward",team);
             manifests[i]=ConnectomeStore.manifest(this,models[i]);String expected=manifests[i].optString("graph_sha256","");Graph candidate=GraphCache.findNamed(models[i],expected);if(candidate!=null)candidates.put(models[i],candidate);
-            long n=candidate==null?DualAgentContext.integer(manifests[i],"neurons",24,500000):candidate.ids.length;extra+=104L*n;
+            long n=candidate==null?DualAgentContext.integer(manifests[i],"neurons",24,500000):candidate.ids.length;extra+=108L*n;
             if(candidate==null&&missing.add(models[i]))extra+=12L*n+8L*DualAgentContext.integer(manifests[i],"edges",0,100000000)+4;
         }
         long available=heapAvailable(),reserve=64L*1024*1024;if(extra+reserve>available)throw new IOException("Two CPU models require additional "+(extra/1048576)+" MiB plus 64 MiB reserve; available "+(available/1048576)+" MiB");
@@ -444,7 +446,7 @@ public final class NesLabActivity extends Activity {
     }
 
     private JSONObject fdbState() throws Exception {
-        JSONObject state=new JSONObject().put("version",2).put("graph_sha256",graph.fingerprint());
+        JSONObject state=new JSONObject().put("version",3).put("neuronDynamics",experiment.options.delta==null?new JSONObject().put("version",1).put("thresholdOffsets",new JSONArray()):FdbCheckpoint.thresholdState(experiment.options.delta,graph)).put("graph_sha256",graph.fingerprint());
         GraphDelta layer=experiment.options.delta;
         for(String kind:new String[]{"deltas","edges"}) {
             JSONArray links=new JSONArray();

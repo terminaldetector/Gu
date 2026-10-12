@@ -14,7 +14,7 @@ public final class Graph {
    md.update(b.array(),0,b.position());StringBuilder result=new StringBuilder();for(byte v:md.digest())result.append(String.format(java.util.Locale.US,"%02x",v&255));digest=result.toString();return digest;
   }catch(java.security.NoSuchAlgorithmException ex){throw new IllegalStateException(ex);}
  }
- public long memoryBytes(){return 8L*ids.length+4L*offsets.length+8L*targets.length+104L*ids.length;}
+ public long memoryBytes(){return 8L*ids.length+4L*offsets.length+8L*targets.length+108L*ids.length;}
  public static Graph read(InputStream input,long budget) throws IOException {
   BufferedInputStream buffered=new BufferedInputStream(input);buffered.mark(2);int first=buffered.read(),second=buffered.read();buffered.reset();
   DataInputStream d=new DataInputStream(first==31&&second==139?new BufferedInputStream(new java.util.zip.GZIPInputStream(buffered),65536):buffered);

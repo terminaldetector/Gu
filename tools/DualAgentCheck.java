@@ -38,7 +38,7 @@ public final class DualAgentCheck {
  private static JSONObject descriptor(Graph graph,Experiment ports,long seed,int window)throws Exception{
   JSONArray edges=new JSONArray();for(int input:ports.inputs)for(int button:new int[]{0,6,7}){int target=ports.outputs[button];if(!base(graph,input,target))edges.put(new JSONObject().put("source",Long.toString(graph.ids[input])).put("target",Long.toString(graph.ids[target])).put("weight",4));}
   return new JSONObject().put("seed",seed).put("config",new JSONObject().put("backend","cpu").put("mode","closed").put("windowMs",window).put("maxHz",500).put("thresholdHz",30).put("gain",1)
-   .put("fdb",new JSONObject().put("deltas",new JSONArray()).put("edges",edges).put("learning",new JSONObject().put("enabled",true).put("rate",.1).put("maxEdges",128).put("maxWeight",127))));
+   .put("fdb",new JSONObject().put("deltas",new JSONArray()).put("edges",edges).put("learning",new JSONObject().put("enabled",true).put("rate",.1).put("maxEdges","1".equals(System.getenv("EXPANDED_FULL"))?2048:128).put("plasticityMode","1".equals(System.getenv("EXPANDED_FULL"))?"expanded":"base").put("maxWeight",127))));
  }
  private static DualAgentContext context(String id,String model,Graph graph,Experiment defaults,JSONObject descriptor,JSONObject checkpoint,String layerId)throws Exception{return DualAgentContext.create(id,model,graph,defaults,new JSONObject(descriptor.toString()).put("id",id).put("modelId",model),checkpoint,layerId);}
  private static DualAgentContext actor(String id,String model,Graph graph,JSONObject config)throws Exception{return context(id,model,graph,ports(graph,model),config,null,UUID.randomUUID().toString());}
