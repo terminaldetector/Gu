@@ -14,3 +14,5 @@ java -Xmx1024m -cp "$dual_test_tmp/classes:$dual_test_tmp/json.jar" org.node.fly
 CODE_CLASSPATH="$dual_test_tmp/classes:$dual_test_tmp/json.jar" DUAL_FLY_GRAPH=app/src/main/assets/brain.fly.gz node tools/dual_game_check.cjs
 
 EXPANDED_FULL=1 java -Xmx1024m -cp "$dual_test_tmp/classes:$dual_test_tmp/json.jar" org.node.flyconsole.DualAgentCheck app/src/main/assets/brain.fly.gz app/src/main/assets/male-cns.fly.gz
+
+EXPANDED_FULL=1 CODE_CLASSPATH="$dual_test_tmp/classes:$dual_test_tmp/json.jar" DUAL_FLY_GRAPH=app/src/main/assets/brain.fly.gz node tools/dual_game_check.cjs

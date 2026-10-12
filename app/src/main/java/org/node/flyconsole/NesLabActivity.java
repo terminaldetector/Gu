@@ -329,7 +329,7 @@ public final class NesLabActivity extends Activity {
         if(values.length()!=2)throw new IllegalArgumentException("Exactly two agents required");JSONObject[] result=new JSONObject[2];for(int i=0;i<2;i++){JSONObject value=values.getJSONObject(i);String id=value.getString("id");int slot="p1".equals(id)?0:"p2".equals(id)?1:-1;if(slot<0||result[slot]!=null)throw new IllegalArgumentException("Unique P1/P2 required");result[slot]=value;}return result;
     }
     private static long graphArrayBytes(Graph graph){return 12L*graph.ids.length+8L*graph.targets.length+4;}
-    private long dualEstimatedBytes(){if(dualAgents==null)return 0;long bytes=0;java.util.HashSet<Graph> seen=new java.util.HashSet<>();for(DualAgentContext agent:dualAgents){if(seen.add(agent.graph))bytes+=graphArrayBytes(agent.graph);bytes+=104L*agent.graph.ids.length+agent.layer.memoryBytes()+agent.learning.memoryBytes();}return bytes;}
+    private long dualEstimatedBytes(){if(dualAgents==null)return 0;long bytes=0;java.util.HashSet<Graph> seen=new java.util.HashSet<>();for(DualAgentContext agent:dualAgents){if(seen.add(agent.graph))bytes+=graphArrayBytes(agent.graph);bytes+=108L*agent.graph.ids.length+agent.layer.memoryBytes()+agent.learning.memoryBytes();}return bytes;}
     private static long heapAvailable(){Runtime runtime=Runtime.getRuntime();return Math.max(0,runtime.maxMemory()-runtime.totalMemory()+runtime.freeMemory());}
     private void configureDual(JSONObject request)throws Exception {
         JSONObject response=dualEnvelope(request);if("gb".equals(labSystem))throw new IllegalArgumentException("GB has one controller; two neural ports require NES, Sega or SNES");

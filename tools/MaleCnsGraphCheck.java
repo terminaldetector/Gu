@@ -12,7 +12,7 @@ public final class MaleCnsGraphCheck {
   try(FileInputStream file=new FileInputStream(args[0])){graph=Graph.read(file,256L*1024*1024);}
   if(graph.ids.length!=165122||graph.targets.length!=25563197)throw new AssertionError("official graph universe");
   if(!graph.fingerprint().equals("90d9baae7627a521b08d5112eeb27057994b213bb2ecbc00aae1fb1c52e1cb56"))throw new AssertionError("Male CNS graph SHA256");
-  if(graph.memoryBytes()!=223659732L)throw new AssertionError("runtime memory passport");
+  if(graph.memoryBytes()!=223659732L+4L*graph.ids.length)throw new AssertionError("runtime memory passport");
   int source=Arrays.binarySearch(graph.ids,11139L),target=Arrays.binarySearch(graph.ids,164190L);
   if(source<0||target<0)throw new AssertionError("retinal/motor ports");
   Engine engine=new Engine(graph);engine.reset(17);
