@@ -36,6 +36,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
  await setting('uiLandscapeScale',.7);await setting('uiLandscapeX',1);await setting('uiLandscapeY',-1);await geometry('smaller shifted image remains inside');
  await setting('uiLandscapeMonitorPosition','bottom');await geometry('bottom indicators');
  await setting('uiLandscapeInput','gamepad');await geometry('forced pad without connected device');assert(!await page.locator('.controller').isVisible());
+ await setting('uiVisible',false);await setting('uiLandscapeInput','touch');assert(await page.locator('.controller').isVisible(),'explicit landscape touch view overrides inherited hidden pad');await setting('uiLandscapeInput','gamepad');await setting('uiVisible',true);
  await page.evaluate(()=>userInterface.layout());assert(await page.evaluate(()=>bridgeCalls.includes('display:true'))===false,'unchanged immersive state avoids repeated native calls');
  await setting('uiLandscapeFullscreen',false);assert(await page.evaluate(()=>bridgeCalls.filter(v=>v.startsWith('display:')).at(-1)==='display:false'));await setting('uiLandscapeFullscreen',true);assert(await page.evaluate(()=>bridgeCalls.filter(v=>v.startsWith('display:')).at(-1)==='display:true'));
  await page.click('#landscapeTraining');assert(await page.locator('#liveTrainingBar').isVisible());assert(await page.locator('#liveAuto').isVisible());await page.keyboard.press('Escape');assert(!await page.locator('#liveTrainingBar').isVisible());

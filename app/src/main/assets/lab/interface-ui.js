@@ -125,8 +125,9 @@ function fullscreen(enabled){if(enabled===lastFullscreen)return;lastFullscreen=e
 function closeTraining(){body.classList.remove('landscape-training-open');$('landscapeTraining').setAttribute('aria-expanded','false');}
 function profile(){
  const l=settings.landscape,land=orientation()==='landscape',pad=land&&!editing&&(l.input==='gamepad'||l.input==='auto'&&Boolean(currentDevice()));
+ const touchVisible=settings.visible||land&&l.input==='touch';body.classList.toggle('hide-touch',!touchVisible);
  body.classList.toggle('landscape-compact',land&&(l.panel==='compact'||pad));body.classList.toggle('landscape-gamepad',pad);
- body.classList.toggle('landscape-overlay',land&&(pad||!settings.visible||l.screenLayout==='overlay'));body.classList.toggle('landscape-hud-bottom',land&&l.monitorPlacement==='bottom'&&l.monitors>0);
+ body.classList.toggle('landscape-overlay',land&&(pad||!touchVisible||l.screenLayout==='overlay'));body.classList.toggle('landscape-hud-bottom',land&&l.monitorPlacement==='bottom'&&l.monitors>0);
  if(!land||editing)closeTraining();fullscreen(land&&l.fullscreen);telemetry();
 }
 function text(el,value){if(el.textContent!==value)el.textContent=value;}
