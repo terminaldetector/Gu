@@ -79,6 +79,17 @@ public final class DualAgentCheck {
   require(fingerprint.equals(new Graph(graph.ids,graph.offsets,graph.targets,graph.weights).fingerprint()),"fresh digest confirms W0 arrays immutable");long graphBytes=12L*graph.ids.length+8L*graph.targets.length+4;
   return new JSONObject().put("model",model).put("neurons",graph.ids.length).put("baseEdges",graph.targets.length).put("graphSha",fingerprint).put("immutableGraphBytes",graphBytes).put("twoEnginesBytesEstimate",208L*graph.ids.length).put("pairGraphAndEnginesBytesEstimate",graphBytes+208L*graph.ids.length).put("measuredEngineMs",engineMs).put("checkWallMs",(System.nanoTime()-started)/1e6).put("p1",summary(a)).put("p2",summary(b));
  }
+ private static void discardCheck()throws Exception {
+  Graph graph=fixture();DualAgentContext a=actor("p1",FIXTURE,graph,descriptor(graph,ports(graph,FIXTURE),7,5));double[] retina=new double[16];Arrays.fill(retina,1);
+  JSONObject first=a.sample(request("p1","train",new int[]{0,1},null),retina,"hold:first",new AtomicBoolean());
+  a.sample(request("p1","train",new int[]{0,1},outcome(first,1)),retina,"hold:second",new AtomicBoolean());
+  String weights=weightsKey(a.layer);long automatic=a.learning.automatic();
+  JSONObject next=a.sample(request("p1","train",new int[]{0,1},null).put("discardOutcome",true),retina,"hold:after-gap",new AtomicBoolean());
+  require(weights.equals(weightsKey(a.layer))&&a.learning.automatic()==automatic,"discarding overlong hold credit does not train or remove acquired weights");
+  a.sample(request("p1","train",new int[]{0,1},outcome(next,1)),retina,"hold:timely",new AtomicBoolean());require(a.learning.automatic()==automatic+1,"timely learning continues after long hold");
+  String unchanged=a.fdbState().toString();rejects(()->a.sample(request("p1","train",new int[]{0,1},null).put("discardOutcome","true"),retina,"bad",new AtomicBoolean()),"discard flag must be boolean");
+  rejects(()->a.sample(request("p1","train",new int[]{0,1},outcome(next,1)).put("discardOutcome",true),retina,"bad",new AtomicBoolean()),"discard conflicts with reward");require(unchanged.equals(a.fdbState().toString()),"bad discard cannot mutate state");
+ }
  private static void cleanup(File root)throws Exception{File layers=new File(root,"layer-sets");File[] files=layers.listFiles();if(files!=null)for(File file:files)require(file.delete(),"test file cleanup");if(layers.exists())require(layers.delete(),"test folder cleanup");File index=new File(root,"dual-agent-bindings.json");if(index.exists())require(index.delete(),"test index cleanup");require(root.delete(),"test root cleanup");}
  private static void storeCheck()throws Exception{
   Graph graph=fixture();JSONObject config=descriptor(graph,ports(graph,FIXTURE),7,5);File root=Files.createTempDirectory("fly-dual-check-").toFile();try{
@@ -105,7 +116,7 @@ public final class DualAgentCheck {
  public static void main(String[] args)throws Exception{
   boolean useBridge=args.length>0&&args[0].equals("--bridge");int start=useBridge?1:0;boolean full=args.length-start==2;require(full||(!useBridge&&args.length==0),"Expected FlyWire and Male CNS graph paths; bridge requires both real models");Map<String,Graph> graphs=new LinkedHashMap<>();
   if(full){Graph fly=read(args[start]),male=read(args[start+1]);require(fly.ids.length==138639&&fly.targets.length==15091983&&fly.fingerprint().equals(FLY_SHA),"full pinned FlyWire universe");require(male.ids.length==165122&&male.targets.length==25563197&&male.fingerprint().equals(MALE_SHA),"full pinned Male CNS universe");graphs.put(FLY,fly);graphs.put(MALE,male);}else graphs.put(FIXTURE,fixture());
-  if(useBridge){bridge(graphs);return;}requestGuardCheck();JSONArray rows=new JSONArray();for(Map.Entry<String,Graph> graph:graphs.entrySet())rows.put(graphCheck(graph.getValue(),graph.getKey()));storeCheck();System.out.println("PASS: production dual contexts; request serial/frame boundary fencing, shared W0, isolated CPU/FDB/reward/RNG, frozen evaluation, continued checkpoint, strict identity and durable pair rollback; "+(full?"full official graphs":"explicit 30-neuron mechanism fixture"));
+  if(useBridge){bridge(graphs);return;}requestGuardCheck();discardCheck();JSONArray rows=new JSONArray();for(Map.Entry<String,Graph> graph:graphs.entrySet())rows.put(graphCheck(graph.getValue(),graph.getKey()));storeCheck();System.out.println("PASS: production dual contexts; request serial/frame boundary fencing, shared W0, isolated CPU/FDB/reward/RNG, frozen evaluation, continued checkpoint, strict identity and durable pair rollback; "+(full?"full official graphs":"explicit 30-neuron mechanism fixture"));
   System.out.println(new JSONObject().put("kind","dual-context-isolation-diagnostics").put("fullGraphs",full).put("limits","Controlled technical I/O/rewards, no commercial-game success or biological equivalence. Checkpoint resumes learned topology with reset LIF dynamics.").put("rows",rows));
  }
 }

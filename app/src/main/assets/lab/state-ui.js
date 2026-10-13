@@ -1,7 +1,7 @@
 /* Reopen the same model/game paused. Never copy acquired weights between animals. */
 'use strict';
 (()=>{
-const fields=['mode','clock','maxHz','thresholdHz','windowMs','gain','seed','disableInhibition','scramble','lesions','inputIds','outputIds','backend','systemButtons','learnerController'];
+const fields=['mode','clock','maxHz','thresholdHz','windowMs','gain','seed','disableInhibition','scramble','lesions','inputIds','outputIds','backend','systemButtons','learnerController','actionHoldMode','actionHoldLimit','actionHoldTimeout'];
 const capture=()=>Object.fromEntries(fields.map(id=>[id,$(id).type==='checkbox'?$(id).checked:$(id).value]));
 const defaults=capture(),gameDefaults=Object.fromEntries([...profileFields,'learnMode','runMode','liveHints','autosavePolicy','layerAutosave'].map(id=>[id,$(id).type==='checkbox'?$(id).checked:$(id).value]));let lastGraph=null,restored=null,restoreJob=Promise.resolve(),restoring=false,saveJob=null,blocked=null;
 const context=()=>ready&&loaded?labPlatform+'|'+romHash+'|'+graphIdentity.sha256:null;
@@ -11,7 +11,7 @@ function applyFields(values){
  try{for(const id of fields){if(!(id in values))continue;const el=$(id),v=values[id];if(typeof v!==(el.type==='checkbox'?'boolean':'string'))throw Error('Неверное поле: '+id);if(el.tagName==='SELECT'&&![...el.options].some(o=>o.value===v&&!o.disabled))throw Error('Параметр недоступен: '+id);if(el.type==='checkbox')el.checked=v;else el.value=v;}
   validateConfiguration(configuration());
  }catch(e){for(const id of fields){const el=$(id);if(el.type==='checkbox')el.checked=prior[id];else el.value=prior[id];}throw e;}
- updateSystemButtonsInfo();$('gainLabel').textContent=Number($('gain').value).toFixed(2);
+ updateSystemButtonsInfo();updateActionHoldInfo();$('gainLabel').textContent=Number($('gain').value).toFixed(2);
 }
 function readyModel(data){
  if(lastGraph===graphIdentity.sha256)return;lastGraph=graphIdentity.sha256;restored=null;blocked=null;
