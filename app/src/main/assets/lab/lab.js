@@ -280,7 +280,7 @@ function updateButtons() {
     if(manual&64)masks[port-1]&=~128;if(manual&128)masks[port-1]&=~64;
     masks[port-1]=normalizeMask(masks[port-1]);
     applyPortMask(1,masks[0],appliedDualMasks[0]);applyPortMask(2,masks[1],appliedDualMasks[1]);
-    appliedDualMasks=masks;appliedHumanMask=manual;appliedAgentMask=appliedMask=0;window.userInterface?.telemetry();return;
+    appliedDualMasks=masks;appliedHumanMask=manual;appliedAgentMask=appliedMask=0;window.userInterface?.telemetry?.();return;
   }
   const showing=$('learnMode').value==='teach',pureAuto=$('learnMode').value==='train'&&!$('liveHints').checked;
   const manual=pureAuto&&gmodeMode==='off'?(manualMask&~agentAllowedMask()):manualMask;
@@ -292,7 +292,7 @@ function updateButtons() {
   if(gmodeMode==='off'){applyPortMask(1,agent,appliedAgentMask);}
   else {if(hint){agent=manual;human=0;agentIntervened=true;}applyPortMask(humanPort,human,appliedHumanMask);applyPortMask(agentPort,agent,appliedAgentMask);}
   appliedHumanMask=human;appliedAgentMask=agent;appliedMask=agent;
-  window.userInterface?.telemetry();
+  if(typeof window!=='undefined')window.userInterface?.telemetry?.();
 }
 function rgbaAndRetina(buffer,width=256,height=240) {
   if(screen.width!==width||screen.height!==height){screen.width=width;screen.height=height;screen.style.aspectRatio=width+"/"+height;image=context.createImageData(width,height);fitVideo();}
