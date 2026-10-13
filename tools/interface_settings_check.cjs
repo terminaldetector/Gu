@@ -8,7 +8,11 @@ const loaded=prefs.read(storage,'sega');loaded.layouts.portrait.dpad.x=0;assert.
 for(const size of [{width:320,height:480},{width:480,height:320},{width:1920,height:1080}]){
  for(const p of [{x:0,y:0},{x:1,y:1},{x:.5,y:.5}]){const pos=prefs.position(p,120,100,size,70,8);assert(pos.x>=8&&pos.x+120<=size.width-8);assert(pos.y>=78&&pos.y+100<=size.height-8);}
 }
-for(const bad of [{...custom,version:2},{...custom,actionScale:Infinity},{...custom,thresholdOffset:1,opacity:2},{...custom,layouts:{portrait:{buttons:{4:{x:0,y:0}}},landscape:{}}}])assert.throws(()=>prefs.validate(bad));
+for(const bad of [{...custom,version:3},{...custom,actionScale:Infinity},{...custom,thresholdOffset:1,opacity:2},{...custom,layouts:{portrait:{buttons:{4:{x:0,y:0}}},landscape:{}}},{...custom,landscape:{...custom.landscape,monitors:4}},{...custom,landscape:{...custom.landscape,offsetX:1.1}},{...custom,landscape:{...custom.landscape,sideSpace:Infinity}}])assert.throws(()=>prefs.validate(bad));
+const legacy={...custom,version:1,videoFit:'integer',videoScale:.8};delete legacy.landscape;
+data.set(prefs.key('sega'),JSON.stringify(legacy));
+const migrated=prefs.read(storage,'sega');assert.equal(migrated.version,2);assert.equal(migrated.landscape.videoFit,'integer');assert.equal(migrated.landscape.videoScale,.8);assert.deepEqual(migrated.layouts,legacy.layouts);assert.equal(data.get(prefs.key('sega')),JSON.stringify(legacy),'migration does not replace saved settings on read');
+prefs.write(storage,'sega',migrated);assert.deepEqual(prefs.read(storage,'sega'),migrated);
 data.set(prefs.key('sega'),'broken');assert.throws(()=>prefs.read(storage,'sega'));assert.equal(data.get(prefs.key('sega')),'broken','invalid data is never overwritten by reading');
 const defaults=[{code:96,mask:1},{code:99,mask:1},{code:97,mask:2},{code:100,mask:2},{code:102,mask:4}];
 const bound=prefs.bind({},1,104,defaults);assert.equal(bound[97],null);assert.equal(bound[100],null);assert.equal(bound[104],1);

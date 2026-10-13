@@ -195,9 +195,9 @@ function showTab(tab){
  window.scrollTo(0,0);
 }
 function fitVideo(){
- if(!document.body.classList.contains('game-mode')){screen.style.removeProperty('width');screen.style.removeProperty('height');return;}
+ if(!document.body.classList.contains('game-mode')){screen.style.removeProperty('width');screen.style.removeProperty('height');screen.style.removeProperty('transform');return;}
  const space=screen.parentElement,fit=Math.min(space.clientWidth/screen.width,space.clientHeight/screen.height),scale=window.userInterface?window.userInterface.videoScale(fit):fit;
- if(scale>0){screen.style.width=(screen.width*scale)+'px';screen.style.height=(screen.height*scale)+'px';}
+ if(scale>0){screen.style.width=(screen.width*scale)+'px';screen.style.height=(screen.height*scale)+'px';const at=window.userInterface?.videoOffset(Math.max(0,space.clientWidth-screen.width*scale),Math.max(0,space.clientHeight-screen.height*scale));screen.style.transform=at?'translate('+at.x+'px,'+at.y+'px)':'';}
 }
 function openGame(){showTab('game');document.body.classList.add('game-mode');if(window.userInterface)window.userInterface.layout();fitVideo();}
 function leaveGame(tab='game'){if(window.userInterface)window.userInterface.leave();document.body.classList.remove('game-mode');showTab(tab);fitVideo();}
@@ -280,7 +280,7 @@ function updateButtons() {
     if(manual&64)masks[port-1]&=~128;if(manual&128)masks[port-1]&=~64;
     masks[port-1]=normalizeMask(masks[port-1]);
     applyPortMask(1,masks[0],appliedDualMasks[0]);applyPortMask(2,masks[1],appliedDualMasks[1]);
-    appliedDualMasks=masks;appliedHumanMask=manual;appliedAgentMask=appliedMask=0;return;
+    appliedDualMasks=masks;appliedHumanMask=manual;appliedAgentMask=appliedMask=0;window.userInterface?.telemetry();return;
   }
   const showing=$('learnMode').value==='teach',pureAuto=$('learnMode').value==='train'&&!$('liveHints').checked;
   const manual=pureAuto&&gmodeMode==='off'?(manualMask&~agentAllowedMask()):manualMask;
@@ -292,6 +292,7 @@ function updateButtons() {
   if(gmodeMode==='off'){applyPortMask(1,agent,appliedAgentMask);}
   else {if(hint){agent=manual;human=0;agentIntervened=true;}applyPortMask(humanPort,human,appliedHumanMask);applyPortMask(agentPort,agent,appliedAgentMask);}
   appliedHumanMask=human;appliedAgentMask=agent;appliedMask=agent;
+  window.userInterface?.telemetry();
 }
 function rgbaAndRetina(buffer,width=256,height=240) {
   if(screen.width!==width||screen.height!==height){screen.width=width;screen.height=height;screen.style.aspectRatio=width+"/"+height;image=context.createImageData(width,height);fitVideo();}

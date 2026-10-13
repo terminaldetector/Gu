@@ -1,3 +1,9 @@
+## 2.0.0: final landscape play surface
+
+One compact landscape row replaces the large toolbar and training strip. Up to three small indicators show the applied P1/P2 buttons and learning/speed; training controls expand on demand. Start/pause, network and game reset forward to the existing game actions. A connected physical controller automatically frees the touch rails; touch or gamepad view can also be chosen explicitly. Landscape video size, bounded horizontal/vertical placement, rail/overlay layout, side width, additional control scales and indicator placement are independent of portrait presentation. Android system bars may hide only in landscape play and return in settings/portrait. Version 2 UI preferences safely read version 1 without replacing saved data on read. Learned graph parameters, Layer Sets and control-policy selection remain unchanged.
+
+See the [controls guide](docs/UI-CONTROLS.md). This release retains the research purpose: users acquire, save and share their own learned graphs. It adds no universal trained game preset or scripted winning policy.
+
 ## 2.0.0-rc1: release UI and customizable controls
 
 Separate presentation preferences and categorized settings: display, touch pad, physical gamepad, keyboard, console and appearance. A paused drag editor moves groups or individual action/system buttons, with per-platform portrait/landscape layouts. Adaptive sizing includes 70/85% presets, separate D-pad/action sizes, shape, opacity, spacing, edge inset, left-handed and hidden-pad options. Stable-device physical button/trigger mappings survive reconnect; the original axis and P1/P2 control paths are retained. Light/dark/system themes and integer video scaling are available. UI reset preserves learned parameters and Layer Sets. See the [Russian controls guide and verification scope](docs/UI-CONTROLS.md).

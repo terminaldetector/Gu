@@ -54,6 +54,7 @@ public final class NesLabActivity extends Activity {
     private boolean neuralConfigured;
     private volatile boolean platformPortsPending=true;
     private ControllerInput controllers;
+    private boolean immersiveDisplay;
     private int latestMask;
     private BufferedWriter recorder;
     private File recording;
@@ -623,6 +624,9 @@ public final class NesLabActivity extends Activity {
             else return;
             runOnUiThread(()->setRequestedOrientation(choice));
         }
+        @JavascriptInterface public void gameDisplay(boolean immersive) {
+            runOnUiThread(()->{if(destroyed)return;immersiveDisplay=immersive;applyGameDisplay();});
+        }
         @JavascriptInterface public void stop() { controlEpoch.incrementAndGet();cancel.set(true); }
         @JavascriptInterface public void resume() { if(foreground)cancel.set(false); }
         @JavascriptInterface public void console() {
@@ -798,6 +802,15 @@ public final class NesLabActivity extends Activity {
         });
     }
 
+    private void applyGameDisplay() {
+        int flags=android.view.View.SYSTEM_UI_FLAG_VISIBLE;
+        if(immersiveDisplay)flags=android.view.View.SYSTEM_UI_FLAG_FULLSCREEN|android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY|android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE|android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+        getWindow().getDecorView().setSystemUiVisibility(flags);
+    }
+    @Override public void onWindowFocusChanged(boolean focused) {
+        super.onWindowFocusChanged(focused);
+        if(focused)applyGameDisplay();
+    }
     @Override public void onBackPressed(){
         if(web==null){super.onBackPressed();return;}
         web.evaluateJavascript("Boolean(window.labBack&&window.labBack())",value->{if(!destroyed&&!"true".equals(value))NesLabActivity.super.onBackPressed();});

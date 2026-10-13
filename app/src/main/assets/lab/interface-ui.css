@@ -65,3 +65,40 @@ body.game-mode .individual-position{position:fixed!important;z-index:12;transfor
 }
 @media(orientation:landscape) and (max-height:300px){body.game-mode #gamePanel{grid-template-rows:32px 30px minmax(0,1fr);gap:3px}body.game-mode #gameToolbar button{min-height:32px}body.game-mode .game-hud.right{display:none}body.game-mode .playback{top:70px}}
 @media(max-width:600px){body:not(.game-mode) .tab-bar{position:static}.settings-category{scroll-margin-top:12px}}
+.landscape-only,#landscapeHud{display:none}
+@media(orientation:landscape){
+ body.game-mode.landscape-compact #gamePanel{grid-template-columns:minmax(220px,244px) minmax(0,1fr);grid-template-rows:36px minmax(0,1fr);gap:4px}
+ body.game-mode.landscape-compact #gameToolbar{grid-column:1;grid-row:1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;z-index:5}
+ body.game-mode.landscape-compact #gameToolbar button{min-height:32px;padding:2px 4px;font-size:11px;white-space:nowrap}
+ body.game-mode.landscape-compact #gameToolbar #gameSettings,body.game-mode.landscape-compact #gameToolbar #gameConnect,body.game-mode.landscape-compact #gameToolbar #gameBoost,body.game-mode.landscape-compact #gameToolbar #gameTraining{display:none}
+ body.game-mode.landscape-compact #gameToolbar .landscape-only{display:block}
+ body.game-mode.landscape-compact #landscapeConnect[aria-pressed=true]{border-color:var(--mint);color:var(--mint)}
+ body.game-mode.landscape-compact #landscapeHud{display:flex;grid-column:2;grid-row:1;gap:3px;min-width:0;z-index:4}
+ #landscapeHud .landscape-monitor{display:flex;flex:1;min-width:0;flex-direction:column;justify-content:center;border:1px solid #384c42;background:#15251e;border-radius:5px;padding:2px 5px;margin:0;text-align:left;min-height:32px;line-height:1.2}
+ #landscapeHud .landscape-monitor b,#landscapeHud .landscape-monitor span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px;min-width:0}
+ #landscapeHud .landscape-monitor b{font-size:9px;color:#b6c9bf;font-weight:500}
+ #landscapeHud .landscape-monitor span{color:#e4f8ec;font-variant-numeric:tabular-nums}
+ #landscapeHud .landscape-monitor[hidden]{display:none!important}
+ body.game-mode.landscape-compact .screen-stage{grid-row:2;grid-column:1/-1}
+ body.game-mode.landscape-compact .game-hud,body.game-mode.landscape-compact #gamePlot,body.game-mode.landscape-compact .playback{display:none!important}
+ body.game-mode.landscape-compact #liveTrainingBar{display:none;grid-row:auto;position:absolute;right:6px;left:auto;top:46px;width:min(580px,calc(100% - 12px));height:auto;max-height:calc(100dvh - 70px);overflow:auto;z-index:16;padding:8px;border:1px solid #48685a;box-shadow:0 8px 24px #0008;gap:6px}
+ body.game-mode.landscape-training-open.landscape-compact #liveTrainingBar{display:flex}
+ body.game-mode.landscape-training-open.landscape-hud-bottom #liveTrainingBar{top:auto;bottom:46px}
+ body.game-mode.landscape-training-open #liveTrainingBar .landscape-only{display:block}
+ body.game-mode.landscape-compact #liveTrainingBar button{min-height:32px;flex:0 0 auto;font-size:11px}
+ body.game-mode.landscape-compact.landscape-hud-bottom #gamePanel{grid-template-rows:36px minmax(0,1fr) 32px}
+ body.game-mode.landscape-compact.landscape-hud-bottom #gameToolbar{grid-column:1/-1;width:min(244px,100%)}
+ body.game-mode.landscape-compact.landscape-hud-bottom #landscapeHud{grid-column:1/-1;grid-row:3;justify-self:center;width:min(640px,100%)}
+ body.game-mode.landscape-overlay .screen-stage{grid-template-columns:minmax(0,1fr);gap:0}
+ body.game-mode.landscape-overlay .screen{grid-column:1}
+ body.game-mode.landscape-overlay .game-hud{display:none}
+ body.game-mode.landscape-gamepad:not(.touch-editing) .controller,body.game-mode.landscape-gamepad:not(.touch-editing) .system-pad{display:none!important;pointer-events:none}
+ body.game-mode .screen{padding:0;border:0;background:transparent;border-radius:0}
+ body.game-mode.landscape-compact #gameNotice.visible{bottom:42px;max-height:64px;left:20%;right:20%}
+ body.touch-editing #landscapeHud{visibility:hidden;pointer-events:none}
+}
+@media(orientation:landscape) and (max-width:560px){
+ body.game-mode.landscape-compact #gamePanel{grid-template-columns:220px minmax(0,1fr)}
+ body.game-mode.landscape-compact #landscapeHud .landscape-monitor{padding:2px 3px}
+ body.game-mode.landscape-compact #landscapeHud .landscape-monitor b{font-size:8px}
+}

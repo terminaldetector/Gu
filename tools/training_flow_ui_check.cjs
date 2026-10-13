@@ -21,6 +21,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
    selectConnectome(id){localStorage.setItem('flow-model',id);setTimeout(()=>{flowAnnounce(id);labModelSelection({id,ok:true});},10);}
   };
  });
+ const revealTraining=async()=>{if(!await page.locator('#liveTrainingBar').isVisible())await page.click('#landscapeTraining');};
  for(const system of ['nes','sega','snes','gb']){
   await page.goto('https://flyconsole.local/lab/index.html?system='+system);await page.waitForFunction(()=>loaded);
   await page.evaluate(()=>flowAnnounce(localStorage.getItem('flow-model')||'flywire-v783'));await page.evaluate(()=>labState.settle());
@@ -32,7 +33,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   await page.evaluate(()=>{learningUI.rate(10);$('play').click();});await page.waitForTimeout(350);await page.evaluate(()=>labPause());
   const fast=await page.evaluate(()=>({frames:frame,policy:JSON.stringify(learner.save()),seed:$('seed').value}));
   assert(fast.frames-normal>(normal-baseline.frame)*1.3,'requested ×10 advances '+system+' faster than ×1 on this host: '+JSON.stringify({normal:normal-baseline.frame,fast:fast.frames-normal}));assert.equal(fast.policy,baseline.policy);assert.equal(fast.seed,baseline.seed);
-  await page.click('#liveRecord');await page.waitForFunction(()=>playing&&connected&&$('learnMode').value==='teach');assert.equal(await page.evaluate(()=>emulationRate),1,'REC always uses human time');
+  await revealTraining();await page.click('#liveRecord');await page.waitForFunction(()=>playing&&connected&&$('learnMode').value==='teach');assert.equal(await page.evaluate(()=>emulationRate),1,'REC always uses human time');
   await page.keyboard.down('ArrowRight');await page.waitForFunction(()=>learner.demonstrations>=3);await page.keyboard.up('ArrowRight');
   const rec=await page.evaluate(()=>({frame,restarts:emulatorRestarts,count:learner.demonstrations,mask:brainMask}));assert.equal(rec.mask,0);
   assert((await page.textContent('#liveRecord')).includes('STOP'));
@@ -49,7 +50,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   await page.evaluate(()=>{flowDelay=400;});await page.waitForFunction(()=>pendingToken!==null&&flowPendingDelay===400&&performance.now()-pendingSince<25);const during=await page.evaluate(()=>frame);await page.waitForTimeout(170);const tail=await page.evaluate(()=>({frame,mask:brainMask}));assert(tail.frame>during+10,'RT game clock continues while model is pending');assert.equal(tail.mask,1,'model-owned neural buttons stay held while the next decision is pending');await page.evaluate(()=>{flowDelay=120;});
   const outcomes=await page.evaluate(()=>flowFeedback.filter(q=>q.op==='reward'));
   assert(outcomes.length>1);assert(outcomes.every(q=>q.seconds>0&&q.seconds<=2&&q.frames>0&&q.frames<=Math.ceil(nesFrameRate(system)*.12)),'accelerated credit covers observed action frames and real elapsed time: '+JSON.stringify(outcomes.map(q=>({seconds:q.seconds,frames:q.frames,decision:q.decision}))));
-  await page.click('#liveHintsButton');await page.waitForFunction(()=>playing&&connected&&$('liveHints').checked);await page.evaluate(()=>learningUI.rate(1));
+  await revealTraining();await page.click('#liveHintsButton');await page.waitForFunction(()=>playing&&connected&&$('liveHints').checked);await page.evaluate(()=>learningUI.rate(1));
   assert(await page.evaluate(()=>{const before=rewardPending;$('liveRewardPlus').onclick();const plus=rewardPending;$('liveRewardMinus').onclick();return !$('liveRewardPlus').hidden&&plus===before+1&&rewardPending===before;}),'streaming rewards are available inside the game');
   const assisted=await page.evaluate(()=>learner.demonstrations);await page.keyboard.down('ArrowLeft');await page.waitForFunction(n=>learner.demonstrations>n,assisted);
   assert.equal(await page.evaluate(()=>appliedAgentMask),64,'teacher action replaces, rather than labels a mixture with agent A');await page.keyboard.up('ArrowLeft');
@@ -60,14 +61,14 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   await page.reload();await page.waitForFunction(()=>loaded);await page.evaluate(()=>flowAnnounce(localStorage.getItem('flow-model')||'flywire-v783'));await page.evaluate(()=>labState.settle());assert.equal(await page.evaluate(()=>learningUI.phase()),'assist');assert.equal(await page.evaluate(()=>playing||connected),false);assert.equal(await page.evaluate(()=>emulationRate),1,'reopen cannot accidentally fast-forward');
   if(system==='sega'){
    await page.click('[data-tab="network"]');await page.selectOption('#partnerModel','male-cns-v1.0');await page.selectOption('#gmode','coop');await page.click('#gmodeLaunch');await page.waitForFunction(()=>playing&&connected&&graphIdentity.modelId==='male-cns-v1.0');assert.equal(await page.evaluate(()=>gmodeMode),'coop');await page.waitForFunction(()=>brainMask===1);assert.equal(await page.evaluate(()=>nes.mask2),1,'selected Male CNS model routes to actual Sega P2');
-   await page.click('#liveHintsButton');await page.waitForFunction(()=>playing&&connected&&$('liveHints').checked);await page.click('#liveHintTarget');const n=await page.evaluate(()=>learner.demonstrations);await page.keyboard.down('ArrowRight');await page.waitForFunction(n=>learner.demonstrations>n,n);assert.equal(await page.evaluate(()=>nes.mask2),128);assert.equal(await page.evaluate(()=>nes.mask),0,'explicit P2 hint does not masquerade as human P1');await page.keyboard.up('ArrowRight');
+   await revealTraining();await page.click('#liveHintsButton');await page.waitForFunction(()=>playing&&connected&&$('liveHints').checked);await page.click('#liveHintTarget');const n=await page.evaluate(()=>learner.demonstrations);await page.keyboard.down('ArrowRight');await page.waitForFunction(n=>learner.demonstrations>n,n);assert.equal(await page.evaluate(()=>nes.mask2),128);assert.equal(await page.evaluate(()=>nes.mask),0,'explicit P2 hint does not masquerade as human P1');await page.keyboard.up('ArrowRight');
    await page.evaluate(()=>labPause());await page.screenshot({path:'ui-preview/alpha18-sega-flow-landscape.png'});
    await page.setViewportSize({width:390,height:844});await page.screenshot({path:'ui-preview/alpha18-sega-flow-portrait.png'});
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'portrait streaming controls fit');await page.setViewportSize({width:844,height:390});
   }
  }
  // Large pad and optional instrumentation must remain clear of all touch targets.
- await page.setViewportSize({width:844,height:390});await page.evaluate(()=>openGame());await page.click('#liveDetails');
+ await page.setViewportSize({width:844,height:390});await page.evaluate(()=>{$('uiLandscapePanel').value='full';$('uiLandscapePanel').dispatchEvent(new Event('change',{bubbles:true}));openGame();});await page.click('#liveDetails');
  const geometry=await page.evaluate(()=>{const rect=e=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,w:r.width,h:r.height};};return{plot:rect($('gamePlot')),video:rect(screen),buttons:[...document.querySelectorAll('[data-button]')].filter(e=>!e.hidden).map(rect)};});
  assert(geometry.buttons.every(b=>b.w>=36&&b.h>=30));assert(geometry.plot.right<=geometry.video.x+1);for(const b of geometry.buttons)assert(b.right<=geometry.plot.x||b.x>=geometry.plot.right||b.y>=geometry.plot.bottom||b.bottom<=geometry.plot.y);
  assert.deepEqual(errors,[]);await browser.close();console.log('PASS: real NES/MD/SNES/GB acceleration, continuous RT with model-owned holds and bounded observed credit, durable REC -> AUTO, pure automation, exclusive streaming hints, frozen evaluation, paused guidance restore, selected Male CNS Sega P2 and explicit P2 demonstration');

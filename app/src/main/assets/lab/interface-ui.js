@@ -4,7 +4,9 @@
 const prefs=FlyInterfaceSettings,body=document.body,root=document.documentElement;
 const groups={dpad:document.querySelector('.dpad'),actions:document.querySelector('.actions'),system:document.querySelector('.system-pad')};
 const fields={uiTheme:'theme',uiAccent:'accent',uiDensity:'density',uiShape:'shape',uiOpacity:'opacity',uiDpadScale:'dpadScale',uiActionScale:'actionScale',uiGap:'gap',uiInset:'inset',uiVisible:'visible',uiLeftHanded:'leftHanded',uiVideoFit:'videoFit',uiVideoScale:'videoScale'};
+const landscapeFields={uiLandscapePanel:'panel',uiLandscapeInput:'input',uiLandscapeLayout:'screenLayout',uiLandscapeFit:'videoFit',uiLandscapeScale:'videoScale',uiLandscapeX:'offsetX',uiLandscapeY:'offsetY',uiLandscapeSides:'sideSpace',uiLandscapeDpad:'dpadScale',uiLandscapeActions:'actionScale',uiLandscapeMonitors:'monitors',uiLandscapeMonitorPosition:'monitorPlacement',uiLandscapeFullscreen:'fullscreen'};
 let settings=prefs.defaults(),saveBlocked=false,editing=false,drag=null,layoutQueued=false,binding=false,deviceError='';
+let lastFullscreen=false;
 const devices=new Map(),physicalKey='fly-physical-pad-v1-'+labPlatform;
 let physicalMaps=Object.create(null);
 function notice(message,error=false){$('interfaceStatus').textContent=message;$('interfaceStatus').className='note'+(error?' error':'');}
@@ -17,26 +19,27 @@ try{
 function save(){if(saveBlocked)return false;try{prefs.write(localStorage,labPlatform,settings);notice('Настройки экрана и управления сохранены.');return true;}catch(e){notice('Сохранение интерфейса: '+e.message,true);return false;}}
 function orientation(){return innerWidth>innerHeight?'landscape':'portrait';}
 function viewport(){return{width:innerWidth,height:innerHeight};}
-function minTop(){return Math.min(innerHeight/3,Math.max($('liveTrainingBar').getBoundingClientRect().bottom+4,editing?$('touchEditorBar').getBoundingClientRect().bottom+4:0));}
+function minTop(){return Math.min(innerHeight/3,Math.max($('gameToolbar').getBoundingClientRect().bottom+4,body.classList.contains('landscape-compact')?0:$('liveTrainingBar').getBoundingClientRect().bottom+4,editing?$('touchEditorBar').getBoundingClientRect().bottom+4:0));}
 function inset(){const s=getComputedStyle($('gamePanel'));return Math.max(settings.inset,parseFloat(s.paddingLeft)||0,parseFloat(s.paddingRight)||0);}
 function clearPosition(el){for(const name of ['position','left','top','right','bottom','transform','width','height','z-index'])el.style.removeProperty(name);el.classList.remove('individual-position');}
 function place(el,p){const r=el.getBoundingClientRect(),at=prefs.position(p,r.width,r.height,viewport(),minTop(),inset());el.style.position='fixed';el.style.left=at.x+'px';el.style.top=at.y+'px';el.style.right='auto';el.style.bottom='auto';el.style.transform='none';el.style.zIndex='11';}
 function layout(){
  if(!body.classList.contains('game-mode')||drag)return;
+ profile();
  for(const el of Object.values(groups))clearPosition(el);
  for(const el of document.querySelectorAll('.individual-position'))clearPosition(el);
  const landscape=orientation()==='landscape',gap=settings.gap,edge=inset(),scale=Number($('touchScale').value)||1,cols=buttonNames.length===12?3:2;
  // Reserve video space first. Sizes can be requested larger, but never exceed the available rails.
- const rail=Math.max(68,Math.min(220,innerWidth*.235,(innerWidth-110)/2));
+ const rail=Math.max(81,cols*25+(cols-1)*gap,Math.min(220,innerWidth*settings.landscape.sideSpace,(innerWidth-110)/2));
  const dRail=landscape?rail:Math.max(65,(innerWidth-2*edge-12)/2);
  const aRail=landscape?rail:Math.max(65,(innerWidth-2*edge-12)/2);
  const heightBudget=landscape?Math.max(70,innerHeight-minTop()-edge):Math.max(70,Math.min(innerHeight*.27,innerHeight-270));
- const dKey=Math.max(20,Math.min((landscape?56:46)*scale*settings.dpadScale,(dRail-6)/3,(heightBudget-6)/3));
- const aKey=Math.max(20,Math.min((landscape?56:46)*scale*settings.actionScale,(aRail-(cols-1)*gap)/cols,(heightBudget-gap)/2));
+ const dKey=Math.max(25,Math.min((landscape?56:46)*scale*settings.dpadScale*(landscape?settings.landscape.dpadScale:1),(dRail-6)/3,(heightBudget-6)/3));
+ const aKey=Math.max(25,Math.min((landscape?56:46)*scale*settings.actionScale*(landscape?settings.landscape.actionScale:1),(aRail-(cols-1)*gap)/cols,(heightBudget-gap)/2));
  root.style.setProperty('--dpad-key',dKey+'px');root.style.setProperty('--action-key',aKey+'px');
  // A left-handed layout needs the same space for the larger of the two groups.
  const widthD=dKey*3+6,widthA=aKey*cols+(cols-1)*gap,left=settings.leftHanded?widthA:widthD,right=settings.leftHanded?widthD:widthA;
- for(const el of [$('gamePanel'),document.querySelector('.screen-stage')]){el.style.setProperty('--left-rail',(landscape?left+edge:0)+'px');el.style.setProperty('--right-rail',(landscape?right+edge:0)+'px');}
+ for(const el of [$('gamePanel'),document.querySelector('.screen-stage')]){el.style.setProperty('--left-rail',(landscape?Math.max(left+edge,rail):0)+'px');el.style.setProperty('--right-rail',(landscape?Math.max(right+edge,rail):0)+'px');}
  const custom=settings.layouts[orientation()];
  for(const name of ['dpad','actions','system'])if(custom[name])place(groups[name],custom[name]);
  for(const [button,p]of Object.entries(custom.buttons||{})){
@@ -54,6 +57,7 @@ function appearance(){
  root.style.setProperty('--ui-opacity',settings.opacity);root.style.setProperty('--ui-radius',settings.shape==='round'?'50%':settings.shape==='soft'?'12px':'4px');
  root.style.setProperty('--ui-gap',settings.gap+'px');root.style.setProperty('--ui-inset',settings.inset+'px');
  for(const [id,field]of Object.entries(fields)){const el=$(id);if(el.type==='checkbox')el.checked=settings[field];else el.value=settings[field];if($(id+'Value'))$(id+'Value').textContent=Math.round(settings[field]*100)+'%';}
+ for(const [id,field]of Object.entries(landscapeFields)){const el=$(id);if(el.type==='checkbox')el.checked=settings.landscape[field];else el.value=settings.landscape[field];if($(id+'Value'))$(id+'Value').textContent=Math.round(settings.landscape[field]*100)+'%';}
  layout();
 }
 media.addEventListener?.('change',appearance);
@@ -62,6 +66,12 @@ for(const [id,field]of Object.entries(fields))$(id).addEventListener('change',()
  try{const next=prefs.validate({...settings,[field]:v});holding.clear();refreshManual();settings=next;appearance();save();}catch(e){notice(e.message,true);appearance();}
 });
 for(const id of ['uiVideoScale','uiOpacity','uiDpadScale','uiActionScale'])$(id).addEventListener('input',()=>{$(id+'Value').textContent=Math.round(Number($(id).value)*100)+'%';});
+for(const [id,field]of Object.entries(landscapeFields))$(id).addEventListener('change',()=>{
+ const el=$(id),v=el.type==='checkbox'?el.checked:el.type==='range'||field==='monitors'?Number(el.value):el.value;
+ try{settings=prefs.validate({...settings,landscape:{...settings.landscape,[field]:v}});holding.clear();refreshManual();appearance();save();}catch(e){notice(e.message,true);appearance();}
+});
+for(const id of ['uiLandscapeScale','uiLandscapeX','uiLandscapeY','uiLandscapeSides','uiLandscapeDpad','uiLandscapeActions'])$(id).addEventListener('input',()=>{$(id+'Value').textContent=Math.round(Number($(id).value)*100)+'%';});
+$('resetLandscape').onclick=()=>{settings.landscape=prefs.defaults().landscape;appearance();save();};
 document.querySelectorAll('[data-settings-target]').forEach(button=>button.addEventListener('click',()=>{
  const category=$(button.dataset.settingsTarget);category.querySelectorAll('details').forEach(el=>el.open=true);category.scrollIntoView({block:'start',behavior:'smooth'});
 }));
@@ -111,6 +121,29 @@ for(const type of ['pointerup','pointercancel','lostpointercapture'])document.ad
  if(!editing||!drag||event.pointerId!==drag.pointer)return;event.preventDefault();event.stopImmediatePropagation();if(type==='pointerup')dragAt(event);stopDrag();save();
 },true);
 function currentDevice(){const id=$('controllerDevice').value==='auto'?selectedController??devices.keys().next().value:Number($('controllerDevice').value);return devices.get(id);}
+function fullscreen(enabled){if(enabled===lastFullscreen)return;lastFullscreen=enabled;if(typeof window.FlyBridge?.gameDisplay==='function')window.FlyBridge.gameDisplay(enabled);}
+function closeTraining(){body.classList.remove('landscape-training-open');$('landscapeTraining').setAttribute('aria-expanded','false');}
+function profile(){
+ const l=settings.landscape,land=orientation()==='landscape',pad=land&&!editing&&(l.input==='gamepad'||l.input==='auto'&&Boolean(currentDevice()));
+ body.classList.toggle('landscape-compact',land&&(l.panel==='compact'||pad));body.classList.toggle('landscape-gamepad',pad);
+ body.classList.toggle('landscape-overlay',land&&(pad||!settings.visible||l.screenLayout==='overlay'));body.classList.toggle('landscape-hud-bottom',land&&l.monitorPlacement==='bottom'&&l.monitors>0);
+ if(!land||editing)closeTraining();fullscreen(land&&l.fullscreen);telemetry();
+}
+function text(el,value){if(el.textContent!==value)el.textContent=value;}
+function telemetry(){
+ const l=settings.landscape,pair=window.dualAgents?.active(),masks=pair?appliedDualMasks:gmodeMode==='coop'?[appliedHumanMask,appliedAgentMask]:gmodeMode==='coop-reverse'?[appliedAgentMask,appliedHumanMask]:[appliedAgentMask,0];
+ const labels=pair?[window.dualAgents.label(1),window.dualAgents.label(2)]:[$('gmodeLeft').textContent,gmodeMode==='off'?'P2 · —':$('gmodeRight').textContent];
+ for(let i=0;i<2;i++){const box=$('landscapeP'+(i+1));box.hidden=l.monitors<i+1;text(box.querySelector('b'),labels[i]);const action=buttonNames.filter((_,b)=>masks[i]&(1<<b)).join(' + ')||'—';text(box.querySelector('span'),action);const title=labels[i]+' · '+action;if(box.title!==title)box.title=title;}
+ $('landscapeTraining').hidden=l.monitors<3;text($('landscapeLearningMode'),$('liveTrainingMode').textContent);text($('landscapeSpeedValue'),$('liveSpeed').textContent);
+ text($('landscapePlay'),playing?'Пауза':'Старт');$('landscapePlay').disabled=$('landscapeReset').disabled=!loaded||romLoading;
+ text($('landscapeConnect'),pair?'Сети':'Сеть');const linked=String(Boolean(connected||pair&&window.dualAgents.running()));if($('landscapeConnect').getAttribute('aria-pressed')!==linked)$('landscapeConnect').setAttribute('aria-pressed',linked);const title=pair?(window.dualAgents.running()?'Приостановить обе сети':'Продолжить обе сети'):$('gameConnect').textContent;if($('landscapeConnect').title!==title)$('landscapeConnect').title=title;
+ text($('landscapeSpeed'),$('gameBoost').textContent);
+}
+$('landscapePlay').onclick=()=>{$('play').click();telemetry();};$('landscapeConnect').onclick=async()=>{const pair=window.dualAgents;if(pair?.active()){if(pair.running())pair.pause('pause');else await pair.resume();}else $('gameConnect').click();telemetry();};$('landscapeReset').onclick=()=>{$('resetNes').click();telemetry();};
+$('landscapeTraining').onclick=()=>{const open=!body.classList.contains('landscape-training-open');body.classList.toggle('landscape-training-open',open);$('landscapeTraining').setAttribute('aria-expanded',String(open));};
+$('landscapeTrainingClose').onclick=closeTraining;$('landscapeSpeed').onclick=()=>{$('gameBoost').click();telemetry();};
+for(const id of ['liveTrainingMode','liveSpeed','gmodeLeft','gmodeRight','gameConnect','play'])new MutationObserver(telemetry).observe($(id),{childList:true,characterData:true,subtree:true});
+new MutationObserver(()=>{if($('quickMenu').open)closeTraining();}).observe($('quickMenu'),{attributes:true,attributeFilter:['open']});
 function deviceMap(device){return device?physicalMaps[device.descriptor]||{}:{};}
 function padNotice(message,error=false){$('physicalPadStatus').textContent=message;$('physicalPadStatus').className='note'+(error?' error':'');}
 function physicalInfo(){
@@ -141,7 +174,7 @@ $('resetPhysicalPad').onclick=()=>{
 $('controllerDevice').addEventListener('change',()=>{cancelBinding('Назначение отменено при смене устройства.');physicalInfo();});
 $('controllerAB').addEventListener('change',physicalInfo);
 function controller(data){
- if(!data.connected){devices.delete(data.id);if(binding)cancelBinding('Геймпад отключён: назначение отменено.');queueMicrotask(physicalInfo);return 0;}
+ if(!data.connected){devices.delete(data.id);if(binding)cancelBinding('Геймпад отключён: назначение отменено.');queueMicrotask(physicalInfo);queueLayout();return 0;}
  const descriptor=typeof data.descriptor==='string'&&data.descriptor.length<=512?data.descriptor:'legacy:'+String(data.name||data.id);
  const defaults=Array.isArray(data.defaults)?data.defaults.filter(v=>Number.isInteger(v.code)&&v.code>=0&&v.code<=255&&Number.isInteger(v.mask)&&v.mask>=0&&v.mask<=4095).slice(0,64):[];
  const previous=devices.get(data.id),name=String(data.name||'Геймпад').slice(0,120);devices.set(data.id,{descriptor,id:data.id,name,defaults});
@@ -156,19 +189,21 @@ function controller(data){
   }
   return 0;
  }
- if(!previous||previous.descriptor!==descriptor||previous.name!==name)queueMicrotask(physicalInfo);
+ if(!previous||previous.descriptor!==descriptor||previous.name!==name){queueMicrotask(physicalInfo);queueLayout();}
  if(editing||document.querySelector('main').dataset.tab!=='game'||$('quickMenu').open)return 0;
  try{return prefs.physical(data,deviceMap(devices.get(data.id)),buttonNames.length===12);}catch(e){padNotice(e.message,true);return 0;}
 }
 document.addEventListener('keydown',event=>{
+ if(event.code==='Escape'&&body.classList.contains('landscape-training-open')){closeTraining();event.preventDefault();event.stopImmediatePropagation();return;}
  if(binding){event.preventDefault();event.stopImmediatePropagation();if(event.code==='Escape')cancelBinding('Назначение отменено.');return;}
  if(editing){if(event.code==='Escape'){finishEditor();event.preventDefault();}if(!['INPUT','SELECT','TEXTAREA'].includes(event.target.tagName)){event.preventDefault();event.stopImmediatePropagation();}}
 },true);
 window.addEventListener('blur',()=>{cancelBinding('Назначение отменено: приложение неактивно.',false);finishEditor(false);controlsEnabled(false);});
 document.addEventListener('focusin',event=>{if(binding&&['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName))cancelBinding('Назначение отменено при переходе в поле настроек.');});
 window.addEventListener('resize',()=>{stopDrag();queueLayout();});
-const oldBack=window.labBack;window.labBack=()=>{if(editing){finishEditor();return true;}if(binding){cancelBinding('Назначение отменено.');return true;}return oldBack?.()||false;};
-window.userInterface={editing:()=>editing,binding:()=>binding,layout,leave:()=>{cancelBinding();finishEditor();},controller,
- videoScale:scale=>{let n=scale*settings.videoScale;return settings.videoFit==='integer'&&n>=1?Math.floor(n):n;}};
-appearance();physicalInfo();
+const oldBack=window.labBack;window.labBack=()=>{if(editing){finishEditor();return true;}if(binding){cancelBinding('Назначение отменено.');return true;}if(body.classList.contains('landscape-training-open')){closeTraining();return true;}return oldBack?.()||false;};
+window.userInterface={editing:()=>editing,binding:()=>binding,layout,telemetry,leave:()=>{closeTraining();fullscreen(false);cancelBinding();finishEditor();fullscreen(false);},controller,
+ videoScale:scale=>{const v=orientation()==='landscape'?settings.landscape:settings;let n=scale*v.videoScale;return v.videoFit==='integer'&&n>=1?Math.floor(n):n;},
+ videoOffset:(w,h)=>orientation()==='landscape'?{x:w*settings.landscape.offsetX/2,y:h*settings.landscape.offsetY/2}:{x:0,y:0}};
+fullscreen(false);appearance();physicalInfo();
 })();
