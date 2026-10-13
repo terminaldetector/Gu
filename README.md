@@ -1,3 +1,9 @@
+## 2.0.0-rc1: release UI and customizable controls
+
+Separate presentation preferences and categorized settings: display, touch pad, physical gamepad, keyboard, console and appearance. A paused drag editor moves groups or individual action/system buttons, with per-platform portrait/landscape layouts. Adaptive sizing includes 70/85% presets, separate D-pad/action sizes, shape, opacity, spacing, edge inset, left-handed and hidden-pad options. Stable-device physical button/trigger mappings survive reconnect; the original axis and P1/P2 control paths are retained. Light/dark/system themes and integer video scaling are available. UI reset preserves learned parameters and Layer Sets. See the [Russian controls guide and verification scope](docs/UI-CONTROLS.md).
+
+The alpha22 behavior remains: model decisions own their button hold until changed, with optional game-time limits and a separate real-time response watchdog; continuous commands do not manufacture release gaps. FDB credit still uses bounded executed-action intervals. This UI candidate does not claim new gameplay intelligence or physical Android certification.
+
 ## Alpha21: Expanded FDB Plasticity
 
 Experimental five-way ablation on the existing learner: base FDB, 2048 deterministic root candidates, learned threshold offsets ±5 mV, 2048 Wexo capacity, and all combined. Expanded modes share a normalized update budget. Acquired parameters survive disabling and Layer Set reload. CPU and GLES apply the same float32 threshold on every tick. Diagnostic games currently saturate across all five modes; no intelligence improvement is claimed. See [design, migration and measured limits](docs/EXPANDED-FDB-PLASTICITY.md).

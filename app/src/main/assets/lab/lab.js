@@ -184,6 +184,7 @@ function updateNeuralMap(data){
 }
 function showTab(tab){
  if(!['game','platform','network','learning','research','info'].includes(tab))return;
+ if(tab!=='game'&&window.userInterface)window.userInterface.leave();
  if(window.humanTeaching&&tab!=='game')window.humanTeaching.stop('tab');
  document.querySelector('main').dataset.tab=tab;
  holding.clear();refreshManual();
@@ -195,11 +196,11 @@ function showTab(tab){
 }
 function fitVideo(){
  if(!document.body.classList.contains('game-mode')){screen.style.removeProperty('width');screen.style.removeProperty('height');return;}
- const space=screen.parentElement,scale=Math.min(space.clientWidth/screen.width,space.clientHeight/screen.height);
+ const space=screen.parentElement,fit=Math.min(space.clientWidth/screen.width,space.clientHeight/screen.height),scale=window.userInterface?window.userInterface.videoScale(fit):fit;
  if(scale>0){screen.style.width=(screen.width*scale)+'px';screen.style.height=(screen.height*scale)+'px';}
 }
-function openGame(){showTab('game');document.body.classList.add('game-mode');fitVideo();}
-function leaveGame(tab='game'){document.body.classList.remove('game-mode');showTab(tab);fitVideo();}
+function openGame(){showTab('game');document.body.classList.add('game-mode');if(window.userInterface)window.userInterface.layout();fitVideo();}
+function leaveGame(tab='game'){if(window.userInterface)window.userInterface.leave();document.body.classList.remove('game-mode');showTab(tab);fitVideo();}
 function setGmodeBoost(enabled){
  enabled=Boolean(enabled);if(enabled===gmodeBoost)return;
  const resumeGame=playing,resumeLink=connected;window.labPause();
@@ -637,8 +638,9 @@ function displayPreferences(){
  document.body.classList.toggle('hide-map',!preferences.showMap);
  try{localStorage.setItem('fly-display',JSON.stringify(preferences));}catch(_){}
  if(window.FlyBridge&&typeof window.FlyBridge.orientation==='function')window.FlyBridge.orientation(preferences.orientation);
+ if(window.userInterface)window.userInterface.layout();
 }
-try{const saved=JSON.parse(localStorage.getItem('fly-display')||'null');if(saved){if(['auto','portrait','landscape'].includes(saved.orientation))$('orientation').value=saved.orientation;if(['1','1.2','1.4'].includes(saved.touchScale))$('touchScale').value=saved.touchScale;if(typeof saved.showMap==='boolean')$('showMap').checked=saved.showMap;}}catch(_){}
+try{const saved=JSON.parse(localStorage.getItem('fly-display')||'null');if(saved){if(['auto','portrait','landscape'].includes(saved.orientation))$('orientation').value=saved.orientation;if(['.7','.85','1','1.2','1.4'].includes(saved.touchScale))$('touchScale').value=saved.touchScale;if(typeof saved.showMap==='boolean')$('showMap').checked=saved.showMap;}}catch(_){}
 for(const id of ['orientation','touchScale','showMap'])$(id).onchange=displayPreferences;
 displayPreferences();
 setInterval(updateMapFreshness,1000);
@@ -668,7 +670,7 @@ buttonNames.forEach(name=>{const span=document.createElement('span');span.textCo
 const controllerMasks=new Map();let selectedController=null,customKeys={};
 try{customKeys=JSON.parse(localStorage.getItem('fly-keys-'+labPlatform)||'{}');}catch(_){}
 let keys=FlyController.keyboard(labPlatform,customKeys),bindingKey=false;
-function controlsEnabled(on){if(window.FlyBridge&&typeof window.FlyBridge.controls==='function')window.FlyBridge.controls(on);}
+function controlsEnabled(on){if(window.userInterface&&window.userInterface.editing())on=false;if(window.FlyBridge&&typeof window.FlyBridge.controls==='function')window.FlyBridge.controls(on);}
 function refreshManual(){
  if(benchmark&&holding.size){finishBenchmark('manual_control');window.labPause();}
  manualMask=0;for(const mask of holding.values())manualMask|=mask;
@@ -680,12 +682,13 @@ function refreshManual(){
 }
 window.labController=data=>{
  if(!Number.isInteger(data.id)||!Number.isInteger(data.mask)||data.mask<0||data.mask>4095)return;
+ const mask=window.userInterface?window.userInterface.controller(data):data.mask;
  const select=$('controllerDevice'),key=String(data.id);
  if(!data.connected){controllerMasks.delete(data.id);const o=[...select.options].find(x=>x.value===key);if(o)o.remove();if(selectedController===data.id){selectedController=null;select.value='auto';}refreshManual();return;}
- controllerMasks.set(data.id,data.mask);
+ controllerMasks.set(data.id,mask);
  if(![...select.options].some(x=>x.value===key)){const o=document.createElement('option');o.value=key;o.textContent=data.name||'Controller '+key;select.appendChild(o);}
  if(select.value==='auto'&&selectedController===null)selectedController=data.id;
- $('controllerStatus').textContent='Джойстик '+(data.name||key)+' · маска '+data.mask+' · человек '+(gmodeMode==='coop-reverse'?'P2':'P1');refreshManual();
+ $('controllerStatus').textContent='Джойстик '+(data.name||key)+' · маска '+mask+' · человек '+(gmodeMode==='coop-reverse'?'P2':'P1');refreshManual();
 };
 $('controllerDevice').onchange=()=>{selectedController=$('controllerDevice').value==='auto'?controllerMasks.keys().next().value??null:Number($('controllerDevice').value);refreshManual();};
 try{if(localStorage.getItem('fly-pad-ab-'+labPlatform)==='swap')$('controllerAB').value='swap';}catch(_){}

@@ -1,0 +1,67 @@
+/* Presentation layer. All controller bits and all emulation/neural clocks belong to existing code. */
+:root{--ui-gap:6px;--ui-opacity:.9;--ui-radius:50%;--ui-dpad:1;--ui-actions:1;--ui-inset:8px;--safe-left:env(safe-area-inset-left,0px);--safe-right:env(safe-area-inset-right,0px)}
+body{overscroll-behavior:none;-webkit-text-size-adjust:100%}
+body[data-theme=light]{--bg:#eef3f1;--panel:#fff;--line:#becbc6;--ink:#1c3028;--muted:#4a6258;--surface-high:#e7eeeb;--primary-container:#d0e9dc;--violet:#506a80;color-scheme:light}
+body[data-theme=light]:not(.game-mode) input,body[data-theme=light]:not(.game-mode) select,body[data-theme=light]:not(.game-mode) textarea{background:#f5f9f7;color:var(--ink)}
+body[data-theme=light] .dual-actor,body[data-theme=light] .partner-panel{background:#edf5f0}
+body[data-theme=light]:not(.game-mode) .tab-bar{background:var(--panel)}body[data-theme=light]:not(.game-mode) .tab-bar button.active{color:var(--ink)}
+body[data-accent=blue]{--mint:#81c6fa;--primary-container:#254d69}body[data-accent=amber]{--mint:#e5c07b;--primary-container:#5b4527}
+body[data-theme=light][data-accent=blue]{--mint:#397dab;--primary-container:#dceefb}body[data-theme=light][data-accent=amber]{--mint:#9c6b1f;--primary-container:#f4e8ce}body[data-theme=light][data-accent=mint]{--mint:#317c59}
+body[data-density=compact]:not(.game-mode) .panel{padding:14px}body[data-density=compact]:not(.game-mode) button,body[data-density=compact]:not(.game-mode) input,body[data-density=compact]:not(.game-mode) select{min-height:42px}
+body:not(.game-mode) .row>*{min-width:0}.settings-category{border-top:1px solid var(--line);padding:18px 0;scroll-margin-top:140px;min-width:0}.settings-category h3{margin:0 0 12px}.settings-nav{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 20px}.settings-nav button{flex:1 1 110px!important;min-width:0}.settings-category output{font-size:12px;color:var(--mint)}.settings-category .row>div{flex:1 1 140px}
+body.game-mode{padding:0;background:#080c10;color:#e7edf3;--ink:#e7edf3;--muted:#b1beca;--panel:#1a2026;--line:#38434d}
+body.game-mode main{height:100dvh}
+body.game-mode #gamePanel{padding:6px max(6px,var(--safe-right)) 6px max(6px,var(--safe-left));grid-template-rows:38px 58px minmax(0,1fr) auto 36px 40px;gap:6px;height:100dvh}
+body.game-mode #gameToolbar{grid-row:1;min-width:0;max-width:none}body.game-mode #gameToolbar button{min-width:0;white-space:normal;overflow-wrap:anywhere}
+body.game-mode #liveTrainingBar{grid-row:2;display:flex;flex-wrap:wrap;gap:4px;padding:4px 6px;min-width:0;overflow:hidden;align-content:center}
+body.game-mode #liveTrainingMode{flex:1 1 45%;min-width:0;grid-column:auto;grid-row:auto}body.game-mode #liveSpeed{margin-left:auto}body.game-mode #liveTrainingBar button{grid-column:auto!important;grid-row:auto!important;min-width:0;font-size:10px;padding:4px 8px}
+body.game-mode .screen-stage{display:grid;grid-row:3;grid-template-columns:minmax(0,1fr);grid-template-rows:28px minmax(0,1fr);min-height:0;min-width:0;gap:4px;overflow:hidden;--left-rail:0px;--right-rail:0px}
+body.game-mode .screen{grid-column:1;grid-row:2;min-width:0;min-height:0;max-width:none;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+body.game-mode .game-hud.left{grid-row:1;grid-column:1;padding:0;max-height:28px;display:flex;flex-direction:row;overflow:hidden;align-items:center}
+body.game-mode .game-hud.left span,body.game-mode .game-hud.left b{max-width:40%;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;font-size:9px}
+body.game-mode .game-hud.right{display:none}body.game-mode #gamePlot{display:none!important}
+body.game-mode .controller{position:static;grid-row:4;width:100%;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);margin:0;gap:12px;align-items:end;pointer-events:none}
+body.game-mode .dpad{grid-template-columns:repeat(3,var(--dpad-key,42px));grid-template-rows:repeat(3,var(--dpad-key,42px));gap:3px;justify-self:start;pointer-events:auto;min-width:0}
+body.game-mode .actions{display:grid;grid-template-columns:repeat(2,var(--action-key,48px));gap:var(--ui-gap);justify-self:end;min-width:0;pointer-events:auto}
+body.game-mode.sega .actions,body.game-mode.snes .actions{grid-template-columns:repeat(3,var(--action-key,42px))}
+body.game-mode .actions button,body.game-mode.sega .actions button,body.game-mode.snes .actions button{width:var(--action-key,42px);height:var(--action-key,42px);min-width:0;min-height:0;padding:0;line-height:1;box-sizing:border-box;font-size:clamp(12px,4vw,20px);border-radius:var(--ui-radius)}
+body.game-mode .dpad button,body.game-mode .actions button,body.game-mode .system-pad button{opacity:var(--ui-opacity);background:#253740e8;color:#eff8f3;touch-action:none}
+body.game-mode .dpad button{min-height:0;padding:0;font-size:clamp(16px,5vw,25px)}body.game-mode .controller button.active,body.game-mode .system-pad button.active{opacity:1;background:#416855;border-color:var(--mint);color:#fff}
+body.game-mode .system-pad{position:static;grid-row:5;transform:none;width:min(220px,75vw);max-width:none;min-height:36px;margin:0 auto;display:flex;gap:6px;pointer-events:auto}
+body.game-mode .system-pad button{min-width:0;min-height:36px;padding:4px 8px;font-size:11px;letter-spacing:.4px;white-space:nowrap}
+body.game-mode .playback{position:static;grid-row:6;left:auto;top:auto;width:100%;max-width:none;margin:0!important;z-index:3}
+body.game-mode #play{min-height:40px;font-size:12px;width:100%;padding:4px}
+body.game-mode #gameNotice.visible{left:12px;right:12px;bottom:230px;max-height:90px;overflow:hidden;font-size:11px}
+body.game-mode .controller,body.game-mode .system-pad{transition:none}
+body.left-handed .dpad{justify-self:end;grid-column:2;grid-row:1}body.left-handed .actions{justify-self:start;grid-column:1;grid-row:1}
+body.hide-touch:not(.touch-editing).game-mode .controller,body.hide-touch:not(.touch-editing).game-mode .system-pad{visibility:hidden;pointer-events:none}
+body.hide-touch:not(.touch-editing).game-mode .controller button,body.hide-touch:not(.touch-editing).game-mode .dpad{pointer-events:none!important}
+body.hide-touch:not(.touch-editing).game-mode .controller,body.hide-touch:not(.touch-editing).game-mode .system-pad{display:none}
+@media(orientation:portrait){body.hide-touch:not(.touch-editing).game-mode #gamePanel{grid-template-rows:38px 58px minmax(0,1fr) 40px}body.hide-touch:not(.touch-editing).game-mode .playback{grid-row:4}}
+@media(orientation:landscape){body.hide-touch:not(.touch-editing).game-mode .screen-stage{grid-template-columns:minmax(0,1fr)}body.hide-touch:not(.touch-editing).game-mode .screen{grid-column:1}body.hide-touch:not(.touch-editing).game-mode .game-hud{display:none}body.hide-touch:not(.touch-editing).game-mode .playback{top:auto;bottom:8px;left:50%;transform:translateX(-50%);width:min(180px,28vw);max-width:none}}
+#touchEditorBar{position:fixed;left:8px;right:8px;top:6px;z-index:30;background:#203a30;color:#e9fff1;border:1px solid #75b494;padding:8px;border-radius:14px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;box-shadow:0 4px 20px #0007}
+#touchEditorBar span{flex:1 1 160px;font-size:12px}#touchEditorBar select{width:auto;max-width:160px;min-height:38px;font-size:12px}#touchEditorBar button{min-height:38px;font-size:12px;padding:6px 12px}
+body.touch-editing #gameToolbar,body.touch-editing #liveTrainingBar{visibility:hidden;pointer-events:none}body.touch-editing .playback{visibility:hidden;pointer-events:none}
+body.touch-editing .dpad,body.touch-editing .actions,body.touch-editing .system-pad{outline:1px dashed var(--mint);outline-offset:5px;cursor:move;opacity:1;touch-action:none}
+body.touch-editing .actions button,body.touch-editing .system-pad button{opacity:1;cursor:move}
+body.game-mode .individual-position{position:fixed!important;z-index:12;transform:none!important;flex:none!important}
+@media(orientation:landscape){
+ body.game-mode #gamePanel{grid-template-rows:38px 34px minmax(0,1fr);--left-rail:clamp(116px,22vw,210px);--right-rail:clamp(122px,23vw,220px)}
+ body.game-mode .screen-stage{grid-template-columns:var(--left-rail) minmax(0,1fr) var(--right-rail);grid-template-rows:minmax(0,1fr);--left-rail:clamp(116px,22vw,210px);--right-rail:clamp(122px,23vw,220px);gap:6px}
+ body.game-mode .screen{grid-column:2;grid-row:1}
+ body.game-mode .game-hud.left{grid-column:1;grid-row:1;flex-direction:column;max-height:calc(100dvh - 230px);align-items:stretch;padding-top:36px}body.game-mode .game-hud.left span,body.game-mode .game-hud.left b{max-width:100%;font-size:9px}
+ body.game-mode .game-hud.right{display:flex;grid-column:3;grid-row:1;max-height:calc(100dvh - 220px);padding:0;overflow:hidden}
+ body.game-mode.game-details .micro-panel{display:flex;flex-direction:column;margin:2px 0;padding:0}
+ body.game-mode.game-details .micro-heading,body.game-mode.game-details .map-legend,body.game-mode.game-details #mapStats{display:none}
+ body.game-mode.game-details .neural-map{display:none}body.game-mode.game-details #mapState{font-size:9px}
+ body.game-mode.game-details #gamePlot{display:flex!important;position:absolute;top:36px;left:0;width:var(--left-rail);height:clamp(32px,calc(100dvh - 266px),64px)}
+ body.game-mode .controller{position:absolute;left:var(--ui-inset);right:var(--ui-inset);bottom:var(--ui-inset);width:auto;display:flex;justify-content:space-between;align-items:end;gap:12px;pointer-events:none}
+ body.game-mode .system-pad{position:absolute;left:50%;bottom:var(--ui-inset);transform:translateX(-50%);width:min(180px,28vw);margin:0;min-height:32px}
+ body.game-mode .system-pad button{min-height:32px;font-size:10px}
+ body.game-mode .playback{position:absolute;top:84px;left:8px;width:var(--left-rail);max-width:calc(25vw - 8px);min-width:0}
+ body.game-mode #play{min-height:32px;font-size:10px}
+ body.left-handed .controller{flex-direction:row-reverse}
+ body.game-mode #gameNotice.visible{bottom:50px;left:25%;right:25%}
+}
+@media(orientation:landscape) and (max-height:300px){body.game-mode #gamePanel{grid-template-rows:32px 30px minmax(0,1fr);gap:3px}body.game-mode #gameToolbar button{min-height:32px}body.game-mode .game-hud.right{display:none}body.game-mode .playback{top:70px}}
+@media(max-width:600px){body:not(.game-mode) .tab-bar{position:static}.settings-category{scroll-margin-top:12px}}

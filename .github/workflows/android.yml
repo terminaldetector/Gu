@@ -67,6 +67,7 @@ jobs:
         run: |
           ui_status=0
           NODE_PATH=/tmp/fly-ui/node_modules node tools/console_layout_check.cjs || ui_status=1
+          NODE_PATH=/tmp/fly-ui/node_modules node tools/interface_ui_check.cjs || ui_status=1
           NODE_PATH=/tmp/fly-ui/node_modules node tools/layer_ui_check.cjs || ui_status=1
           NODE_PATH=/tmp/fly-ui/node_modules node tools/platform_ui_check.cjs || ui_status=1
           NODE_PATH=/tmp/fly-ui/node_modules node tools/training_ui_check.cjs || ui_status=1

@@ -24,6 +24,8 @@ node tools/action_hold_check.cjs
 node tools/score_search_check.cjs
 node --check app/src/main/assets/lab/score-ui.js
 node tools/settings_check.cjs
+node tools/interface_settings_check.cjs
+node --check app/src/main/assets/lab/interface-ui.js
 node --check app/src/main/assets/lab/state-ui.js
 node --check app/src/main/assets/lab/shell-ui.js
 node --check app/src/main/assets/lab/training-flow.js
@@ -55,6 +57,8 @@ b=urllib.request.urlopen('https://repo.maven.apache.org/maven2/org/json/json/202
 assert hashlib.sha256(b).hexdigest()=='3cf6cd6892e32e2b4c1c39e0f52f5248a2f5b37646fdfbb79a66b46b618414ed'
 open(sys.argv[1],'wb').write(b)
 PYJSON
+javac -cp "$task_tmp/json.jar" -d "$task_tmp/controller" tools/controller-fixture/android/content/Context.java tools/controller-fixture/android/hardware/input/InputManager.java tools/controller-fixture/android/view/*.java app/src/main/java/org/node/flyconsole/ControllerInput.java tools/ControllerInputCheck.java
+java -cp "$task_tmp/controller:$task_tmp/json.jar" org.node.flyconsole.ControllerInputCheck
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/InferenceProgram.java tools/InferenceCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.InferenceCheck
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/LayerSetStore.java tools/LayerSetStoreCheck.java
