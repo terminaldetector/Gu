@@ -92,7 +92,7 @@ jobs:
           java -Xmx512m -cp "$male_test_classes" org.node.flyconsole.MaleCnsGraphCheck app/src/main/assets/male-cns.fly.gz
       - name: Check two full models and real two-port games
         run: bash tools/check_full_dual.sh
-      - run: gradle assembleDebug lintDebug
+      - run: gradle assembleDebug lintDebug assembleRelease lintRelease
       - name: Collect official APK signing tool
         run: cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" /tmp/flyconsole-apksigner.jar
       - uses: actions/upload-artifact@v4
@@ -103,6 +103,10 @@ jobs:
         with:
           name: FlyConsole-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FlyConsole-release-apk
+          path: app/build/outputs/apk/release/app-release-unsigned.apk
       - name: Split APK for bounded mobile downloads
         run: |
           python - <<'PY'
