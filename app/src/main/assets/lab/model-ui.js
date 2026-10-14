@@ -3,12 +3,13 @@
 (() => {
  const labels={'flywire-v783':'FlyWire v783 · мозг самки','male-cns-v1.0':'Male CNS v1.0 · мозг + VNC самца',imported:'Импортированный граф'};
  const builtins=new Set(['flywire-v783','male-cns-v1.0']);
- let activeId=null,manifest=null,pending=null,sequence=0;
+ let activeId=null,manifest=null,pending=null,sequence=0,hasImported=false;
+ const selectable=id=>builtins.has(id)||(id==='imported'&&hasImported);
  const say=(text,error=false)=>{$('modelStatus').textContent=text;$('modelStatus').className=error?'note error':'note';};
  function controls(){
   const disabled=!ready||!activeId||!!pending;
   $('connectomeModel').disabled=disabled;
-  $('applyConnectomeModel').disabled=disabled||$('connectomeModel').value===activeId||!builtins.has($('connectomeModel').value);
+  $('applyConnectomeModel').disabled=disabled||$('connectomeModel').value===activeId||!selectable($('connectomeModel').value);
  }
  function textValue(value){
   if(value===null||value===undefined)return null;
@@ -45,7 +46,7 @@
  async function select(){
   if(pending||!ready||!activeId)return;
   const id=$('connectomeModel').value;if(id===activeId)return;
-  if(!builtins.has(id)){failure('Эту модель нельзя выбрать из встроенных наборов.');return;}
+  if(!selectable(id)){failure('Эту модель нельзя выбрать из встроенных наборов.');return;}
   if(!window.FlyBridge||typeof window.FlyBridge.selectConnectome!=='function'){
    failure('Выбор коннектома требует Android-сборку с поддержкой двух моделей. Текущий граф не изменён.');return;
   }
@@ -79,7 +80,8 @@
   // Older UI fixtures have no model ID; they describe the pre-existing FlyWire build.
   activeId=typeof data.modelId==='string'?data.modelId:'flywire-v783';
   manifest=data.modelManifest&&typeof data.modelManifest==='object'&&!Array.isArray(data.modelManifest)?data.modelManifest:null;
-  const imported=$('importedConnectome');imported.hidden=activeId!=='imported';
+  hasImported=data.hasImportedGraph===true||activeId==='imported';
+  const imported=$('importedConnectome');imported.hidden=!hasImported;imported.disabled=!hasImported;
   $('connectomeModel').value=pending?pending.id:activeId;
   passport(data);
   if(pending&&pending.id===activeId){pending.announced=true;finish();}

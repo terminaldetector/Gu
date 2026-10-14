@@ -21,7 +21,7 @@ function renderSelected(){
  $('layerNew').disabled=busy||!ready||!loaded;$('layerImport').disabled=busy;$('layerRefresh').disabled=busy;
  $('layerDeleteConfirm').hidden=deleteId!==$('layerSelect').value||!deleteId;
  $('layerDeleteCancel').hidden=$('layerDeleteConfirm').hidden;
- $('layerSelectedInfo').textContent=entry?`${entry.name} · обновлений ${entry.updates} · эпизодов ${entry.episodes} · FDB ${entry.fdbEdges} новых / ${entry.fdbDeltas} изменённых\nROM ${entry.romHash.slice(0,12)} · граф ${entry.graphSha256.slice(0,12)} · ${new Date(entry.updatedAt).toLocaleString()}${okay?'':'\nЗагрузите соответствующий ROM и коннектом.'}`:'Наборы хранят веса адаптера, FDB и настройки. ROM и исходный граф не копируются.';
+ $('layerSelectedInfo').textContent=entry?`${entry.name} · обновлений ${entry.updates} · эпизодов ${entry.episodes} · FDB ${entry.fdbEdges} новых / ${entry.fdbDeltas} изменённых\nROM ${entry.romHash.slice(0,12)} · граф ${entry.graphSha256.slice(0,12)} · ${new Date(entry.updatedAt).toLocaleString()}${okay?'':'\nЗагрузите соответствующий ROM и коннектом.'}`:'Layer Set хранит опыт для конкретной игры и графа. Эта кнопка также принимает синтетический JSON исходного графа без привязки к ROM.';
 }
 async function refresh(preferred){entries=await store.request('list');renderList(preferred);}
 function refreshStats(){

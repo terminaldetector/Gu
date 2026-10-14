@@ -11,13 +11,39 @@ final class ConnectomeStore {
     static boolean valid(String id){return FLYWIRE.equals(id)||MALE.equals(id)||IMPORTED.equals(id);}
     static String selected(Context c){String id=c.getSharedPreferences("connectome-model",0).getString("selected",null);return valid(id)?id:new File(c.getFilesDir(),"connectome.fly").exists()?IMPORTED:FLYWIRE;}
     static void select(Context c,String id)throws IOException{if(!valid(id))throw new IOException("Неизвестная модель коннектома");if(!c.getSharedPreferences("connectome-model",0).edit().putString("selected",id).commit())throw new IOException("Выбор модели не сохранён");}
+    private static String importedSha(Context c){return c.getSharedPreferences("connectome-model",0).getString("importedSha","");}
+    private static File importedFile(Context c)throws IOException {
+        String sha=importedSha(c);if(sha.isEmpty())return new File(c.getFilesDir(),"connectome.fly");
+        if(!sha.matches("[a-f0-9]{64}"))throw new IOException("Invalid imported graph identity");
+        return new File(new File(c.getFilesDir(),"synthetic-graphs"),sha+".fly");
+    }
+    static boolean hasImported(Context c){try{return importedFile(c).isFile();}catch(IOException ex){return false;}}
+    /** Content-addressed files plus one atomic preference commit keep the previous selection intact on failure. */
+    static synchronized void installSynthetic(Context c,Graph graph)throws Exception {
+        String sha=graph.fingerprint();File dir=new File(c.getFilesDir(),"synthetic-graphs");
+        if(!dir.isDirectory()&&!dir.mkdirs())throw new IOException("Cannot create graph directory");
+        File target=new File(dir,sha+".fly"),tmp=File.createTempFile("graph-",".tmp",dir);
+        try {
+            try(FileOutputStream out=new FileOutputStream(tmp)){graph.write(out);out.getFD().sync();}
+            java.nio.file.Files.move(tmp.toPath(),target.toPath(),java.nio.file.StandardCopyOption.ATOMIC_MOVE,java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            if(!c.getSharedPreferences("connectome-model",0).edit().putString("selected",IMPORTED).putString("importedSha",sha).commit())throw new IOException("Graph selection was not saved");
+            GraphCache.installNamed(graph,IMPORTED,title(IMPORTED));
+        }finally{tmp.delete();}
+    }
+    static void selectLegacyImport(Context c)throws IOException {
+        if(!c.getSharedPreferences("connectome-model",0).edit().putString("selected",IMPORTED).remove("importedSha").commit())throw new IOException("Graph selection was not saved");
+    }
     static InputStream source(Context c,String id)throws IOException{
-        if(IMPORTED.equals(id))return new FileInputStream(new File(c.getFilesDir(),"connectome.fly"));
+        if(IMPORTED.equals(id))return new FileInputStream(importedFile(c));
         if(MALE.equals(id)){try{return c.getAssets().open("male-cns.fly.gz");}catch(IOException ex){return c.getAssets().open("male-cns.fly");}}
         try{return c.getAssets().open("brain.fly.gz");}catch(IOException ex){return c.getAssets().open("brain.fly");}
     }
     static JSONObject manifest(Context c,String id)throws Exception{
-        if(IMPORTED.equals(id))return new JSONObject().put("model_id",id).put("name","Imported graph").put("dynamics","Independent LIF; source and biological interpretation supplied by importer");
+        if(IMPORTED.equals(id)){
+            JSONObject meta=new JSONObject().put("model_id",id).put("name","Imported graph").put("dynamics","Independent LIF; synthetic or importer-supplied graph");
+            String sha=importedSha(c);if(!sha.isEmpty())meta.put("graph_sha256",sha);
+            return meta;
+        }
         try(InputStream in=c.getAssets().open(MALE.equals(id)?"male-cns.fly.json":"brain.fly.json");ByteArrayOutputStream out=new ByteArrayOutputStream()){
             byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1){if(out.size()+n>1048576)throw new IOException("Паспорт модели слишком велик");out.write(buffer,0,n);}
             return new JSONObject(new String(out.toByteArray(),StandardCharsets.UTF_8)).put("model_id",id);

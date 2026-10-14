@@ -29,5 +29,9 @@ public final class Graph {
   for(int i=0;i<m;i++){wei[i]=d.readFloat();if(!Float.isFinite(wei[i]))throw new IOException("Неверный вес");}
   if(d.read()!=-1)throw new IOException("Лишние данные"); return new Graph(ids,off,tar,wei);
  }
+ public void write(OutputStream output)throws IOException {
+  DataOutputStream d=new DataOutputStream(output);d.writeInt(0x464c5931);d.writeInt(ids.length);d.writeInt(targets.length);
+  for(long id:ids)d.writeLong(id);for(int v:offsets)d.writeInt(v);for(int v:targets)d.writeInt(v);for(float v:weights)d.writeFloat(v);d.flush();
+ }
  public static Graph demo(){return new Graph(new long[]{1,2,3,4},new int[]{0,1,2,3,3},new int[]{1,2,3},new float[]{12,12,-12});}
 }
