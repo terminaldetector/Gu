@@ -36,7 +36,7 @@ public final class FdbCheckpoint {
         return new JSONObject().put("version",1).put("thresholdOffsets",a);
     }
     public static JSONObject save(FdbLearning learner,Graph graph,int[] sources,int[] targets)throws Exception{
-        JSONObject state=new JSONObject().put("version",4).put("graph_sha256",graph.fingerprint()).put("algorithm","bounded mixed plasticity v4").put("plasticityMode",learner.plasticityMode()).put("baseProjectionSha",learner.baseProjectionSha()).put("neuronUpdates",learner.neuronUpdates()).put("budgetClips",learner.budgetClips()).put("lastBudget",learner.lastBudget()).put("neuronCandidates",ids(graph,learner.neuronCandidates())).put("observations",learner.observations()).put("human",learner.human()).put("automatic",learner.automatic()).put("sources",ids(graph,sources)).put("targets",ids(graph,targets)).put("rng",learner.rng()).put("baseline",learner.baseline()).put("born",learner.born()).put("pruned",learner.pruned()).put("rejected",learner.rejected()).put("baseUpdates",learner.baseUpdates()).put("baseCandidates",learner.baseCandidates());
+        JSONObject state=new JSONObject().put("version",4).put("graph_sha256",graph.fingerprint()).put("algorithm","bounded mixed plasticity v4").put("plasticityMode",learner.plasticityMode()).put("projectionVersion",2).put("baseProjectionSha",learner.baseProjectionSha()).put("neuronUpdates",learner.neuronUpdates()).put("budgetClips",learner.budgetClips()).put("lastBudget",learner.lastBudget()).put("neuronCandidates",ids(graph,learner.neuronCandidates())).put("observations",learner.observations()).put("human",learner.human()).put("automatic",learner.automatic()).put("sources",ids(graph,sources)).put("targets",ids(graph,targets)).put("rng",learner.rng()).put("baseline",learner.baseline()).put("born",learner.born()).put("pruned",learner.pruned()).put("rejected",learner.rejected()).put("baseUpdates",learner.baseUpdates()).put("baseCandidates",learner.baseCandidates());
         JSONArray traces=new JSONArray();for(FdbLearning.Trace t:learner.traces())traces.put(new JSONObject().put("source",Long.toString(graph.ids[t.source])).put("target",Long.toString(graph.ids[t.target])).put("eligibility",t.eligibility).put("utility",t.utility).put("support",t.support).put("evidence",t.evidence).put("bad",t.bad));JSONArray nt=new JSONArray();for(FdbLearning.NeuronTrace t:learner.neuronTraces())nt.put(new JSONObject().put("neuron",Long.toString(graph.ids[t.neuron])).put("eligibility",t.eligibility));return state.put("traces",traces).put("neuronTraces",nt);
     }
     public static void restore(FdbLearning learner,JSONObject state,Graph graph,int[] sources,int[] targets)throws Exception{
@@ -49,7 +49,15 @@ public final class FdbCheckpoint {
         long baseUpdates=version>=3?integer(state,"baseUpdates",0,max):0;
         String previous=version==4?FdbLearning.validateMode(state.getString("plasticityMode")):"base";
         boolean same=previous.equals(learner.plasticityMode());
-        if(version==4){String fingerprint=state.getString("baseProjectionSha");if(!fingerprint.matches("[a-f0-9]{64}")||same&&!fingerprint.equals(learner.baseProjectionSha()))throw new IllegalArgumentException("Root projection fingerprint mismatch");}
+        if(version==4){
+            long projection=state.has("projectionVersion")?integer(state,"projectionVersion",1,2):1;
+            String fingerprint=state.getString("baseProjectionSha");if(!fingerprint.matches("[a-f0-9]{64}"))throw new IllegalArgumentException("Root projection fingerprint mismatch");
+            if(same&&!fingerprint.equals(learner.baseProjectionSha())){
+                // Only migrate the exact historical selector, never an arbitrary mismatched graph/projection.
+                if(projection!=1||!fingerprint.equals(learner.legacyBaseProjectionSha()))throw new IllegalArgumentException("Root projection fingerprint mismatch");
+                same=false; // Learned weights stay intact; stale eligibility and neuron projection do not carry over.
+            }
+        }
         if(version>=3){long candidates=integer(state,"baseCandidates",0,version==3?512:2048);if(same&&candidates!=learner.baseCandidates())throw new IllegalArgumentException("FDB base projection mismatch");}
         long nu=version==4?integer(state,"neuronUpdates",0,max):0,bc=version==4?integer(state,"budgetClips",0,max):0;double budget=version==4?number(state,"lastBudget",0,1.000001):0;
         List<FdbLearning.NeuronTrace> neurons=new ArrayList<>();
