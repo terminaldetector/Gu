@@ -70,10 +70,11 @@ javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.InferenceCheck
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/LayerSetStore.java tools/LayerSetStoreCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.LayerSetStoreCheck
-javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/FdbCheckpoint.java tools/FdbCheckpointCheck.java tools/FdbIdentityCheck.java tools/FdbProjectionCheck.java tools/FdbPlasticityCheck.java tools/ExpandedPlasticityCheck.java tools/FdbGameBridge.java
+javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/FdbCheckpoint.java tools/FdbCheckpointCheck.java tools/FdbIdentityCheck.java tools/FdbProjectionCheck.java tools/SyntheticLearningCheck.java tools/FdbPlasticityCheck.java tools/ExpandedPlasticityCheck.java tools/FdbGameBridge.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbCheckpointCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbIdentityCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbProjectionCheck
+java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.SyntheticLearningCheck examples/synthetic/*.json
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbPlasticityCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.ExpandedPlasticityCheck
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/DualAgentContext.java app/src/main/java/org/node/flyconsole/DualLayerStore.java app/src/main/java/org/node/flyconsole/DualRequestGuard.java tools/DualAgentCheck.java
