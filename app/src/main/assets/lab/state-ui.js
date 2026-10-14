@@ -25,7 +25,7 @@ function restore(){
  restored=c;blocked=null;restoring=true;
  for(const [id,value]of Object.entries(gameDefaults)){if(id==='rewardMode')continue;const el=$(id);if(el.type==='checkbox')el.checked=value;else el.value=value;}
  learner.setActions(FlyGameTools.actions($('actionMasks').value,labPlatform==='sega'||labPlatform==='snes'?4095:255));
- $('fdbJson').value='';gmodeMode='off';$('gmode').value='off';gmodeBoost=false;gmodeBoostBackup=null;$('gmodeBoost').checked=false;configurationApplied=false;restoreGrowthStatePending=false;
+ if(window.sharedExperience)window.sharedExperience.restore(null);$('fdbJson').value='';gmodeMode='off';$('gmode').value='off';gmodeBoost=false;gmodeBoostBackup=null;$('gmodeBoost').checked=false;configurationApplied=false;restoreGrowthStatePending=false;
  restoreJob=restoreJob.catch(()=>{}).then(async()=>{
   if(context()!==c)return;
   if(window.layerExperience&&await window.layerExperience.resume())return;

@@ -102,7 +102,7 @@ function contextChanged(){
  if(!active)journal=[];renderList();refreshStats();
 }
 window.labLayerSets=response=>store.receive(response);
-window.layerExperience={activeId:()=>active&&active.id||null,refreshStats,contextChanged,importSet,autosave,checkpoint,resume,terminal:event=>{append(event);if(event.mode==='train'||event.mode==='teach')autosave();}};
+window.layerExperience={detach:()=>{active=null;journal=[];$('layerSelect').value='';refreshStats();renderSelected();},activeId:()=>active&&active.id||null,refreshStats,contextChanged,importSet,autosave,checkpoint,resume,terminal:event=>{append(event);if(event.mode==='train'||event.mode==='teach')autosave();}};
 const act=fn=>async()=>{if(busy)return;busy=true;renderSelected();try{await fn();}catch(e){message(e.message,true);status(e.message,true);}finally{busy=false;renderSelected();}};
 // Save owns its queue and busy state; other actions are serialized by their UI controls.
  $('layerNew').onclick=()=>save(true);$('layerUpdate').onclick=()=>save(false);

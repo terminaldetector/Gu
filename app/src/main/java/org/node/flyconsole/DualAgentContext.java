@@ -55,7 +55,7 @@ public final class DualAgentContext {
         }
         if(fdb.has("version"))integer(fdb,"version",1,3);if(fdb.has("graph_sha256")&&!graph.fingerprint().equals(fdb.getString("graph_sha256")))throw new IllegalArgumentException("FDB graph mismatch");
         GraphDelta layer=new GraphDelta(graph.ids.length,2048);
-        for(String kind:new String[]{"deltas","edges"}){JSONArray links=fdb.optJSONArray(kind);if(fdb.has(kind)&&links==null)throw new IllegalArgumentException("FDB array required");if(links==null)continue;if(links.length()>2048)throw new IllegalArgumentException("FDB link limit");for(int k=0;k<links.length();k++){JSONObject link=links.getJSONObject(k);int s=index(graph,link.get("source")),t=index(graph,link.get("target"));float w=(float)number(link,"weight",-127,127);if("deltas".equals(kind)){boolean found=false;for(int j=graph.offsets[s];j<graph.offsets[s+1];j++)if(graph.targets[j]==t){found=true;break;}if(!found)throw new IllegalArgumentException("Delta requires base edge");layer.addWeightDelta(s,t,w);}else layer.addEdge(s,t,w);}}
+        FdbCheckpoint.restoreLinks(layer,fdb,graph);
         JSONObject lc=fdb.optJSONObject("learning");if(fdb.has("learning")&&lc==null)throw new IllegalArgumentException("Learning object required");if(lc==null)lc=new JSONObject().put("enabled",false).put("rate",.05).put("maxEdges",256).put("maxWeight",32);
         boolean enabled=bool(lc,"enabled",false);double rate=lc.has("rate")?number(lc,"rate",.001,.2):.05;int cap=lc.has("maxEdges")?(int)integer(lc,"maxEdges",1,2048):256;float max=(float)(lc.has("maxWeight")?number(lc,"maxWeight",.000001,127):32);
         FdbCheckpoint.restoreThresholds(layer,fdb,graph);String plasticity=FdbLearning.validateMode(lc.optString("plasticityMode","base"));
