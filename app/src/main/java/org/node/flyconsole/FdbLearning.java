@@ -286,6 +286,22 @@ public final class FdbLearning {
     }
     /** Break the temporal link at pauses/interventions; retained utility/topology still persists. */
     public void boundary(){pending.clear();for(Trace t:traces.values()){t.eligibility=0;t.slowEligibility=0;}neuronTraces.clear();neuronSlowTraces.clear();}
+    /** Read-only leaders for Layer Set diagnostics. Absolute magnitude is ranked within
+     * each parameter family, not across incomparable synaptic/millivolt units. */
+    public static final class PlasticityLeader {
+        public final String type;public final int source,target;public final float value;
+        PlasticityLeader(String type,int source,int target,float value){this.type=type;this.source=source;this.target=target;this.value=value;}
+    }
+    public List<PlasticityLeader> topPlasticity(String type,int limit){
+        if(limit<0||limit>20)throw new IllegalArgumentException("Plasticity diagnostic limit");
+        ArrayList<PlasticityLeader> entries=new ArrayList<>();
+        if("root".equals(type))for(GraphDelta.Edge e:layer.deltas())entries.add(new PlasticityLeader(type,e.source,e.target,e.weight));
+        else if("wexo".equals(type))for(GraphDelta.Edge e:layer.edges())entries.add(new PlasticityLeader(type,e.source,e.target,e.weight));
+        else if("threshold".equals(type))for(Map.Entry<Integer,Float> e:layer.thresholds().entrySet())entries.add(new PlasticityLeader(type,e.getKey(),e.getKey(),e.getValue()));
+        else throw new IllegalArgumentException("Plasticity diagnostic category");
+        entries.sort((a,b)->{int c=Float.compare(Math.abs(b.value),Math.abs(a.value));if(c!=0)return c;c=Integer.compare(a.source,b.source);return c!=0?c:Integer.compare(a.target,b.target);});
+        return new ArrayList<>(entries.subList(0,Math.min(limit,entries.size())));
+    }
     public long observations(){return observations;}public long human(){return human;}public long automatic(){return automatic;}
     public long rng(){return rng;}public double baseline(){return baseline;}public long born(){return born;}public long pruned(){return pruned;}public long rejected(){return rejected;}
     public String plasticityMode(){return plasticityMode;}public long neuronUpdates(){return neuronUpdates;}public long budgetClips(){return budgetClips;}public double lastBudget(){return lastBudget;}
