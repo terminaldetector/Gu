@@ -21,6 +21,11 @@ public final class ExpandedPlasticityCheck {
    l.boundary();
    check(l.traces().stream().allMatch(t->t.eligibility==0&&t.slowEligibility==0),"boundary clears fast and slow credit "+mode);
    check(d.growthCount()<=2048&&l.traces().size()<=8192,"bounded graph and trace memory");
+   JSONObject observed=FdbCheckpoint.save(l,g,FdbLearningCheck.sources(),FdbLearningCheck.targets());
+   JSONArray strongest=observed.getJSONArray("plasticityTop20");
+   check(strongest.length()<=20,"bounded top-20 plasticity snapshot "+mode);
+   double last=Double.POSITIVE_INFINITY;for(int i=0;i<strongest.length();i++){double magnitude=strongest.getJSONObject(i).getDouble("relativeMagnitude");check(Double.isFinite(magnitude)&&magnitude>=0&&magnitude<=last,"ordered finite plasticity magnitude "+mode);last=magnitude;}
+   check(strongest.toString().equals(FdbCheckpoint.save(l,g,FdbLearningCheck.sources(),FdbLearningCheck.targets()).getJSONArray("plasticityTop20").toString()),"reproducible plasticity diagnostics "+mode);
    for(float v:d.thresholds().values())check(Math.abs(v)<=5,"threshold trust region");
    check(mode.equals("dynamics")||mode.equals("expanded")?l.neuronUpdates()>0:d.thresholds().isEmpty(),"isolated neuron ablation");
    JSONObject f=new JSONObject().put("neuronDynamics",FdbCheckpoint.thresholdState(d,g));GraphDelta restored=new GraphDelta(30,2048);for(GraphDelta.Edge e:d.edges())restored.addEdge(e.source,e.target,e.weight);for(GraphDelta.Edge e:d.deltas())restored.addWeightDelta(e.source,e.target,e.weight);FdbCheckpoint.restoreThresholds(restored,f,g);
