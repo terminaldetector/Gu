@@ -16,7 +16,10 @@ public final class ExpandedPlasticityCheck {
  public static void main(String[] args)throws Exception{
   Graph g=FdbLearningCheck.graph();
   for(String mode:FdbLearning.PLASTICITY_MODES){
-   GraphDelta d=new GraphDelta(30,2048);FdbLearning l=learner(g,d,mode);l.seed(23);train(l,100);l.boundary();
+   GraphDelta d=new GraphDelta(30,2048);FdbLearning l=learner(g,d,mode);l.seed(23);train(l,100);
+   if(!mode.equals("base"))check(l.traces().stream().anyMatch(t->Math.abs(t.slowEligibility)>1e-8),"slow action traces accumulate in "+mode);
+   l.boundary();
+   check(l.traces().stream().allMatch(t->t.eligibility==0&&t.slowEligibility==0),"boundary clears fast and slow credit "+mode);
    check(d.growthCount()<=2048&&l.traces().size()<=8192,"bounded graph and trace memory");
    for(float v:d.thresholds().values())check(Math.abs(v)<=5,"threshold trust region");
    check(mode.equals("dynamics")||mode.equals("expanded")?l.neuronUpdates()>0:d.thresholds().isEmpty(),"isolated neuron ablation");
@@ -27,6 +30,13 @@ public final class ExpandedPlasticityCheck {
    if(mode.equals("expanded")){
     FdbLearning off=learner(g,restored,"base");FdbCheckpoint.restore(off,FdbCheckpoint.save(next,g,FdbLearningCheck.sources(),FdbLearningCheck.targets()),g,FdbLearningCheck.sources(),FdbLearningCheck.targets());check(restored.thresholds().equals(d.thresholds()),"disable keeps acquired neuron parameters");
     String before=FdbCheckpoint.save(next,g,FdbLearningCheck.sources(),FdbLearningCheck.targets()).toString();JSONObject corrupt=new JSONObject(before);corrupt.getJSONArray("neuronTraces").put(new JSONObject().put("neuron","1").put("eligibility",9));boolean rejected=false;try{FdbCheckpoint.restore(next,corrupt,g,FdbLearningCheck.sources(),FdbLearningCheck.targets());}catch(Exception e){rejected=true;}check(rejected&&before.equals(FdbCheckpoint.save(next,g,FdbLearningCheck.sources(),FdbLearningCheck.targets()).toString()),"malformed dynamics is atomic");
+    JSONObject brokenSlow=new JSONObject(before);brokenSlow.getJSONArray("traces").getJSONObject(0).put("slowEligibility",9);
+    rejected=false;try{FdbCheckpoint.restore(next,brokenSlow,g,FdbLearningCheck.sources(),FdbLearningCheck.targets());}catch(Exception e){rejected=true;}
+    check(rejected&&before.equals(FdbCheckpoint.save(next,g,FdbLearningCheck.sources(),FdbLearningCheck.targets()).toString()),"malformed slow eligibility is atomic");
+    JSONObject v4=new JSONObject(before).put("version",4).put("algorithm","bounded mixed plasticity v4");
+    for(int i=0;i<v4.getJSONArray("traces").length();i++)v4.getJSONArray("traces").getJSONObject(i).remove("slowEligibility");
+    FdbLearning migrated=learner(g,restored,"expanded");FdbCheckpoint.restore(migrated,v4,g,FdbLearningCheck.sources(),FdbLearningCheck.targets());
+    check(migrated.traces().stream().allMatch(t->t.slowEligibility==0),"v4 migrations start without fabricated slow credit");
    }
   }
   Graph big=large();GraphDelta layer=new GraphDelta(big.ids.length,2048);FdbLearning expanded=learner(big,layer,"root"),again=learner(big,new GraphDelta(big.ids.length,2048),"root");check(expanded.baseCandidates()==2048,"expanded root fills 2048 candidates");check(expanded.baseProjectionSha().equals(again.baseProjectionSha()),"deterministic root projection");
@@ -39,6 +49,6 @@ public final class ExpandedPlasticityCheck {
   int[] os=new int[31];Arrays.fill(os,1);os[0]=0;long[] ids=new long[30];for(int i=0;i<30;i++)ids[i]=i+1;Graph direct=new Graph(ids,os,new int[]{16},new float[]{8});Engine.Options o=new Engine.Options();o.delta=offsets;
   int low=new Engine(direct).advance(new int[]{0},new double[]{500},200,o,new AtomicBoolean()).counts[16];offsets.setThresholdOffset(16,5);int high=new Engine(direct).advance(new int[]{0},new double[]{500},200,o,new AtomicBoolean()).counts[16];check(low>high,"threshold offset has CPU dynamic effect every step");
   Engine.Result silent=new Engine(direct).advance(new int[]{0},new double[]{0},1000,o,new AtomicBoolean());check(silent.spikes==0,"offsets do not self-excite a resting graph");
-  System.out.println("PASS Expanded FDB: five ablations, exact resumed learning, 2048 roots, shared budget, threshold ±5 mV, disabled retention, corrupt-state atomicity, bounded memory and CPU threshold effect "+low+" > "+high);
+  System.out.println("PASS Expanded FDB: dual-timescale eligibility, v4 migration, five ablations, exact resumed learning, 2048 roots, shared budget, threshold ±5 mV, disabled retention, corrupt-state atomicity, bounded memory and CPU threshold effect "+low+" > "+high);
  }
 }
