@@ -79,8 +79,8 @@ public final class FdbLearning {
         for(int i:sources)if(i<0||i>=graph.ids.length)throw new IllegalArgumentException("FDB learning source");
         for(int i:targets)if(i<0||i>=graph.ids.length)throw new IllegalArgumentException("FDB learning target");
         Set<Integer> unique=new HashSet<>();for(int i:sources)if(!unique.add(i))throw new IllegalArgumentException("Duplicate FDB source");for(int i:targets)if(!unique.add(i))throw new IllegalArgumentException("Overlapping FDB ports");
-        buildBasePaths();
-        projectionSha=projectionFingerprint();
+        basePaths.putAll(buildBasePaths(false));
+        projectionSha=projectionFingerprint(basePaths);
         if(mode.equals("dynamics")||mode.equals("expanded")){
             for(int t:targets)neuronCandidates.add(t);
             for(GraphDelta.Edge e:basePaths.values())if(neuronCandidates.size()<256&&index(sources,e.source)<0)neuronCandidates.add(e.source);
@@ -93,7 +93,25 @@ public final class FdbLearning {
     /** A deterministic bounded projection of real W0 predecessors. Three CSR scans
      * only at configuration, no full reverse graph or per-frame 25M-edge scan.
      * The projection depends only on W0 and ports, so reload cannot change it. */
-    private void buildBasePaths(){
+    // Values contain only immutable index/weight records, never Graph or learner state.
+    // Weak graph ownership prevents retaining an unloaded biological model.
+    private static final Map<Graph,LinkedHashMap<String,LinkedHashMap<Long,GraphDelta.Edge>>> projectionCache=new WeakHashMap<>();
+    private LinkedHashMap<Long,GraphDelta.Edge> buildBasePaths(boolean legacy){
+        String key=baseLimit+":"+legacy+":"+Arrays.toString(targets);
+        synchronized(projectionCache){
+            LinkedHashMap<String,LinkedHashMap<Long,GraphDelta.Edge>> entries=projectionCache.get(graph);
+            if(entries==null){entries=new LinkedHashMap<>(8,.75f,true);projectionCache.put(graph,entries);}
+            LinkedHashMap<Long,GraphDelta.Edge> cached=entries.get(key);
+            if(cached==null){
+                cached=computeBasePaths(legacy);entries.put(key,cached);
+                if(entries.size()>8)entries.remove(entries.keySet().iterator().next());
+            }
+            // Each learner owns its map; ΔW, traces, thresholds and RNG are never cached.
+            return new LinkedHashMap<>(cached);
+        }
+    }
+    private LinkedHashMap<Long,GraphDelta.Edge> computeBasePaths(boolean legacy){
+        LinkedHashMap<Long,GraphDelta.Edge> basePaths=new LinkedHashMap<>();
         TreeSet<Integer> frontier=new TreeSet<>(),visited=new TreeSet<>();for(int t:targets)frontier.add(t);
         final Comparator<GraphDelta.Edge> order=(a,b)->{int c=Float.compare(Math.abs(b.weight),Math.abs(a.weight));return c!=0?c:Integer.compare(a.source,b.source);};
         for(int hop=0;hop<3&&!frontier.isEmpty()&&basePaths.size()<baseLimit;hop++){
@@ -103,7 +121,7 @@ public final class FdbLearning {
                 int t=graph.targets[e];if(!wanted[t]||s==t||graph.weights[e]==0)continue;
                 ArrayList<GraphDelta.Edge> list=incoming.get(t);GraphDelta.Edge edge=new GraphDelta.Edge(s,t,graph.weights[e]);
                 int at=Collections.binarySearch(list,edge,order);if(at<0)at=-at-1;
-                if(at<(baseLimit==512?8:16)){list.add(at,edge);if(list.size()>(baseLimit==512?8:16))list.remove(8);}
+                if(at<(baseLimit==512?8:16)){list.add(at,edge);if(list.size()>(baseLimit==512?8:16))list.remove(legacy?8:(baseLimit==512?8:16));}
             }
             TreeSet<Integer> next=new TreeSet<>();int limit=baseLimit==512?(hop==0?128:hop==1?320:512):(hop==0?256:hop==1?1024:2048);
             // Round robin over targets prevents the first output monopolising the cap.
@@ -112,10 +130,12 @@ public final class FdbLearning {
             }
             frontier=next;
         }
+        return basePaths;
     }
-    private String projectionFingerprint(){try{
+    String legacyBaseProjectionSha(){return projectionFingerprint(buildBasePaths(true));}
+    private String projectionFingerprint(Map<Long,GraphDelta.Edge> paths){try{
         java.security.MessageDigest md=java.security.MessageDigest.getInstance("SHA-256");
-        for(GraphDelta.Edge e:basePaths.values())md.update((graph.ids[e.source]+":"+graph.ids[e.target]+":"+Float.floatToIntBits(e.weight)+";").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        for(GraphDelta.Edge e:paths.values())md.update((graph.ids[e.source]+":"+graph.ids[e.target]+":"+Float.floatToIntBits(e.weight)+";").getBytes(java.nio.charset.StandardCharsets.UTF_8));
         StringBuilder out=new StringBuilder();for(byte b:md.digest())out.append(String.format(java.util.Locale.ROOT,"%02x",b&255));return out.toString();
     }catch(java.security.NoSuchAlgorithmException e){throw new AssertionError(e);}}
     public String baseProjectionSha(){return projectionSha;}

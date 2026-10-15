@@ -1,0 +1,34 @@
+'use strict';
+(()=>{
+ const S=FlySharedExperience,store=new S.Store(localStorage);let active=null,busy=false,contextKey=null;
+ const say=(s,error=false)=>{$('sharedStatus').textContent=s;$('sharedStatus').className=error?'note error':'note';};
+ const context=()=>({graphSha:graphIdentity?.sha256,romHash,contract:adapter()});
+ function adapter(){return S.contract({version:1,observation:'retina4x4-row-major-v1',dynamics:'lif-f32-threshold-v1',inputs:ids('inputIds'),outputs:ids('outputIds'),sham:$('mode').value==='sham',actionHold:FlyActionHold.fromFields($,'actionHold'),actions:$('sharedActions').value.split(',').map(s=>s.trim()),actionMasks:FlyGameTools.actions($('actionMasks').value,ids('outputIds').length===12?4095:255),allowedMask:agentAllowedMask(),maxHz:Number($('maxHz').value),gain:Number($('gain').value),windowMs:Number($('windowMs').value),thresholdHz:Number($('thresholdHz').value),backend:$('backend').value,scramble:$('scramble').checked,disableInhibition:$('disableInhibition').checked,lesions:ids('lesions').length>0});}
+ function refresh(){const rows=store.list();for(const [name,scopes]of [['sharedRoot',['root','game']],['sharedGenre',['genre']]]){const el=$(name),previous=el.value;el.replaceChildren(new Option(name==='sharedRoot'?'Чистый W₀':'Без жанрового слоя',''));for(const r of rows.filter(x=>scopes.includes(x.scope)))el.add(new Option(r.name+' · '+r.status+' · '+r.digest.slice(0,8),r.digest));el.value=previous;}
+  $('sharedActive').textContent=active?'Активно: '+active.layers.map(x=>x.name).join(' → ')+' → текущая игра':'Индивидуальный опыт текущей игры; общие слои не выбраны.';}
+ function selected(){const rows=store.list(),root=rows.find(x=>x.digest===$('sharedRoot').value),genre=rows.find(x=>x.digest===$('sharedGenre').value);if($('sharedRoot').value&&!root||$('sharedGenre').value&&!genre)throw Error('Слой отсутствует в каталоге');return [root,genre].filter(Boolean);}
+ async function prepare(){if(!ready||!loaded)throw Error('Загрузите граф и ROM');if(window.dualAgents?.active())throw Error('Общий опыт настраивается в одиночном контуре; сначала сохраните и завершите пару');await window.labState.prepare();}
+ const act=fn=>async()=>{if(busy)return;busy=true;try{await fn();}catch(e){say(e.message,true);status(e.message,true);}finally{busy=false;}};
+ function restore(value){active=value?JSON.parse(JSON.stringify(value)):null;if(active?.layers?.length)$('sharedActions').value=active.layers[0].contract.actions.join(',');refresh();}
+ function validate(value,c,profile=null){if(!value)return;const first=value.layers?.[0];if(!first)throw Error('Пустая привязка общего опыта');const expected={...first.contract,sham:c.mode==='sham',actionHold:FlyActionHold.settings(c.actionHold),actions:profile?first.contract.actions:$('sharedActions').value.split(',').map(s=>s.trim()),actionMasks:FlyGameTools.actions(profile?profile.actionMasks:$('actionMasks').value,c.outputs.length===12?4095:255),allowedMask:agentAllowedMask(c.systemButtons||'auto'),inputs:c.inputs,outputs:c.outputs,maxHz:c.maxHz,gain:c.gain,windowMs:c.windowMs,thresholdHz:c.thresholdHz,backend:c.backend||'cpu',scramble:c.scramble,disableInhibition:c.disableInhibition,lesions:(c.lesions||[]).length>0};S.binding(value,{graphSha:graphIdentity?.sha256,romHash,contract:expected});}
+ function changed(){const key=ready&&loaded?labPlatform+'|'+romHash+'|'+graphIdentity.sha256:null;if(key!==contextKey){contextKey=key;active=null;$('sharedActions').value=ids('outputIds').map((_,i)=>labPlatform+'-button-'+i).join(',');refresh();}}
+ window.sharedExperience={snapshot:()=>active?JSON.parse(JSON.stringify(active)):null,restore,validate,contextChanged:changed,async importLayer(data){store.put(data);refresh();say('Общий слой импортирован в каталог. Активная игра не изменена.');}};
+ $('sharedRefresh').onclick=act(async()=>refresh());$('sharedImport').onclick=()=>nativeCall('importModel');
+ $('sharedApply').onclick=act(async()=>{
+  const layers=selected(),ctx=context();const result=S.stack(layers,ctx,$('sharedExperimental').checked);
+  await prepare();if(ctx.graphSha!==graphIdentity.sha256||ctx.romHash!==romHash||S.canonical(ctx.contract)!==S.canonical(adapter()))throw Error('Контекст изменился во время сохранения');
+  active=layers.length?{version:1,layers:JSON.parse(JSON.stringify(layers)),experimental:$('sharedExperimental').checked}:null;
+  $('fdbJson').value=JSON.stringify(S.toFdb(result,ctx.graphSha),null,2);pendingFdbReplay=null;humanExamples=[];fdbExperience=[];learner.reset(Number($('seed').value));requestedConfiguration=null;configurationApplied=false;restoreGrowthStatePending=true;
+  $('learnMode').value='off';$('learnerController').value='exo';$('layerName').value=($('sharedName').value.trim()||'Опыт')+' · новая игра';
+  if(window.layerExperience.detach)window.layerExperience.detach();
+  refresh();trainingView();apply(false,false,true);say('Создана отдельная игровая копия. Сохраните новый Layer Set. Старые наборы и общий каталог не изменены. Динамика сети сбрасывается; игра остаётся на паузе.');
+ });
+ $('sharedCandidate').onclick=act(async()=>{
+  await prepare();const scope=$('sharedScope').value,layers=active?.layers||[],parent=layers.find(x=>x.scope==='root'),prior=[...new Set(layers.flatMap(x=>x.sourceRoms))];
+  const candidate=S.candidate({name:$('sharedName').value.trim(),scope,genre:$('sharedGenreName').value.trim(),graphSha:graphIdentity.sha256,contract:adapter(),effective:S.fromFdb(fdbConfiguration()),romHash,parent,sourceRoms:prior});store.put(candidate);refresh();nativeCall('exportModel',JSON.stringify(candidate));say('Кандидат сохранён и экспортирован. Общий опыт не заменён; навык переноса ещё не подтверждён.');
+ });
+ $('sharedExport').onclick=act(async()=>{const layers=selected();if(!layers.length)throw Error('Выберите слой');nativeCall('exportModel',JSON.stringify(layers[layers.length-1]));});
+ $('sharedPromote').onclick=act(async()=>{const layers=selected(),candidate=layers[layers.length-1];if(!candidate)throw Error('Выберите кандидата');const evidence=JSON.parse($('sharedEvidence').value),promoted=S.promote(candidate,evidence);store.put(promoted);refresh();nativeCall('exportModel',JSON.stringify(promoted));say('Создана новая проверенная версия по предоставленному отчёту. Старые версии сохранены; достоверность внешних измерений приложение не устанавливает.');});
+ $('sharedReport').onclick=act(async()=>{await prepare();const base=active?S.stack(active.layers,context(),active.experimental):S.empty(),effective=S.fromFdb(fdbConfiguration());nativeCall('exportModel',JSON.stringify({type:'fly-shared-game-report',version:1,graphSha:graphIdentity.sha256,romHash,binding:active,effective,gameResidual:S.combine(effective,base,true),note:'Residual describes only this game. It is not a validated transferable layer.'}));});
+ try{changed();refresh();}catch(e){say(e.message,true);}
+})();

@@ -188,6 +188,7 @@ public final class NesLabActivity extends Activity {
     }
 
     private void configure(JSONObject data) throws Exception {
+        final long configureStarted=System.nanoTime();
         if(dualAgents!=null){pauseDualNative();clearDualNative();}
         if(data.has("reset")&&!(data.get("reset") instanceof Boolean))throw new IllegalArgumentException("Reset must be boolean");
         boolean initial=!neuralConfigured;
@@ -227,22 +228,7 @@ public final class NesLabActivity extends Activity {
             if(fdb.has("version")&&(!(fdb.get("version") instanceof Number)||fdb.getDouble("version")!=fdb.getInt("version")||(fdb.getInt("version")<1||fdb.getInt("version")>3)))throw new IllegalArgumentException("FDB format version");
             if(!graph.fingerprint().equals(fdb.getString("graph_sha256")))throw new IllegalArgumentException("FDB belongs to another connectome");
             GraphDelta layer=new GraphDelta(graph.ids.length);
-            for(String kind:new String[]{"deltas","edges"}){
-                JSONArray links=fdb.optJSONArray(kind);if(links==null){if(fdb.has(kind))throw new IllegalArgumentException("FDB list must be array");continue;}
-                if(links.length()>2048)throw new IllegalArgumentException("FDB UI limit: 2048 links per list");
-                for(int k=0;k<links.length();k++){
-                    JSONObject link=links.getJSONObject(k);
-                    if(!(link.get("source") instanceof String)||!(link.get("target") instanceof String))throw new IllegalArgumentException("FDB IDs must be strings");
-                    int source=engine.index(Long.parseLong(link.getString("source")));
-                    int target=engine.index(Long.parseLong(link.getString("target")));
-                    double value=link.getDouble("weight");if(!Double.isFinite(value)||Math.abs(value)>127)throw new IllegalArgumentException("FDB weight must be -127..127");
-                    if(kind.equals("deltas")){
-                        boolean exists=false;for(int e=graph.offsets[source];e<graph.offsets[source+1];e++)if(graph.targets[e]==target){exists=true;break;}
-                        if(!exists)throw new IllegalArgumentException("FDB delta requires existing base edge");
-                        layer.addWeightDelta(source,target,(float)value);
-                    }else layer.addEdge(source,target,(float)value);
-                }
-            }
+            FdbCheckpoint.restoreLinks(layer,fdb,graph);
             FdbCheckpoint.restoreThresholds(layer,fdb,graph);
             JSONObject growth=fdb.optJSONObject("growth");
             if(fdb.has("growth")&&growth==null)throw new IllegalArgumentException("FDB growth must be object");
@@ -306,7 +292,7 @@ public final class NesLabActivity extends Activity {
         backend=requestedBackend;
         experiment=next;fdbGrowth=nextGrowth;growthConfiguration=nextGrowthConfig;fdbLearning=nextLearning;learningConfiguration=nextLearningConfig; configVersion++; if(reset)sequence=0; latestMask=0;neuralConfigured=true;
         if(recordingOn) recorder.write("# config,"+data.put("configVersion",configVersion).put("backend",backend).toString().replace('\n',' ')+"\n");
-        emit("labConfigured",new JSONObject().put("reset",reset).put("initial",initial).put("configVersion",configVersion).put("mode",next.mode).put("backend",backend).put("generation",data.optLong("generation",-1)));
+        emit("labConfigured",new JSONObject().put("configureMs",(System.nanoTime()-configureStarted)/1e6).put("reset",reset).put("initial",initial).put("configVersion",configVersion).put("mode",next.mode).put("backend",backend).put("generation",data.optLong("generation",-1)));
     }
 
     private int systemButtonMask(String mode){
