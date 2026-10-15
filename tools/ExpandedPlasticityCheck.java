@@ -16,7 +16,26 @@ public final class ExpandedPlasticityCheck {
  public static void main(String[] args)throws Exception{
   Graph g=FdbLearningCheck.graph();
   for(String mode:FdbLearning.PLASTICITY_MODES){
-   GraphDelta d=new GraphDelta(30,2048);FdbLearning l=learner(g,d,mode);l.seed(23);train(l,100);l.boundary();
+   GraphDelta d=new GraphDelta(30,2048);FdbLearning l=learner(g,d,mode);l.seed(23);train(l,100);
+   if(mode.equals("expanded")){
+    check(l.traces().stream().anyMatch(t->Math.abs(t.slowEligibility)>1e-8),"Expanded has real slow eligibility after actions");
+    JSONObject warm=FdbCheckpoint.save(l,g,FdbLearningCheck.sources(),FdbLearningCheck.targets());
+    JSONObject plasticity=warm.getJSONObject("plasticityTop20");
+    for(String k:new String[]{"root","wexo","threshold"})check(plasticity.getJSONArray(k).length()<=20,"bounded top-20 diagnostic "+k);
+    check(plasticity.getJSONArray("threshold").length()>0,"learned threshold changes visible in state");
+    GraphDelta pre=new GraphDelta(30,2048);for(GraphDelta.Edge e:d.edges())pre.addEdge(e.source,e.target,e.weight);for(GraphDelta.Edge e:d.deltas())pre.addWeightDelta(e.source,e.target,e.weight);for(Map.Entry<Integer,Float> e:d.thresholds().entrySet())pre.setThresholdOffset(e.getKey(),e.getValue());
+    FdbLearning loaded=learner(g,pre,"expanded");
+    FdbCheckpoint.restore(loaded,new JSONObject(warm.toString()),g,FdbLearningCheck.sources(),FdbLearningCheck.targets());
+    check(warm.toString().equals(FdbCheckpoint.save(loaded,g,FdbLearningCheck.sources(),FdbLearningCheck.targets()).toString()),"Expanded exact in-flight slow credit roundtrip");
+    JSONObject legacy=new JSONObject(warm.toString()).put("version",4).put("algorithm","bounded mixed plasticity v4");
+    for(int t=0;t<legacy.getJSONArray("traces").length();t++)legacy.getJSONArray("traces").getJSONObject(t).remove("slowEligibility");
+    for(int t=0;t<legacy.getJSONArray("neuronTraces").length();t++)legacy.getJSONArray("neuronTraces").getJSONObject(t).remove("slowEligibility");
+    FdbLearning migrated=learner(g,pre,"expanded");
+    FdbCheckpoint.restore(migrated,legacy,g,FdbLearningCheck.sources(),FdbLearningCheck.targets());
+    check(migrated.traces().stream().allMatch(t->t.eligibility==0&&t.slowEligibility==0),"v4 cannot fabricate v5 temporal credit");
+   }
+   l.boundary();
+   check(l.traces().stream().allMatch(t->t.eligibility==0&&t.slowEligibility==0),"boundary clears both eligibilities");
    check(d.growthCount()<=2048&&l.traces().size()<=8192,"bounded graph and trace memory");
    for(float v:d.thresholds().values())check(Math.abs(v)<=5,"threshold trust region");
    check(mode.equals("dynamics")||mode.equals("expanded")?l.neuronUpdates()>0:d.thresholds().isEmpty(),"isolated neuron ablation");
@@ -29,6 +48,16 @@ public final class ExpandedPlasticityCheck {
     String before=FdbCheckpoint.save(next,g,FdbLearningCheck.sources(),FdbLearningCheck.targets()).toString();JSONObject corrupt=new JSONObject(before);corrupt.getJSONArray("neuronTraces").put(new JSONObject().put("neuron","1").put("eligibility",9));boolean rejected=false;try{FdbCheckpoint.restore(next,corrupt,g,FdbLearningCheck.sources(),FdbLearningCheck.targets());}catch(Exception e){rejected=true;}check(rejected&&before.equals(FdbCheckpoint.save(next,g,FdbLearningCheck.sources(),FdbLearningCheck.targets()).toString()),"malformed dynamics is atomic");
    }
   }
+  // Expanded mode only attributes credit through active ancestors of the chosen motor action.
+  Graph paths=FdbPlasticityCheck.graph();GraphDelta actionD=new GraphDelta(30);FdbLearning action=learner(paths,actionD,"expanded");
+  int[] counts=FdbPlasticityCheck.activity().counts.clone();counts[16]=100;
+  Engine.Result selected=new Engine.Result(counts,400,100,100,0);
+  for(int i=0;i<20;i++){FdbLearning.Decision q=action.decide("chosen-"+i,selected,new int[]{0,1},4095,100,0,true,null);check(q.mask==1,"chosen motor is active");action.feedback(q.id,q.mask,1,.1,6,true,false,null);}
+  check(actionD.weightDelta(0,28)>0,"active root ancestor receives chosen-action credit");
+  check(actionD.weightDelta(1,17)==0&&actionD.weightDelta(2,29)==0,"unselected motors do not update unrelated roots");
+  GraphDelta silentD=new GraphDelta(30);FdbLearning silentAction=learner(paths,silentD,"expanded");counts[28]=0;
+  for(int i=0;i<20;i++){FdbLearning.Decision q=silentAction.decide("inactive-"+i,new Engine.Result(counts,300,100,100,0),new int[]{0,1},4095,100,0,true,null);silentAction.feedback(q.id,q.mask,1,.1,6,true,false,null);}
+  check(silentD.weightDelta(0,28)==0,"inactive intermediate cannot receive expanded credit");
   Graph big=large();GraphDelta layer=new GraphDelta(big.ids.length,2048);FdbLearning expanded=learner(big,layer,"root"),again=learner(big,new GraphDelta(big.ids.length,2048),"root");check(expanded.baseCandidates()==2048,"expanded root fills 2048 candidates");check(expanded.baseProjectionSha().equals(again.baseProjectionSha()),"deterministic root projection");
   int[] all=new int[big.ids.length];Arrays.fill(all,100);Engine.Result active=new Engine.Result(all,100L*all.length,100,100,0);FdbLearning.Decision a=expanded.decide("dense",active,new int[]{0,1},4095,100,0,true,null);expanded.feedback(a.id,a.mask,20,.1,6,true,false,null);check(expanded.lastBudget()<=1.000001&&expanded.budgetClips()>0,"large root projection shares bounded budget");
   GraphDelta full=new GraphDelta(big.ids.length,2048);for(int i=0;i<2048;i++)full.addEdge(i%16,100+i/16,1);
@@ -39,6 +68,6 @@ public final class ExpandedPlasticityCheck {
   int[] os=new int[31];Arrays.fill(os,1);os[0]=0;long[] ids=new long[30];for(int i=0;i<30;i++)ids[i]=i+1;Graph direct=new Graph(ids,os,new int[]{16},new float[]{8});Engine.Options o=new Engine.Options();o.delta=offsets;
   int low=new Engine(direct).advance(new int[]{0},new double[]{500},200,o,new AtomicBoolean()).counts[16];offsets.setThresholdOffset(16,5);int high=new Engine(direct).advance(new int[]{0},new double[]{500},200,o,new AtomicBoolean()).counts[16];check(low>high,"threshold offset has CPU dynamic effect every step");
   Engine.Result silent=new Engine(direct).advance(new int[]{0},new double[]{0},1000,o,new AtomicBoolean());check(silent.spikes==0,"offsets do not self-excite a resting graph");
-  System.out.println("PASS Expanded FDB: five ablations, exact resumed learning, 2048 roots, shared budget, threshold ±5 mV, disabled retention, corrupt-state atomicity, bounded memory and CPU threshold effect "+low+" > "+high);
+  System.out.println("PASS Expanded FDB: chosen path gate, two-speed v5 exact resumed learning, 2048 roots, shared budget, threshold ±5 mV, disabled retention, corrupt-state atomicity, bounded memory and CPU threshold effect "+low+" > "+high);
  }
 }

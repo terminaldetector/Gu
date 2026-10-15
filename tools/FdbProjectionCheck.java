@@ -12,7 +12,7 @@ public final class FdbProjectionCheck {
   if(!learner.baseProjectionSha().equals(expected.toString())||learner.baseCandidates()!=16)throw new AssertionError("expanded projection must retain all strongest 16, not delete rank 8");
   if(learner.baseProjectionSha().equals(learner.legacyBaseProjectionSha()))throw new AssertionError("fixture must trigger historical rank-8 bug");
   JSONObject saved=FdbCheckpoint.save(learner,g,FdbLearningCheck.sources(),FdbLearningCheck.targets());
-  JSONObject legacy=new JSONObject(saved.toString()).put("baseProjectionSha",learner.legacyBaseProjectionSha());legacy.remove("projectionVersion");
+  JSONObject legacy=new JSONObject(saved.toString()).put("version",4).put("algorithm","bounded mixed plasticity v4").put("baseProjectionSha",learner.legacyBaseProjectionSha());legacy.remove("projectionVersion");
   legacy.getJSONArray("traces").put(new JSONObject().put("source","48").put("target","17").put("eligibility",1).put("utility",1).put("support",1).put("evidence",3).put("bad",0));
   String weightsBefore=d.genome();FdbCheckpoint.restore(learner,legacy,g,FdbLearningCheck.sources(),FdbLearningCheck.targets());
   if(!weightsBefore.equals(d.genome())||learner.traces().get(0).eligibility!=0)throw new AssertionError("migration must retain acquired weights and clear old credit");
