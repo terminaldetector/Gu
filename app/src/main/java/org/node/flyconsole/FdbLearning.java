@@ -213,7 +213,7 @@ public final class FdbLearning {
         double decay=Math.exp(-gameSeconds/.6),slowDecay=Math.exp(-gameSeconds/3.0);
         for(Trace t:traces.values()){t.eligibility*=decay;t.slowEligibility*=slowDecay;t.support*=Math.exp(-gameSeconds/2);}
         for(Map.Entry<Long,Double> e:d.gradient.entrySet()){
-            int source=(int)(e.getKey()>>32),target=(int)(long)e.getKey();if(lesioned(source,lesions)||lesioned(target,lesions))continue;
+            int source=(int)(e.getKey()>>32),target=(int)(long)e.getKey();if((dualCredit()&&Math.abs(e.getValue())<1e-12)||lesioned(source,lesions)||lesioned(target,lesions))continue;
             Trace t=trace(source,target);if(t!=null){t.eligibility=Math.max(-2,Math.min(2,t.eligibility+e.getValue()*decay));if(dualCredit())t.slowEligibility=Math.max(-2,Math.min(2,t.slowEligibility+e.getValue()*slowDecay));}
         }
         for(int neuron:neuronCandidates){
