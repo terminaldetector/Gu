@@ -303,6 +303,34 @@ public final class FdbLearning {
     public long baseUpdates(){return baseUpdates;}public int baseCandidates(){return basePaths.size();}public boolean trainsBase(){return trainBase;}
     public void restoreBaseUpdates(long value){if(value<0||value>9007199254740991L)throw new IllegalArgumentException("FDB base updates");baseUpdates=value;}
     public List<Trace> traces(){ArrayList<Trace> out=new ArrayList<>();for(Trace t:traces.values())out.add(t.copy());return out;}
+    /** Deterministic, bounded magnitude report. Magnitude is NOT causal importance. */
+    public static final class PlasticityChange {
+        public final String kind;
+        public final int source,target;
+        public final float value;
+        public final double normalizedMagnitude;
+        PlasticityChange(String kind,int source,int target,float value,double normalizedMagnitude){
+            this.kind=kind;this.source=source;this.target=target;this.value=value;this.normalizedMagnitude=normalizedMagnitude;
+        }
+    }
+    public List<PlasticityChange> topPlasticity(int limit){
+        if(limit<1||limit>20)throw new IllegalArgumentException("FDB diagnostic limit");
+        ArrayList<PlasticityChange> out=new ArrayList<>();
+        for(GraphDelta.Edge d:layer.deltas()){
+            GraphDelta.Edge base=basePaths.get(key(d.source,d.target));
+            double scale=base==null?maxWeight:Math.max(1,Math.abs(base.weight));
+            out.add(new PlasticityChange(base==null?"delta":"root",d.source,d.target,d.weight,Math.abs(d.weight)/scale));
+        }
+        for(GraphDelta.Edge d:layer.edges())out.add(new PlasticityChange("wexo",d.source,d.target,d.weight,Math.abs(d.weight)/maxWeight));
+        for(Map.Entry<Integer,Float> d:layer.thresholds().entrySet())out.add(new PlasticityChange("threshold",d.getKey(),d.getKey(),d.getValue(),Math.abs(d.getValue())/5.0));
+        out.sort((a,b)->{
+            int diff=Double.compare(b.normalizedMagnitude,a.normalizedMagnitude);
+            if(diff!=0)return diff;
+            diff=a.kind.compareTo(b.kind);if(diff!=0)return diff;
+            diff=Integer.compare(a.source,b.source);return diff!=0?diff:Integer.compare(a.target,b.target);
+        });
+        return new ArrayList<>(out.subList(0,Math.min(limit,out.size())));
+    }
     public long memoryBytes(){return 104L*traces.size()+64L*pending.size()*(maxEdges+baseLimit+sources.length*growthTargets.length)+96L*basePaths.size()+64L*neuronTraces.size()+32L*neuronCandidates.size();}
     public void restore(long observations,long human,long automatic){
         if(observations<0||observations>9007199254740991L||human<0||automatic<0||human>observations||automatic!=observations-human)throw new IllegalArgumentException("FDB learning checkpoint");
