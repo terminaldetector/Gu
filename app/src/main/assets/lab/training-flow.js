@@ -84,6 +84,7 @@ $('trainingBase').onchange=$('trainingPlasticity').onchange=async()=>{
  try{
   if(!ready||!loaded)throw Error('Дождитесь ROM и модели');
   if(pair())throw Error('Для двух моделей настройте ΔW отдельно в карточках P1/P2');
+  status('Смена пластичности: завершаю текущий шаг и сохраняю обучение…');
   playing=false;await window.humanTeaching.stop('plasticity-change');await waitSample();
   while(fdbExperience.length&&connected){sampleFrame(performance.now(),true);await waitSample();}
   await window.fdbAgent.drain();if(window.fdbAgent.error())throw Error(window.fdbAgent.error());

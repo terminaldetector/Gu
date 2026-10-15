@@ -93,7 +93,24 @@ public final class FdbLearning {
     /** A deterministic bounded projection of real W0 predecessors. Three CSR scans
      * only at configuration, no full reverse graph or per-frame 25M-edge scan.
      * The projection depends only on W0 and ports, so reload cannot change it. */
+    // Values contain only immutable index/weight records, never Graph or learner state.
+    // Weak graph ownership prevents retaining an unloaded biological model.
+    private static final Map<Graph,LinkedHashMap<String,LinkedHashMap<Long,GraphDelta.Edge>>> projectionCache=new WeakHashMap<>();
     private LinkedHashMap<Long,GraphDelta.Edge> buildBasePaths(boolean legacy){
+        String key=baseLimit+":"+legacy+":"+Arrays.toString(targets);
+        synchronized(projectionCache){
+            LinkedHashMap<String,LinkedHashMap<Long,GraphDelta.Edge>> entries=projectionCache.get(graph);
+            if(entries==null){entries=new LinkedHashMap<>(8,.75f,true);projectionCache.put(graph,entries);}
+            LinkedHashMap<Long,GraphDelta.Edge> cached=entries.get(key);
+            if(cached==null){
+                cached=computeBasePaths(legacy);entries.put(key,cached);
+                if(entries.size()>8)entries.remove(entries.keySet().iterator().next());
+            }
+            // Each learner owns its map; ΔW, traces, thresholds and RNG are never cached.
+            return new LinkedHashMap<>(cached);
+        }
+    }
+    private LinkedHashMap<Long,GraphDelta.Edge> computeBasePaths(boolean legacy){
         LinkedHashMap<Long,GraphDelta.Edge> basePaths=new LinkedHashMap<>();
         TreeSet<Integer> frontier=new TreeSet<>(),visited=new TreeSet<>();for(int t:targets)frontier.add(t);
         final Comparator<GraphDelta.Edge> order=(a,b)->{int c=Float.compare(Math.abs(b.weight),Math.abs(a.weight));return c!=0?c:Integer.compare(a.source,b.source);};

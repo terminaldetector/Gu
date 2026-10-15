@@ -188,6 +188,7 @@ public final class NesLabActivity extends Activity {
     }
 
     private void configure(JSONObject data) throws Exception {
+        final long configureStarted=System.nanoTime();
         if(dualAgents!=null){pauseDualNative();clearDualNative();}
         if(data.has("reset")&&!(data.get("reset") instanceof Boolean))throw new IllegalArgumentException("Reset must be boolean");
         boolean initial=!neuralConfigured;
@@ -291,7 +292,7 @@ public final class NesLabActivity extends Activity {
         backend=requestedBackend;
         experiment=next;fdbGrowth=nextGrowth;growthConfiguration=nextGrowthConfig;fdbLearning=nextLearning;learningConfiguration=nextLearningConfig; configVersion++; if(reset)sequence=0; latestMask=0;neuralConfigured=true;
         if(recordingOn) recorder.write("# config,"+data.put("configVersion",configVersion).put("backend",backend).toString().replace('\n',' ')+"\n");
-        emit("labConfigured",new JSONObject().put("reset",reset).put("initial",initial).put("configVersion",configVersion).put("mode",next.mode).put("backend",backend).put("generation",data.optLong("generation",-1)));
+        emit("labConfigured",new JSONObject().put("configureMs",(System.nanoTime()-configureStarted)/1e6).put("reset",reset).put("initial",initial).put("configVersion",configVersion).put("mode",next.mode).put("backend",backend).put("generation",data.optLong("generation",-1)));
     }
 
     private int systemButtonMask(String mode){
