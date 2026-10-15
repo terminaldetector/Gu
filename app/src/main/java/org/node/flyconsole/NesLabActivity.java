@@ -141,14 +141,14 @@ public final class NesLabActivity extends Activity {
     private void installGraph(Graph loaded,Engine nextEngine,Experiment next,String id){
         closeGpu();graph=loaded;engine=nextEngine;experiment=next;modelId=id;graphKind=ConnectomeStore.title(id);backend="cpu";neuralConfigured=false;fdbGrowth=null;fdbLearning=null;growthConfiguration=null;learningConfiguration=null;activeFdbLayerId="";latestMask=0;platformPortsPending=true;initialError=null;
     }
-    private void loadGraph(){try{Graph loaded=ConnectomeStore.load(this,graphBudget());String id=GraphCache.modelId;Experiment next=ConnectomeStore.ports(this,loaded,RomImport.wide(labSystem)&&loaded.ids.length>=28?12:8,id);Engine nextEngine=new Engine(loaded);installGraph(loaded,nextEngine,next,id);announce();}catch(Exception|OutOfMemoryError ex){error("Коннектом не загрузился: "+ex.getMessage()+". Предыдущая модель и ручная игра сохранены.");}}
+    private void loadGraph(){try{String id=ConnectomeStore.selected(this);Graph loaded=ConnectomeStore.load(this,id,graphBudget());Experiment next=ConnectomeStore.ports(this,loaded,RomImport.wide(labSystem)&&loaded.ids.length>=28?12:8,id);Engine nextEngine=new Engine(loaded);installGraph(loaded,nextEngine,next,id);announce();}catch(Exception|OutOfMemoryError ex){error("Коннектом не загрузился: "+ex.getMessage()+". Предыдущая модель и ручная игра сохранены.");}}
 
     private void announce() {
         if (!pageReady) return;
         if (engine == null) { if (initialError != null) error(initialError); return; }
         try {
             JSONObject info = new JSONObject();
-            info.put("system",labSystem).put("modelId",modelId).put("neurons", graph.ids.length).put("edges", graph.targets.length).put("kind", graphKind);
+            info.put("hasImportedGraph",ConnectomeStore.hasImported(this)).put("system",labSystem).put("modelId",modelId).put("neurons", graph.ids.length).put("edges", graph.targets.length).put("kind", graphKind);
             try{info.put("modelManifest",ConnectomeStore.manifest(this,modelId));}catch(Exception ex){info.put("modelManifest",new JSONObject().put("model_id",modelId).put("name",graphKind));}
             Experiment ports=platformPortsPending?ConnectomeStore.ports(this,graph,RomImport.wide(labSystem)&&graph.ids.length>=28?12:8,modelId):experiment;
             info.put("inputs", ids(ports.inputs)).put("outputs", ids(ports.outputs));platformPortsPending=false;
@@ -556,6 +556,20 @@ public final class NesLabActivity extends Activity {
                 response.put("ok",true).put("id",modelId);announce();
             }catch(Exception|OutOfMemoryError ex){try{response.put("ok",false).put("id",id).put("activeId",modelId).put("error","Модель не переключена: "+ex.getMessage()+". Предыдущая модель сохранена.");}catch(Exception ignored){}}
             finally{if(controlEpoch.get()==epoch&&foreground)cancel.set(false);}emit("labModelSelection",response);});
+        }
+        @JavascriptInterface public void installSyntheticGraph(String json){
+            if(destroyed||json.getBytes(StandardCharsets.UTF_8).length>SyntheticGraphJson.MAX_BYTES)return;
+            cancel.set(true);final long epoch=controlEpoch.incrementAndGet();
+            submit(()->{JSONObject response=new JSONObject();try{
+                if(dualAgents!=null)throw new IOException("Stop and save the dual session before importing a graph");
+                Graph loaded=SyntheticGraphJson.read(new JSONObject(json),graphBudget());
+                Experiment next=Experiment.automatic(loaded,RomImport.wide(labSystem)?12:8);
+                Engine nextEngine=new Engine(loaded);stopRecording();
+                ConnectomeStore.installSynthetic(NesLabActivity.this,loaded);
+                installGraph(loaded,nextEngine,next,ConnectomeStore.IMPORTED);
+                response.put("ok",true).put("graph_sha256",loaded.fingerprint());announce();
+            }catch(Exception|OutOfMemoryError ex){try{response.put("ok",false).put("error",ex.getMessage()==null?"Graph import failed":ex.getMessage());}catch(Exception ignored){}}
+            finally{if(controlEpoch.get()==epoch&&foreground)cancel.set(false);}emit("labSyntheticImported",response);});
         }
         @JavascriptInterface public void controls(boolean enabled){runOnUiThread(()->{if(controllers!=null)controllers.enabled(enabled&&foreground);});}
         @JavascriptInterface public void switchSystem(String system){if(!RomImport.validSystem(system))return;runOnUiThread(()->NesLabActivity.this.switchSystem(system));}

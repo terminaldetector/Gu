@@ -15,7 +15,7 @@ public final class GraphCache {
  public static synchronized void rememberNamed(String id,Graph graph){namedGraphs.put(id,new WeakReference<>(graph));}
  /** Named models share one cache slot, never a silently substituted second graph. */
  public static synchronized Graph loadNamed(String id,Source source,long budget,String description,String expectedSha)throws IOException{
-  if(current!=null&&id.equals(modelId))return current;
+  Graph cached=findNamed(id,expectedSha);if(cached!=null){installNamed(cached,id,description);return cached;}
   Graph loaded=readNamed(source,budget,expectedSha);installNamed(loaded,id,description);return loaded;
  }
  public static Graph readNamed(Source source,long budget,String expectedSha)throws IOException{
@@ -32,6 +32,11 @@ public final class GraphCache {
   loaded.fingerprint();install(loaded,description);notice=warning;return loaded;
  }
  public static synchronized void install(Graph loaded,String description){notice="";kind=description;current=loaded;modelId=description.equals("Imported graph")?"imported":"flywire-v783";rememberNamed(modelId,loaded);}
+ public static synchronized String identity(Graph graph){
+  if(graph==current)return modelId;
+  for(java.util.Map.Entry<String,WeakReference<Graph>> entry:namedGraphs.entrySet())if(entry.getValue().get()==graph)return entry.getKey();
+  return "unregistered";
+ }
  public static boolean same(Graph left, Graph right){
   if(left==right)return true;
   if(left==null||right==null)return false;

@@ -44,6 +44,7 @@ node --check app/src/main/assets/lab/training-journal.js
 node tools/fdb_feedback_check.cjs
 node tools/fdb_reward_check.cjs
 node tools/model_ui_check.cjs
+node tools/synthetic_import_check.cjs
 node tools/dual_ui_check.cjs
 node tools/dual_routing_check.cjs
 node tools/layer_sets_check.cjs
@@ -57,6 +58,9 @@ b=urllib.request.urlopen('https://repo.maven.apache.org/maven2/org/json/json/202
 assert hashlib.sha256(b).hexdigest()=='3cf6cd6892e32e2b4c1c39e0f52f5248a2f5b37646fdfbb79a66b46b618414ed'
 open(sys.argv[1],'wb').write(b)
 PYJSON
+javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/GraphCache.java app/src/main/java/org/node/flyconsole/SyntheticGraphJson.java tools/GraphIdentityCheck.java tools/SyntheticGraphCheck.java
+java -cp "$task_tmp/classes" org.node.flyconsole.GraphIdentityCheck
+java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.SyntheticGraphCheck examples/synthetic/*.json
 javac -cp "$task_tmp/json.jar" -d "$task_tmp/controller" tools/controller-fixture/android/content/Context.java tools/controller-fixture/android/hardware/input/InputManager.java tools/controller-fixture/android/view/*.java app/src/main/java/org/node/flyconsole/ControllerInput.java tools/ControllerInputCheck.java
 java -cp "$task_tmp/controller:$task_tmp/json.jar" org.node.flyconsole.ControllerInputCheck
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/InferenceProgram.java tools/InferenceCheck.java
