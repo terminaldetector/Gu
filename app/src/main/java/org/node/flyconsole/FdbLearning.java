@@ -182,9 +182,9 @@ public final class FdbLearning {
             frontier=next;
         }
         LinkedHashMap<Long,Double> gradient=new LinkedHashMap<>();
-        for(GraphDelta.Edge e:edges)if(!lesioned(e.source,lesions)&&!lesioned(e.target,lesions))gradient.put(key(e.source,e.target),activity(result,e.source)*feedback.getOrDefault(e.target,0.0));
-        if(trainBase)for(GraphDelta.Edge e:basePaths.values())if(!lesioned(e.source,lesions)&&!lesioned(e.target,lesions))gradient.put(key(e.source,e.target),activity(result,e.source)*feedback.getOrDefault(e.target,0.0));
-        for(int source:sources)if(!lesioned(source,lesions))for(int target:growthTargets)if(source!=target&&!lesioned(target,lesions)&&!baseEdge(source,target)&&(index(targets,target)>=0||result.counts[target]>0))gradient.put(key(source,target),activity(result,source)*feedback.getOrDefault(target,0.0));
+        for(GraphDelta.Edge e:edges)if(!lesioned(e.source,lesions)&&!lesioned(e.target,lesions))putActiveGradient(gradient,result,e.source,e.target,feedback);
+        if(trainBase)for(GraphDelta.Edge e:basePaths.values())if(!lesioned(e.source,lesions)&&!lesioned(e.target,lesions))putActiveGradient(gradient,result,e.source,e.target,feedback);
+        for(int source:sources)if(!lesioned(source,lesions))for(int target:growthTargets)if(source!=target&&!lesioned(target,lesions)&&!baseEdge(source,target)&&(index(targets,target)>=0||result.counts[target]>0))putActiveGradient(gradient,result,source,target,feedback);
         Decision d=new Decision(id,actions[chosen],prob[chosen],gradient);
         for(int neuron:neuronCandidates)if(!lesioned(neuron,lesions)){
             double hz=result.counts[neuron]*10000.0/result.steps;
@@ -193,6 +193,16 @@ public final class FdbLearning {
         }
         if(training){if(pending.containsKey(id))throw new IllegalArgumentException("Duplicate FDB decision");pending.put(id,d);while(pending.size()>4)pending.remove(pending.keySet().iterator().next());}
         return d;
+    }
+    /** Keep the action-conditioned contrastive credit, but do not allocate traces for
+     * inactive sources or zero-credit paths. Sparse trace capacity is otherwise
+     * exhausted by candidates that had no influence in the observed window. */
+    private static void putActiveGradient(LinkedHashMap<Long,Double> gradient,Engine.Result result,int source,int target,Map<Integer,Double> feedback){
+        if(result.counts[source]<=0)return;
+        double targetCredit=feedback.getOrDefault(target,0.0);
+        if(targetCredit==0)return;
+        double value=activity(result,source)*targetCredit;
+        if(value!=0)gradient.put(key(source,target),value);
     }
     private static double activity(Engine.Result r,int neuron){return Math.min(1,r.counts[neuron]*10.0/r.steps);}
     private static int index(int[] values,int value){for(int i=0;i<values.length;i++)if(values[i]==value)return i;return -1;}
