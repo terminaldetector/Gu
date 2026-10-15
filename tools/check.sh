@@ -6,10 +6,11 @@ trap 'rm -rf "$task_tmp"' EXIT
 python tools/test_convert.py "$task_tmp"
 javac -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/Graph.java app/src/main/java/org/node/flyconsole/GraphDelta.java app/src/main/java/org/node/flyconsole/FdbGrowth.java app/src/main/java/org/node/flyconsole/FdbLearning.java app/src/main/java/org/node/flyconsole/Engine.java app/src/main/java/org/node/flyconsole/Experiment.java tools/EngineCheck.java tools/ExperimentCheck.java
 java -cp "$task_tmp/classes" org.node.flyconsole.EngineCheck "$task_tmp/test.fly"
-javac -cp "$task_tmp/classes" -d "$task_tmp/classes" tools/GraphDeltaCheck.java tools/FdbGrowthCheck.java tools/FdbLearningCheck.java
+javac -cp "$task_tmp/classes" -d "$task_tmp/classes" tools/GraphDeltaCheck.java tools/FdbGrowthCheck.java tools/FdbLearningCheck.java tools/FdbSparseCreditCheck.java
 java -cp "$task_tmp/classes" org.node.flyconsole.GraphDeltaCheck
 java -cp "$task_tmp/classes" org.node.flyconsole.FdbGrowthCheck
 java -cp "$task_tmp/classes" org.node.flyconsole.FdbLearningCheck
+java -cp "$task_tmp/classes" org.node.flyconsole.FdbSparseCreditCheck
 
 java -cp "$task_tmp/classes" org.node.flyconsole.ExperimentCheck
 node tools/nes_check.cjs
