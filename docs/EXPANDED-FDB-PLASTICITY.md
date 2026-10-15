@@ -54,3 +54,31 @@ The browser suite verifies native-acknowledged mode configuration, reload and re
 Initial local results: all profiles reached 100% criterion success; reward was 14.4 on Sega and 24 on SNES/GB over 24 decisions, across both controls and all five seeds. Root/dynamics updates are functional, but the tasks are saturated: **no superiority of Expanded is established**. Inference timing on this small fixture was roughly 0.11–0.15 ms per decision, layer-state estimates about 26–27 KiB; these values do not represent full-model Android cost. Raw measurements and full-model diagnostics must accompany the build report. Increasing graph size is not evidence of intelligence.
 
 Remaining experimental limits: physical GPU/thermals, long-running recurrent stability on arbitrary ROMs, stronger independent control tasks, full-model commercial-game skill, and exact causal credit beyond the bounded window-rate surrogate. No neurons/modules are added.
+
+## Post-alpha21 credit and diagnostics (feature branch, pending CI)
+
+The action-conditioned learner now refuses to allocate an eligibility trace when the
+presynaptic neuron was silent or downstream signed action credit was zero. This
+uses the **executed** decision's cached gradient and the existing observed-window
+firing rates; it is not an exact recurrent causal gradient.
+
+Non-`base` plasticity modes use two bounded synaptic eligibility time constants:
+**fast 0.6 seconds**, **slow 3.0 seconds**. The reward update mixes 75% fast and
+25% slow trace. The `base` profile keeps its legacy single-timescale update
+for controlled comparisons. Both traces are reset on interventions, explicit
+boundaries and mismatched execution. Checkpoint **v5** persists slow eligibility;
+v1–v4 migrate with an empty slow trace. The outer FDB and Layer Set versions
+remain unchanged; no inference engine or neuron count changes.
+
+`learningState.plasticityTop20` exports a reproducible, bounded ranking of
+current root deltas, other deltas, exogenous edges and threshold offsets.
+Ranking is by normalized **parameter magnitude**, not causal influence,
+utility or number of mistakes corrected. Values are indexed by stable graph
+neuron IDs. The report does not mutate learning state.
+
+**Still to implement and measure:** activity/utility-based candidate rotation,
+importance-based Wexo births, longer delayed-reward ROM fixtures with matched
+seeds, sample-efficiency and negative-transfer metrics, guarded upward
+consolidation into genre/ROOT, and batched GPU patching with topology/weight
+revision separation. These are not claimed as shipped functionality. Check CI
+and Android hardware behaviour before merging or promoting the feature.
