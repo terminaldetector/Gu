@@ -14,11 +14,11 @@ public final class FdbLearning {
     }
     public static final class Trace {
         public final int source,target;
-        public double eligibility,utility,support;
+        public double eligibility,slowEligibility,utility,support;
         public long evidence;
         public int bad;
         public Trace(int source,int target){this.source=source;this.target=target;}
-        public Trace copy(){Trace t=new Trace(source,target);t.eligibility=eligibility;t.utility=utility;t.support=support;t.evidence=evidence;t.bad=bad;return t;}
+        public Trace copy(){Trace t=new Trace(source,target);t.eligibility=eligibility;t.slowEligibility=slowEligibility;t.utility=utility;t.support=support;t.evidence=evidence;t.bad=bad;return t;}
     }
     public static final class Decision {
         public final String id;public final int mask;public final double probability;
@@ -65,6 +65,10 @@ public final class FdbLearning {
     private final LinkedHashMap<String,Decision> pending=new LinkedHashMap<>();
     private long observations,human,automatic,rng=1,born,pruned,rejected,baseUpdates;
     private double baseline;
+    // Temporal credit: preserve legacy base-policy behaviour; expanded variants
+    // combine a fast action window with a bounded slow trace of recent choices.
+    private static final double FAST_TAU_SECONDS=.6, SLOW_TAU_SECONDS=3.0, SLOW_CREDIT_SHARE=.25;
+    private boolean dualEligibility(){return !plasticityMode.equals("base");}
     private static long key(int source,int target){return ((long)source<<32)|(target&0xffffffffL);}
     public FdbLearning(Graph graph,GraphDelta layer,int[] sources,int[] targets,double rate,int maxEdges,float maxWeight){
         this(graph,layer,sources,targets,rate,maxEdges,maxWeight,true);
@@ -213,19 +217,21 @@ public final class FdbLearning {
         Decision d=pending.remove(id);
         // The worker may already have cached the next decision. Reject this interval,
         // not those later decisions; otherwise one intervention poisons every future step.
-        if(!valid||d==null||d.mask!=executedMask){rejected++;for(Trace t:traces.values())t.eligibility=0;neuronTraces.clear();return 0;}
+        if(!valid||d==null||d.mask!=executedMask){rejected++;for(Trace t:traces.values()){t.eligibility=0;t.slowEligibility=0;}neuronTraces.clear();return 0;}
         beginBudget();
-        double decay=Math.exp(-gameSeconds/.6);
-        for(Trace t:traces.values()){t.eligibility*=decay;t.support*=Math.exp(-gameSeconds/2);}
+        double decay=Math.exp(-gameSeconds/FAST_TAU_SECONDS),slowDecay=Math.exp(-gameSeconds/SLOW_TAU_SECONDS);
+        for(Trace t:traces.values()){t.eligibility*=decay;t.slowEligibility*=slowDecay;t.support*=Math.exp(-gameSeconds/2);}
         for(Map.Entry<Long,Double> e:d.gradient.entrySet()){
             int source=(int)(e.getKey()>>32),target=(int)(long)e.getKey();if(lesioned(source,lesions)||lesioned(target,lesions))continue;
-            Trace t=trace(source,target);if(t!=null)t.eligibility=Math.max(-2,Math.min(2,t.eligibility+e.getValue()*decay));
+            Trace t=trace(source,target);if(t!=null){t.eligibility=Math.max(-2,Math.min(2,t.eligibility+e.getValue()*decay));if(dualEligibility())t.slowEligibility=Math.max(-2,Math.min(2,t.slowEligibility+e.getValue()*slowDecay));}
         }
         for(int neuron:neuronCandidates)neuronTraces.put(neuron,d.blockedDynamics.contains(neuron)?0:Math.max(-2,Math.min(2,neuronTraces.getOrDefault(neuron,0.0)*decay+d.neuronGradient.getOrDefault(neuron,0.0)*decay)));
         double advantage=Math.max(-2,Math.min(2,reward-baseline));baseline+=.05*(reward-baseline);int changed=0,removed=0,created=0;
         for(Trace t:traces.values()){
-            if(lesioned(t.source,lesions)||lesioned(t.target,lesions)||Math.abs(t.eligibility)<1e-6)continue;
-            double credit=advantage*t.eligibility;GraphDelta.Edge base=basePaths.get(key(t.source,t.target));
+            if(lesioned(t.source,lesions)||lesioned(t.target,lesions))continue;
+            double creditTrace=dualEligibility()?(1-SLOW_CREDIT_SHARE)*t.eligibility+SLOW_CREDIT_SHARE*t.slowEligibility:t.eligibility;
+            if(Math.abs(creditTrace)<1e-6)continue;
+            double credit=advantage*creditTrace;GraphDelta.Edge base=basePaths.get(key(t.source,t.target));
             if(base!=null){if(trainBase&&adaptBase(base,credit))changed++;continue;}
             double oldWeight=weight(t.source,t.target),utilityCredit=oldWeight<0?-credit:credit;
             if(Math.abs(credit)>1e-6)t.evidence++;t.utility=.9*t.utility+.1*utilityCredit;t.support=Math.max(-4,Math.min(4,t.support+credit));
@@ -235,7 +241,7 @@ public final class FdbLearning {
                 double step=rate*maxWeight*credit/(1+2*Math.max(0,t.utility));
                 if(old*step>0)step*=Math.max(.05,1-Math.abs(old)/maxWeight);
                 float next=(float)(old>=0?Math.max(0,Math.min(maxWeight,old+step)):Math.max(-maxWeight,Math.min(-.000001,old+step)));
-                if(removed<1&&t.evidence>=12&&t.bad>=6&&Math.abs(next)<.5&&t.utility<-.001){change(3,t.source,t.target,old,0,maxWeight);removed++;changed++;t.eligibility=0;t.support=0;}
+                if(removed<1&&t.evidence>=12&&t.bad>=6&&Math.abs(next)<.5&&t.utility<-.001){change(3,t.source,t.target,old,0,maxWeight);removed++;changed++;t.eligibility=0;t.slowEligibility=0;t.support=0;}
                 else if(Math.abs(next-old)>.0001f&&change(1,t.source,t.target,old,next,maxWeight))changed++;
             }else if(created<2&&t.evidence>=3&&Math.abs(t.support)>=.25&&credit*t.support>0&&layer.growthCount()+(changes==null?0:created)<maxEdges&&!baseEdge(t.source,t.target)){
                 change(2,t.source,t.target,0,(float)Math.copySign(Math.min(maxWeight,Math.max(.5,rate*maxWeight*Math.abs(t.support))),t.support),maxWeight);changed++;created++;t.support=0;
@@ -283,7 +289,7 @@ public final class FdbLearning {
         finishBudget();observations++;human++;return changed;
     }
     /** Break the temporal link at pauses/interventions; retained utility/topology still persists. */
-    public void boundary(){pending.clear();for(Trace t:traces.values())t.eligibility=0;neuronTraces.clear();}
+    public void boundary(){pending.clear();for(Trace t:traces.values()){t.eligibility=0;t.slowEligibility=0;}neuronTraces.clear();}
     public long observations(){return observations;}public long human(){return human;}public long automatic(){return automatic;}
     public long rng(){return rng;}public double baseline(){return baseline;}public long born(){return born;}public long pruned(){return pruned;}public long rejected(){return rejected;}
     public String plasticityMode(){return plasticityMode;}public long neuronUpdates(){return neuronUpdates;}public long budgetClips(){return budgetClips;}public double lastBudget(){return lastBudget;}
@@ -297,7 +303,7 @@ public final class FdbLearning {
     public long baseUpdates(){return baseUpdates;}public int baseCandidates(){return basePaths.size();}public boolean trainsBase(){return trainBase;}
     public void restoreBaseUpdates(long value){if(value<0||value>9007199254740991L)throw new IllegalArgumentException("FDB base updates");baseUpdates=value;}
     public List<Trace> traces(){ArrayList<Trace> out=new ArrayList<>();for(Trace t:traces.values())out.add(t.copy());return out;}
-    public long memoryBytes(){return 96L*traces.size()+64L*pending.size()*(maxEdges+baseLimit+sources.length*growthTargets.length)+96L*basePaths.size()+64L*neuronTraces.size()+32L*neuronCandidates.size();}
+    public long memoryBytes(){return 104L*traces.size()+64L*pending.size()*(maxEdges+baseLimit+sources.length*growthTargets.length)+96L*basePaths.size()+64L*neuronTraces.size()+32L*neuronCandidates.size();}
     public void restore(long observations,long human,long automatic){
         if(observations<0||observations>9007199254740991L||human<0||automatic<0||human>observations||automatic!=observations-human)throw new IllegalArgumentException("FDB learning checkpoint");
         this.observations=observations;this.human=human;this.automatic=automatic;
@@ -306,7 +312,7 @@ public final class FdbLearning {
         if(rng<1||rng>0xffffffffL||!Double.isFinite(baseline)||Math.abs(baseline)>20||born<0||pruned<0||rejected<0||state.size()>MAX_TRACES)throw new IllegalArgumentException("FDB trace checkpoint");
         LinkedHashMap<Long,Trace> validated=new LinkedHashMap<>();
         for(Trace t:state){
-            if(t.source<0||t.source>=graph.ids.length||t.target<0||t.target>=graph.ids.length||t.source==t.target||!Double.isFinite(t.eligibility)||Math.abs(t.eligibility)>2||!Double.isFinite(t.utility)||Math.abs(t.utility)>4||!Double.isFinite(t.support)||Math.abs(t.support)>4||t.evidence<0||t.evidence>9007199254740991L||t.bad<0||t.bad>Integer.MAX_VALUE||validated.put(key(t.source,t.target),t.copy())!=null)throw new IllegalArgumentException("FDB trace state");
+            if(t.source<0||t.source>=graph.ids.length||t.target<0||t.target>=graph.ids.length||t.source==t.target||!Double.isFinite(t.eligibility)||Math.abs(t.eligibility)>2||!Double.isFinite(t.slowEligibility)||Math.abs(t.slowEligibility)>2||!Double.isFinite(t.utility)||Math.abs(t.utility)>4||!Double.isFinite(t.support)||Math.abs(t.support)>4||t.evidence<0||t.evidence>9007199254740991L||t.bad<0||t.bad>Integer.MAX_VALUE||validated.put(key(t.source,t.target),t.copy())!=null)throw new IllegalArgumentException("FDB trace state");
         }
         restore(observations,human,automatic);this.rng=rng;this.baseline=baseline;this.born=born;this.pruned=pruned;this.rejected=rejected;traces.clear();traces.putAll(validated);pending.clear();
     }
