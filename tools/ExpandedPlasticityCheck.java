@@ -20,6 +20,9 @@ public final class ExpandedPlasticityCheck {
    if(mode.equals("expanded")){
     check(l.traces().stream().anyMatch(t->Math.abs(t.slowEligibility)>1e-8),"Expanded has real slow eligibility after actions");
     JSONObject warm=FdbCheckpoint.save(l,g,FdbLearningCheck.sources(),FdbLearningCheck.targets());
+    JSONObject plasticity=warm.getJSONObject("plasticityTop20");
+    for(String k:new String[]{"root","wexo","threshold"})check(plasticity.getJSONArray(k).length()<=20,"bounded top-20 diagnostic "+k);
+    check(plasticity.getJSONArray("threshold").length()>0,"learned threshold changes visible in state");
     GraphDelta pre=new GraphDelta(30,2048);for(GraphDelta.Edge e:d.edges())pre.addEdge(e.source,e.target,e.weight);for(GraphDelta.Edge e:d.deltas())pre.addWeightDelta(e.source,e.target,e.weight);for(Map.Entry<Integer,Float> e:d.thresholds().entrySet())pre.setThresholdOffset(e.getKey(),e.getValue());
     FdbLearning loaded=learner(g,pre,"expanded");
     FdbCheckpoint.restore(loaded,new JSONObject(warm.toString()),g,FdbLearningCheck.sources(),FdbLearningCheck.targets());
