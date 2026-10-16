@@ -70,7 +70,7 @@ javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.InferenceCheck
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/LayerSetStore.java tools/LayerSetStoreCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.LayerSetStoreCheck
-javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/FdbCheckpoint.java tools/FdbCheckpointCheck.java tools/FdbIdentityCheck.java tools/FdbProjectionCheck.java tools/FdbProjectionCacheCheck.java tools/SyntheticLearningCheck.java tools/FdbPlasticityCheck.java tools/ExpandedPlasticityCheck.java tools/FdbGameBridge.java
+javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/FdbCheckpoint.java tools/FdbCheckpointCheck.java tools/FdbIdentityCheck.java tools/FdbProjectionCheck.java tools/FdbProjectionCacheCheck.java tools/FdbDualCreditCheck.java tools/FdbTemporalExperiment.java app/src/main/java/org/node/flyconsole/FdbDiagnostics.java app/src/main/java/org/node/flyconsole/GpuLayerSync.java tools/GpuLayerSyncCheck.java tools/FdbDiagnosticsCheck.java tools/SyntheticLearningCheck.java tools/FdbPlasticityCheck.java tools/ExpandedPlasticityCheck.java tools/FdbGameBridge.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbCheckpointCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbIdentityCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbProjectionCheck
@@ -78,6 +78,11 @@ java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.SyntheticLea
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbPlasticityCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.ExpandedPlasticityCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbProjectionCacheCheck
+java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbDualCreditCheck
+java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.GpuLayerSyncCheck
+java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbDiagnosticsCheck
+java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbTemporalExperiment "${FDB_TEMPORAL_REPORT:-$task_tmp/fdb-temporal}"
+node tools/fdb_diagnostics_check.cjs
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/DualAgentContext.java app/src/main/java/org/node/flyconsole/DualLayerStore.java app/src/main/java/org/node/flyconsole/DualRequestGuard.java tools/DualAgentCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.DualAgentCheck
 CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/fdb_game_check.cjs

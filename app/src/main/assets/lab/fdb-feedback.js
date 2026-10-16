@@ -2,6 +2,7 @@
 'use strict';
 (() => {
  let current=null,gameSeconds=0,capturedAt=0,counter=0,error=null,linked=false,blocked=false,recovering=false,recoveryFailed=false;const waiting=new Map();
+ const now=()=>typeof performance==='undefined'?Date.now():performance.now();
  const context=()=>JSON.stringify({system:labPlatform,romHash,graph:graphIdentity&&graphIdentity.sha256,inputs:ids('inputIds'),outputs:ids('outputIds')});
  function rewardCopy(state){if(state===null)return null;const copy=JSON.parse(JSON.stringify(state));const freeze=value=>{if(value&&typeof value==='object'){Object.values(value).forEach(freeze);Object.freeze(value);}return value;};return freeze(copy);}
  function invalidate(message){error=message;current=null;linked=false;gameSeconds=capturedAt=0;blocked=true;status('FDB: '+error,true);}
@@ -14,13 +15,14 @@
   const token='fdb-'+(++counter),identity=context();
   return new Promise(resolve=>{
    const timer=setTimeout(()=>{const pending=waiting.get(token);if(!pending)return;waiting.delete(token);if(pending.recovery){recovering=false;recoveryFailed=true;}invalidate('сохранение не подтверждено');pending.resolve();recover();},30000);
-   waiting.set(token,{resolve,timer,identity,recovery});
+   waiting.set(token,{resolve,timer,identity,recovery,started:now()});
    try{FlyBridge.fdbFeedback(JSON.stringify({op,token,layerId:window.layerExperience&&window.layerExperience.activeId?window.layerExperience.activeId():null,...args}));}
    catch(e){labFdbFeedback({token,error:e.message});}
   });
  }
  window.labFdbFeedback=r=>{
   const pending=waiting.get(r.token);if(!pending)return;waiting.delete(r.token);clearTimeout(pending.timer);
+  window.fdbDiagnostics?.record('feedback',{roundTripMs:now()-pending.started,feedbackMs:r.feedbackMs,serializationMs:r.serializationMs,saveMs:r.saveMs,workerQueueMs:r.workerQueueMs});const jsStarted=now();
   let localSaveFailed=false;
   if(r.error)invalidate(r.error);
   if(pending.identity===context()&&r.data&&r.data.fdbState){
@@ -31,7 +33,7 @@
   }
   if(r.saveError){invalidate(r.saveError);status('FDB применён; сохранение Layer Set: '+error,true);}
   if(pending.recovery){recovering=false;recoveryFailed=Boolean(r.error||r.saveError||localSaveFailed);if(!recoveryFailed&&pending.identity===context()){blocked=false;error=null;status('FDB: сохранение подтверждено, временная связь восстановлена');}}
-  pending.resolve();
+  window.fdbDiagnostics?.record('webview',{applyMs:now()-jsStarted});pending.resolve(r);
   recover();
  };
  function boundary(){const existed=linked;linked=false;current=null;gameSeconds=capturedAt=0;if(blocked){recoveryFailed=false;recover();}else if(existed||waiting.size)send('boundary');}
@@ -47,5 +49,5 @@
   return send('reward',{decision:outcome.id,mask:outcome.mask,frames:outcome.frames,seconds:outcome.elapsed,reward,valid:outcome.valid&&!interrupted,frozen:$('freeze').checked||$('learnMode').value!=='train'});
  }
  async function drain(){while(waiting.size){await Promise.all([...waiting.values()].map(p=>new Promise(resolve=>{const old=p.resolve;p.resolve=()=>{old();resolve();};})));}}
- window.fdbAgent={remember,frame,capture,settle,boundary,drain,error:()=>error};
+ window.fdbAgent={diagnostics:()=>send('diagnostics'),remember,frame,capture,settle,boundary,drain,error:()=>error};
 })();

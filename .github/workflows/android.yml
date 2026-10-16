@@ -47,6 +47,8 @@ jobs:
             app/src/main/assets/lab/sega/
       - run: python tools/make_retro_roms.py
       - run: bash tools/check.sh
+        env:
+          FDB_TEMPORAL_REPORT: fdb-temporal
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -54,6 +56,8 @@ jobs:
           path: |
             fdb-comparison.json
             expanded-comparison.json
+            fdb-temporal.json
+            fdb-temporal.csv
       - name: Install UI test browser
         run: |
           npm install --prefix /tmp/fly-ui playwright@1.51.1

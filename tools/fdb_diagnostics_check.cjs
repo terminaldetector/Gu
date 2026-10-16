@@ -1,0 +1,5 @@
+'use strict';
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');const c={window:{},document:{addEventListener(){}},Map,Set,Date,Number,Object};vm.createContext(c);vm.runInContext(fs.readFileSync('app/src/main/assets/lab/fdb-diagnostics.js','utf8'),c);const d=c.window.fdbDiagnostics;
+for(let i=0;i<150;i++)d.record('test',{ms:i,bad:NaN});assert.equal(d.snapshot().test.ms.samples,100);assert.equal(d.snapshot().test.ms.p50,99);assert.equal(d.snapshot().test.ms.p95,144);assert.equal(d.snapshot().test.bad,undefined);
+const a={identity:'x',at:1,deltas:[],edges:[{source:'9007199254740993',target:'9007199254740994',weight:-5}],thresholds:[]},b={...a,at:2,edges:[]};const diff=d.diff(a,b);assert.equal(diff.edges[0].source,a.edges[0].source);assert.equal(diff.edges[0].before,-5);assert.equal(diff.edges[0].after,null);assert.equal(d.diff(a,{...b,identity:'other'}).compatible,false);
+console.log('PASS: bounded latency percentiles, signed deletion diff and graph/ROM/ports isolation');

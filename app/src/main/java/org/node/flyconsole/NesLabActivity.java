@@ -260,6 +260,7 @@ public final class NesLabActivity extends Activity {
                     if(learning.has("trainBase")&&!(learning.get("trainBase") instanceof Boolean))throw new IllegalArgumentException("FDB trainBase must be boolean");
                     nextLearningConfig.put("trainBase",learning.optBoolean("trainBase",true)).put("plasticityMode",FdbLearning.validateMode(learning.optString("plasticityMode","base")));
                     nextLearning=new FdbLearning(graph,layer,next.inputs,next.outputs,learning.getDouble("rate"),learning.getInt("maxEdges"),(float)learning.getDouble("maxWeight"),learning.optBoolean("trainBase",true),nextLearningConfig.getString("plasticityMode"));
+                    nextLearning.creditProfile(learning.optString("creditProfile","single-v1"));
                     nextLearning.seed(next.seed);
                     JSONObject state=fdb.optJSONObject("learningState");
                     if(state!=null){
@@ -362,6 +363,7 @@ public final class NesLabActivity extends Activity {
     private void emitDualFailure(String method,String raw,Throwable ex){try{JSONObject response=dualEnvelope(new JSONObject(raw)).put("ok",false).put("error",ex.getMessage()==null?"Dual operation failed":ex.getMessage());if(!dualSession.isEmpty())response.put("sessionId",dualSession);emit(method,response);}catch(Exception ignored){error("Dual request failed: "+ex.getMessage());}}
 
     private void sample(JSONObject request) throws Exception {
+        long sampleStarted=System.nanoTime();
         if (engine == null) throw new IllegalStateException("Коннектом недоступен");
         JSONArray pixels=request.getJSONArray("retina"); if(pixels.length()!=16) throw new IllegalArgumentException("Нужно 16 ячеек экрана");
         double[] brightness=new double[16]; for(int i=0;i<16;i++) brightness[i]=pixels.getDouble(i);
@@ -429,6 +431,8 @@ public final class NesLabActivity extends Activity {
         response.put("fdbEdges",experiment.options.delta==null?0:experiment.options.delta.growthCount()).put("fdbDeltas",experiment.options.delta==null?0:experiment.options.delta.deltaCount());
         response.put("outputs",output).put("inputs",new JSONArray(rates)).put("sequence",++sequence);
         if(recordingOn) record(request,rates,result,latestMask);
+        response.put("sampleTotalMs",(System.nanoTime()-sampleStarted)/1e6).put("workerQueueMs",request.optDouble("workerQueueMs",0));
+        if(gpuEngine!=null&&"gpu".equals(backend))response.put("gpuSyncMs",gpuEngine.lastSyncMs()).put("gpuUploads",new JSONArray(gpuEngine.uploadStats()));
         emit("labResult",response);
     }
 
@@ -573,17 +577,18 @@ public final class NesLabActivity extends Activity {
         }
         @JavascriptInterface public void sample(String json) {
             if (destroyed || json.length() > 8192) return;
-            submit(() -> {
-                try { NesLabActivity.this.sample(new JSONObject(json)); }
+            final long queued=System.nanoTime();submit(() -> {
+                try { NesLabActivity.this.sample(new JSONObject(json).put("workerQueueMs",(System.nanoTime()-queued)/1e6)); }
                 catch (Exception ex) { error(ex.getMessage()); emitFailedSample(json); }
             });
         }
         @JavascriptInterface public void fdbFeedback(String json){
             if(destroyed||json.getBytes(StandardCharsets.UTF_8).length>8192)return;
-            submit(()->{String token="";JSONObject response=new JSONObject();try{
+            final long queued=System.nanoTime();submit(()->{long began=System.nanoTime();String token="";JSONObject response=new JSONObject();try{
                 JSONObject request=new JSONObject(json);token=request.getString("token");String op=request.getString("op");
                 if(fdbLearning==null){response.put("token",token).put("data",JSONObject.NULL);emit("labFdbFeedback",response);return;}
-                int changed=0;
+                if(op.equals("diagnostics")){response.put("token",token).put("data",new JSONObject().put("diagnostics",FdbDiagnostics.report(graph,experiment.options.delta,fdbLearning)));emit("labFdbFeedback",response);return;}
+                long learningStarted=System.nanoTime();int changed=0;
                 if(op.equals("boundary"))fdbLearning.boundary();
                 else if(op.equals("reward")){
                     for(String key:new String[]{"mask","frames"})if(!(request.get(key) instanceof Number)||request.getDouble(key)!=request.getInt(key))throw new IllegalArgumentException("FDB feedback integer");
@@ -591,14 +596,17 @@ public final class NesLabActivity extends Activity {
                     for(String key:new String[]{"reward","seconds"})if(!(request.get(key) instanceof Number))throw new IllegalArgumentException("FDB feedback number");
                     if(learningConfiguration.getBoolean("enabled"))changed=fdbLearning.feedback(request.getString("decision"),request.getInt("mask"),request.getDouble("reward"),request.getDouble("seconds"),request.getInt("frames"),request.getBoolean("valid"),request.getBoolean("frozen"),experiment.options.lesions);
                 }else throw new IllegalArgumentException("Unknown FDB feedback operation");
+                response.put("feedbackMs",(System.nanoTime()-learningStarted)/1e6);long serializationStarted=System.nanoTime();
                 response.put("token",token).put("data",new JSONObject().put("fdbState",fdbState()).put("changed",changed).put("revision",experiment.options.delta.version()).put("memoryBytes",experiment.options.delta.memoryBytes()+fdbLearning.memoryBytes()));
+                response.put("serializationMs",(System.nanoTime()-serializationStarted)/1e6);long saveStarted=System.nanoTime();
                 try{persistFdb(request.optString("layerId",""));}catch(Exception ex){response.put("saveError",ex.getMessage());}
+                response.put("saveMs",(System.nanoTime()-saveStarted)/1e6).put("workerQueueMs",(began-queued)/1e6).put("feedbackTotalMs",(System.nanoTime()-began)/1e6);
                 if(recordingOn)recorder.write("# fdb_feedback,"+request.toString()+","+fdbState().toString()+"\n");
             }catch(Exception e){try{response.put("token",token).put("error",e.getMessage());}catch(Exception ignored){}}emit("labFdbFeedback",response);});
         }
         @JavascriptInterface public void configure(String json) {
             if (destroyed) return;
-            if(json.length()>1024*1024){error("Конфигурация превышает 1 МиБ");return;}
+            if(json.getBytes(StandardCharsets.UTF_8).length>4*1024*1024){error("Конфигурация превышает 4 МиБ");return;}
             cancel.set(true);final long epoch=controlEpoch.incrementAndGet();
             submit(() -> {
                 try { NesLabActivity.this.configure(new JSONObject(json)); }
