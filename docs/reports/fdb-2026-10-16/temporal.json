@@ -1,0 +1,6029 @@
+{
+  "protocol": {
+    "epsilon": 0.1,
+    "windowMs": 30,
+    "framesPerFeedback": 30,
+    "heldoutInputHz": 450,
+    "thresholdHz": 100,
+    "plasticityMode": "expanded",
+    "trainEpisodes": 80,
+    "heldoutEpisodes": 40,
+    "maxWeight": 127,
+    "feedbackGameSeconds": 0.5,
+    "learningRate": 0.1,
+    "trainInputHz": 500
+  },
+  "seeds": [
+    11,
+    23,
+    37,
+    53,
+    71
+  ],
+  "sourceCommit": "b0cee19ec3cb0f268a4763fd4479f05b08a64c2b",
+  "type": "fdb-temporal-ablation-v1",
+  "rows": [
+    {
+      "trainingReturn": 6,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.65,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.45,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.55,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 2.335851,
+      "negativeVsSingle": false,
+      "heldoutReturn": 2,
+      "checkpointBytes": 24186,
+      "cpuDecisionP95Ms": 0.775943,
+      "cpuDecisionP50Ms": 0.476825,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.525,
+      "decisionCpuMsPerTrainingSuccess": 1.2430436976744186,
+      "estimatedLayerLearnerBytes": 35520,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.571860129341725,
+      "trainingDecisionCpuMs": 53.450879,
+      "trainSuccess": 0.5375,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": 8,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.65,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.45,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 1.608498,
+      "negativeVsSingle": false,
+      "heldoutReturn": 6,
+      "checkpointBytes": 2014,
+      "cpuDecisionP95Ms": 0.760567,
+      "cpuDecisionP50Ms": 0.391955,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.575,
+      "decisionCpuMsPerTrainingSuccess": 0.9172173181818182,
+      "estimatedLayerLearnerBytes": 14464,
+      "heldoutDeltaVsSingle": 0.04999999999999993,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5742482824005203,
+      "trainingDecisionCpuMs": 40.357562,
+      "trainSuccess": 0.55,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": 8,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.65,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.45,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.920183,
+      "negativeVsSingle": false,
+      "heldoutReturn": 6,
+      "checkpointBytes": 2017,
+      "cpuDecisionP95Ms": 0.50357,
+      "cpuDecisionP50Ms": 0.360218,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.575,
+      "decisionCpuMsPerTrainingSuccess": 0.7547195454545453,
+      "estimatedLayerLearnerBytes": 14368,
+      "heldoutDeltaVsSingle": 0.04999999999999993,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5742482824005203,
+      "trainingDecisionCpuMs": 33.20766,
+      "trainSuccess": 0.55,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.502385,
+      "negativeVsSingle": true,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.419348,
+      "cpuDecisionP50Ms": 0.326083,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.670326725,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": -0.025000000000000022,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 26.813069,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": 10,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.6,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.65,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.4,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.58084,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24190,
+      "cpuDecisionP95Ms": 0.47773,
+      "cpuDecisionP50Ms": 0.327707,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.6054336666666666,
+      "estimatedLayerLearnerBytes": 35520,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.6140684253603756,
+      "trainingDecisionCpuMs": 27.244515,
+      "trainSuccess": 0.5625,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": 10,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.6,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.65,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.4,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.318255,
+      "negativeVsSingle": false,
+      "heldoutReturn": 8,
+      "checkpointBytes": 2018,
+      "cpuDecisionP95Ms": 0.286154,
+      "cpuDecisionP50Ms": 0.202284,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.6,
+      "decisionCpuMsPerTrainingSuccess": 0.3859051777777778,
+      "estimatedLayerLearnerBytes": 14464,
+      "heldoutDeltaVsSingle": 0.09999999999999998,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.6140684253603756,
+      "trainingDecisionCpuMs": 17.365733,
+      "trainSuccess": 0.5625,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": 10,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.6,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.65,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.4,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.429003,
+      "negativeVsSingle": false,
+      "heldoutReturn": 8,
+      "checkpointBytes": 2021,
+      "cpuDecisionP95Ms": 0.343794,
+      "cpuDecisionP50Ms": 0.201096,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.6,
+      "decisionCpuMsPerTrainingSuccess": 0.3901122,
+      "estimatedLayerLearnerBytes": 14368,
+      "heldoutDeltaVsSingle": 0.09999999999999998,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.6140684253603756,
+      "trainingDecisionCpuMs": 17.555049,
+      "trainSuccess": 0.5625,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.325008,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.266906,
+      "cpuDecisionP50Ms": 0.191872,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.404282825,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 16.171313,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": -6,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.45,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.35,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.340275,
+      "negativeVsSingle": false,
+      "heldoutReturn": 6,
+      "checkpointBytes": 24188,
+      "cpuDecisionP95Ms": 0.278638,
+      "cpuDecisionP50Ms": 0.19248,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.575,
+      "decisionCpuMsPerTrainingSuccess": 0.4330417297297297,
+      "estimatedLayerLearnerBytes": 35520,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5549408707992957,
+      "trainingDecisionCpuMs": 16.022544,
+      "trainSuccess": 0.4625,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": -6,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.45,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.35,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.398632,
+      "negativeVsSingle": false,
+      "heldoutReturn": 10,
+      "checkpointBytes": 2017,
+      "cpuDecisionP95Ms": 0.250838,
+      "cpuDecisionP50Ms": 0.180422,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.625,
+      "decisionCpuMsPerTrainingSuccess": 0.43253737837837836,
+      "estimatedLayerLearnerBytes": 14464,
+      "heldoutDeltaVsSingle": 0.050000000000000044,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5549408707992957,
+      "trainingDecisionCpuMs": 16.003883,
+      "trainSuccess": 0.4625,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": -6,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.45,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.35,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.333117,
+      "negativeVsSingle": false,
+      "heldoutReturn": 10,
+      "checkpointBytes": 2020,
+      "cpuDecisionP95Ms": 0.267394,
+      "cpuDecisionP50Ms": 0.180222,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.625,
+      "decisionCpuMsPerTrainingSuccess": 0.4148232972972973,
+      "estimatedLayerLearnerBytes": 14368,
+      "heldoutDeltaVsSingle": 0.050000000000000044,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5549408707992957,
+      "trainingDecisionCpuMs": 15.348462,
+      "trainSuccess": 0.4625,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.598537,
+      "negativeVsSingle": true,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.266967,
+      "cpuDecisionP50Ms": 0.174697,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.38912277500000003,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": -0.07499999999999996,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 15.564911,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.45,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.55,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.45,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.55,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.431922,
+      "negativeVsSingle": false,
+      "heldoutReturn": 8,
+      "checkpointBytes": 24187,
+      "cpuDecisionP95Ms": 0.219748,
+      "cpuDecisionP50Ms": 0.174335,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.6,
+      "decisionCpuMsPerTrainingSuccess": 0.3806148,
+      "estimatedLayerLearnerBytes": 35520,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5132297776978961,
+      "trainingDecisionCpuMs": 15.224592,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.45,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.55,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.45,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.55,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.306572,
+      "negativeVsSingle": false,
+      "heldoutReturn": 8,
+      "checkpointBytes": 2017,
+      "cpuDecisionP95Ms": 0.252665,
+      "cpuDecisionP50Ms": 0.179894,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.6,
+      "decisionCpuMsPerTrainingSuccess": 0.37832754999999996,
+      "estimatedLayerLearnerBytes": 14464,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5132297776978961,
+      "trainingDecisionCpuMs": 15.133102,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.45,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.55,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.45,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.55,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.316553,
+      "negativeVsSingle": false,
+      "heldoutReturn": 8,
+      "checkpointBytes": 2020,
+      "cpuDecisionP95Ms": 0.263461,
+      "cpuDecisionP50Ms": 0.181247,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.6,
+      "decisionCpuMsPerTrainingSuccess": 0.397241925,
+      "estimatedLayerLearnerBytes": 14368,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5132297776978961,
+      "trainingDecisionCpuMs": 15.889677,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.554808,
+      "negativeVsSingle": true,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.266801,
+      "cpuDecisionP50Ms": 0.174455,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.427443975,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": -0.09999999999999998,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 17.097759,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": 4,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.35,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.763553,
+      "negativeVsSingle": false,
+      "heldoutReturn": 10,
+      "checkpointBytes": 24187,
+      "cpuDecisionP95Ms": 0.411502,
+      "cpuDecisionP50Ms": 0.262841,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.625,
+      "decisionCpuMsPerTrainingSuccess": 0.5513694047619048,
+      "estimatedLayerLearnerBytes": 35520,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5262386045833628,
+      "trainingDecisionCpuMs": 23.157515,
+      "trainSuccess": 0.525,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": 4,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.35,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 1.841541,
+      "negativeVsSingle": false,
+      "heldoutReturn": 14,
+      "checkpointBytes": 2016,
+      "cpuDecisionP95Ms": 0.385899,
+      "cpuDecisionP50Ms": 0.198722,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.675,
+      "decisionCpuMsPerTrainingSuccess": 0.4683610476190476,
+      "estimatedLayerLearnerBytes": 14464,
+      "heldoutDeltaVsSingle": 0.050000000000000044,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5262386045833628,
+      "trainingDecisionCpuMs": 19.671164,
+      "trainSuccess": 0.525,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": 4,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.35,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.562796,
+      "negativeVsSingle": false,
+      "heldoutReturn": 14,
+      "checkpointBytes": 2019,
+      "cpuDecisionP95Ms": 0.278933,
+      "cpuDecisionP50Ms": 0.176686,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.675,
+      "decisionCpuMsPerTrainingSuccess": 0.3898176190476191,
+      "estimatedLayerLearnerBytes": 14368,
+      "heldoutDeltaVsSingle": 0.050000000000000044,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5262386045833628,
+      "trainingDecisionCpuMs": 16.37234,
+      "trainSuccess": 0.525,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.262905,
+      "negativeVsSingle": true,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.247178,
+      "cpuDecisionP50Ms": 0.170014,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.368718975,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": -0.125,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 14.748759,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "immediate"
+    },
+    {
+      "trainingReturn": -60,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.1,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.2,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.2,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.339087,
+      "negativeVsSingle": false,
+      "heldoutReturn": -34,
+      "checkpointBytes": 24189,
+      "cpuDecisionP95Ms": 0.244034,
+      "cpuDecisionP50Ms": 0.170234,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.075,
+      "decisionCpuMsPerTrainingSuccess": 4.4044226,
+      "estimatedLayerLearnerBytes": 38720,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.07722499174311356,
+      "trainingDecisionCpuMs": 44.044226,
+      "trainSuccess": 0.125,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -60,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.1,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.2,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.2,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.352715,
+      "negativeVsSingle": false,
+      "heldoutReturn": -32,
+      "checkpointBytes": 2018,
+      "cpuDecisionP95Ms": 0.25953,
+      "cpuDecisionP50Ms": 0.175637,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.1,
+      "decisionCpuMsPerTrainingSuccess": 4.6035419,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0.02500000000000001,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.07722499174311356,
+      "trainingDecisionCpuMs": 46.035419,
+      "trainSuccess": 0.125,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -60,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.1,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.2,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.2,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.357435,
+      "negativeVsSingle": false,
+      "heldoutReturn": -32,
+      "checkpointBytes": 2023,
+      "cpuDecisionP95Ms": 0.243752,
+      "cpuDecisionP50Ms": 0.17575,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.1,
+      "decisionCpuMsPerTrainingSuccess": 4.813734,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0.02500000000000001,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.07722499174311356,
+      "trainingDecisionCpuMs": 48.13734,
+      "trainSuccess": 0.125,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -80,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.310968,
+      "negativeVsSingle": true,
+      "heldoutReturn": -40,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.250104,
+      "cpuDecisionP50Ms": 0.170046,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0,
+      "decisionCpuMsPerTrainingSuccess": null,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": -0.075,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0,
+      "trainingDecisionCpuMs": 43.887527,
+      "trainSuccess": 0,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -64,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.15,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.1,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.05,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.1,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.538735,
+      "negativeVsSingle": false,
+      "heldoutReturn": -36,
+      "checkpointBytes": 24191,
+      "cpuDecisionP95Ms": 0.256067,
+      "cpuDecisionP50Ms": 0.170469,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.05,
+      "decisionCpuMsPerTrainingSuccess": 6.05225325,
+      "estimatedLayerLearnerBytes": 38720,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.099204771594439,
+      "trainingDecisionCpuMs": 48.418026,
+      "trainSuccess": 0.1,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -62,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.15,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.1,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.1,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.1,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.346845,
+      "negativeVsSingle": false,
+      "heldoutReturn": -32,
+      "checkpointBytes": 2018,
+      "cpuDecisionP95Ms": 0.238805,
+      "cpuDecisionP50Ms": 0.175556,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.1,
+      "decisionCpuMsPerTrainingSuccess": 5.002003333333334,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0.05,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.10341059740085357,
+      "trainingDecisionCpuMs": 45.01803,
+      "trainSuccess": 0.1125,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -62,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.15,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.1,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.1,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.1,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.335208,
+      "negativeVsSingle": false,
+      "heldoutReturn": -34,
+      "checkpointBytes": 2023,
+      "cpuDecisionP95Ms": 0.252046,
+      "cpuDecisionP50Ms": 0.175306,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.075,
+      "decisionCpuMsPerTrainingSuccess": 5.024764,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0.024999999999999994,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.10341059740085357,
+      "trainingDecisionCpuMs": 45.222876,
+      "trainSuccess": 0.1125,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -80,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.326751,
+      "negativeVsSingle": true,
+      "heldoutReturn": -40,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.242132,
+      "cpuDecisionP50Ms": 0.169686,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0,
+      "decisionCpuMsPerTrainingSuccess": null,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": -0.05,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0,
+      "trainingDecisionCpuMs": 44.125019,
+      "trainSuccess": 0,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -62,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.15,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.1,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.05,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.15,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.379666,
+      "negativeVsSingle": false,
+      "heldoutReturn": -36,
+      "checkpointBytes": 24190,
+      "cpuDecisionP95Ms": 0.239052,
+      "cpuDecisionP50Ms": 0.169819,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.05,
+      "decisionCpuMsPerTrainingSuccess": 5.220876444444444,
+      "estimatedLayerLearnerBytes": 38720,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.13975169939572546,
+      "trainingDecisionCpuMs": 46.987888,
+      "trainSuccess": 0.1125,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -62,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.15,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.1,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.05,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.15,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.46227,
+      "negativeVsSingle": false,
+      "heldoutReturn": -30,
+      "checkpointBytes": 2018,
+      "cpuDecisionP95Ms": 0.265646,
+      "cpuDecisionP50Ms": 0.175933,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.125,
+      "decisionCpuMsPerTrainingSuccess": 5.124087555555556,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0.075,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.13975169939572546,
+      "trainingDecisionCpuMs": 46.116788,
+      "trainSuccess": 0.1125,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -62,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.15,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.1,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.05,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.15,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.49482,
+      "negativeVsSingle": false,
+      "heldoutReturn": -28,
+      "checkpointBytes": 2023,
+      "cpuDecisionP95Ms": 0.265968,
+      "cpuDecisionP50Ms": 0.175615,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.15,
+      "decisionCpuMsPerTrainingSuccess": 5.446179222222223,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0.09999999999999999,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.13975169939572546,
+      "trainingDecisionCpuMs": 49.015613,
+      "trainSuccess": 0.1125,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -80,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.356454,
+      "negativeVsSingle": true,
+      "heldoutReturn": -40,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.239924,
+      "cpuDecisionP50Ms": 0.16929,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0,
+      "decisionCpuMsPerTrainingSuccess": null,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": -0.05,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0,
+      "trainingDecisionCpuMs": 43.666231,
+      "trainSuccess": 0,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -56,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.15,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.2,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.1,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.15,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.802384,
+      "negativeVsSingle": false,
+      "heldoutReturn": -38,
+      "checkpointBytes": 24191,
+      "cpuDecisionP95Ms": 0.269125,
+      "cpuDecisionP50Ms": 0.170129,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.025,
+      "decisionCpuMsPerTrainingSuccess": 4.0429605,
+      "estimatedLayerLearnerBytes": 38720,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.1530638876880044,
+      "trainingDecisionCpuMs": 48.515526,
+      "trainSuccess": 0.15,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -54,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.15,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.2,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.1,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.2,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.37691,
+      "negativeVsSingle": false,
+      "heldoutReturn": -36,
+      "checkpointBytes": 2019,
+      "cpuDecisionP95Ms": 0.264351,
+      "cpuDecisionP50Ms": 0.175538,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.05,
+      "decisionCpuMsPerTrainingSuccess": 3.5389685384615386,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0.025,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.1558337423785012,
+      "trainingDecisionCpuMs": 46.006591,
+      "trainSuccess": 0.1625,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -54,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.15,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.2,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.1,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.2,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.355993,
+      "negativeVsSingle": false,
+      "heldoutReturn": -34,
+      "checkpointBytes": 2025,
+      "cpuDecisionP95Ms": 0.273425,
+      "cpuDecisionP50Ms": 0.175515,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.075,
+      "decisionCpuMsPerTrainingSuccess": 3.531962,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0.049999999999999996,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.1558337423785012,
+      "trainingDecisionCpuMs": 45.915506,
+      "trainSuccess": 0.1625,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -80,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.308862,
+      "negativeVsSingle": true,
+      "heldoutReturn": -40,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.236276,
+      "cpuDecisionP50Ms": 0.169361,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0,
+      "decisionCpuMsPerTrainingSuccess": null,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": -0.025,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0,
+      "trainingDecisionCpuMs": 43.477303,
+      "trainSuccess": 0,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -62,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.1,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.25,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.1,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.319853,
+      "negativeVsSingle": false,
+      "heldoutReturn": -38,
+      "checkpointBytes": 24188,
+      "cpuDecisionP95Ms": 0.233118,
+      "cpuDecisionP50Ms": 0.169836,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.025,
+      "decisionCpuMsPerTrainingSuccess": 4.846931555555555,
+      "estimatedLayerLearnerBytes": 38720,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.10738327152933022,
+      "trainingDecisionCpuMs": 43.622384,
+      "trainSuccess": 0.1125,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -62,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.1,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.25,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.1,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.522409,
+      "negativeVsSingle": false,
+      "heldoutReturn": -36,
+      "checkpointBytes": 2017,
+      "cpuDecisionP95Ms": 0.249372,
+      "cpuDecisionP50Ms": 0.175435,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.05,
+      "decisionCpuMsPerTrainingSuccess": 5.125927222222222,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0.025,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.10738327152933022,
+      "trainingDecisionCpuMs": 46.133345,
+      "trainSuccess": 0.1125,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -62,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.1,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.25,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.1,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.306969,
+      "negativeVsSingle": false,
+      "heldoutReturn": -36,
+      "checkpointBytes": 2022,
+      "cpuDecisionP95Ms": 0.2443,
+      "cpuDecisionP50Ms": 0.175272,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.05,
+      "decisionCpuMsPerTrainingSuccess": 4.951284222222222,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0.025,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.10738327152933022,
+      "trainingDecisionCpuMs": 44.561558,
+      "trainSuccess": 0.1125,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -80,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.299642,
+      "negativeVsSingle": true,
+      "heldoutReturn": -40,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.230927,
+      "cpuDecisionP50Ms": 0.169376,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0,
+      "decisionCpuMsPerTrainingSuccess": null,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": -0.025,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0,
+      "trainingDecisionCpuMs": 42.663647,
+      "trainSuccess": 0,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "sequence"
+    },
+    {
+      "trainingReturn": -54,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.1,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.2,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.2,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.15,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.559678,
+      "negativeVsSingle": false,
+      "heldoutReturn": -6,
+      "checkpointBytes": 24189,
+      "cpuDecisionP95Ms": 0.244345,
+      "cpuDecisionP50Ms": 0.169812,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.425,
+      "decisionCpuMsPerTrainingSuccess": 3.6119656153846154,
+      "estimatedLayerLearnerBytes": 38720,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.18228282326101627,
+      "trainingDecisionCpuMs": 46.955553,
+      "trainSuccess": 0.1625,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": -54,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.1,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.2,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.2,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.15,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.342796,
+      "negativeVsSingle": true,
+      "heldoutReturn": -10,
+      "checkpointBytes": 2018,
+      "cpuDecisionP95Ms": 0.240671,
+      "cpuDecisionP50Ms": 0.175244,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.375,
+      "decisionCpuMsPerTrainingSuccess": 3.456731153846154,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": -0.04999999999999999,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.18228282326101627,
+      "trainingDecisionCpuMs": 44.937505,
+      "trainSuccess": 0.1625,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": -54,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.1,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.2,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.2,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.15,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.338045,
+      "negativeVsSingle": true,
+      "heldoutReturn": -10,
+      "checkpointBytes": 2024,
+      "cpuDecisionP95Ms": 0.252946,
+      "cpuDecisionP50Ms": 0.175455,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.375,
+      "decisionCpuMsPerTrainingSuccess": 3.495711,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": -0.04999999999999999,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.18228282326101627,
+      "trainingDecisionCpuMs": 45.444243,
+      "trainSuccess": 0.1625,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.53637,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.244161,
+      "cpuDecisionP50Ms": 0.169784,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 1.178820125,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0.07500000000000001,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 47.152805,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": -54,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.25,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.1,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.15,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.15,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.327973,
+      "negativeVsSingle": false,
+      "heldoutReturn": -2,
+      "checkpointBytes": 24190,
+      "cpuDecisionP95Ms": 0.237224,
+      "cpuDecisionP50Ms": 0.169939,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.475,
+      "decisionCpuMsPerTrainingSuccess": 3.378414307692308,
+      "estimatedLayerLearnerBytes": 38720,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.2204469973468164,
+      "trainingDecisionCpuMs": 43.919386,
+      "trainSuccess": 0.1625,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": -54,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.25,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.1,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.15,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.15,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.508263,
+      "negativeVsSingle": true,
+      "heldoutReturn": -4,
+      "checkpointBytes": 2018,
+      "cpuDecisionP95Ms": 0.247882,
+      "cpuDecisionP50Ms": 0.175275,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.45,
+      "decisionCpuMsPerTrainingSuccess": 3.549281692307692,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": -0.024999999999999967,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.2204469973468164,
+      "trainingDecisionCpuMs": 46.140662,
+      "trainSuccess": 0.1625,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": -54,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.25,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.1,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.15,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.15,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.340039,
+      "negativeVsSingle": false,
+      "heldoutReturn": -2,
+      "checkpointBytes": 2024,
+      "cpuDecisionP95Ms": 0.241437,
+      "cpuDecisionP50Ms": 0.175563,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.475,
+      "decisionCpuMsPerTrainingSuccess": 3.522903846153846,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.2204469973468164,
+      "trainingDecisionCpuMs": 45.79775,
+      "trainSuccess": 0.1625,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.332962,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.235537,
+      "cpuDecisionP50Ms": 0.169256,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 1.08117065,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0.025000000000000022,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 43.246826,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": -66,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.05,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.05,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.15,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.1,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.347936,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24189,
+      "cpuDecisionP95Ms": 0.235348,
+      "cpuDecisionP50Ms": 0.169698,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 6.250951,
+      "estimatedLayerLearnerBytes": 38720,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.08856152417350235,
+      "trainingDecisionCpuMs": 43.756657,
+      "trainSuccess": 0.0875,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": -66,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.05,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.05,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.15,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.1,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.435959,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2018,
+      "cpuDecisionP95Ms": 0.250585,
+      "cpuDecisionP50Ms": 0.175384,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 6.461004142857143,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.08856152417350235,
+      "trainingDecisionCpuMs": 45.227029,
+      "trainSuccess": 0.0875,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": -66,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.05,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.05,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.15,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.1,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.370064,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2024,
+      "cpuDecisionP95Ms": 0.268558,
+      "cpuDecisionP50Ms": 0.175271,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 6.621472285714286,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.08856152417350235,
+      "trainingDecisionCpuMs": 46.350306,
+      "trainSuccess": 0.0875,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.323521,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.229659,
+      "cpuDecisionP50Ms": 0.169384,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 1.097350275,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 43.894011,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": -46,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.2,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.2,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.25,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.2,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.317551,
+      "negativeVsSingle": false,
+      "heldoutReturn": -4,
+      "checkpointBytes": 24191,
+      "cpuDecisionP95Ms": 0.247949,
+      "cpuDecisionP50Ms": 0.169935,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.45,
+      "decisionCpuMsPerTrainingSuccess": 2.5985524117647056,
+      "estimatedLayerLearnerBytes": 38720,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.17852452001944674,
+      "trainingDecisionCpuMs": 44.175391,
+      "trainSuccess": 0.2125,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": -46,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.2,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.2,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.25,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.2,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.528697,
+      "negativeVsSingle": false,
+      "heldoutReturn": -2,
+      "checkpointBytes": 2020,
+      "cpuDecisionP95Ms": 0.252088,
+      "cpuDecisionP50Ms": 0.17546,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.475,
+      "decisionCpuMsPerTrainingSuccess": 2.6439085882352944,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0.024999999999999967,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.17852452001944674,
+      "trainingDecisionCpuMs": 44.946446,
+      "trainSuccess": 0.2125,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": -44,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.2,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.2,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.3,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.2,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.330428,
+      "negativeVsSingle": false,
+      "heldoutReturn": -2,
+      "checkpointBytes": 2024,
+      "cpuDecisionP95Ms": 0.249353,
+      "cpuDecisionP50Ms": 0.175183,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.475,
+      "decisionCpuMsPerTrainingSuccess": 2.5004159444444443,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0.024999999999999967,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.18460294427714785,
+      "trainingDecisionCpuMs": 45.007487,
+      "trainSuccess": 0.225,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.278333,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.235481,
+      "cpuDecisionP50Ms": 0.169564,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 1.083016325,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0.04999999999999999,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 43.320653,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": -56,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.25,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.2,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.15,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.909437,
+      "negativeVsSingle": false,
+      "heldoutReturn": -2,
+      "checkpointBytes": 24189,
+      "cpuDecisionP95Ms": 0.272949,
+      "cpuDecisionP50Ms": 0.170041,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.475,
+      "decisionCpuMsPerTrainingSuccess": 4.172326833333334,
+      "estimatedLayerLearnerBytes": 38720,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.17356715527265115,
+      "trainingDecisionCpuMs": 50.067922,
+      "trainSuccess": 0.15,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": -56,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.25,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.2,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.15,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.376541,
+      "negativeVsSingle": false,
+      "heldoutReturn": -2,
+      "checkpointBytes": 2018,
+      "cpuDecisionP95Ms": 0.240295,
+      "cpuDecisionP50Ms": 0.175362,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.475,
+      "decisionCpuMsPerTrainingSuccess": 3.8111336666666666,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.17356715527265115,
+      "trainingDecisionCpuMs": 45.733604,
+      "trainSuccess": 0.15,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": -56,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.25,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.2,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.15,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.344004,
+      "negativeVsSingle": false,
+      "heldoutReturn": -2,
+      "checkpointBytes": 2023,
+      "cpuDecisionP95Ms": 0.239642,
+      "cpuDecisionP50Ms": 0.175362,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.475,
+      "decisionCpuMsPerTrainingSuccess": 3.7629433333333338,
+      "estimatedLayerLearnerBytes": 17664,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.17356715527265115,
+      "trainingDecisionCpuMs": 45.15532,
+      "trainSuccess": 0.15,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 120,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 180,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 240,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.3099,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.22761,
+      "cpuDecisionP50Ms": 0.169239,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 240,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 1.079099125,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0.025000000000000022,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 43.163965,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "hold"
+    },
+    {
+      "trainingReturn": -4,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.45,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.4,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.362531,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24192,
+      "cpuDecisionP95Ms": 0.240064,
+      "cpuDecisionP50Ms": 0.169692,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 2.3327372631578944,
+      "estimatedLayerLearnerBytes": 38832,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5250889943856852,
+      "trainingDecisionCpuMs": 88.644016,
+      "trainSuccess": 0.475,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": -4,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.45,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.4,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.330137,
+      "negativeVsSingle": false,
+      "heldoutReturn": 2,
+      "checkpointBytes": 2173,
+      "cpuDecisionP95Ms": 0.250784,
+      "cpuDecisionP50Ms": 0.175125,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.525,
+      "decisionCpuMsPerTrainingSuccess": 2.4493899736842106,
+      "estimatedLayerLearnerBytes": 17888,
+      "heldoutDeltaVsSingle": 0.025000000000000022,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5250889943856852,
+      "trainingDecisionCpuMs": 93.076819,
+      "trainSuccess": 0.475,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": -4,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.45,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.4,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.395862,
+      "negativeVsSingle": false,
+      "heldoutReturn": 2,
+      "checkpointBytes": 2177,
+      "cpuDecisionP95Ms": 0.250148,
+      "cpuDecisionP50Ms": 0.174882,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.525,
+      "decisionCpuMsPerTrainingSuccess": 2.4695403684210526,
+      "estimatedLayerLearnerBytes": 17792,
+      "heldoutDeltaVsSingle": 0.025000000000000022,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5250889943856852,
+      "trainingDecisionCpuMs": 93.842534,
+      "trainSuccess": 0.475,
+      "wexo": 0,
+      "thresholds": 1,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.365297,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.251622,
+      "cpuDecisionP50Ms": 0.169137,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 2.26395695,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 90.558278,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": -4,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.4,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.4,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.373912,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24190,
+      "cpuDecisionP95Ms": 0.239158,
+      "cpuDecisionP50Ms": 0.169374,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 2.3423341842105265,
+      "estimatedLayerLearnerBytes": 38832,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.4850462304664761,
+      "trainingDecisionCpuMs": 89.00869900000001,
+      "trainSuccess": 0.475,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": -4,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.4,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.4,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.313281,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2170,
+      "cpuDecisionP95Ms": 0.239326,
+      "cpuDecisionP50Ms": 0.174869,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 2.336957263157895,
+      "estimatedLayerLearnerBytes": 17888,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.4850462304664761,
+      "trainingDecisionCpuMs": 88.804376,
+      "trainSuccess": 0.475,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": -4,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.4,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.4,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.407924,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2174,
+      "cpuDecisionP95Ms": 0.250652,
+      "cpuDecisionP50Ms": 0.174754,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 2.4401414736842106,
+      "estimatedLayerLearnerBytes": 17792,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.4850462304664761,
+      "trainingDecisionCpuMs": 92.725376,
+      "trainSuccess": 0.475,
+      "wexo": 0,
+      "thresholds": 1,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.368377,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.241498,
+      "cpuDecisionP50Ms": 0.169142,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 2.20904635,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 88.361854,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": 12,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.55,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.292381,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24193,
+      "cpuDecisionP95Ms": 0.242026,
+      "cpuDecisionP50Ms": 0.169443,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 1.9141837826086956,
+      "estimatedLayerLearnerBytes": 38832,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5609180690133644,
+      "trainingDecisionCpuMs": 88.052454,
+      "trainSuccess": 0.575,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": 12,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.55,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.337976,
+      "negativeVsSingle": false,
+      "heldoutReturn": 2,
+      "checkpointBytes": 2174,
+      "cpuDecisionP95Ms": 0.242812,
+      "cpuDecisionP50Ms": 0.174886,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.525,
+      "decisionCpuMsPerTrainingSuccess": 1.938151608695652,
+      "estimatedLayerLearnerBytes": 17888,
+      "heldoutDeltaVsSingle": 0.025000000000000022,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5609180690133644,
+      "trainingDecisionCpuMs": 89.154974,
+      "trainSuccess": 0.575,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": 12,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.55,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.345031,
+      "negativeVsSingle": false,
+      "heldoutReturn": 2,
+      "checkpointBytes": 2178,
+      "cpuDecisionP95Ms": 0.248111,
+      "cpuDecisionP50Ms": 0.174642,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.525,
+      "decisionCpuMsPerTrainingSuccess": 1.9585030869565219,
+      "estimatedLayerLearnerBytes": 17792,
+      "heldoutDeltaVsSingle": 0.025000000000000022,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5609180690133644,
+      "trainingDecisionCpuMs": 90.091142,
+      "trainSuccess": 0.575,
+      "wexo": 0,
+      "thresholds": 1,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.39567,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.249742,
+      "cpuDecisionP50Ms": 0.169287,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 2.2936476249999997,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 91.745905,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": 4,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.65,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.45,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.341071,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24194,
+      "cpuDecisionP95Ms": 0.240918,
+      "cpuDecisionP50Ms": 0.169382,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 2.080245976190476,
+      "estimatedLayerLearnerBytes": 38832,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5765324996070105,
+      "trainingDecisionCpuMs": 87.370331,
+      "trainSuccess": 0.525,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": 6,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.65,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.340872,
+      "negativeVsSingle": false,
+      "heldoutReturn": 8,
+      "checkpointBytes": 2172,
+      "cpuDecisionP95Ms": 0.240904,
+      "cpuDecisionP50Ms": 0.174755,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.6,
+      "decisionCpuMsPerTrainingSuccess": 2.106460139534884,
+      "estimatedLayerLearnerBytes": 17888,
+      "heldoutDeltaVsSingle": 0.09999999999999998,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5771695715277059,
+      "trainingDecisionCpuMs": 90.577786,
+      "trainSuccess": 0.5375,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": 6,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.65,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.426656,
+      "negativeVsSingle": false,
+      "heldoutReturn": 8,
+      "checkpointBytes": 2177,
+      "cpuDecisionP95Ms": 0.257124,
+      "cpuDecisionP50Ms": 0.174965,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.6,
+      "decisionCpuMsPerTrainingSuccess": 2.2324103023255817,
+      "estimatedLayerLearnerBytes": 17792,
+      "heldoutDeltaVsSingle": 0.09999999999999998,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5771695715277059,
+      "trainingDecisionCpuMs": 95.993643,
+      "trainSuccess": 0.5375,
+      "wexo": 0,
+      "thresholds": 1,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.339529,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.227914,
+      "cpuDecisionP50Ms": 0.169033,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 2.163166575,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 86.526663,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": -4,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.65,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.35,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.4,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.317893,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24192,
+      "cpuDecisionP95Ms": 0.236044,
+      "cpuDecisionP50Ms": 0.169377,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 2.270672552631579,
+      "estimatedLayerLearnerBytes": 38832,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5910258837494878,
+      "trainingDecisionCpuMs": 86.285557,
+      "trainSuccess": 0.475,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": -2,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.65,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.35,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.45,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.526642,
+      "negativeVsSingle": false,
+      "heldoutReturn": 8,
+      "checkpointBytes": 2172,
+      "cpuDecisionP95Ms": 0.252274,
+      "cpuDecisionP50Ms": 0.174863,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.6,
+      "decisionCpuMsPerTrainingSuccess": 2.455037923076923,
+      "estimatedLayerLearnerBytes": 17888,
+      "heldoutDeltaVsSingle": 0.09999999999999998,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5939910509399848,
+      "trainingDecisionCpuMs": 95.746479,
+      "trainSuccess": 0.4875,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": -2,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.65,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.35,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.45,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.405611,
+      "negativeVsSingle": false,
+      "heldoutReturn": 8,
+      "checkpointBytes": 2175,
+      "cpuDecisionP95Ms": 0.244489,
+      "cpuDecisionP50Ms": 0.174788,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.6,
+      "decisionCpuMsPerTrainingSuccess": 2.3619892051282054,
+      "estimatedLayerLearnerBytes": 17792,
+      "heldoutDeltaVsSingle": 0.09999999999999998,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5939910509399848,
+      "trainingDecisionCpuMs": 92.117579,
+      "trainSuccess": 0.4875,
+      "wexo": 0,
+      "thresholds": 1,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 120,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 240,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 360,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 480,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.325572,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.23784,
+      "cpuDecisionP50Ms": 0.169009,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 480,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 2.189021975,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 87.560879,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "delay5"
+    },
+    {
+      "trainingReturn": 2,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.65,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.45,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.35,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.373747,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24191,
+      "cpuDecisionP95Ms": 0.234307,
+      "cpuDecisionP50Ms": 0.169145,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 3.9685739024390245,
+      "estimatedLayerLearnerBytes": 38832,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.596558028856842,
+      "trainingDecisionCpuMs": 162.71153,
+      "trainSuccess": 0.5125,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": 2,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.65,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.45,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.35,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.505537,
+      "negativeVsSingle": false,
+      "heldoutReturn": 2,
+      "checkpointBytes": 2170,
+      "cpuDecisionP95Ms": 0.265355,
+      "cpuDecisionP50Ms": 0.174979,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.525,
+      "decisionCpuMsPerTrainingSuccess": 4.270026097560976,
+      "estimatedLayerLearnerBytes": 17888,
+      "heldoutDeltaVsSingle": 0.025000000000000022,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.596558028856842,
+      "trainingDecisionCpuMs": 175.07107,
+      "trainSuccess": 0.5125,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": 2,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.65,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.45,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.35,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.384292,
+      "negativeVsSingle": false,
+      "heldoutReturn": 2,
+      "checkpointBytes": 2174,
+      "cpuDecisionP95Ms": 0.248096,
+      "cpuDecisionP50Ms": 0.174572,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.525,
+      "decisionCpuMsPerTrainingSuccess": 4.118816829268293,
+      "estimatedLayerLearnerBytes": 17792,
+      "heldoutDeltaVsSingle": 0.025000000000000022,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.596558028856842,
+      "trainingDecisionCpuMs": 168.87149,
+      "trainSuccess": 0.5125,
+      "wexo": 0,
+      "thresholds": 1,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.330533,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.235504,
+      "cpuDecisionP50Ms": 0.16885,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 4.0047185,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 160.18874,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": 4,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.34375,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24193,
+      "cpuDecisionP95Ms": 0.240637,
+      "cpuDecisionP50Ms": 0.16925,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 3.8739263333333334,
+      "estimatedLayerLearnerBytes": 38832,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.536227694950244,
+      "trainingDecisionCpuMs": 162.704906,
+      "trainSuccess": 0.525,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": 4,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.375757,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2173,
+      "cpuDecisionP95Ms": 0.25052,
+      "cpuDecisionP50Ms": 0.174664,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 4.0254357857142855,
+      "estimatedLayerLearnerBytes": 17888,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.536227694950244,
+      "trainingDecisionCpuMs": 169.068303,
+      "trainSuccess": 0.525,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": 4,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.52983,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2176,
+      "cpuDecisionP95Ms": 0.258233,
+      "cpuDecisionP50Ms": 0.174794,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 4.0462198095238096,
+      "estimatedLayerLearnerBytes": 17792,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.536227694950244,
+      "trainingDecisionCpuMs": 169.941232,
+      "trainSuccess": 0.525,
+      "wexo": 0,
+      "thresholds": 1,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.382944,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.243638,
+      "cpuDecisionP50Ms": 0.169022,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 4.087281075,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 163.491243,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": -20,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.45,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.25,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.45,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.35,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.434149,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24191,
+      "cpuDecisionP95Ms": 0.254782,
+      "cpuDecisionP50Ms": 0.169159,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 5.6863726,
+      "estimatedLayerLearnerBytes": 38832,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.43424195774050595,
+      "trainingDecisionCpuMs": 170.591178,
+      "trainSuccess": 0.375,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": -20,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.45,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.25,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.45,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.35,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.365185,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2170,
+      "cpuDecisionP95Ms": 0.243709,
+      "cpuDecisionP50Ms": 0.174702,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 5.6372911666666665,
+      "estimatedLayerLearnerBytes": 17888,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.43424195774050595,
+      "trainingDecisionCpuMs": 169.118735,
+      "trainSuccess": 0.375,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": -20,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.45,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.25,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.45,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.35,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.369327,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2174,
+      "cpuDecisionP95Ms": 0.254186,
+      "cpuDecisionP50Ms": 0.174655,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 5.5762234,
+      "estimatedLayerLearnerBytes": 17792,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.43424195774050595,
+      "trainingDecisionCpuMs": 167.286702,
+      "trainSuccess": 0.375,
+      "wexo": 0,
+      "thresholds": 1,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.345671,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.24246,
+      "cpuDecisionP50Ms": 0.168933,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 4.0021178,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 160.084712,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": 2,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.45,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.65,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.45,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.33349,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24192,
+      "cpuDecisionP95Ms": 0.237197,
+      "cpuDecisionP50Ms": 0.169167,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 3.9316596829268295,
+      "estimatedLayerLearnerBytes": 38832,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5424530167081976,
+      "trainingDecisionCpuMs": 161.198047,
+      "trainSuccess": 0.5125,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": 2,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.45,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.65,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.45,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.358452,
+      "negativeVsSingle": false,
+      "heldoutReturn": 4,
+      "checkpointBytes": 2173,
+      "cpuDecisionP95Ms": 0.25137,
+      "cpuDecisionP50Ms": 0.174651,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.55,
+      "decisionCpuMsPerTrainingSuccess": 4.083022804878048,
+      "estimatedLayerLearnerBytes": 17888,
+      "heldoutDeltaVsSingle": 0.050000000000000044,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5424530167081976,
+      "trainingDecisionCpuMs": 167.403935,
+      "trainSuccess": 0.5125,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": 2,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.45,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.65,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.45,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.360399,
+      "negativeVsSingle": false,
+      "heldoutReturn": 4,
+      "checkpointBytes": 2177,
+      "cpuDecisionP95Ms": 0.243716,
+      "cpuDecisionP50Ms": 0.174735,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.55,
+      "decisionCpuMsPerTrainingSuccess": 4.025558048780487,
+      "estimatedLayerLearnerBytes": 17792,
+      "heldoutDeltaVsSingle": 0.050000000000000044,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5424530167081976,
+      "trainingDecisionCpuMs": 165.04788,
+      "trainSuccess": 0.5125,
+      "wexo": 0,
+      "thresholds": 1,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.311625,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.234446,
+      "cpuDecisionP50Ms": 0.168838,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 4.025754924999999,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 161.030197,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": -10,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.4,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.25,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.367196,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24193,
+      "cpuDecisionP95Ms": 0.242212,
+      "cpuDecisionP50Ms": 0.169227,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 4.689347971428572,
+      "estimatedLayerLearnerBytes": 38832,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.43183035536778897,
+      "trainingDecisionCpuMs": 164.127179,
+      "trainSuccess": 0.4375,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": -10,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.4,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.25,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.32452,
+      "negativeVsSingle": false,
+      "heldoutReturn": 2,
+      "checkpointBytes": 2173,
+      "cpuDecisionP95Ms": 0.244928,
+      "cpuDecisionP50Ms": 0.174611,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.525,
+      "decisionCpuMsPerTrainingSuccess": 4.691880314285714,
+      "estimatedLayerLearnerBytes": 17888,
+      "heldoutDeltaVsSingle": 0.025000000000000022,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.43183035536778897,
+      "trainingDecisionCpuMs": 164.215811,
+      "trainSuccess": 0.4375,
+      "wexo": 0,
+      "thresholds": 3,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": -10,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.4,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.25,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.372445,
+      "negativeVsSingle": false,
+      "heldoutReturn": 2,
+      "checkpointBytes": 2176,
+      "cpuDecisionP95Ms": 0.247185,
+      "cpuDecisionP50Ms": 0.174573,
+      "decisionsTo80": null,
+      "deltas": 5,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.525,
+      "decisionCpuMsPerTrainingSuccess": 4.884366457142857,
+      "estimatedLayerLearnerBytes": 17792,
+      "heldoutDeltaVsSingle": 0.025000000000000022,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.43183035536778897,
+      "trainingDecisionCpuMs": 170.952826,
+      "trainSuccess": 0.4375,
+      "wexo": 0,
+      "thresholds": 1,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 220,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 440,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 660,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 880,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.362416,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.239471,
+      "cpuDecisionP50Ms": 0.169095,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 880,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 4.062509925,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5176637984967335,
+      "trainingDecisionCpuMs": 162.500397,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "delay10"
+    },
+    {
+      "trainingReturn": 6,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.65,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.55,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.45,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.402241,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24189,
+      "cpuDecisionP95Ms": 0.256106,
+      "cpuDecisionP50Ms": 0.170054,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.35897032558139536,
+      "estimatedLayerLearnerBytes": 35520,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5843418186877845,
+      "trainingDecisionCpuMs": 15.435724,
+      "trainSuccess": 0.5375,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 6,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.65,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.55,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.45,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.342329,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2018,
+      "cpuDecisionP95Ms": 0.237207,
+      "cpuDecisionP50Ms": 0.17523,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.36992251162790696,
+      "estimatedLayerLearnerBytes": 14464,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5843418186877845,
+      "trainingDecisionCpuMs": 15.906668,
+      "trainSuccess": 0.5375,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 6,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.65,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.55,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.45,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.296857,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2021,
+      "cpuDecisionP95Ms": 0.23301,
+      "cpuDecisionP50Ms": 0.175091,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.3370152790697674,
+      "estimatedLayerLearnerBytes": 14368,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5843418186877845,
+      "trainingDecisionCpuMs": 14.491657,
+      "trainSuccess": 0.5375,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 11,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.276991,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.236403,
+      "cpuDecisionP50Ms": 0.169518,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.353598175,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5133321166328233,
+      "trainingDecisionCpuMs": 14.143927,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 6,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.6,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.35,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.24249,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24187,
+      "cpuDecisionP95Ms": 0.208748,
+      "cpuDecisionP50Ms": 0.169616,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.3321449534883721,
+      "estimatedLayerLearnerBytes": 35520,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5834013737463692,
+      "trainingDecisionCpuMs": 14.282233,
+      "trainSuccess": 0.5375,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 6,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.6,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.35,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.27857,
+      "negativeVsSingle": false,
+      "heldoutReturn": 2,
+      "checkpointBytes": 2015,
+      "cpuDecisionP95Ms": 0.249832,
+      "cpuDecisionP50Ms": 0.175472,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.525,
+      "decisionCpuMsPerTrainingSuccess": 0.34858427906976747,
+      "estimatedLayerLearnerBytes": 14464,
+      "heldoutDeltaVsSingle": 0.025000000000000022,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5834013737463692,
+      "trainingDecisionCpuMs": 14.989124,
+      "trainSuccess": 0.5375,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 6,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.6,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.35,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.6,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.593282,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2020,
+      "cpuDecisionP95Ms": 0.287824,
+      "cpuDecisionP50Ms": 0.175219,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.37921546511627907,
+      "estimatedLayerLearnerBytes": 14368,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5834013737463692,
+      "trainingDecisionCpuMs": 16.306265,
+      "trainSuccess": 0.5375,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 23,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.284643,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.238043,
+      "cpuDecisionP50Ms": 0.169318,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.35892555000000004,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5133321166328233,
+      "trainingDecisionCpuMs": 14.357022,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 6,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.45,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.65,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.271466,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24186,
+      "cpuDecisionP95Ms": 0.208907,
+      "cpuDecisionP50Ms": 0.169317,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.3338723953488372,
+      "estimatedLayerLearnerBytes": 35520,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5763103952095825,
+      "trainingDecisionCpuMs": 14.356513,
+      "trainSuccess": 0.5375,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 6,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.45,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.65,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.398211,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2014,
+      "cpuDecisionP95Ms": 0.244947,
+      "cpuDecisionP50Ms": 0.175338,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.36528506976744185,
+      "estimatedLayerLearnerBytes": 14464,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5763103952095825,
+      "trainingDecisionCpuMs": 15.707258,
+      "trainSuccess": 0.5375,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 6,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.45,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.65,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.252465,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2018,
+      "cpuDecisionP95Ms": 0.227248,
+      "cpuDecisionP50Ms": 0.174889,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.3381907674418605,
+      "estimatedLayerLearnerBytes": 14368,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5763103952095825,
+      "trainingDecisionCpuMs": 14.542203,
+      "trainSuccess": 0.5375,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 37,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.304235,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.228642,
+      "cpuDecisionP50Ms": 0.169401,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.360264775,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5133321166328233,
+      "trainingDecisionCpuMs": 14.410591,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.45,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.55,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.55,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.45,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.327982,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24188,
+      "cpuDecisionP95Ms": 0.244997,
+      "cpuDecisionP50Ms": 0.169784,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.376476775,
+      "estimatedLayerLearnerBytes": 35520,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5325636717908592,
+      "trainingDecisionCpuMs": 15.059071,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.45,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.55,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.55,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.45,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.253048,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2017,
+      "cpuDecisionP95Ms": 0.227693,
+      "cpuDecisionP50Ms": 0.175335,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.3746686,
+      "estimatedLayerLearnerBytes": 14464,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5325636717908592,
+      "trainingDecisionCpuMs": 14.986744,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.45,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.55,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.55,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.45,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.518058,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2021,
+      "cpuDecisionP95Ms": 0.27325,
+      "cpuDecisionP50Ms": 0.175223,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.39352584999999995,
+      "estimatedLayerLearnerBytes": 14368,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5325636717908592,
+      "trainingDecisionCpuMs": 15.741033999999999,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 53,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.366124,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.256818,
+      "cpuDecisionP50Ms": 0.16943,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.36025,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5133321166328233,
+      "trainingDecisionCpuMs": 14.41,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 8,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.65,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.4,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.325193,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 24188,
+      "cpuDecisionP95Ms": 0.243528,
+      "cpuDecisionP50Ms": 0.169593,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.32903868181818186,
+      "estimatedLayerLearnerBytes": 35520,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "single-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.567270349546203,
+      "trainingDecisionCpuMs": 14.477702,
+      "trainSuccess": 0.55,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 8,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.65,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.4,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.297815,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2017,
+      "cpuDecisionP95Ms": 0.224584,
+      "cpuDecisionP50Ms": 0.175024,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.3394376590909091,
+      "estimatedLayerLearnerBytes": 14464,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.567270349546203,
+      "trainingDecisionCpuMs": 14.935257,
+      "trainSuccess": 0.55,
+      "wexo": 0,
+      "thresholds": 2,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 8,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.55,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.6,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.65,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.4,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.65947,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 2020,
+      "cpuDecisionP95Ms": 0.353989,
+      "cpuDecisionP50Ms": 0.175189,
+      "decisionsTo80": null,
+      "deltas": 4,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.34457561363636363,
+      "estimatedLayerLearnerBytes": 14368,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "dual-rate-v1",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.567270349546203,
+      "trainingDecisionCpuMs": 15.161327,
+      "trainSuccess": 0.55,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "reversal"
+    },
+    {
+      "trainingReturn": 0,
+      "seed": 71,
+      "curve": [
+        {
+          "success": 0.5,
+          "decisions": 20,
+          "episodes": 20
+        },
+        {
+          "success": 0.5,
+          "decisions": 40,
+          "episodes": 40
+        },
+        {
+          "success": 0.5,
+          "decisions": 60,
+          "episodes": 60
+        },
+        {
+          "success": 0.5,
+          "decisions": 80,
+          "episodes": 80
+        }
+      ],
+      "budgetClips": 0,
+      "cpuDecisionP99Ms": 0.30351,
+      "negativeVsSingle": false,
+      "heldoutReturn": 0,
+      "checkpointBytes": 1289,
+      "cpuDecisionP95Ms": 0.233179,
+      "cpuDecisionP50Ms": 0.16956,
+      "decisionsTo80": null,
+      "deltas": 0,
+      "trainingDecisions": 80,
+      "heldoutSuccess": 0.5,
+      "decisionCpuMsPerTrainingSuccess": 0.37065807500000003,
+      "estimatedLayerLearnerBytes": 864,
+      "heldoutDeltaVsSingle": 0,
+      "pruned": 0,
+      "profile": "frozen",
+      "born": 0,
+      "reloadParity": true,
+      "learningCurveAuc": 0.5133321166328233,
+      "trainingDecisionCpuMs": 14.826323,
+      "trainSuccess": 0.5,
+      "wexo": 0,
+      "thresholds": 0,
+      "task": "reversal"
+    }
+  ],
+  "graphSha": "65d945768296fa7ea4ff41c6fc3ce6723a5dfc8230bddddf80490dabb97d032c",
+  "limitations": "Host CPU fixture; not a ROM. Held-out start/500->450Hz shift shares task semantics; not cross-game transfer. Frozen control uses identical decision engine. 80 episodes train, 40 held-out. No post-hoc seed selection."
+}
