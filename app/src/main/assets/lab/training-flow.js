@@ -14,7 +14,7 @@ function refresh(){
  $('liveSpeed').textContent=actual==='—'?'Цель ×'+emulationRate:reached?'×'+emulationRate:actual+'× · цель ×'+emulationRate;$('gameBoost').textContent=emulationSpeedLabel();$('gameBoost').classList.toggle('active',emulationRate>1);
  $('speedStatus').textContent='Цель ×'+emulationRate+' · измерено '+actual+'×'+(playing&&actual!=='—'&&!reached?' · '+($('clock').value==='lockstep'&&connected?'ожидание модели в Lockstep':'предел производительности устройства'):'')+'. Игровые кадры исполняются по отдельному таймеру. При ускорении звук приглушён.';
  $('liveRecord').textContent=kind==='rec'&&running?'STOP → AUTO':'REC · показать';$('liveRecord').disabled=busy||pair();$('liveAuto').disabled=$('liveHintsButton').disabled=busy;$('liveHintsButton').disabled=busy||pair();
- $('trainingBase').disabled=busy||pair();$('trainingPlasticity').disabled=busy||pair();$('trainingStart').disabled=busy;$('trainingKind').disabled=busy;
+ $('trainingBase').disabled=busy||pair();$('trainingPlasticity').disabled=busy||pair();$('trainingCredit').disabled=busy||pair();$('trainingStart').disabled=busy;$('trainingKind').disabled=busy;
  for(const option of $('trainingKind').options)option.disabled=pair()&&['rec','assist'].includes(option.value);
  for(const id of ['rewardPlus','rewardMinus'])$(id).disabled=kind!=='assist'||pair();
  const help={off:'Ручная игра. Для обучения выберите один из трёх форматов.',auto:'Модель играет самостоятельно. Действия человека и ручные награды не обучают её. Критерий результата задаёт RAM-профиль; без него доступно исследование без оценки успеха.',rec:'REC: играйте сами на обычной скорости. STOP завершает и сохраняет запись, затем отдаёт управление модели в текущей игре.',assist:'Модель играет, ваши нажатия временно заменяют её действие и записываются как подсказки. Награда за этот интервал не приписывается модели. В 2P кнопка «Подсказать модели» временно направляет ввод в порт агента.',eval:'Модель использует приобретённые веса. Подражание, SARSA и FDB заморожены.'};
@@ -79,23 +79,23 @@ async function switchLive(kind){
 $('trainingKind').onchange=()=>{try{choose($('trainingKind').value);}catch(e){status(e.message,true);refresh();}};
 $('learnMode').addEventListener('change',()=>{$('liveHints').checked=false;refresh();});
 $('trainingStart').onclick=start;$('emulationSpeed').onchange=()=>{try{rate(Number($('emulationSpeed').value));}catch(e){status(e.message,true);refresh();}};
-$('trainingBase').onchange=$('trainingPlasticity').onchange=async()=>{
- const enabled=$('trainingBase').checked,plasticity=$('trainingPlasticity').value;if(busy)return;busy=true;refresh();
+$('trainingBase').onchange=$('trainingPlasticity').onchange=$('trainingCredit').onchange=async()=>{
+ const enabled=$('trainingBase').checked,plasticity=$('trainingPlasticity').value,credit=$('trainingCredit').value;if(busy)return;busy=true;refresh();const started=performance.now(),stages={};let mark=started;const measure=name=>{const now=performance.now();stages[name]=now-mark;mark=now;};
  try{
   if(!ready||!loaded)throw Error('Дождитесь ROM и модели');
   if(pair())throw Error('Для двух моделей настройте ΔW отдельно в карточках P1/P2');
   status('Смена пластичности: завершаю текущий шаг и сохраняю обучение…');
-  playing=false;await window.humanTeaching.stop('plasticity-change');await waitSample();
+  playing=false;await window.humanTeaching.stop('plasticity-change');await waitSample();measure('stopAndWaitMs');
   while(fdbExperience.length&&connected){sampleFrame(performance.now(),true);await waitSample();}
   await window.fdbAgent.drain();if(window.fdbAgent.error())throw Error(window.fdbAgent.error());
-  window.labPause();await window.labState.checkpoint();
+  measure('drainMs');window.labPause();await window.labState.checkpoint();measure('saveBeforeMs');
   const f=fdbConfiguration()||{version:2,graph_sha256:graphIdentity.sha256,deltas:[],edges:[]};
   if(!f.learning)f.learning={enabled:true,rate:.05,maxEdges:256,maxWeight:32};
-  f.learning.trainBase=enabled;f.learning.plasticityMode=plasticity;f.learning.maxEdges=plasticity==='expanded'||plasticity==='wexo'?2048:Math.min(1024,f.learning.maxEdges);$('fdbJson').value=JSON.stringify(f,null,2);configurationApplied=false;
-  apply(false,false,false);await waitSample();if(!configurationApplied)throw Error('Модель не приняла настройку исходных весов');
-  await window.labState.checkpoint();trainingView();
+  f.learning.trainBase=enabled;f.learning.plasticityMode=plasticity;f.learning.creditProfile=credit;f.learning.maxEdges=plasticity==='expanded'||plasticity==='wexo'?2048:Math.min(1024,f.learning.maxEdges);$('fdbJson').value=JSON.stringify(f,null,2);configurationApplied=false;
+  measure('prepareMs');apply(false,false,false);await waitSample();if(!configurationApplied)throw Error('Модель не приняла настройку исходных весов');
+  measure('configureAckMs');await window.labState.checkpoint();measure('saveAfterMs');trainingView();
   status(enabled?'Обучение исходных весов включено. Продолжите игру.':'Обучение исходных весов остановлено; приобретённые ΔW сохранены.');
- }catch(e){status(e.message,true);}finally{busy=false;refresh();}
+ }catch(e){status(e.message,true);}finally{stages.totalMs=performance.now()-started;window.fdbDiagnostics?.record('plasticitySwitch',stages);busy=false;refresh();}
 };
 $('gameBoost').onclick=()=>{try{const rates=[1,2,3,5,10];rate(rates[(rates.indexOf(emulationRate)+1)%rates.length]);}catch(e){status(e.message,true);}};
 $('liveRecord').onclick=()=>phase()==='rec'&&playing&&connected?stopRec():switchLive('rec');$('liveAuto').onclick=()=>switchLive('auto');$('liveHintsButton').onclick=()=>switchLive('assist');

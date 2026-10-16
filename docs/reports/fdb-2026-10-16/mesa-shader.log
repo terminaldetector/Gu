@@ -1,0 +1,2 @@
+PASS: actual GLES31 production shader (OpenGL ES 3.2 Mesa 25.2.8-0ubuntu0.24.04.2); CPU-equation LIF trajectory, exact delayed queue, inhibition/gain/lesions, Wexo reinforcement/depression/pruning, ΔW restore, in-flight event preservation, float32 weights >128
+PASS: actual GLES threshold offsets -5..5 mV, every-tick CPU-equation parity, live revisions, restored zero and resting stability
