@@ -44,11 +44,11 @@ public final class FdbLearning {
     private double eligibility(Trace t){return dualCredit()?.5*t.eligibility+.5*t.slowEligibility:t.eligibility;}
     private static int[] lesionSet(int[] lesions){int[] out=lesions==null?new int[0]:lesions.clone();Arrays.sort(out);return out;}
     private final TreeMap<Integer,Double> previousRates=new TreeMap<>();
-    private int previousMask=-1,previousSteps;
+    private int previousMask=-1,previousSteps;private boolean temporalDirty;
     public Map<Integer,Double> previousRates(){return new TreeMap<>(previousRates);}
     public int previousMask(){return previousMask;}public int previousSteps(){return previousSteps;}
-    public void restoreRates(Map<Integer,Double> rates,int mask,int steps){previousRates.clear();previousRates.putAll(rates);previousMask=mask;previousSteps=steps;}
-    private void clearTemporal(){previousRates.clear();previousMask=-1;previousSteps=0;for(Trace t:traces.values()){t.eligibility=0;t.slowEligibility=0;t.slowAge=0;}neuronTraces.clear();}
+    public void restoreRates(Map<Integer,Double> rates,int mask,int steps){previousRates.clear();previousRates.putAll(rates);previousMask=mask;previousSteps=steps;temporalDirty|=!rates.isEmpty();}
+    private void clearTemporal(){previousRates.clear();previousMask=-1;previousSteps=0;if(temporalDirty)for(Trace t:traces.values()){t.eligibility=0;t.slowEligibility=0;t.slowAge=0;}neuronTraces.clear();temporalDirty=false;}
 
     private final int baseLimit;
     private final TreeSet<Integer> neuronCandidates=new TreeSet<>();
@@ -233,7 +233,7 @@ public final class FdbLearning {
         // The worker may already have cached the next decision. Reject this interval,
         // not those later decisions; otherwise one intervention poisons every future step.
         if(!valid||d==null||d.mask!=executedMask||!Arrays.equals(d.lesions,lesionSet(lesions))){rejected++;clearTemporal();event(new Outcome(id,executedMask,0,false,reward,0,0,0,0));return 0;}
-        long birthsBefore=born,removalsBefore=pruned,revisionBefore=layer.version();beginBudget();
+        long birthsBefore=born,removalsBefore=pruned,revisionBefore=layer.version();temporalDirty=true;beginBudget();
         double decay=Math.exp(-gameSeconds/.6);
         for(Trace t:traces.values()){t.eligibility*=decay;t.support*=Math.exp(-gameSeconds/2);
             if(dualCredit()){t.slowAge=Math.min(16,t.slowAge+1);t.slowEligibility=t.slowAge>=16?0:t.slowEligibility*Math.exp(-1.0/8);}
@@ -326,12 +326,12 @@ public final class FdbLearning {
     public void restoreDynamics(long updates,long clips,double budget,List<NeuronTrace> values){
         if(updates<0||clips<0||!Double.isFinite(budget)||budget<0||budget>1.000001||values.size()>256)throw new IllegalArgumentException("Dynamics state");
         TreeMap<Integer,Double> next=new TreeMap<>();for(NeuronTrace t:values)if(!neuronCandidates.contains(t.neuron)||!Double.isFinite(t.eligibility)||Math.abs(t.eligibility)>2||next.put(t.neuron,t.eligibility)!=null)throw new IllegalArgumentException("Dynamics trace");
-        neuronUpdates=updates;budgetClips=clips;lastBudget=budget;neuronTraces.clear();neuronTraces.putAll(next);
+        neuronUpdates=updates;budgetClips=clips;lastBudget=budget;neuronTraces.clear();neuronTraces.putAll(next);temporalDirty|=!next.isEmpty();
     }
     public long baseUpdates(){return baseUpdates;}public int baseCandidates(){return basePaths.size();}public boolean trainsBase(){return trainBase;}
     public void restoreBaseUpdates(long value){if(value<0||value>9007199254740991L)throw new IllegalArgumentException("FDB base updates");baseUpdates=value;}
     public List<Trace> traces(){ArrayList<Trace> out=new ArrayList<>();for(Trace t:traces.values())out.add(t.copy());return out;}
-    public long memoryBytes(){return 112L*traces.size()+64L*pending.size()*(maxEdges+baseLimit+sources.length*growthTargets.length)+96L*basePaths.size()+64L*neuronTraces.size()+32L*neuronCandidates.size();}
+    public long memoryBytes(){return 112L*traces.size()+64L*pending.size()*(maxEdges+baseLimit+sources.length*growthTargets.length)+96L*basePaths.size()+64L*neuronTraces.size()+32L*neuronCandidates.size()+64L*previousRates.size()+160L*recent.size()+64L*pending.size()*neuronCandidates.size();}
     public void restore(long observations,long human,long automatic){
         if(observations<0||observations>9007199254740991L||human<0||automatic<0||human>observations||automatic!=observations-human)throw new IllegalArgumentException("FDB learning checkpoint");
         this.observations=observations;this.human=human;this.automatic=automatic;
@@ -342,6 +342,6 @@ public final class FdbLearning {
         for(Trace t:state){
             if(t.source<0||t.source>=graph.ids.length||t.target<0||t.target>=graph.ids.length||t.source==t.target||!Double.isFinite(t.eligibility)||Math.abs(t.eligibility)>2||!Double.isFinite(t.slowEligibility)||Math.abs(t.slowEligibility)>2||t.slowAge<0||t.slowAge>16||!Double.isFinite(t.utility)||Math.abs(t.utility)>4||!Double.isFinite(t.support)||Math.abs(t.support)>4||t.evidence<0||t.evidence>9007199254740991L||t.bad<0||t.bad>Integer.MAX_VALUE||validated.put(key(t.source,t.target),t.copy())!=null)throw new IllegalArgumentException("FDB trace state");
         }
-        restore(observations,human,automatic);this.rng=rng;this.baseline=baseline;this.born=born;this.pruned=pruned;this.rejected=rejected;traces.clear();traces.putAll(validated);pending.clear();
+        restore(observations,human,automatic);this.rng=rng;this.baseline=baseline;this.born=born;this.pruned=pruned;this.rejected=rejected;traces.clear();traces.putAll(validated);pending.clear();temporalDirty=!validated.isEmpty();
     }
 }

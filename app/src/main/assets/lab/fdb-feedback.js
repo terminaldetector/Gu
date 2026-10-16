@@ -22,7 +22,7 @@
  }
  window.labFdbFeedback=r=>{
   const pending=waiting.get(r.token);if(!pending)return;waiting.delete(r.token);clearTimeout(pending.timer);
-  window.fdbDiagnostics?.record('feedback',{roundTripMs:now()-pending.started,feedbackMs:r.feedbackMs,serializationMs:r.serializationMs,saveMs:r.saveMs,workerQueueMs:r.workerQueueMs});const jsStarted=now();
+  window.fdbDiagnostics?.record('feedback',{roundTripMs:now()-pending.started,feedbackMs:r.feedbackMs,stateAssemblyMs:r.stateAssemblyMs,saveMs:r.saveMs,workerQueueMs:r.workerQueueMs});const jsStarted=now();
   let localSaveFailed=false;
   if(r.error)invalidate(r.error);
   if(pending.identity===context()&&r.data&&r.data.fdbState){

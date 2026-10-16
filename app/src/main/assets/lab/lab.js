@@ -494,6 +494,7 @@ function connectBrain(restoreStart=true){
  }catch(error){status(error.message,true);}
 }
 window.labConfigured=function(data) {
+ window.fdbDiagnostics?.record('configure',{nativeMs:data.configureMs,workerQueueMs:data.configureQueueMs});
   if(Number.isInteger(data.generation)&&data.generation>=0&&data.generation!==generation)return;
   if(Number.isFinite(data.configureMs))log('Применение параметров сети: '+data.configureMs.toFixed(1)+' мс (без ожидания очереди и сохранения)');
   configurationApplied=true;configuring=false;connected=Boolean(window.startAfterConfig);window.startAfterConfig=false;

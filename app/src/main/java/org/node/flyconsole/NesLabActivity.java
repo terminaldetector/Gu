@@ -293,7 +293,7 @@ public final class NesLabActivity extends Activity {
         backend=requestedBackend;
         experiment=next;fdbGrowth=nextGrowth;growthConfiguration=nextGrowthConfig;fdbLearning=nextLearning;learningConfiguration=nextLearningConfig; configVersion++; if(reset)sequence=0; latestMask=0;neuralConfigured=true;
         if(recordingOn) recorder.write("# config,"+data.put("configVersion",configVersion).put("backend",backend).toString().replace('\n',' ')+"\n");
-        emit("labConfigured",new JSONObject().put("configureMs",(System.nanoTime()-configureStarted)/1e6).put("reset",reset).put("initial",initial).put("configVersion",configVersion).put("mode",next.mode).put("backend",backend).put("generation",data.optLong("generation",-1)));
+        emit("labConfigured",new JSONObject().put("configureMs",(System.nanoTime()-configureStarted)/1e6).put("configureQueueMs",data.optDouble("configureQueueMs",0)).put("reset",reset).put("initial",initial).put("configVersion",configVersion).put("mode",next.mode).put("backend",backend).put("generation",data.optLong("generation",-1)));
     }
 
     private int systemButtonMask(String mode){
@@ -598,7 +598,7 @@ public final class NesLabActivity extends Activity {
                 }else throw new IllegalArgumentException("Unknown FDB feedback operation");
                 response.put("feedbackMs",(System.nanoTime()-learningStarted)/1e6);long serializationStarted=System.nanoTime();
                 response.put("token",token).put("data",new JSONObject().put("fdbState",fdbState()).put("changed",changed).put("revision",experiment.options.delta.version()).put("memoryBytes",experiment.options.delta.memoryBytes()+fdbLearning.memoryBytes()));
-                response.put("serializationMs",(System.nanoTime()-serializationStarted)/1e6);long saveStarted=System.nanoTime();
+                response.put("stateAssemblyMs",(System.nanoTime()-serializationStarted)/1e6);long saveStarted=System.nanoTime();
                 try{persistFdb(request.optString("layerId",""));}catch(Exception ex){response.put("saveError",ex.getMessage());}
                 response.put("saveMs",(System.nanoTime()-saveStarted)/1e6).put("workerQueueMs",(began-queued)/1e6).put("feedbackTotalMs",(System.nanoTime()-began)/1e6);
                 if(recordingOn)recorder.write("# fdb_feedback,"+request.toString()+","+fdbState().toString()+"\n");
@@ -607,9 +607,9 @@ public final class NesLabActivity extends Activity {
         @JavascriptInterface public void configure(String json) {
             if (destroyed) return;
             if(json.getBytes(StandardCharsets.UTF_8).length>4*1024*1024){error("Конфигурация превышает 4 МиБ");return;}
-            cancel.set(true);final long epoch=controlEpoch.incrementAndGet();
+            cancel.set(true);final long epoch=controlEpoch.incrementAndGet(),queued=System.nanoTime();
             submit(() -> {
-                try { NesLabActivity.this.configure(new JSONObject(json)); }
+                try { NesLabActivity.this.configure(new JSONObject(json).put("configureQueueMs",(System.nanoTime()-queued)/1e6)); }
                 catch (Exception ex) { error(ex.getMessage()); }
                 finally { if(controlEpoch.get()==epoch&&foreground)cancel.set(false); }
             });
