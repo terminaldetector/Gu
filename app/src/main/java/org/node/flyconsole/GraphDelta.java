@@ -34,7 +34,7 @@ public final class GraphDelta {
     private final ArrayList<Edge> growth = new ArrayList<>();
     private final HashMap<Integer,ArrayList<Edge>> bySource = new HashMap<>();
     private final HashMap<Integer,Float> thresholds=new HashMap<>();
-    private long version;
+    private long version,rootRevision,topologyRevision,weightRevision,thresholdRevision;
     public GraphDelta(int neuronCount) { this(neuronCount, DEFAULT_MAX_GROWTH); }
     public GraphDelta(int neuronCount, int maxGrowth) {
         if(neuronCount<1||maxGrowth<0||maxGrowth>1_000_000) throw new IllegalArgumentException("Неверный лимит FDB");
@@ -43,6 +43,10 @@ public final class GraphDelta {
     private void check(int source,int target){if(source<0||source>=neuronCount||target<0||target>=neuronCount)throw new IllegalArgumentException("Неверная вершина FDB");}
     private static long key(int source,int target){return (((long)source)<<32)^(target&0xffffffffL);}
     public synchronized long version(){return version;}
+    public synchronized long rootRevision(){return rootRevision;}
+    public synchronized long topologyRevision(){return topologyRevision;}
+    public synchronized long weightRevision(){return weightRevision;}
+    public synchronized long thresholdRevision(){return thresholdRevision;}
     public int capacity(){return maxGrowth;}
     public synchronized float thresholdOffset(int neuron){check(neuron,neuron);Float x=thresholds.get(neuron);return x==null?0:x;}
     public synchronized java.util.Map<Integer,Float> thresholds(){return new java.util.TreeMap<>(thresholds);}
@@ -51,7 +55,7 @@ public final class GraphDelta {
         check(neuron,neuron);if(!Float.isFinite(offset)||Math.abs(offset)>5)throw new IllegalArgumentException("Threshold offset must be ±5 mV");
         if(thresholdOffset(neuron)==offset)return;
         if(offset!=0&&!thresholds.containsKey(neuron)&&thresholds.size()>=2048)throw new IllegalStateException("Threshold parameter limit");
-        if(offset==0)thresholds.remove(neuron);else thresholds.put(neuron,offset);version++;
+        if(offset==0)thresholds.remove(neuron);else thresholds.put(neuron,offset);version++;thresholdRevision++;
     }
     public synchronized int growthCount(){return growth.size();}
     public synchronized int deltaCount(){return weightDeltas.size();}
@@ -66,10 +70,10 @@ public final class GraphDelta {
     }
     public synchronized void addWeightDelta(int source,int target,float amount){
         check(source,target);if(!Float.isFinite(amount))throw new IllegalArgumentException("Неверная дельта FDB");
-        long k=key(source,target);float next=weightDeltas.containsKey(k)?weightDeltas.get(k)+amount:amount;
+        if(amount==0)return;long k=key(source,target);float next=weightDeltas.containsKey(k)?weightDeltas.get(k)+amount:amount;
         if(!Float.isFinite(next)||Math.abs(next)>32768f)throw new IllegalArgumentException("Дельта вне q16.8 диапазона");
         if(!weightDeltas.containsKey(k)&&next!=0f&&weightDeltas.size()>=maxGrowth)throw new IllegalStateException("Лимит дельт FDB достигнут");
-        if(next==0f)weightDeltas.remove(k);else weightDeltas.put(k,next);version++;
+        if(next==0f)weightDeltas.remove(k);else weightDeltas.put(k,next);version++;rootRevision++;
     }
     public synchronized float weightDelta(int source,int target){Float x=weightDeltas.get(key(source,target));return x==null?0f:x;}
     public synchronized int addEdge(int source,int target,float weight){
@@ -77,7 +81,7 @@ public final class GraphDelta {
         if(source==target||hasEdge(source,target))throw new IllegalArgumentException("FDB: петля или повторная связь");
         if(growth.size()>=maxGrowth)throw new IllegalStateException("Лимит роста FDB достигнут");
         Edge edge=new Edge(source,target,weight);growth.add(edge);
-        ArrayList<Edge> list=bySource.get(source);if(list==null){list=new ArrayList<>();bySource.put(source,list);}list.add(edge);version++;return growth.size()-1;
+        ArrayList<Edge> list=bySource.get(source);if(list==null){list=new ArrayList<>();bySource.put(source,list);}list.add(edge);version++;topologyRevision++;weightRevision++;return growth.size()-1;
     }
     /** Change a grown synapse in-place without touching the immutable base connectome.
      * Rebuilds the indexed adjacency list and increments the GPU/CPU revision. */
@@ -93,7 +97,7 @@ public final class GraphDelta {
                 ArrayList<Edge> outgoing=bySource.get(source);
                 if(outgoing==null)throw new IllegalStateException("FDB adjacency index missing");
                 for(int j=0;j<outgoing.size();j++){
-                    if(outgoing.get(j).target==target){outgoing.set(j,changed);version++;return true;}
+                    if(outgoing.get(j).target==target){outgoing.set(j,changed);version++;weightRevision++;return true;}
                 }
                 throw new IllegalStateException("FDB adjacency index inconsistent");
             }
@@ -108,7 +112,7 @@ public final class GraphDelta {
         check(source,target);
         for(int i=0;i<growth.size();i++)if(growth.get(i).source==source&&growth.get(i).target==target){
             growth.remove(i);ArrayList<Edge> list=bySource.get(source);
-            for(int j=0;j<list.size();j++)if(list.get(j).target==target){list.remove(j);if(list.isEmpty())bySource.remove(source);version++;return true;}
+            for(int j=0;j<list.size();j++)if(list.get(j).target==target){list.remove(j);if(list.isEmpty())bySource.remove(source);version++;topologyRevision++;weightRevision++;return true;}
             throw new IllegalStateException("FDB adjacency index inconsistent");
         }return false;
     }
@@ -120,7 +124,7 @@ public final class GraphDelta {
     public synchronized void rollback(long token){
         if(token<0||token>=checkpoints.size())throw new IllegalArgumentException("Неизвестная контрольная точка FDB");
         Snapshot s=checkpoints.get((int)token);weightDeltas.clear();weightDeltas.putAll(s.deltas);thresholds.clear();thresholds.putAll(s.thresholds);growth.clear();growth.addAll(s.edges);bySource.clear();
-        for(Edge e:growth){ArrayList<Edge> list=bySource.get(e.source);if(list==null){list=new ArrayList<>();bySource.put(e.source,list);}list.add(e);}version++;
+        for(Edge e:growth){ArrayList<Edge> list=bySource.get(e.source);if(list==null){list=new ArrayList<>();bySource.put(e.source,list);}list.add(e);}version++;rootRevision++;topologyRevision++;weightRevision++;thresholdRevision++;
     }
     public synchronized String genome(){
         StringBuilder out=new StringBuilder("FDB1;v=").append(version).append(";d=");

@@ -58,19 +58,20 @@ public final class GpuLifEngine implements AutoCloseable {
     private int seed;
     private long tick;
     private boolean closed;
-    private GraphDelta uploadedLayer;
-    private long uploadedVersion=-1;
     private final double[] incomingMagnitude;
-    private final java.util.HashMap<Integer,Float> patchedWeights=new java.util.HashMap<>();
+    private final GpuLayerSync layerSync;
     private int[] uploadedLesions;
-    private final java.util.Map<Integer,Float> uploadedThresholds=new java.util.HashMap<>();
-    private java.util.List<GraphDelta.Edge> uploadedExtras=java.util.Collections.emptyList();
+    private long syncCalls,uploadCalls,uploadBytes,overlayRebuilds;
+    private double lastSyncMs;
+    public synchronized double lastSyncMs(){return lastSyncMs;}
+    public synchronized long[] uploadStats(){return new long[]{syncCalls,uploadCalls,uploadBytes,overlayRebuilds};}
 
     public GpuLifEngine(Graph graph) {
         if (graph == null || graph.ids.length == 0) throw new IllegalArgumentException("Пустой граф");
         this.graph = graph; this.n = graph.ids.length; this.edges = graph.targets.length;this.incomingMagnitude=new double[n];
         for(int e=0;e<edges;e++)incomingMagnitude[graph.targets[e]]+=Math.abs(graph.weights[e]);
         for(double sum:incomingMagnitude)if(!Double.isFinite(sum)||sum>4_000_000)throw new IllegalArgumentException("GPU delayed-event accumulator range exceeded");
+        layerSync=new GpuLayerSync(graph,incomingMagnitude);
         try {
             createContext();
             stepProgram = link(STEP);
@@ -93,7 +94,7 @@ public final class GpuLifEngine implements AutoCloseable {
         seed = (int)(newSeed ^ (newSeed >>> 32)); tick = 0L;
         uploadFloat(0, filled(n, -52f)); uploadFloat(1, new float[n]);
         uploadInt(2, new int[n]); uploadInt(3, new int[Math.multiplyExact(n,19)]);
-        uploadInt(5, new int[n]); uploadInt(9, new int[2*n]);uploadedLesions=null;uploadedThresholds.clear();checkGl("state reset");
+        uploadInt(5, new int[n]); uploadInt(9, new int[2*n]);uploadedLesions=null;layerSync.resetThresholds();checkGl("state reset");
     }
 
     public synchronized Engine.Result advance(int[] inputs, double[] rates, int durationMs,
@@ -107,7 +108,7 @@ public final class GpuLifEngine implements AutoCloseable {
             throw new IllegalArgumentException("Неверный gain");
         syncLayer(options.delta);
         uploadInputs(inputs, rates);
-        syncParameters(options.lesions,options.delta);
+        syncParameters(options.lesions);
         clear(5);
         long started = System.nanoTime();
         int steps = durationMs * 10, done = 0;
@@ -162,43 +163,24 @@ public final class GpuLifEngine implements AutoCloseable {
     }
     private int[] emptyOverlay(){int[] a=new int[n+1];Arrays.fill(a,n+1);return a;}
     private void syncLayer(GraphDelta layer) {
-        if(layer==uploadedLayer&&(layer==null||layer.version()==uploadedVersion))return;
-        java.util.List<GraphDelta.Edge> deltas=java.util.Collections.emptyList(), extras=java.util.Collections.emptyList();
-        long revision=-1;
-        if(layer!=null)synchronized(layer){revision=layer.version();deltas=layer.deltas();extras=layer.edges();}
-        double[] magnitude=incomingMagnitude.clone();
-        for(GraphDelta.Edge d:deltas)for(int e=graph.offsets[d.source];e<graph.offsets[d.source+1];e++)if(graph.targets[e]==d.target)magnitude[d.target]+=Math.abs(graph.weights[e]+d.weight)-Math.abs(graph.weights[e]);
-        for(GraphDelta.Edge e:extras)magnitude[e.target]+=Math.abs(e.weight);
-        for(double sum:magnitude)if(!Double.isFinite(sum)||sum>4_000_000)throw new IllegalArgumentException("FDB exceeds GPU delayed-event range");
-        // Root learning changes weights frequently: patch only changed values,
-        // without first restoring every trained synapse to W0 on each window.
-        java.util.HashMap<Integer,Float> nextWeights=new java.util.HashMap<>();
-        for(GraphDelta.Edge d:deltas) {
-            boolean found=false;
-            for(int e=graph.offsets[d.source];e<graph.offsets[d.source+1];e++)if(graph.targets[e]==d.target){
-                float value=graph.weights[e]+d.weight;nextWeights.put(e,value);
-                if(!patchedWeights.containsKey(e)||patchedWeights.get(e)!=value)patchWeight(e,value);found=true;
-            }
-            if(!found)throw new IllegalArgumentException("FDB delta requires base edge");
+        long started=System.nanoTime();
+        GpuLayerSync.Plan p=layerSync.prepare(layer);
+        if(p!=null){
+            uploadSpans(8,p.rootSpans);
+            if(p.overlay!=null){uploadInt(4,p.overlay);overlayRebuilds++;uploadCalls++;uploadBytes+=4L*p.overlay.length;}
+            else uploadSpans(4,p.extraSpans);
+            uploadSpans(9,p.thresholdSpans);
+            checkGl("FDB sparse upload");layerSync.commit(p);
         }
-        for(int e:patchedWeights.keySet())if(!nextWeights.containsKey(e))patchWeight(e,graph.weights[e]);
-        patchedWeights.clear();patchedWeights.putAll(nextWeights);
-        boolean same=extras.size()==uploadedExtras.size();
-        for(int i=0;same&&i<extras.size();i++){GraphDelta.Edge a=extras.get(i),b=uploadedExtras.get(i);same=a.source==b.source&&a.target==b.target&&a.weight==b.weight;}
-        if(!same){
-        int[] a=new int[n+1+extras.size()*2], counts=new int[n];
-        for(GraphDelta.Edge e:extras)counts[e.source]++;
-        a[0]=n+1;for(int i=0;i<n;i++)a[i+1]=a[i]+2*counts[i];
-        int[] cursor=Arrays.copyOf(a,n);
-        for(GraphDelta.Edge e:extras){int pos=cursor[e.source];a[pos]=e.target;a[pos+1]=Float.floatToIntBits(e.weight);cursor[e.source]+=2;}
-        uploadInt(4,a);uploadedExtras=extras;
-        }
-        checkGl("FDB upload");uploadedLayer=layer;uploadedVersion=revision;
+        syncCalls++;lastSyncMs=(System.nanoTime()-started)/1e6;
     }
-    private void patchWeight(int edge,float weight){
-        if(!Float.isFinite(weight)||Math.abs(weight)>4_000_000f)throw new IllegalArgumentException("GPU event weight out of range");
-        GLES31.glBindBuffer(GLES31.GL_SHADER_STORAGE_BUFFER,buffers[8]);
-        GLES31.glBufferSubData(GLES31.GL_SHADER_STORAGE_BUFFER,edge*4,4,directFloats(new float[]{weight}));
+    private void uploadSpans(int buffer,java.util.List<GpuLayerSync.Span> spans){
+        if(spans.isEmpty())return;
+        GLES31.glBindBuffer(GLES31.GL_SHADER_STORAGE_BUFFER,buffers[buffer]);
+        for(GpuLayerSync.Span span:spans){
+            GLES31.glBufferSubData(GLES31.GL_SHADER_STORAGE_BUFFER,span.word*4,span.bits.length*4,directInts(span.bits));
+            uploadCalls++;uploadBytes+=4L*span.bits.length;
+        }
     }
 
     private void uploadInputs(int[] inputs,double[] rates) {
@@ -231,17 +213,14 @@ public final class GpuLifEngine implements AutoCloseable {
     }
     /** Keep the existing ten bindings: lesion flags and float32 threshold bits share L.
      * Patch sparse threshold changes; do not double the full mask upload each window. */
-    private void syncParameters(int[] lesions,GraphDelta layer){
-        if(!Arrays.equals(uploadedLesions,lesions)){
-            int[] words=new int[n];if(lesions!=null)for(int i:lesions){if(i<0||i>=n)throw new IllegalArgumentException("Invalid lesion");words[i]=1;}
-            GLES31.glBindBuffer(GLES31.GL_SHADER_STORAGE_BUFFER,buffers[9]);GLES31.glBufferSubData(GLES31.GL_SHADER_STORAGE_BUFFER,0,4*n,directInts(words));uploadedLesions=lesions==null?new int[0]:lesions.clone();
+    private void syncParameters(int[] lesions){
+        int[] normalized=lesions==null?new int[0]:lesions;
+        if(!Arrays.equals(uploadedLesions,normalized)){
+            int[] words=new int[n];for(int i:normalized){if(i<0||i>=n)throw new IllegalArgumentException("Invalid lesion");words[i]=1;}
+            GLES31.glBindBuffer(GLES31.GL_SHADER_STORAGE_BUFFER,buffers[9]);GLES31.glBufferSubData(GLES31.GL_SHADER_STORAGE_BUFFER,0,4*n,directInts(words));uploadedLesions=normalized.clone();
         }
-        java.util.Map<Integer,Float> next=layer==null?java.util.Collections.emptyMap():layer.thresholds();
-        for(java.util.Map.Entry<Integer,Float> e:next.entrySet())if(!e.getValue().equals(uploadedThresholds.get(e.getKey())))patchThreshold(e.getKey(),e.getValue());
-        for(int i:uploadedThresholds.keySet())if(!next.containsKey(i))patchThreshold(i,0);
-        uploadedThresholds.clear();uploadedThresholds.putAll(next);checkGl("threshold parameters");
+        checkGl("lesion parameters");
     }
-    private void patchThreshold(int neuron,float value){GLES31.glBindBuffer(GLES31.GL_SHADER_STORAGE_BUFFER,buffers[9]);GLES31.glBufferSubData(GLES31.GL_SHADER_STORAGE_BUFFER,4*(n+neuron),4,directInts(new int[]{Float.floatToIntBits(value)}));}
     private void uploadFloat(int i,float[] a){GLES31.glBindBuffer(GLES31.GL_SHADER_STORAGE_BUFFER,buffers[i]);GLES31.glBufferData(GLES31.GL_SHADER_STORAGE_BUFFER,a.length*4,directFloats(a),GLES31.GL_DYNAMIC_DRAW);}
     private void uploadInt(int i,int[] a){GLES31.glBindBuffer(GLES31.GL_SHADER_STORAGE_BUFFER,buffers[i]);GLES31.glBufferData(GLES31.GL_SHADER_STORAGE_BUFFER,a.length*4,directInts(a),GLES31.GL_DYNAMIC_DRAW);}
     private int[] readInts(int i,int len){
