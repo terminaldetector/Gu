@@ -1,0 +1,197 @@
+{
+  "summary": [
+    "CONFIRMED: at this call site, growth never produces an edge while learningMode != \"off\" (frozen argument forces it closed), and even with learningMode==\"off\" it only fires when rewardGate is explicitly false (reward is hardcoded 0, and rewardGate&&reward<=0 blocks the call otherwise).",
+    "CONFIRMED: growthState.windows stayed 0 after 60 real sample() calls under the most growth-favorable configuration. FdbGrowth.observe() is never invoked from DualAgentContext.sample(); the field exists only because it is constructed and (de)serialized. Growth is dead code on this path, not merely gated -- it cannot fire regardless of configuration. Any acquiredEdgesAfter>0 is attributable to FdbLearning alone, not FdbGrowth.",
+    "CONFIRMED: FdbLearning reads, reweights and (given enough sustained negative evidence) removes an edge regardless of whether FdbGrowth or FdbLearning itself created it -- GraphDelta.Edge carries no origin tag, and FdbLearning.feedback's trace loop iterates layer.edges() unconditionally. This is expected given the current public contract (no provenance field exists), not a bug in either class; it is the concrete mechanism behind the open question in docs/FDB_RESEARCH_ITERATION_2026-10-16_RU.md about whether an explicit provenance field is warranted."
+  ],
+  "sourceCommitBase": "3462e0532aafeb459ea85c968078407af711f423",
+  "type": "fdb-growth-reachability-audit-v1",
+  "branch": "research/fdb-growth-audit",
+  "sections": [
+    {
+      "method": "Reproduces NesLabActivity.sample()'s exact frozen-argument formula and reward literal against the real FdbGrowth.observe, across every learningMode x requestFrozen x rewardGate combination.",
+      "section": "nes_lab_activity_call_site_matrix",
+      "finding": "CONFIRMED: at this call site, growth never produces an edge while learningMode != \"off\" (frozen argument forces it closed), and even with learningMode==\"off\" it only fires when rewardGate is explicitly false (reward is hardcoded 0, and rewardGate&&reward<=0 blocks the call otherwise).",
+      "rows": [
+        {
+          "requestFrozenFlag": false,
+          "computedFrozenArgumentPassedToObserve": false,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": true,
+          "learningMode": "off"
+        },
+        {
+          "requestFrozenFlag": false,
+          "computedFrozenArgumentPassedToObserve": false,
+          "growthCountAfter": 1,
+          "edgesCreatedThisCall": 1,
+          "rewardGateConfigured": false,
+          "learningMode": "off"
+        },
+        {
+          "requestFrozenFlag": true,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": true,
+          "learningMode": "off"
+        },
+        {
+          "requestFrozenFlag": true,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": false,
+          "learningMode": "off"
+        },
+        {
+          "requestFrozenFlag": false,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": true,
+          "learningMode": "train"
+        },
+        {
+          "requestFrozenFlag": false,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": false,
+          "learningMode": "train"
+        },
+        {
+          "requestFrozenFlag": true,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": true,
+          "learningMode": "train"
+        },
+        {
+          "requestFrozenFlag": true,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": false,
+          "learningMode": "train"
+        },
+        {
+          "requestFrozenFlag": false,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": true,
+          "learningMode": "teach"
+        },
+        {
+          "requestFrozenFlag": false,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": false,
+          "learningMode": "teach"
+        },
+        {
+          "requestFrozenFlag": true,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": true,
+          "learningMode": "teach"
+        },
+        {
+          "requestFrozenFlag": true,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": false,
+          "learningMode": "teach"
+        },
+        {
+          "requestFrozenFlag": false,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": true,
+          "learningMode": "eval"
+        },
+        {
+          "requestFrozenFlag": false,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": false,
+          "learningMode": "eval"
+        },
+        {
+          "requestFrozenFlag": true,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": true,
+          "learningMode": "eval"
+        },
+        {
+          "requestFrozenFlag": true,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": false,
+          "learningMode": "eval"
+        },
+        {
+          "requestFrozenFlag": false,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": true,
+          "learningMode": "benchmark-fixed"
+        },
+        {
+          "requestFrozenFlag": false,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": false,
+          "learningMode": "benchmark-fixed"
+        },
+        {
+          "requestFrozenFlag": true,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": true,
+          "learningMode": "benchmark-fixed"
+        },
+        {
+          "requestFrozenFlag": true,
+          "computedFrozenArgumentPassedToObserve": true,
+          "growthCountAfter": 0,
+          "edgesCreatedThisCall": 0,
+          "rewardGateConfigured": false,
+          "learningMode": "benchmark-fixed"
+        }
+      ]
+    },
+    {
+      "acquiredEdgesAfter": 16,
+      "method": "Constructs a production DualAgentContext with growth.enabled=true, rewardGate=false, explore=true (the configuration most favorable to growth firing), drives 60 real sample() calls with full sensory drive and valid positive/negative outcomes, then reads fdbState().growthState.windows -- a counter only FdbGrowth.observe increments.",
+      "growthStateWindowsAfter": 0,
+      "samplesExecuted": 60,
+      "section": "dual_agent_context_reachability",
+      "finding": "CONFIRMED: growthState.windows stayed 0 after 60 real sample() calls under the most growth-favorable configuration. FdbGrowth.observe() is never invoked from DualAgentContext.sample(); the field exists only because it is constructed and (de)serialized. Growth is dead code on this path, not merely gated -- it cannot fire regardless of configuration. Any acquiredEdgesAfter>0 is attributable to FdbLearning alone, not FdbGrowth."
+    },
+    {
+      "weightAfterFdbLearningReinforcement": 12.241628,
+      "method": "Creates edge 0->16 exclusively through FdbGrowth.observe() (not addEdge, not FdbLearning), then drives a shared-layer FdbLearning through its real decide()/feedback() cycle: 40 reinforcing outcomes, then up to 200 punishing outcomes.",
+      "fdbLearningPrunedCountTotal": 2,
+      "initialWeightFromGrowth": 8,
+      "section": "cross_mechanism_edge_test",
+      "finding": "CONFIRMED: FdbLearning reads, reweights and (given enough sustained negative evidence) removes an edge regardless of whether FdbGrowth or FdbLearning itself created it -- GraphDelta.Edge carries no origin tag, and FdbLearning.feedback's trace loop iterates layer.edges() unconditionally. This is expected given the current public contract (no provenance field exists), not a bug in either class; it is the concrete mechanism behind the open question in docs/FDB_RESEARCH_ITERATION_2026-10-16_RU.md about whether an explicit provenance field is warranted.",
+      "edgeStillPresentAfterPunishment": false,
+      "prunedByFdbLearning": true
+    }
+  ]
+}
