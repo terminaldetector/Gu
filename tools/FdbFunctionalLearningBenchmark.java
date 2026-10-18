@@ -218,7 +218,7 @@ public final class FdbFunctionalLearningBenchmark {
             .put("sourceCommitBase", "3462e0532aafeb459ea85c968078407af711f423")
             .put("branch", "research/fdb-growth-audit")
             .put("protocol", new JSONObject().put("trainEpisodes", 80).put("heldoutEpisodes", 40).put("seeds", new JSONArray(SEEDS)).put("seedCount", SEEDS.length)
-                .put("graphs", new JSONArray().put("control-30 (original FdbTemporalExperiment fixture, unmodified)").put("ballast-90 (control-30 core + 60 zero-edge neurons: pure array-size increase)").put("functional-90 (control-30 core + 2 reachable disambiguating relay edges through 60 extra neurons, same size as ballast-90)"))
+                .put("graphs", new JSONArray().put("control-30 (original FdbTemporalExperiment fixture, unmodified)").put("ballast-90 (control-30 core + 60 zero-edge neurons: pure array-size increase)").put("functional-90 (control-30 core + 4 reachable disambiguating relay edges -- 0->30->16 and 1->31->17 -- through 60 extra neurons, same size as ballast-90)"))
                 .put("profiles", new JSONArray(PROFILES))
                 .put("bootstrap", "paired by seed, resampled with replacement, B=10000, 95% percentile interval"))
             .put("reproductionCheck", repro)

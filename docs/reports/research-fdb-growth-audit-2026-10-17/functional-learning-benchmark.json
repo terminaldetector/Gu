@@ -4,7 +4,7 @@
     "graphs": [
       "control-30 (original FdbTemporalExperiment fixture, unmodified)",
       "ballast-90 (control-30 core + 60 zero-edge neurons: pure array-size increase)",
-      "functional-90 (control-30 core + 2 reachable disambiguating relay edges through 60 extra neurons, same size as ballast-90)"
+      "functional-90 (control-30 core + 4 reachable disambiguating relay edges -- 0->30->16 and 1->31->17 -- through 60 extra neurons, same size as ballast-90)"
     ],
     "seeds": [
       11,
