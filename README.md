@@ -1,3 +1,9 @@
+## Development direction: Autonomous Learning Emulator
+
+The current development plan prioritizes stable independent emulation, separate game/learned/history storage and evidence-based autonomous FDB learning. See the [Russian technical strategy and implementation status](docs/AUTONOMOUS_LEARNING_EMULATOR_RU.md). This is work in progress; guarded paired evaluation and Best promotion are implemented, while universal game-result detection and physical-device acceptance remain open.
+
+Version 2.1.1 includes an automatic bounded local Android journal and ZIP export under Settings → Diagnostics, with an independent export screen after WebView renderer failure. See the [diagnostics guide](docs/DEVICE_DIAGNOSTICS_RU.md) and [implementation report](docs/reports/device-logger-2026-10-20/README.md).
+
 ## 2.0.0: final landscape play surface
 
 One compact landscape row replaces the large toolbar and training strip. Up to three small indicators show the applied P1/P2 buttons and learning/speed; training controls expand on demand. Start/pause, network and game reset forward to the existing game actions. A connected physical controller automatically frees the touch rails; touch or gamepad view can also be chosen explicitly. Landscape video size, bounded horizontal/vertical placement, rail/overlay layout, side width, additional control scales and indicator placement are independent of portrait presentation. Android system bars may hide only in landscape play and return in settings/portrait. Version 2 UI preferences safely read version 1 without replacing saved data on read. Learned graph parameters, Layer Sets and control-policy selection remain unchanged.
@@ -239,3 +245,5 @@ Regression coverage includes zero-SSP cartridge boot, format identity, actual >8
 
 Prevent Android text selection, drag and Copy/Share actions on the NES/Sega gamepad. Long holds remain controller input; simultaneous touches, pointer cancellation and release remain independent. Text fields and research logs retain their normal selection behavior. UI coverage exercises held and simultaneous touches through Chromium's touch input protocol; physical Android verification remains necessary.
 
+
+Парная оценка FDB, автоматические старты и защищённый Best: [реализация, проверки и остатки ТЗ](docs/reports/autonomous-paired-evaluation-2026-10-20/README.md).

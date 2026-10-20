@@ -67,7 +67,7 @@ jobs:
             /tmp/fly-ui/node_modules/.bin/playwright install chromium
           fi
       - name: Check portrait and landscape console layouts
-        timeout-minutes: 5
+        timeout-minutes: 10
         run: |
           ui_status=0
           NODE_PATH=/tmp/fly-ui/node_modules node tools/console_layout_check.cjs || ui_status=1
@@ -80,6 +80,11 @@ jobs:
           NODE_PATH=/tmp/fly-ui/node_modules node tools/polish_ui_check.cjs || ui_status=1
           NODE_PATH=/tmp/fly-ui/node_modules node tools/training_flow_ui_check.cjs || ui_status=1
           NODE_PATH=/tmp/fly-ui/node_modules node tools/release_regression_ui_check.cjs || ui_status=1
+          NODE_PATH=/tmp/fly-ui/node_modules node tools/autonomous_console_ui_check.cjs || ui_status=1
+          NODE_PATH=/tmp/fly-ui/node_modules node tools/continuation_ui_check.cjs || ui_status=1
+          NODE_PATH=/tmp/fly-ui/node_modules node tools/autonomous_episodes_ui_check.cjs || ui_status=1
+          NODE_PATH=/tmp/fly-ui/node_modules node tools/episode_starts_ui_check.cjs || ui_status=1
+          NODE_PATH=/tmp/fly-ui/node_modules node tools/session_logger_ui_check.cjs || ui_status=1
           NODE_PATH=/tmp/fly-ui/node_modules node tools/plasticity_speed_ui_check.cjs || ui_status=1
           NODE_PATH=/tmp/fly-ui/node_modules node tools/action_hold_ui_check.cjs || ui_status=1
           exit "$ui_status"
@@ -108,6 +113,7 @@ jobs:
         with:
           name: FlyConsole-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
           name: FlyConsole-release-apk

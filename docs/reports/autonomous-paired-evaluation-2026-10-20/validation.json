@@ -1,0 +1,166 @@
+{
+  "schema": 1,
+  "completed_at_utc": "2026-10-20T13:46:08.403890+00:00",
+  "full_check": {
+    "command": "bash tools/check.sh",
+    "exit_code": 0,
+    "log": "check.log",
+    "log_sha256": "86f8addbe1601637c1ea4f0151258b38708bda9579d1e4f4f88faf103640d689"
+  },
+  "browser": {
+    "passed": 16,
+    "failed": 0,
+    "native_bridge_is_fixture_where_used": true,
+    "timing_tests_after_host_check": true,
+    "suites": [
+      {
+        "suite": "console_layout",
+        "exit_code": 0,
+        "log": "browser/console_layout.log",
+        "log_sha256": "dd5332e5fbf3883b42aa1edccfdef4c77b239416c6a2343512505ff7a7327f76",
+        "summary": "PASS: tabs, real telemetry rendering, stale state, navigation preservation and 6 portrait/landscape layouts"
+      },
+      {
+        "suite": "interface_ui",
+        "exit_code": 0,
+        "log": "browser/interface_ui.log",
+        "log_sha256": "b492a9e411acde46eedbb44319e45afae8f68ff6cf1d1c60240f435af697a399",
+        "summary": "PASS: 44 responsive core layouts, independent UI/learning, group/button drag, orientation+reload, hide/left-hand, physical trigger mapping+real frames, device reconnect, safe capture cancel, themes and integer video"
+      },
+      {
+        "suite": "landscape_ui",
+        "exit_code": 0,
+        "log": "browser/landscape_ui.log",
+        "log_sha256": "2a874818c37ffbbb3fa000f4e63e973fb880de8376c744adc97f3002abd71268",
+        "summary": "PASS: compact landscape, real port indicators, automatic/forced pad, disconnect, portrait isolation, offsets, persistence, editor override, reset retention and immersive bridge transitions"
+      },
+      {
+        "suite": "layer_ui",
+        "exit_code": 0,
+        "log": "browser/layer_ui.log",
+        "log_sha256": "617ff5d0be3f3c12a98eb9366b68817cae025d3e4995ae4512535056553998d2",
+        "summary": "PASS: production Layer Set UI, Sega XYZ weights/FDB persistence, P2 transfer, no ROM reset, forced growth checkpoint and malformed import preservation"
+      },
+      {
+        "suite": "platform_ui",
+        "exit_code": 0,
+        "log": "browser/platform_ui.log",
+        "log_sha256": "33c09fa81574ab4e6b08b5edd57ad96a0e391098da880dc844697e7c30a593c2",
+        "summary": "PASS: four-platform selector, real GB/SNES games, snapshots, P1/P2, keyboard and mobile layouts"
+      },
+      {
+        "suite": "training_ui",
+        "exit_code": 0,
+        "log": "browser/training_ui.log",
+        "log_sha256": "f601b07e97e026891727a1a279e2de6880b7c903aa91b64e2b84fcddf3dd34aa",
+        "summary": "PASS: actual NES/SNES realtime teaching, raw sub-frame taps, one-frame actions, full session persistence/overview, P1 ownership, bounded FDB replay, frozen evaluation and mobile layout"
+      },
+      {
+        "suite": "dual_layout",
+        "exit_code": 0,
+        "log": "browser/dual_layout.log",
+        "log_sha256": "be4afff00e918cfef3737c8a4d38309419329caf405381dff48e253a7b5af8bd",
+        "summary": "PASS: production dual model cards, real single NES frame clock, independent action outcomes, paused layout and acknowledged exit (native reply fixture only)"
+      },
+      {
+        "suite": "polish_ui",
+        "exit_code": 0,
+        "log": "browser/polish_ui.log",
+        "log_sha256": "355cbe1664b6a9eb4b1771b36dfea3eeab5762ebc44096b7e3ebc27fb5b8b78c",
+        "summary": "PASS: real Sega diagonal drag + multitouch frames, Material quick menu, remap/reload, Sega pad/region retention, independent model weights/FDB/training resume, saved unstarted P1/P2 preferences"
+      },
+      {
+        "suite": "training_flow_ui",
+        "exit_code": 0,
+        "log": "browser/training_flow_ui.log",
+        "log_sha256": "2a856648d236d61bb2819d38258603f231ce9dff54086970b11e709149b74aab",
+        "summary": "PASS: real NES/MD/SNES/GB acceleration, continuous RT with model-owned holds and bounded observed credit, durable REC -> AUTO, pure automation, exclusive streaming hints, frozen evaluation, paused guidance restore, selected Male CNS Sega P2 and explicit P2 demonstration"
+      },
+      {
+        "suite": "release_regression_ui",
+        "exit_code": 0,
+        "log": "browser/release_regression_ui.log",
+        "log_sha256": "e8c23215eb05fce40aab67f73be64f0df031efed6e09ed9935ac4ab37af4bd48",
+        "summary": "PASS: 40-hint single archives on all real cores, in-game reset with retained weights, saved gamepad A/B mapping, verified score-to-reward/profile persistence, failed/rapid ROM replacement and stale OCR exclusion; native responses are fixtures"
+      },
+      {
+        "suite": "autonomous_console_ui",
+        "exit_code": 0,
+        "log": "browser/autonomous_console_ui.log",
+        "log_sha256": "cc0911d00e8a6d6bbc77cb20471ada4cc5c1cb47791705e6edf983249fe2024b",
+        "summary": "PASS: real NES without graph, eight IndexedDB slots/preview, migration/atomic rollback/concurrent CAS/recovery, independent weights, neural fault/manual continuity, async quick menu and durable Current before first sample"
+      },
+      {
+        "suite": "continuation_ui",
+        "exit_code": 0,
+        "log": "browser/continuation_ui.log",
+        "log_sha256": "fb0365ceda774c0c5d475e9b25b53c7081bc0a70eeab8a3b685321e01b616dc5",
+        "summary": "PASS: native-library startup fixture with real NES/IndexedDB, reload/last snapshot without graph, lifecycle ACK, quota rollback, forced learned save, neural failure isolation and saved exit"
+      },
+      {
+        "suite": "autonomous_episodes_ui",
+        "exit_code": 0,
+        "log": "browser/autonomous_episodes_ui.log",
+        "log_sha256": "51606ae7a0df25844f0e17a3b32a41e0e6282a20c09bc4afbb7b37c200ea8e05",
+        "summary": "PASS: real NES pinned multi-start scheduler, native provenance ACK fixture, automatic train/control, frozen begin/arm/trial/end order, learned checkpoint and stopped-session fencing"
+      },
+      {
+        "suite": "episode_starts_ui",
+        "exit_code": 0,
+        "log": "browser/episode_starts_ui.log",
+        "log_sha256": "58bf2098c909daefe923d764596fba335273e8dfa2ffa07881941947be5c113a",
+        "summary": "PASS: real NES start archive beyond eight slots, two training/eight heldout trajectories, immutable origin, repeated/concurrent writes, independent auto slot overwrite, quota abort, process reopen, ROM/core isolation and corruption rejection"
+      },
+      {
+        "suite": "plasticity_speed_ui",
+        "exit_code": 0,
+        "log": "browser/plasticity_speed_ui.log",
+        "log_sha256": "d8a1744c2b1c5f018e4075925eca7f5a87ffe207b11a33bb9b5fb26d40295bdf",
+        "summary": "PASS: measured ×1/×3 on real NES/MD/SNES/GB, pending GPU fixture, overloaded speed honesty, persisted root choice and independent P1/P2 configuration, expanded mode reload and retained thresholds when disabled"
+      },
+      {
+        "suite": "action_hold_ui",
+        "exit_code": 0,
+        "log": "browser/action_hold_ui.log",
+        "log_sha256": "cb408e5a6e77d7e4392ed22f137027e7553405d037d3d79a4dd467edf522247e",
+        "summary": "PASS: real NES/MD/SNES/GB cores hold B + direction at ×1/×3/×10 without gaps, same mask has no up/down pulse, zero releases, GMode/P2 routing, durable options, legacy migration and late response rejection"
+      }
+    ]
+  },
+  "android_build": {
+    "command": "gradle assembleDebug lintDebug",
+    "exit_code": 0,
+    "log": "build.log",
+    "lint_errors": 0,
+    "lint_warnings": 19,
+    "signature_v2_verified": true,
+    "apk_metadata": "apk.json"
+  },
+  "source_verification": {
+    "git_diff_check": 0,
+    "all_48_lab_js_html_css_match_apk": true
+  },
+  "evidence_limits": {
+    "paired_java": "real CPU/FDB on a small mechanism graph; synthetic outcomes and diagnostic RAM fixtures",
+    "browser": "real emulator and IndexedDB; native bridge fixtures",
+    "android_device_tested": false,
+    "full_connectome_game_learning_proven": false
+  },
+  "remaining": {
+    "environment": [
+      "physical Android lifecycle, sustained stability, audio sync, RAM, neural CPU/GPU latency, battery and power loss"
+    ],
+    "engineering": [
+      "verified external game profiles",
+      "full FDB replay and diverse task collection",
+      "resuming interrupted paired evaluation",
+      "archive export, repair and capacity policy",
+      "dual-agent Best lifecycle",
+      "automatic behavioral recovery of Current",
+      "complete game-first navigation",
+      "full-graph routing and dynamic candidates",
+      "measured neural specialization and release validation"
+    ],
+    "code_proven_impossible_due_to_model_limits": []
+  }
+}

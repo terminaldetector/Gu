@@ -27,7 +27,8 @@ class RetroConsole{
  button(port,index,on){const n=this.system==='snes'?12:8;if(![1,2].includes(port)||!Number.isInteger(index)||index<0||index>=n)throw Error('Неверная кнопка '+this.system);if(port===2&&!this.twoPlayerSupported)return;const key=port===1?'mask':'mask2';this[key]=on?this[key]|(1<<index):this[key]&~(1<<index);}
  get fps(){return this.g._lab_fps();}
  get ramSize(){return this.g._lab_ram_size();}
- frame(){const g=this.g;g._lab_tick(this.mask,this.mask2);if(!g._lab_valid())throw Error('Недопустимый кадр/звук '+this.system);const w=g._lab_width(),h=g._lab_height();if(w<1||w>512||h<1||h>512)throw Error('Нет корректного кадра '+this.system);this.videoWidth=w;this.videoHeight=h;this.pixels=new Uint32Array(g.HEAPU8.buffer,g._lab_video(),w*h).slice();if(this.opts.onFrame)this.opts.onFrame(this.pixels,w,h);
+ // onFrame receives a reusable owned buffer, like JSNES; retain a frame with slice().
+ frame(){const g=this.g;g._lab_tick(this.mask,this.mask2);if(!g._lab_valid())throw Error('Недопустимый кадр/звук '+this.system);const w=g._lab_width(),h=g._lab_height();if(w<1||w>512||h<1||h>512)throw Error('Нет корректного кадра '+this.system);this.videoWidth=w;this.videoHeight=h;if(!this.pixels||this.pixels.length!==w*h)this.pixels=new Uint32Array(w*h);this.pixels.set(new Uint32Array(g.HEAPU8.buffer,g._lab_video(),w*h));if(this.opts.onFrame)this.opts.onFrame(this.pixels,w,h);
   const n=g._lab_audio_count(),rate=g._lab_sample_rate();if(n>8192||rate<=0)throw Error('Неверный звук '+this.system);if(this.opts.onAudioSample){const l=new Float32Array(g.HEAPU8.buffer,g._lab_audio_left(),n),r=new Float32Array(g.HEAPU8.buffer,g._lab_audio_right(),n),step=rate/(this.opts.sampleRate||44100);for(let i=0;i<n;i+=step){const at=Math.floor(i),next=Math.min(n-1,at+1),f=i-at;this.opts.onAudioSample(l[at]*(1-f)+l[next]*f,r[at]*(1-f)+r[next]*f);}}
  }
  reloadROM(){this.g._lab_reset();this.mask=this.mask2=0;}

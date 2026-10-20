@@ -7,12 +7,12 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
  const page=await browser.newPage({viewport:{width:844,height:390}}),errors=[],rows=[];
  page.on('pageerror',e=>errors.push(e.message));
  await page.route('https://flyconsole.local/**',r=>{const p=path.join(assets,new URL(r.request().url()).pathname.slice(1));return r.fulfill({status:fs.existsSync(p)?200:404,body:fs.existsSync(p)?fs.readFileSync(p):'',contentType:p.endsWith('.js')?'application/javascript':p.endsWith('.css')?'text/css':p.endsWith('.wasm')?'application/wasm':'text/html'});});
- await page.exposeFunction('clockDemo',async system=>{const d=JSON.parse(fs.readFileSync(path.join(assets,'lab/demo-'+(system==='nes'?'rom':system)+'.json')));d.sha256=crypto.createHash('sha256').update(Buffer.from(d.base64,'base64')).digest('hex');return page.evaluate(d=>labLoadRom(d),d);});
+ await page.exposeFunction('clockDemo',async system=>{const d=JSON.parse(fs.readFileSync(path.join(assets,'lab/demo-'+(system==='nes'?'rom':system)+'.json')));d.name=d.name||'diagnostic / speed fixture';d.sha256=crypto.createHash('sha256').update(Buffer.from(d.base64,'base64')).digest('hex');return page.evaluate(d=>labLoadRom(d),d);});
  await page.addInitScript(()=>{
   window.lastRootConfig=null;
   window.FlyBridge={demo:()=>clockDemo(new URL(location.href).searchParams.get('system')),acceptRom(){},stop(){},resume(){},orientation(){},
    configure(raw){const q=JSON.parse(raw);lastRootConfig=q;setTimeout(()=>labConfigured({generation:q.generation,reset:q.reset,mode:q.mode,backend:q.backend,configVersion:1}),1);},
-   fdbFeedback(raw){const q=JSON.parse(raw);setTimeout(()=>labFdbFeedback({token:q.token,data:{changed:0,...(lastRootConfig?.fdb?{fdbState:JSON.parse(JSON.stringify(lastRootConfig.fdb))}: {})}}),1);},
+   fdbFeedback(raw){const q=JSON.parse(raw);if(q.op==='bind'){setTimeout(()=>labFdbFeedback({token:q.token,data:{bound:true,layerId:q.layerId,configVersion:q.configVersion}}),1);return;}setTimeout(()=>labFdbFeedback({token:q.token,data:{changed:0,...(lastRootConfig?.fdb?{fdbState:JSON.parse(JSON.stringify(lastRootConfig.fdb))}: {})}}),1);},
    sample(){}
   };
  });
@@ -21,11 +21,11 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   await page.waitForTimeout(250);
   const first=await page.evaluate(()=>({frame,at:performance.now(),fps:labPlatform==='nes'?60:nes.fps}));
   await page.waitForTimeout(2000);
-  const last=await page.evaluate(()=>({frame,at:performance.now(),label:$('gameBoost').textContent,live:$('liveSpeed').textContent}));
-  await page.evaluate(()=>labPause());return{rate,pending,frames:last.frame-first.frame,seconds:(last.at-first.at)/1000,actual:(last.frame-first.frame)/first.fps/((last.at-first.at)/1000),label:last.label,live:last.live};
+  const last=await page.evaluate(()=>({frame,at:performance.now(),label:$('gameBoost').textContent,live:$('liveSpeed').textContent,playing,connected,loaded,hidden:document.hidden,failure:window.labAgentFailure||null,status:$('status').textContent}));
+  await page.evaluate(()=>labPause());return{rate,pending,frames:last.frame-first.frame,seconds:(last.at-first.at)/1000,actual:(last.frame-first.frame)/first.fps/((last.at-first.at)/1000),label:last.label,live:last.live,state:{playing:last.playing,connected:last.connected,loaded:last.loaded,hidden:last.hidden,failure:last.failure,status:last.status}};
  }
  for(const system of ['nes','sega','snes','gb']){
-  await page.goto('https://flyconsole.local/lab/index.html?system='+system);await page.waitForFunction(()=>loaded);
+  await page.goto('https://flyconsole.local/lab/index.html?system='+system);await page.waitForFunction(()=>loaded&&!romLoading);
   await page.evaluate(()=>labReady({modelId:'flywire-v783',kind:'scheduler fixture',neurons:30,edges:1,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:buttonNames.length},(_,i)=>String(i+17)),backend:'cpu'}));await page.evaluate(()=>labState.settle());
   if(system==='nes')await page.evaluate(()=>{window.realCoreFrame=nes.frame.bind(nes);nes.frame=()=>{const at=performance.now();realCoreFrame();while(performance.now()-at<3){}};});
   for(const rate of [1,3]){const r=await measure(rate,rate===3);rows.push({system,...r});assert(Math.abs(r.actual-rate)<rate*.10,'real core ×'+rate+' '+system+': '+JSON.stringify(r));}
@@ -36,12 +36,12 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
    await page.evaluate(()=>{$('fdbJson').value=JSON.stringify({version:2,graph_sha256:graphIdentity.sha256,deltas:[],edges:[],learning:{enabled:true,rate:.05,maxEdges:256,maxWeight:32}});$('trainingBase').checked=false;return $('trainingBase').onchange();});
    assert.equal(await page.evaluate(()=>lastRootConfig.fdb.learning.trainBase),false);
    assert.equal(await page.evaluate(()=>playing||connected),false);
-   await page.reload();await page.waitForFunction(()=>loaded);await page.evaluate(()=>labReady({modelId:'flywire-v783',kind:'fixture',neurons:30,edges:1,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:8},(_,i)=>String(i+17)),backend:'cpu'}));await page.evaluate(()=>labState.settle());
+   await page.reload();await page.waitForFunction(()=>loaded&&!romLoading);await page.evaluate(()=>labReady({modelId:'flywire-v783',kind:'fixture',neurons:30,edges:1,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:8},(_,i)=>String(i+17)),backend:'cpu'}));await page.evaluate(()=>labState.settle());
    assert.equal(await page.isChecked('#trainingBase'),false,'root choice restored from Layer Set');
    await page.evaluate(()=>{const f=fdbConfiguration();f.neuronDynamics={version:1,thresholdOffsets:[{neuron:'17',offsetMv:-1.25}]};$('fdbJson').value=JSON.stringify(f);$('trainingPlasticity').value='expanded';return $('trainingPlasticity').onchange();});
    assert.equal(await page.evaluate(()=>lastRootConfig.fdb.learning.plasticityMode),'expanded');
    assert.equal(await page.evaluate(()=>lastRootConfig.fdb.learning.maxEdges),2048);
-   await page.reload();await page.waitForFunction(()=>loaded);await page.evaluate(()=>labReady({modelId:'flywire-v783',kind:'fixture',neurons:30,edges:1,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:8},(_,i)=>String(i+17)),backend:'cpu'}));await page.evaluate(()=>labState.settle());
+   await page.reload();await page.waitForFunction(()=>loaded&&!romLoading);await page.evaluate(()=>labReady({modelId:'flywire-v783',kind:'fixture',neurons:30,edges:1,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:8},(_,i)=>String(i+17)),backend:'cpu'}));await page.evaluate(()=>labState.settle());
    assert.equal(await page.inputValue('#trainingPlasticity'),'expanded','expanded mode restored from Layer Set');
    await page.evaluate(()=>{$('trainingPlasticity').value='base';return $('trainingPlasticity').onchange();});
    assert.equal(await page.evaluate(()=>lastRootConfig.fdb.neuronDynamics.thresholdOffsets[0].offsetMv),-1.25,'disabling expanded mode retains acquired threshold');

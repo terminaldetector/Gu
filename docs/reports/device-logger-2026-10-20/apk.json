@@ -1,0 +1,35 @@
+{
+  "apk": "/workspace/Gu/app/build/outputs/apk/debug/app-debug.apk",
+  "sha256": "8caedb9d6bb1cc3fe440c4541a3eba3eaf4cf11e0bf0d6af553c494a5dfa3c7c",
+  "bytes": 208305206,
+  "version": "2.1.1",
+  "versionCode": 35,
+  "sourceId": "b244347bba4bf6482a991d71634240702a52449a61a59d211efbe6801646a70d",
+  "labResourcesCompared": 49,
+  "graphsAndCores": [
+    {
+      "path": "assets/brain.fly",
+      "bytes": 122399548
+    },
+    {
+      "path": "assets/male-cns.fly",
+      "bytes": 206487056
+    },
+    {
+      "path": "assets/lab/sega/genplus.wasm",
+      "bytes": 2086794
+    },
+    {
+      "path": "assets/lab/gb/core.wasm",
+      "bytes": 608163
+    },
+    {
+      "path": "assets/lab/snes/core.wasm",
+      "bytes": 2362598
+    }
+  ],
+  "diagnosticNativeClasses": true,
+  "signedV2": true,
+  "deviceAcceptance": false,
+  "publishedToMain": false
+}

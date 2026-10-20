@@ -1,0 +1,132 @@
+{
+  "date": "2026-10-20",
+  "branch": "feature/autonomous-learning-emulator",
+  "fullcheck": {
+    "command": "bash tools/check.sh",
+    "exit": 0,
+    "log": "check.log"
+  },
+  "build": {
+    "command": "gradle assembleDebug lintDebug",
+    "exit": 0,
+    "lintErrors": 0,
+    "lintWarnings": 19,
+    "log": "build.log"
+  },
+  "browserSuites": [
+    {
+      "suite": "layer_ui",
+      "exit": 0,
+      "seconds": 3.11
+    },
+    {
+      "suite": "platform_ui",
+      "exit": 0,
+      "seconds": 7.93
+    },
+    {
+      "suite": "training_ui",
+      "exit": 0,
+      "seconds": 10.65
+    },
+    {
+      "suite": "dual_layout",
+      "exit": 0,
+      "seconds": 3.69
+    },
+    {
+      "suite": "polish_ui",
+      "exit": 0,
+      "seconds": 4.7
+    },
+    {
+      "suite": "training_flow_ui",
+      "exit": 0,
+      "seconds": 18.47
+    },
+    {
+      "suite": "release_regression_ui",
+      "exit": 0,
+      "seconds": 11.01
+    },
+    {
+      "suite": "autonomous_console_ui",
+      "exit": 0,
+      "seconds": 9.32
+    },
+    {
+      "suite": "continuation_ui",
+      "exit": 0,
+      "seconds": 4.14
+    },
+    {
+      "suite": "autonomous_episodes_ui",
+      "exit": 0,
+      "seconds": 10.07
+    },
+    {
+      "suite": "episode_starts_ui",
+      "exit": 0,
+      "seconds": 6.24
+    },
+    {
+      "suite": "console_layout",
+      "exit": 0,
+      "seconds": 8.1,
+      "verifiedAfterDiagnosticsCategoryMerge": true
+    },
+    {
+      "suite": "interface_ui",
+      "exit": 0,
+      "seconds": 10.73,
+      "verifiedAfterDiagnosticsCategoryMerge": true
+    },
+    {
+      "suite": "landscape_ui",
+      "exit": 0,
+      "seconds": 7.06,
+      "verifiedAfterDiagnosticsCategoryMerge": true
+    },
+    {
+      "suite": "session_logger_ui",
+      "exit": 0,
+      "seconds": 5.69,
+      "verifiedAfterDiagnosticsCategoryMerge": true
+    },
+    {
+      "suite": "plasticity_speed_ui",
+      "exit": 0,
+      "seconds": 23.43
+    },
+    {
+      "suite": "action_hold_ui",
+      "exit": 0,
+      "seconds": 14.02
+    }
+  ],
+  "browserSummary": {
+    "total": 17,
+    "passed": 17,
+    "failed": 0
+  },
+  "crossLanguageExport": {
+    "javaDiagnosticJournal": true,
+    "pythonInspector": true,
+    "fixtureIntegrity": true,
+    "deviceEvidence": false
+  },
+  "apk": {
+    "sha256": "8caedb9d6bb1cc3fe440c4541a3eba3eaf4cf11e0bf0d6af553c494a5dfa3c7c",
+    "sourceId": "b244347bba4bf6482a991d71634240702a52449a61a59d211efbe6801646a70d",
+    "signatureV2": true,
+    "labResourceMatches": 49
+  },
+  "gitDiffCheck": true,
+  "deviceAcceptance": {
+    "status": "pending-after-code-residuals",
+    "userHasAndroid": true,
+    "phoneConnectedToCloud": false
+  },
+  "fullSpecificationComplete": false,
+  "publishedToMain": false
+}

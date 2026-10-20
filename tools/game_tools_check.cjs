@@ -1,5 +1,6 @@
 'use strict';const assert=require('node:assert/strict');const T=require('../app/src/main/assets/lab/game-tools.js'),L=require('../app/src/main/assets/lab/learner.js');
 const rom=Uint8Array.from(Buffer.from(require('../app/src/main/assets/lab/demo-rom.json').base64,'base64'));
+assert.equal(require('node:crypto').createHash('sha256').update(rom).digest('hex'),T.diagnosticSha256,'diagnostic feedback is pinned to actual bundled bytes, independent of ROM filename');
 assert.equal(T.validateRom(rom).mapper,0);assert.throws(()=>T.validateRom(rom.slice(0,16)),/обрезан/);
 const unsupported=rom.slice();unsupported[6]=0x60;assert.throws(()=>T.validateRom(unsupported),/mapper 6/);
 const huge=rom.slice();huge[7]=8;huge[9]=15;huge[4]=252;assert.throws(()=>T.validateRom(huge),/обрезан/);

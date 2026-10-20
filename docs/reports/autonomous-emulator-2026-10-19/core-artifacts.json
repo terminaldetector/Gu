@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "toolchain": {
+    "emscripten": "3.1.57",
+    "emsdk_commit": "3b3963d86a5c97adaf6eaa845cdfe0b811c2f960",
+    "cmake": "3.28.4"
+  },
+  "cores": {
+    "sega": {
+      "upstream": "https://github.com/h1romas4/wasm-genplus",
+      "commit": "6090aff9e9b2f578cd28882bd4571d2e35b1d674",
+      "compiler": "Emscripten 3.1.57",
+      "license": "Genesis Plus GX noncommercial + component notices",
+      "source_archive": "genplus-source.zip",
+      "core_api": "genplus-fly-49c5847-api6",
+      "wasm_sha256": "dc73bd69e789596cf69fb3649eed0c29c1010f7840b181c3e8cf0292e0d1d74a",
+      "source_sha256": "446d479dd526651cf6ec7fa1457f97b43c2ecd6cab855acdd36820396c147295",
+      "controllers": 2,
+      "core_upstream": "https://github.com/ekeeke/Genesis-Plus-GX",
+      "core_commit": "49c584764893b0505ac7f768a754f97330fa4392",
+      "core_archive_sha256": "f04f89c20ec286a23d7a10bc5ec0329bdc4954d3d41062d836fccba7b18c7d85",
+      "max_rom_bytes": 33554432
+    },
+    "gb": {
+      "system": "gb",
+      "upstream": "libretro/gambatte-libretro",
+      "revision": "d9d6cd06382d1ced30de34d56d3609452323dab1",
+      "core": "gambatte-d9d6cd0-fly1",
+      "source_url": "https://github.com/libretro/gambatte-libretro/tree/d9d6cd06382d1ced30de34d56d3609452323dab1",
+      "upstream_archive_sha256": "bae11394b969fafd87524ef125fb1834c66de83feb988477c2d4c68738ccb99f",
+      "wasm_sha256": "f17ccc9cda49bfbe72e4c6dd298c2167dd2f533cfe1bc21241d34c705052ff92",
+      "source_sha256": "6a8c70fdd8fca9b123ac0a925c3d1d984c3f2e35504f7c35bc63a966194ff3ac"
+    },
+    "snes": {
+      "system": "snes",
+      "upstream": "snes9xgit/snes9x",
+      "revision": "1bcc369e89f08243e0a462882fb1f3e42e51de3a",
+      "core": "snes9x-1bcc369-fly1",
+      "source_url": "https://github.com/snes9xgit/snes9x/tree/1bcc369e89f08243e0a462882fb1f3e42e51de3a",
+      "upstream_archive_sha256": "02e35e05418599009f9285eca9eeb67c6d2e663d53de0c4dc72ae4dd9d911fb9",
+      "wasm_sha256": "85cebf6d059598f958b186be1ecc9dc12daf6e3d377da0e2b6de3f4e0f19ae1b",
+      "source_sha256": "2dda02f7bc0a9fdfbb8a7e0cbda3bde16959da3c8680ceda30333479d3ad462a"
+    }
+  },
+  "models": {
+    "brain.fly.gz": {
+      "bytes": 53119189,
+      "sha256": "983cf137e13fcc7d9328cb3e9b602d0ddb403ba74bc8341b0b50b8c75c7afce9"
+    },
+    "male-cns.fly.gz": {
+      "bytes": 86170894,
+      "sha256": "c8f5e2bd9d78a2f458c4947f6c999fb2911a46b543a4c01aa0b37f1caf74ed93"
+    }
+  },
+  "apk": {
+    "bytes": 208413967,
+    "sha256": "12e0b3fae32226ae8134d336761ec7b61021bd3cd78a93cb91a9a77415785e18",
+    "signature_v2_verified": true,
+    "required_assets": {
+      "assets/brain.fly": 122399548,
+      "assets/male-cns.fly": 206487056,
+      "assets/lab/sega/genplus.wasm": 2086794,
+      "assets/lab/sega/genplus-source.zip": 4611069,
+      "assets/lab/gb/core.wasm": 608163,
+      "assets/lab/gb/source.zip": 1149692,
+      "assets/lab/snes/core.wasm": 2362598,
+      "assets/lab/snes/source.zip": 5530797
+    },
+    "validation_scope": "Debug build including protected single-agent Current/Recovery; signature verified, Android device scenarios pending"
+  }
+}

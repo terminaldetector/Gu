@@ -4,6 +4,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const source=fs.readFileSync(path.resolve(__dirname,'../app/src/main/assets/lab/fdb-feedback.js'),'utf8');
 const labSource=fs.readFileSync(path.resolve(__dirname,'../app/src/main/assets/lab/lab.js'),'utf8'),rewardStart=labSource.indexOf('function fdbRewardSnapshot(memory){'),rewardStop=labSource.indexOf('function learnedButtons(data){');
 assert.ok(rewardStart>=0&&rewardStop>rewardStart,'production action-aligned reward helpers must exist');
+assert.ok(labSource.includes('settle(sampledFdbOutcome,credit.reward,interrupted||!credit.valid,credit.valid)'), 'the live game loop must distinguish unknown evidence from numeric zero');
 const rewardSource=labSource.slice(rewardStart,rewardStop),gameTools=require('../app/src/main/assets/lab/game-tools.js');
 const plain=value=>JSON.parse(JSON.stringify(value));
 function fixture(){
@@ -81,6 +82,26 @@ let checks=0;function check(name,fn){return Promise.resolve().then(fn).then(()=>
  });
  await check('no executed frames produce no reward packet',async()=>{
   const f=fixture();f.decision();assert.equal(f.agent.capture(),null);await f.agent.settle(null,1,false);assert.equal(f.calls.length,0);
+ });
+ await check('unknown manual gameplay clears temporal credit without sending a zero reward',async()=>{
+  const f=fixture();f.nodes.rewardMode.value='manual';
+  f.decision('unknown',128,f.context.fdbRewardSnapshot({0:1}));f.frames();
+  const outcome=f.agent.capture(f.context.fdbRewardSnapshot({0:2})),credit=f.context.fdbOutcomeReward(outcome,0);
+  assert.equal(credit.valid,false);
+  const p=f.agent.settle(outcome,credit.reward,!credit.valid,credit.valid);
+  assert.deepEqual(f.calls.map(c=>c.op),['boundary']);
+  f.decision('before-native-boundary');f.frames();assert.equal(f.agent.capture(),null);
+  f.ack();await p;f.decision('after-native-boundary');f.frames();assert.equal(f.agent.capture().id,'after-native-boundary');
+ });
+ await check('explicit manual research rating remains reward while manual buttons alone supply none',async()=>{
+  const f=fixture();f.nodes.rewardMode.value='manual';
+  const start=f.context.fdbRewardSnapshot({0:1}),end=f.context.fdbRewardSnapshot({0:1});
+  const credit=f.context.fdbOutcomeReward({rewardStart:start,rewardEnd:end},-1);assert.equal(credit.valid,true);assert.equal(credit.reward,-1);
+  const p=f.agent.settle(f.outcome(),credit.reward,false,credit.valid);assert.equal(f.calls[0].op,'reward');assert.equal(f.calls[0].reward,-1);f.ack();await p;
+ });
+ await check('unknown boundary failures remain visible and block further credit',async()=>{
+  const f=fixture(),p=f.agent.settle(f.outcome(),0,true,false);f.ack(f.calls[0],{error:'boundary failed'});await p;
+  assert.equal(f.agent.error(),'boundary failed');f.decision('blocked');f.frames();assert.equal(f.agent.capture(),null);assert.equal(f.calls.length,1);
  });
  await check('executed mask mismatch cannot earn positive credit',async()=>{
   const f=fixture();f.decision();f.frames(64);const p=f.agent.settle(f.agent.capture(),1,false);assert.equal(f.calls[0].valid,false);f.ack();await p;
@@ -166,6 +187,41 @@ let checks=0;function check(name,fn){return Promise.resolve().then(fn).then(()=>
  });
  await check('missing bridge is a no-op and no empty outcome is invented',async()=>{
   const f=fixture();delete f.context.FlyBridge;await f.agent.settle(f.outcome(),1,false);await f.agent.drain();assert.equal(f.calls.length,0);
+ });
+ await check('Current bind requires acknowledged native context/configuration and a durable success response',async()=>{
+  const f=fixture();await assert.rejects(f.agent.bindCurrent('layer-A'),/конфигурации/);assert.equal(f.calls.length,0);
+  f.agent.configured(7);const binding=f.agent.bindCurrent('layer-A');await Promise.resolve();const packet=f.calls[0];
+  assert.equal(packet.op,'bind');assert.equal(packet.layerId,'layer-A');assert.equal(packet.configVersion,7);assert.equal(packet.context.romHash,'rom-A');assert.equal(f.agent.isBound('layer-A'),false);
+  // A background checkpoint may drain while the bind response is pending.
+  const draining=f.agent.drain();f.ack(packet,{data:{bound:true,layerId:'layer-A',configVersion:7,fdbState:f.state(),changed:0,memoryBytes:100}});
+  assert.equal(await binding,'layer-A');await draining;assert.equal(f.agent.isBound('layer-A'),true);
+  const count=f.calls.length;await f.agent.bindCurrent('layer-A');assert.equal(f.calls.length,count,'confirmed binding is cached without another disk flush');
+  f.agent.configured(8);assert.equal(f.agent.isBound('layer-A'),false,'configure ACK invalidates binding');
+ });
+ await check('failed Current binding rejects instead of treating a native no-op as success',async()=>{
+  const f=fixture();f.agent.configured(1);const binding=f.agent.bindCurrent('layer-A');await Promise.resolve();f.ack(f.calls[0],{data:null});
+  await assert.rejects(binding,/не подтверждена/);assert.equal(f.agent.isBound('layer-A'),false);
+  const retry=f.agent.bindCurrent('layer-A');await Promise.resolve();f.ack(f.calls[1],{error:'disk full'});
+  await assert.rejects(retry,/disk full/);assert.equal(f.agent.isBound('layer-A'),false);f.ack(f.calls[2]);
+ });
+ await check('stale bind ACK cannot authorize a new ROM or native configuration',async()=>{
+  const f=fixture();f.agent.configured(1);const binding=f.agent.bindCurrent('layer-A');await Promise.resolve();f.agent.configured(2);
+  f.ack(f.calls[0],{data:{bound:true,layerId:'layer-A',configVersion:1}});await assert.rejects(binding,/не подтверждена/);assert.equal(f.agent.isBound('layer-A'),false);
+  const next=f.agent.bindCurrent('layer-A');await Promise.resolve();f.context.romHash='rom-B';f.ack(f.calls[1],{data:{bound:true,layerId:'layer-A',configVersion:2}});
+  await assert.rejects(next,/не подтверждена/);assert.equal(f.agent.isBound('layer-A'),false);
+ });
+ await check('browser fallback binds locally only when the native feedback API is absent',async()=>{
+  const f=fixture();delete f.context.FlyBridge;assert.equal(await f.agent.bindCurrent('layer-A'),'layer-A');assert.equal(f.agent.isBound('layer-A'),true);
+  f.context.romHash='rom-B';assert.equal(f.agent.isBound('layer-A'),false);
+ });
+ await check('stale bind errors and timeouts cannot poison a new ROM/configuration or start recovery',async()=>{
+  for(const failure of ['error','saveError','timeout']){
+   const f=fixture();f.agent.configured(1);const binding=f.agent.bindCurrent('layer-A');await Promise.resolve();
+   f.context.romHash='rom-B';f.agent.configured(2);
+   if(failure==='timeout')[...f.timers.values()][0]();else f.ack(f.calls[0],{[failure]:'old disk error',data:{fdbState:f.state(),changed:1}});
+   await assert.rejects(binding);assert.equal(f.agent.error(),null);assert.equal(f.calls.length,1,'old bind must not send a recovery boundary into the new session');
+   assert.equal(f.nodes.fdbJson.value,'');f.decision('new-session');f.frames();assert.equal(f.agent.capture().id,'new-session');
+  }
  });
  clearTimeout(watchdog);console.log('PASS: '+checks+' production FDB observation/credit protocol checks; these tests do not claim neural or gameplay improvement');
 })().catch(error=>{console.error(error);process.exitCode=1;});

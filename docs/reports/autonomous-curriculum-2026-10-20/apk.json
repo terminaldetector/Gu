@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "apk": "app/build/outputs/apk/debug/app-debug.apk",
+  "bytes": 208414271,
+  "sha256": "a474a7d521bbecded7dd7ce34ba9b588f8ccbf02ccdbfc99c6672206b150d9ab",
+  "signature_v2_verified": true,
+  "assets_match_current_source": [
+    "lab/lab.js",
+    "lab/state-ui.js",
+    "lab/curriculum-ui.js",
+    "lab/autonomous-episodes.js",
+    "lab/episode-history-ui.js",
+    "lab/save-states.js",
+    "lab/index.html"
+  ],
+  "required_assets": {
+    "assets/brain.fly": 122399548,
+    "assets/male-cns.fly": 206487056,
+    "assets/lab/sega/genplus.wasm": 2086794,
+    "assets/lab/gb/core.wasm": 608163,
+    "assets/lab/snes/core.wasm": 2362598
+  },
+  "build": "debug",
+  "android_device_validation": false
+}

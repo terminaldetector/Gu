@@ -1,0 +1,26 @@
+{
+  "full_check": {
+    "command": "bash tools/check.sh",
+    "exit_code": 0,
+    "final_pass_after_video_buffer_optimization": true,
+    "log_sha256": "3d618066c70350ec913201fe5f46ddf8cc9f4cb1b334df3a5bd43ece498a8246"
+  },
+  "browser_suites": {
+    "passed": 14,
+    "failed": 0,
+    "details": "browser-validation.json"
+  },
+  "android_build_lint": {
+    "result": "BUILD SUCCESSFUL",
+    "lint_errors": 0,
+    "lint_warnings": 19
+  },
+  "native_storage_tests": [
+    "RomLibraryCheck",
+    "EpisodeHistoryCheck",
+    "LearnedRolesCheck",
+    "LayerSetStoreCheck"
+  ],
+  "frozen_fdb_windows": 60,
+  "android_device_tests": "not run; no attached device"
+}

@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "apk": "app/build/outputs/apk/debug/app-debug.apk",
+  "bytes": 208414119,
+  "sha256": "ca0853237d47f5e6d876f75a2dd0ceacefb7698d37ebdefa809b92d43ff78300",
+  "signature_v2_verified": true,
+  "build": "debug",
+  "required_assets": {
+    "assets/lab/rom-library-ui.js": 3947,
+    "assets/lab/episode-history-ui.js": 2283,
+    "assets/lab/retro-core.js": 6376,
+    "assets/brain.fly": 122399548,
+    "assets/male-cns.fly": 206487056,
+    "assets/lab/gb/core.wasm": 608163,
+    "assets/lab/snes/core.wasm": 2362598,
+    "assets/lab/sega/genplus.wasm": 2086794
+  },
+  "android_device_validation": false
+}

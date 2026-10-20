@@ -1,0 +1,55 @@
+{
+  "type": "gu-diagnostics-inspection",
+  "version": 1,
+  "integrity": {
+    "ok": true,
+    "errors": [],
+    "validEvents": 1
+  },
+  "collectionWarnings": [],
+  "app": {
+    "sourceId": "java-fixture"
+  },
+  "previousProcess": null,
+  "eventCounts": {
+    "unicode.fixture": 1
+  },
+  "severityCounts": {
+    "info": 1
+  },
+  "runs": 1,
+  "observed": {
+    "systemsWithFrameMetrics": [],
+    "gameSaveOutcomes": {
+      "ok": 0,
+      "failed": 0
+    },
+    "gameLoadOutcomes": {
+      "ok": 0,
+      "failed": 0
+    },
+    "lifecycleAcknowledgements": 0,
+    "frozenProofsAttached": 0
+  },
+  "operations": {
+    "beginsWithoutRetainedEnd": [],
+    "endsWithoutRetainedBegin": [],
+    "completed": []
+  },
+  "failuresAndWarnings": [],
+  "userObservations": [],
+  "performanceWindows": [],
+  "nativeProcessMetrics": [],
+  "lifecycle": [],
+  "frozenProofs": [],
+  "notVerifiedByThisTool": [
+    "audio synchronization",
+    "physical control correctness",
+    "whole-device RAM/CPU/GPU utilization",
+    "calibrated energy use",
+    "absence of memory leaks",
+    "power-loss guarantees",
+    "functional learning of the full connectome"
+  ],
+  "conclusion": "Observed evidence only. Event presence and valid checksums do not certify the application or prove learning."
+}

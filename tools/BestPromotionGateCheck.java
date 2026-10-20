@@ -1,0 +1,24 @@
+package org.node.flyconsole;
+import org.json.*;
+import java.util.*;
+
+public final class BestPromotionGateCheck {
+    static void check(boolean x,String why){if(!x)throw new AssertionError(why);}
+    static JSONObject proof(boolean candidate,JSONObject context,JSONArray groups)throws Exception{
+        String digest=(candidate?"a":"b").repeat(64);JSONArray rows=new JSONArray();for(int i=0;i<groups.length();i++)rows.put(new JSONObject().put("stateHash",String.format("%064x",i+1)).put("seed",1).put("groupId",groups.getString(i)).put("role","control").put("trained",false).put("windows",10).put("interventions",0).put("outcome",candidate?"success":"death").put("confidence","diagnostic").put("beforeFdb",digest).put("afterFdb",digest));
+        return new JSONObject().put("valid",true).put("completed",true).put("expectedTrials",rows.length()).put("beforeFdb",digest).put("afterFdb",digest).put("context",new JSONObject(context.toString())).put("trials",rows);
+    }
+    public static void main(String[] args)throws Exception{
+        JSONObject context=new JSONObject().put("signature","c".repeat(64)).put("comparisonId",UUID.randomUUID().toString()).put("holdoutsUsedBefore",0).put("feedbackTrusted",true).put("candidateDigest","a".repeat(64)).put("referenceDigest","b".repeat(64));JSONArray groups=new JSONArray();for(int i=0;i<8;i++)groups.put(UUID.randomUUID().toString());JSONObject a=proof(true,context,groups),b=proof(false,context,groups);
+        check(BestPromotionGate.assess(a,b).getBoolean("eligible"),"pre-registered paired fixture with 8 improved independent groups admitted");check(!BestPromotionGate.assess(a,b).getBoolean("bestUpdated"),"gate cannot mutate Best");
+        for(String failure:new String[]{"unknown","regression","mutated","reused","unregistered","few-groups","duplicates","intervention","wrong-model","incomplete","untrusted-feedback"}){
+            JSONObject x=new JSONObject(a.toString()),y=new JSONObject(b.toString());JSONArray rows=x.getJSONArray("trials");
+            switch(failure){case "unknown":rows.getJSONObject(0).put("outcome","unknown").put("confidence","unknown");break;case "regression":rows.getJSONObject(0).put("outcome","death");y.getJSONArray("trials").getJSONObject(0).put("outcome","success");break;case "mutated":x.put("afterFdb","d".repeat(64));break;case "reused":x.getJSONObject("context").put("holdoutsUsedBefore",1);break;case "unregistered":x.getJSONObject("context").remove("comparisonId");break;case "few-groups":for(int i=1;i<rows.length();i++){rows.getJSONObject(i).put("groupId",groups.getString(0));y.getJSONArray("trials").getJSONObject(i).put("groupId",groups.getString(0));}break;case "duplicates":rows.getJSONObject(1).put("stateHash",rows.getJSONObject(0).getString("stateHash"));break;case "intervention":rows.getJSONObject(0).put("interventions",1);break;case "wrong-model":x.getJSONObject("context").put("candidateDigest","e".repeat(64));break;case "incomplete":x.put("completed",false);break;case "untrusted-feedback":x.getJSONObject("context").put("feedbackTrusted",false);break;}
+            check(!BestPromotionGate.assess(x,y).getBoolean("eligible"),"reject "+failure);
+        }
+        check(!BestPromotionGate.assess(a,null).getBoolean("eligible"),"no reference cannot update Best");check(!BestPromotionGate.assess(new JSONObject(),new JSONObject()).getBoolean("eligible"),"malformed proof fails closed");
+        JSONObject retained=new JSONObject(a.toString()),retainedReference=new JSONObject(b.toString());for(int i=0;i<8;i++){retained.getJSONArray("trials").getJSONObject(i).put("evidenceKind","retention");retainedReference.getJSONArray("trials").getJSONObject(i).put("evidenceKind","retention");}check(!BestPromotionGate.assess(retained,retainedReference).getBoolean("eligible"),"reused retention cannot inflate fresh statistical evidence");
+        JSONObject horizon=new JSONObject(b.toString());horizon.getJSONObject("context").put("criterionType","fly-nes-target-v1").put("criterionHorizon",10);JSONObject measured=new JSONObject(a.toString());measured.put("context",new JSONObject(horizon.getJSONObject("context").toString()));for(int i=0;i<8;i++)horizon.getJSONArray("trials").getJSONObject(i).put("outcome","not-reached");check(BestPromotionGate.assess(measured,horizon).getBoolean("eligible"),"verified fixed-horizon target criterion has a known evaluation non-success");horizon.getJSONArray("trials").getJSONObject(0).put("windows",9);check(!BestPromotionGate.assess(measured,horizon).getBoolean("eligible"),"early incomplete horizon never becomes failure evidence");
+        System.out.println("PASS: fixed paired Best admission gate, independent-group sign test, no regression, unknown/mutation/intervention/reused-control/duplicate/context rejection; admission never promotes a file");
+    }
+}

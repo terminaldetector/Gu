@@ -1,0 +1,88 @@
+{
+  "scope": "Isolated unpaced host allocation stress, no neural backend. Other tasks may run concurrently; timing deliberately omitted. Not a phone long-session or leak certification.",
+  "system": "snes",
+  "frames": 54000,
+  "samples": [
+    {
+      "frames": 6000,
+      "rss": 509628416,
+      "heapTotal": 6811648,
+      "heapUsed": 4890672,
+      "external": 38158279,
+      "arrayBuffers": 2927077,
+      "wasmBytes": 33554432
+    },
+    {
+      "frames": 12000,
+      "rss": 511856640,
+      "heapTotal": 6811648,
+      "heapUsed": 4892264,
+      "external": 38027247,
+      "arrayBuffers": 2796005,
+      "wasmBytes": 33554432
+    },
+    {
+      "frames": 18000,
+      "rss": 511856640,
+      "heapTotal": 6811648,
+      "heapUsed": 4892424,
+      "external": 38027247,
+      "arrayBuffers": 2796005,
+      "wasmBytes": 33554432
+    },
+    {
+      "frames": 24000,
+      "rss": 511987712,
+      "heapTotal": 6811648,
+      "heapUsed": 4898632,
+      "external": 38027247,
+      "arrayBuffers": 2796005,
+      "wasmBytes": 33554432
+    },
+    {
+      "frames": 30000,
+      "rss": 512118784,
+      "heapTotal": 6811648,
+      "heapUsed": 4811456,
+      "external": 38027247,
+      "arrayBuffers": 2796005,
+      "wasmBytes": 33554432
+    },
+    {
+      "frames": 36000,
+      "rss": 512118784,
+      "heapTotal": 6811648,
+      "heapUsed": 4812032,
+      "external": 38027247,
+      "arrayBuffers": 2796005,
+      "wasmBytes": 33554432
+    },
+    {
+      "frames": 42000,
+      "rss": 512118784,
+      "heapTotal": 6811648,
+      "heapUsed": 4812584,
+      "external": 38027247,
+      "arrayBuffers": 2796005,
+      "wasmBytes": 33554432
+    },
+    {
+      "frames": 48000,
+      "rss": 512118784,
+      "heapTotal": 6811648,
+      "heapUsed": 4812776,
+      "external": 38027247,
+      "arrayBuffers": 2796005,
+      "wasmBytes": 33554432
+    },
+    {
+      "frames": 54000,
+      "rss": 512118784,
+      "heapTotal": 6811648,
+      "heapUsed": 4812968,
+      "external": 38027247,
+      "arrayBuffers": 2796005,
+      "wasmBytes": 33554432
+    }
+  ]
+}

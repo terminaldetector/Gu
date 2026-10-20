@@ -1,0 +1,22 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
+let browser;
+(async()=>{
+ const assets=path.resolve('app/src/main/assets/lab');browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE});const page=await browser.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.route('https://starts.local/**',r=>{const name=new URL(r.request().url()).pathname.slice(1);return r.fulfill({contentType:name.endsWith('.js')?'application/javascript':'text/html',body:name?fs.readFileSync(path.join(assets,name)):'<script src="jsnes.min.js"></script><script src="save-states.js"></script><script src="episode-starts.js"></script>'});});await page.goto('https://starts.local/');
+ const demo=JSON.parse(fs.readFileSync(path.join(assets,'demo-rom.json')));
+ const result=await page.evaluate(async demo=>{
+  const core=new jsnes.NES();core.loadROM(atob(demo.base64));core.frame();const context={system:'nes',hash:'a'.repeat(64),core:'original diagnostic fixture'},archive=new FlyEpisodeStarts.Archive(),origin=i=>i.toString(16).padStart(8,'0')+'-0000-0000-0000-000000000000';
+  const capture=i=>({version:1,...context,slot:'auto',originId:origin(i),frame:i,state:core.toJSON(),savedAt:123,preview:null});
+  for(let i=1;i<=24;i++){core.cpu.mem[0]=i;await archive.save(capture(i),{role:i%3===0?'control':'train'});}
+  const saved=await archive.list(context);if(saved.length!==10)throw Error('expected two training and eight control starts across 24 trajectories');const first=saved.find(s=>s.originId===origin(1)),rev=first.revision;
+  core.cpu.mem[0]=99;await archive.save({...capture(1),state:core.toJSON()},{role:'train'});if((await archive.list(context)).find(s=>s.originId===origin(1)).revision!==rev)throw Error('same-origin repeat replaced original heldout/start');
+  const slots=new FlySaveStates.Store(new FlySaveStates.IndexedStorage(localStorage));await slots.save(context,'auto',{...capture(100),system:context.system,hash:context.hash});const old=await slots.read(context,'auto');core.cpu.mem[0]=150;await slots.save(context,'auto',{...capture(101),system:context.system,hash:context.hash},{expectedRevision:old.revision});if((await archive.list(context)).length!==10)throw Error('game auto slot overwrite damaged independent curriculum archive');
+  const other=new FlyEpisodeStarts.Archive();core.cpu.mem[0]=151;const snapshot=capture(30);await Promise.all([archive.save(snapshot,{role:'control'}),other.save(snapshot,{role:'control'})]);if((await other.list(context)).length!==11)throw Error('concurrent archives wrote a duplicate start');
+  const add=IDBObjectStore.prototype.add;IDBObjectStore.prototype.add=function(){throw new DOMException('fixture quota','QuotaExceededError');};core.cpu.mem[0]=152;let failed=false;try{await archive.save(capture(33),{role:'control'});}catch(e){failed=true;}finally{IDBObjectStore.prototype.add=add;}if(!failed||(await archive.list(context)).length!==11)throw Error('failed write did not preserve all previous starts');
+  const db=await archive.open();db.close();archive.opening=null;const reopened=new FlyEpisodeStarts.Archive();if((await reopened.list(context)).length!==11)throw Error('starts lost on reopen');if((await reopened.list({...context,hash:'b'.repeat(64)})).length)throw Error('starts leaked into another ROM');if((await reopened.list({...context,core:'different revision'})).length)throw Error('starts leaked across emulator revision');
+  const d=await reopened.open();await new Promise((resolve,reject)=>{const tx=d.transaction('starts','readwrite'),q=tx.objectStore('starts').openCursor();q.onsuccess=()=>{const row=q.result;row.update({...row.value,raw:'damaged'});};tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});let corrupt=false;try{await reopened.list(context);}catch(e){corrupt=true;}if(!corrupt)throw Error('damaged game start accepted');
+  return {retained:11,control:9,corruptRejected:corrupt};
+ },demo);
+ assert.deepEqual(errors,[]);assert.equal(result.retained,11);assert(result.corruptRejected);await browser.close();browser=null;console.log('PASS: real NES start archive beyond eight slots, two training/eight heldout trajectories, immutable origin, repeated/concurrent writes, independent auto slot overwrite, quota abort, process reopen, ROM/core isolation and corruption rejection');
+})().catch(async error=>{console.error(error);if(browser)await browser.close();process.exitCode=1;});

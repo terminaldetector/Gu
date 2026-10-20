@@ -14,7 +14,12 @@ const previous=snapshot({0:4});values.rewardScale='1';assert.equal(reward(previo
 values.winEnabled=true;assert.equal(reward(snapshot({0:0,1:19}),snapshot({0:0,1:20})).reward,2);assert.equal(reward(snapshot({0:0,1:20}),snapshot({0:0,1:20})).reward,0,'pre-existing win cannot be assigned to the new action');
 values.deathEnabled=true;assert.equal(reward(snapshot({0:0,1:19,2:0}),snapshot({0:0,1:20,2:1})).reward,-2,'death overrides simultaneous win');
 values.rewardMode='manual';values.winEnabled=false;values.deathEnabled=false;assert.equal(reward(snapshot({0:100}),snapshot({0:200}),3).reward,3,'manual feedback is not mixed with automatic RAM');
-values.rewardMode='diagnostic';const diagnostic=reward(snapshot({0:100,1:100}),snapshot({0:108,1:100}));assert.equal(diagnostic.reward,.99);
+assert.equal(reward(snapshot({0:100}),snapshot({0:200})).valid,false,'manual gameplay is unknown, not a zero reward');
+values.rewardMode='diagnostic';assert.equal(reward(snapshot({0:100,1:100}),snapshot({0:108,1:100})).valid,false,'external ROM cannot claim diagnostic reward');
+context.labPlatform='nes';context.diagnosticHash=context.romHash;const diagnostic=reward(snapshot({0:100,1:100}),snapshot({0:108,1:100}));assert.equal(diagnostic.reward,.99);
+values.rewardMode='score';assert.equal(reward(snapshot({0:1}),snapshot({0:2})).valid,false,'score without verified evidence is unknown');
+context.FlyScoreSearch=require('../app/src/main/assets/lab/score-search.js');values.scoreSource={version:1,system:'nes',romHash:context.romHash,counter:{address:0,width:1,format:'unsigned',endian:'little',multiplier:1},evidence:[{score:1,frame:1},{score:2,frame:2}]};values.ramWrap=false;
+assert.equal(reward(snapshot({0:1}),snapshot({0:2})).valid,true,'confirmed score evidence remains supported');
 assert.equal(context.fdbOutcomeReward(null,1).valid,false);assert.equal(reward(newActivation,end,20).reward,10,'bounded reward');
 assert(source.includes('remember(data,fdbRewardSnapshot(nes.cpu.mem))'));assert(source.includes('capture(fdbRewardSnapshot(sampledRam))'));
 console.log('PASS: production FDB reward isolates actual action activation from realtime backend tail, profile identity, wrap/sign, win/death, manual and diagnostic criteria');

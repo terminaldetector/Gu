@@ -1,0 +1,75 @@
+{
+  "scope": "Chromium production UI and real emulator cores; native Android replies are fixtures, not Android device validation.",
+  "suites": [
+    {
+      "suite": "console_layout_check",
+      "result": "PASS",
+      "scope": "PASS: tabs, real telemetry rendering, stale state, navigation preservation and 6 portrait/landscape layouts"
+    },
+    {
+      "suite": "interface_ui_check",
+      "result": "PASS",
+      "scope": "PASS: 44 responsive core layouts, independent UI/learning, group/button drag, orientation+reload, hide/left-hand, physical trigger mapping+real frames, device reconnect, safe capture cancel, themes and integer video"
+    },
+    {
+      "suite": "landscape_ui_check",
+      "result": "PASS",
+      "scope": "PASS: compact landscape, real port indicators, automatic/forced pad, disconnect, portrait isolation, offsets, persistence, editor override, reset retention and immersive bridge transitions"
+    },
+    {
+      "suite": "layer_ui_check",
+      "result": "PASS",
+      "scope": "PASS: production Layer Set UI, Sega XYZ weights/FDB persistence, P2 transfer, no ROM reset, forced growth checkpoint and malformed import preservation"
+    },
+    {
+      "suite": "platform_ui_check",
+      "result": "PASS",
+      "scope": "PASS: four-platform selector, real GB/SNES games, snapshots, P1/P2, keyboard and mobile layouts"
+    },
+    {
+      "suite": "training_ui_check",
+      "result": "PASS",
+      "scope": "PASS: actual NES/SNES realtime teaching, raw sub-frame taps, one-frame actions, full session persistence/overview, P1 ownership, bounded FDB replay, frozen evaluation and mobile layout"
+    },
+    {
+      "suite": "dual_layout_check",
+      "result": "PASS",
+      "scope": "PASS: production dual model cards, real single NES frame clock, independent action outcomes, paused layout and acknowledged exit (native reply fixture only)"
+    },
+    {
+      "suite": "polish_ui_check",
+      "result": "PASS",
+      "scope": "PASS: real Sega diagonal drag + multitouch frames, Material quick menu, remap/reload, Sega pad/region retention, independent model weights/FDB/training resume, saved unstarted P1/P2 preferences"
+    },
+    {
+      "suite": "training_flow_ui_check",
+      "result": "PASS",
+      "scope": "PASS: real NES/MD/SNES/GB acceleration, continuous RT with model-owned holds and bounded observed credit, durable REC -> AUTO, pure automation, exclusive streaming hints, frozen evaluation, paused guidance restore, selected Male CNS Sega P2 and explicit P2 demonstration"
+    },
+    {
+      "suite": "release_regression_ui_check",
+      "result": "PASS",
+      "scope": "PASS: 40-hint single archives on all real cores, in-game reset with retained weights, saved gamepad A/B mapping, verified score-to-reward/profile persistence, failed/rapid ROM replacement and stale OCR exclusion; native responses are fixtures"
+    },
+    {
+      "suite": "autonomous_console_ui_check",
+      "result": "PASS",
+      "scope": "PASS: real NES without graph, eight IndexedDB slots/preview, migration/atomic rollback/concurrent CAS/recovery, independent weights, neural fault/manual continuity, async quick menu and durable Current before first sample"
+    },
+    {
+      "suite": "continuation_ui_check",
+      "result": "PASS",
+      "scope": "PASS: native-library startup fixture with real NES/IndexedDB, reload/last snapshot without graph, lifecycle ACK, quota rollback, forced learned save, neural failure isolation and saved exit"
+    },
+    {
+      "suite": "plasticity_speed_ui_check",
+      "result": "PASS",
+      "scope": "PASS: measured ×1/×3 on real NES/MD/SNES/GB, pending GPU fixture, overloaded speed honesty, persisted root choice and independent P1/P2 configuration, expanded mode reload and retained thresholds when disabled"
+    },
+    {
+      "suite": "action_hold_ui_check",
+      "result": "PASS",
+      "scope": "PASS: real NES/MD/SNES/GB cores hold B + direction at ×1/×3/×10 without gaps, same mask has no up/down pulse, zero releases, GMode/P2 routing, durable options, legacy migration and late response rejection"
+    }
+  ]
+}

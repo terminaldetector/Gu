@@ -1,0 +1,41 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const code=fs.readFileSync('app/src/main/assets/lab/lab.js','utf8');
+const NES=require('../app/src/main/assets/lab/jsnes.min.js').NES;
+const flush=()=>new Promise(resolve=>setImmediate(resolve));
+function deferred(){let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};}
+function fixture(){
+ const nodes={learnMode:{value:'train'},liveHints:{checked:false},systemButtons:{value:'auto'},clock:{value:'realtime'},freeze:{checked:false},backend:{value:'cpu'},learnerController:{value:'exo'},epsilon:{value:'.1'},outputs:{children:[]}},calls=[];
+ const nes=new NES({onFrame(){},onAudioSample(){}});nes.loadROM(Buffer.from(require('../app/src/main/assets/lab/demo-rom.json').base64,'base64').toString('binary'));
+ const s={window:{},Date,Promise,performance:{now:()=>100},$:id=>nodes[id]||(nodes[id]={value:'',checked:false}),nes,labPlatform:'nes',emulationRate:1,romHash:'rom-A',graphIdentity:{sha256:'graph-A'},generation:7,profileFields:['rewardMode'],requestedConfiguration:{fdb:{learning:{enabled:true},growth:{enabled:true}}},connected:true,ready:true,configuring:false,pendingToken:null,token:0,playing:true,loaded:true,romLoading:false,frame:0,manualMask:0,brainMask:128,gmodeMode:'off',appliedMask:0,appliedHumanMask:0,appliedAgentMask:0,appliedDualMasks:[0,0],dualOverrides:[false,false],lastSample:0,pendingSince:0,lastWindowWall:0,retina:Array(16).fill(.25),sampledRetina:null,sampledRam:null,sampledControllerMask:0,sampledFdbOutcome:null,agentIntervened:false,pendingFdbReplay:null,fdbExperience:[],frozen:null,benchmark:null,learnReward:0,learner:{actions:[0,128]},measuredCpuMs:0,measuredFrames:0,brainGameAge:0,logs:[],observeVideo(){},sampleRewardMemory:()=>({0:0}),fdbRewardSnapshot:()=>({}),learningBoundary(){s.boundaries++;},boundaries:0,checkBrainHold(){},nativeCall:(op,json)=>calls.push({op,data:JSON.parse(json)}),log:text=>s.logs.push(text),updateGmodeHud(){},status(){}};
+ vm.createContext(s);
+ for(const [start,end] of [['function releaseBrain','function updateActionHoldInfo'],['function agentAllowedMask','function rgbaAndRetina'],['window.labError=function','function ids'],['let durableCurrentGate=','window.labResult='],['function advanceFrame','function emulationSpeedLabel']])vm.runInContext(code.slice(code.indexOf(start),code.indexOf(end,code.indexOf(start))),s);
+ let active=null,ensures=0;const pending=[];
+ s.window.layerExperience={activeId:()=>active,ensureCurrent(){ensures++;const request=deferred();pending.push(request);return request.promise;}};
+ return {s,nodes,calls,pending,activate:id=>{active=id;},ensures:()=>ensures};
+}
+(async()=>{
+ const f=fixture(),{s,calls,nodes}=f;
+ s.advanceFrame(100);assert.equal(s.frame,1);assert.equal(calls.length,0,'no sample or learning before durable Current');assert.equal(s.brainMask,0,'uncommitted agent cannot hold an action');assert.equal(s.pendingToken,null,'storage wait is not counted as neural inference');
+ await flush();assert.equal(f.ensures(),1);s.manualMask=16;s.advanceFrame(200);assert.equal(s.appliedMask,16,'manual game continues while disk/binding ACK is pending');assert.equal(s.frame,2);assert.equal(f.ensures(),1,'pending gate does not repeat saves');
+ f.activate('current-A');s.advanceFrame(250);await flush();assert.equal(f.ensures(),1,'activation during bind ACK does not launch duplicate Current');
+ f.pending[0].resolve('current-A');await flush();s.advanceFrame(300);assert.equal(calls.length,1);assert.equal(calls[0].data.layerId,'current-A');assert.equal(calls[0].data.learningMode,'train');
+ s.pendingToken=null;s.advanceFrame(400);assert.equal(calls.length,2);assert.equal(f.ensures(),1,'ordinary windows reuse confirmed Current');
+ s.pendingToken=null;s.requestedConfiguration.fdb.learningState={automatic:5};s.requestedConfiguration.fdb.deltas=[{weight:3}];s.advanceFrame(500);assert.equal(f.ensures(),1,'acquired weight/state updates do not force saves every frame');
+ s.pendingToken=null;f.activate(null);s.advanceFrame(600);await flush();assert.equal(f.ensures(),2,'deleting active Current invalidates cache');assert.equal(calls.length,3);f.activate('current-B');f.pending[1].resolve('current-B');await flush();s.advanceFrame(700);assert.equal(calls.at(-1).data.layerId,'current-B');
+ // Frozen/eval agent windows still require a recovery checkpoint.
+ const frozen=fixture();frozen.nodes.freeze.checked=true;frozen.nodes.learnMode.value='eval';frozen.s.advanceFrame(100);await flush();assert.equal(frozen.calls.length,0);frozen.activate('frozen-current');frozen.pending[0].resolve('frozen-current');await flush();frozen.s.advanceFrame(200);assert.equal(frozen.calls[0].data.frozen,true);assert.equal(frozen.calls[0].data.layerId,'frozen-current');
+ // A missing production store is a failure, never an ephemeral training fallback.
+ const missing=fixture();delete missing.s.window.layerExperience;missing.s.advanceFrame(100);assert.equal(missing.calls.length,0);assert.equal(missing.s.playing,true);assert.equal(missing.s.connected,false);assert.match(missing.s.window.labAgentFailure.message,/Current checkpoint/);
+ const failed=fixture();failed.s.advanceFrame(100);await flush();failed.pending[0].reject(Error('disk full'));await flush();assert.equal(failed.calls.length,0);assert.equal(failed.s.connected,false);assert.equal(failed.s.playing,true);assert.match(failed.s.window.labAgentFailure.message,/disk full/);failed.s.manualMask=1;failed.s.advanceFrame(200);assert.equal(failed.s.appliedMask,1);
+ // Old storage acknowledgements cannot revive or stop a newer ROM/generation.
+ for(const reject of [false,true]){
+  const stale=fixture();stale.s.advanceFrame(100);await flush();stale.s.generation++;stale.s.romHash='rom-B';stale.s.advanceFrame(200);await flush();assert.equal(stale.ensures(),2);stale.activate('new-current');stale.pending[1].resolve('new-current');await flush();
+  if(reject)stale.pending[0].reject(Error('old storage failed'));else stale.pending[0].resolve('old-current');await flush();stale.s.advanceFrame(300);assert.equal(stale.s.connected,true);assert.equal(stale.calls.length,1);assert.equal(stale.calls[0].data.layerId,'new-current');
+ }
+ const changed=fixture();changed.s.advanceFrame(100);await flush();changed.nodes.backend.value='gpu';changed.activate('old-config');changed.pending[0].resolve('old-config');await flush();changed.s.advanceFrame(200);await flush();assert.equal(changed.calls.length,0,'changed configuration cannot use prior ACK');assert.equal(changed.ensures(),2);
+ const selected=fixture();selected.s.advanceFrame(100);await flush();selected.activate('user-selected');selected.pending[0].reject(Object.assign(Error('selection changed'),{stale:true,code:'STALE_CURRENT'}));await flush();assert.equal(selected.s.connected,true,'same-generation layer selection stale error does not disable new selection');selected.s.advanceFrame(200);await flush();assert.equal(selected.ensures(),2);
+ const mismatch=fixture();mismatch.s.advanceFrame(100);await flush();mismatch.activate('new-user-selection');mismatch.pending[0].resolve('old-checkpoint');await flush();assert.equal(mismatch.s.connected,true);mismatch.s.advanceFrame(200);await flush();assert.equal(mismatch.calls.length,0);assert.equal(mismatch.ensures(),2,'mismatched active ID cannot reuse old acknowledgement');
+ const binding=fixture();let bound=true;binding.s.window.fdbAgent={isBound:()=>bound,boundary(){},frame(){},capture:()=>null};binding.s.advanceFrame(100);await flush();binding.activate('bound-current');binding.pending[0].resolve('bound-current');await flush();binding.s.advanceFrame(200);assert.equal(binding.calls.length,1);binding.s.pendingToken=null;bound=false;binding.s.advanceFrame(300);await flush();assert.equal(binding.ensures(),2,'native binding invalidation invalidates successful gate cache');assert.equal(binding.calls.length,1);bound=true;binding.pending[1].resolve('bound-current');await flush();binding.s.advanceFrame(400);assert.equal(binding.calls.length,2);
+ console.log('PASS: real NES continues manually before durable Current/bind ACK; cached guarded samples, deletion/config invalidation, frozen/eval, missing storage, failed disk, and stale-session completion');
+})().catch(error=>{console.error(error);process.exitCode=1;});

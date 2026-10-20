@@ -2,14 +2,14 @@
 'use strict';
 (() => {
 const S=FlyLayerSets,store=new S.Store(localStorage,window.FlyBridge);
-let entries=[],active=null,journal=[],busy=false,deleteId=null,saveQueue=Promise.resolve(),contextKey=null,checkpointJob=null;
+let entries=[],active=null,journal=[],busy=false,deleteId=null,saveQueue=Promise.resolve(),contextKey=null,checkpointJob=null,currentJob=null;
 const ctx=()=>({system:labPlatform,romHash,graphSha256:graphIdentity&&graphIdentity.sha256});
 const message=(text,error=false)=>{$('layerStatus').textContent=text;$('layerStatus').className=error?'note error':'note';};
 const selected=()=>entries.find(e=>e.id===$('layerSelect').value);
 function renderList(preferred=$('layerSelect').value){
  const select=$('layerSelect');select.replaceChildren(new Option('Выберите набор…',''));
  for(const entry of entries.slice().sort((a,b)=>b.updatedAt-a.updatedAt)){
-  const okay=S.compatible(entry,ctx()),option=new Option(entry.name+' · '+entry.system.toUpperCase()+(okay?'':' · другой ROM / граф'),entry.id);
+  const okay=S.compatible(entry,ctx()),option=new Option(entry.name+' · '+entry.system.toUpperCase()+(entry.storageRecovery?' · восстановлен из резерва':'')+(okay?'':' · другой ROM / граф'),entry.id);
   select.add(option);
  }
  if(entries.some(e=>e.id===preferred))select.value=preferred;
@@ -77,32 +77,76 @@ async function load(entry=selected(),resume=false){
  localStorage.setItem(resumeKey(),set.id);
  if(window.labState)window.labState.accepted();
  const text=(resume?'Восстановлен ':'Загружен ')+ '«'+set.name+'». ROM сохранён; связь остановлена. '+(requiresReset?'Другой seed / CPU–GPU: примените кнопкой «Сбросить только сеть».':'Включите связь для применения FDB без сброса динамики.');
- message(text);status(text);
+ const notice=set.storageRecovery?'Восстановлена резервная копия Layer Set после повреждения: '+set.storageRecovery.reason+'. '+(set.storageRecovery.repairError?'Повторная запись не удалась: '+set.storageRecovery.repairError+'. ':''):'';
+ message(notice+text,Boolean(notice));status(notice+text,Boolean(notice));
 }
 async function importSet(data){
  try{const imported=S.clone(validatePortable(data));imported.id=S.id();imported.createdAt=imported.updatedAt=Date.now();await store.request('save',{set:imported});await refresh(imported.id);$('layerName').value=imported.name;$('layerNotes').value=imported.notes;message('Импортирован «'+imported.name+'». Текущее обучение не изменено.');}catch(e){message(e.message,true);status(e.message,true);}
 }
 function autosave(){if(active&&$('layerAutosave').checked)return save(false,true);return Promise.resolve(false);}
 function resumeKey(){return 'fly-resume-v1-'+labPlatform+'-'+romHash+'-'+(graphIdentity&&graphIdentity.sha256);}
-function checkpoint(){
- if(checkpointJob)return checkpointJob;
+function showRoles(roles){
+ const el=$('layerRoles');if(!el)return;
+ el.textContent=roles?.available?(roles.layerId===active?.id?'Current: защищённое поколение ':'Предыдущее защищённое поколение; текущий набор ожидает checkpoint: ')+roles.current.slice(0,12)+' · Recovery: '+(roles.recoveryVerified===false?'повреждён':roles.recovery.slice(0,12))+' · Best: '+(roles.best?roles.best.slice(0,12)+' · подтверждён парной проверкой.':'ещё не подтверждён.')+(roles.fallback?' Использовано резервное поколение.':''):'Защищённые поколения ещё не созданы. Best не подтверждён.';
+}
+async function archiveCurrent(){
+ if(!window.FlyBridge||typeof window.FlyBridge.layerSets!=='function')return null;
+ const before=JSON.stringify(ctx()),id=active?.id;if(!id)throw Error('Current отсутствует');
+ const roles=await store.request('checkpointRoles',{id});
+ if(before!==JSON.stringify(ctx())||active?.id!==id)throw Object.assign(Error('Контекст поколений изменился'),{stale:true,code:'STALE_CURRENT'});
+ if(!roles?.available)throw Error('Защищённый Current не подтверждён');showRoles(roles);return roles;
+}
+function checkpoint({force=false}={}){
+ if(checkpointJob)return force?checkpointJob.then(()=>checkpoint({force:true})):checkpointJob;
  checkpointJob=(async()=>{
   await saveQueue.catch(()=>{});
-  if(!ready||!loaded||!$('autosavePolicy').checked||!/^\w{64}$/.test(romHash)||!graphIdentity||!/^\w{64}$/.test(graphIdentity.sha256))return true;
-  if(active&&!$('layerAutosave').checked)return true;
+  if(!ready||!loaded||!force&&!$('autosavePolicy').checked||!/^\w{64}$/.test(romHash)||!graphIdentity||!/^\w{64}$/.test(graphIdentity.sha256))return true;
+  if(!force&&active&&!$('layerAutosave').checked)return true;
   // Use the same native Layer Set store and save queue as named presets.
   if(window.fdbAgent){await window.fdbAgent.drain();if(window.fdbAgent.error())throw Error(window.fdbAgent.error());}
-  const okay=await save(false,true);if(!okay)throw Error('Не удалось сохранить продолжение обучения');return true;
+  const okay=await save(false,true);if(!okay)throw Error('Не удалось сохранить продолжение обучения');await archiveCurrent();return true;
  })().finally(()=>{checkpointJob=null;});return checkpointJob;
 }
-async function resume(){const id=localStorage.getItem(resumeKey());if(!id)return false;const entry=S.summary(await store.request('get',{id}));await load(entry,true);await refresh(id);return true;}
+// Current must exist durably before native inference can acquire experience.
+// This safety checkpoint does not depend on optional periodic autosave controls.
+function ensureCurrent(){
+ if(currentJob)return currentJob;
+ const before=JSON.stringify(ctx());
+ const unchanged=()=>before===JSON.stringify(ctx())&&ready&&loaded;
+ const stale=message=>Object.assign(Error(message),{code:'STALE_CURRENT',stale:true});
+ currentJob=(async()=>{
+  await saveQueue.catch(()=>{});
+  if(!unchanged())throw stale('Контекст обучения изменился до сохранения Current');
+  if(window.fdbAgent){await window.fdbAgent.drain();if(window.fdbAgent.error())throw Error(window.fdbAgent.error());}
+  if(!unchanged())throw stale('Контекст обучения изменился во время ожидания Current');
+  if(!await save(false,true))throw Error('Current не сохранён; обучение не начато');
+  if(!unchanged()||!active||!S.compatible(active,ctx()))throw stale('Контекст обучения изменился во время сохранения Current');
+  const id=active.id;
+  if(!window.fdbAgent||typeof window.fdbAgent.bindCurrent!=='function')throw Error('Подтверждение Current недоступно');
+  try{await window.fdbAgent.bindCurrent(id);await archiveCurrent();}catch(e){if(!unchanged()||active?.id!==id)throw stale('Current изменился во время подтверждения: '+e.message);throw e;}
+  if(!unchanged()||active?.id!==id)throw stale('Current изменился во время подтверждения');
+  return id;
+ })().finally(()=>{currentJob=null;});return currentJob;
+}
+async function resume(){
+ const before=JSON.stringify(ctx()),id=localStorage.getItem(resumeKey());let entry=null,failed=null;
+ if(id)try{entry=S.summary(await store.request('get',{id}));}catch(e){failed=e;}
+ if(!entry&&window.FlyBridge&&typeof window.FlyBridge.layerSets==='function'){
+  const recovered=await store.request('resumeRoles',{context:ctx()});if(recovered)entry=S.summary(recovered);
+ }
+ if(before!==JSON.stringify(ctx()))throw Error('Контекст изменился во время продолжения');
+ if(!entry){if(failed)throw failed;return false;}
+ await load(entry,true);await refresh(entry.id);
+ if(window.FlyBridge&&typeof window.FlyBridge.layerSets==='function')showRoles(await store.request('roles',{id:entry.id}));
+ return true;
+}
 function contextChanged(){
  const key=JSON.stringify(ctx());if(key===contextKey){renderList();refreshStats();return;}contextKey=key;
  if(active&&!S.compatible(active,ctx())){active=null;journal=[];message('Контекст изменён: выберите Layer Set нужного ROM и коннектома.');}
- if(!active)journal=[];renderList();refreshStats();
+ if(!active){journal=[];showRoles(null);}renderList();refreshStats();
 }
 window.labLayerSets=response=>store.receive(response);
-window.layerExperience={detach:()=>{active=null;journal=[];$('layerSelect').value='';refreshStats();renderSelected();},activeId:()=>active&&active.id||null,refreshStats,contextChanged,importSet,autosave,checkpoint,resume,terminal:event=>{append(event);if(event.mode==='train'||event.mode==='teach')autosave();}};
+window.layerExperience={showRoles,detach:()=>{active=null;journal=[];$('layerSelect').value='';refreshStats();renderSelected();},activeId:()=>active&&active.id||null,refreshStats,contextChanged,importSet,autosave,checkpoint,ensureCurrent,resume,terminal:event=>{append(event);if(event.mode==='train'||event.mode==='teach')autosave();}};
 const act=fn=>async()=>{if(busy)return;busy=true;renderSelected();try{await fn();}catch(e){message(e.message,true);status(e.message,true);}finally{busy=false;renderSelected();}};
 // Save owns its queue and busy state; other actions are serialized by their UI controls.
  $('layerNew').onclick=()=>save(true);$('layerUpdate').onclick=()=>save(false);

@@ -1,0 +1,1 @@
+PASS: native-library startup fixture with real NES/IndexedDB, reload/last snapshot without graph, lifecycle ACK, quota rollback, forced learned save, neural failure isolation and saved exit

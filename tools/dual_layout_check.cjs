@@ -17,9 +17,12 @@ const sha=crypto.createHash('sha256').update(Buffer.from(demo.base64,'base64')).
    dualExit(raw){const q=JSON.parse(raw);window.dualFixtureRequests.push({op:'exit',...q});receive('labDualExited',q);}
   };
  });
- await page.goto('https://flyconsole.local/lab/index.html');await page.waitForFunction(()=>loaded);
+ await page.goto('https://flyconsole.local/lab/index.html');await page.waitForFunction(()=>loaded&&!romLoading);
  await page.evaluate(()=>window.labReady({modelId:'flywire-v783',kind:'64-node presentation fixture',neurons:64,edges:0,graph_sha256:'1'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:8},(_,i)=>String(i+17)),heapMiB:512,backend:'cpu'}));
- await page.click('[data-tab="network"]');await page.locator('#dualPanel > summary').click();await page.selectOption('#dual1Model','flywire-v783');await page.selectOption('#dual2Model','male-cns-v1.0');await page.click('#dualStart');
+ await page.click('[data-tab="network"]');await page.locator('#dualPanel > summary').click();await page.selectOption('#dual1Model','flywire-v783');await page.selectOption('#dual2Model','male-cns-v1.0');
+ // This protocol test needs an observed source: unrated manual play is unknown,
+ // and must never be turned into synthetic zero-reward outcomes.
+ await page.selectOption('#dual1RewardMode','ram');await page.selectOption('#dual2RewardMode','ram');await page.click('#dualStart');
  await page.waitForFunction(()=>window.dualFixtureRequests.filter(q=>q.op==='sample').length>=3).catch(async e=>{console.error(await page.evaluate(()=>({status:$('dualStatus').textContent,error:dualAgents.error(),requests:dualFixtureRequests,frame,playing})));throw e;});
  const live=await page.evaluate(()=>({frame,masks:appliedDualMasks.slice(),samples:dualFixtureRequests.filter(q=>q.op==='sample'),p1:$('gmodeLeft').textContent,p2:$('gmodeRight').textContent,running:dualAgents.running()}));
  assert(live.frame>5&&live.running);assert.deepEqual(live.masks,[128,64]);assert.equal(live.p1,'P1 · FlyWire');assert.equal(live.p2,'P2 · Male CNS');

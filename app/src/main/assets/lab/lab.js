@@ -53,7 +53,9 @@ function trainingView(){
  $('trainingStatus').textContent=(connected&&playing?'Работает':connected?'Связь включена, игра на паузе':'На паузе')+' · '+labels[mode]+' · '+$('clock').value+' · '+($('runMode').value==='continuous'?'непрерывная игра':'эпизодический опыт');
  const badge=$('trainingBadge');if(badge){badge.textContent=(mode==='teach'?'ПОКАЗ':mode==='train'?'AUTO':mode==='eval'?'ПРОВЕРКА':'ИГРА')+' · '+(connected&&playing?'LIVE':'ПАУЗА');badge.className=connected&&playing?'hud-live':'hud-idle';}
  let f=null;try{f=fdbConfiguration();}catch(_){}const c=f&&f.learningState;if($('trainingBase'))$('trainingBase').checked=!f?.learning||f.learning.trainBase!==false;if($('trainingPlasticity'))$('trainingPlasticity').value=f?.learning?.plasticityMode||'base';if($('trainingCredit'))$('trainingCredit').value=f?.learning?.creditProfile||'single-v1';
- $('trainingFdbStatus').textContent=(f&&f.learning&&f.learning.enabled?(['teach','train'].includes(mode)&&!$('freeze').checked&&connected&&playing?'FDB принимает опыт':'FDB подключён · обучение на паузе'):'Обучение FDB выключено')+' · примеров '+(c?c.observations:0)+' (человек '+(c?c.human:0)+', auto '+(c?c.automatic:0)+') · обновлений ΔW '+(c&&c.baseUpdates||0)+' · исходных связей в обучении '+(c&&c.baseCandidates||0)+' · порогов '+(f?.neuronDynamics?.thresholdOffsets?.length||0)+' / обновлений '+(c?.neuronUpdates||0)+' · бюджет '+Number(c?.lastBudget||0).toFixed(3)+' · ограничений '+(c?.budgetClips||0)+' · создано '+(c&&c.born||0)+' · удалено '+(c&&c.pruned||0)+' · отклонено '+(c&&c.rejected||0)+' · очередь '+fdbExperience.length;
+ let evidence=source==='ram'||source==='diagnostic'&&labPlatform==='nes'&&typeof diagnosticHash!=='undefined'&&romHash===diagnosticHash||source==='manual'&&($('winEnabled').checked||$('deathEnabled').checked);
+ if(source==='score')try{FlyScoreSearch.validate(profileValues().scoreSource,profileValues(),labPlatform,romHash,ramLimit);evidence=true;}catch(_){}
+ $('trainingFdbStatus').textContent=(f&&f.learning&&f.learning.enabled?(['teach','train'].includes(mode)&&!$('freeze').checked&&connected&&playing?(mode==='train'&&!evidence?'Агент действует; достоверная награда не настроена, FDB ждёт обратной связи':'FDB принимает опыт'):'FDB подключён · обучение на паузе'):'Обучение FDB выключено')+' · примеров '+(c?c.observations:0)+' (человек '+(c?c.human:0)+', auto '+(c?c.automatic:0)+') · обновлений ΔW '+(c&&c.baseUpdates||0)+' · исходных связей в обучении '+(c&&c.baseCandidates||0)+' · порогов '+(f?.neuronDynamics?.thresholdOffsets?.length||0)+' / обновлений '+(c?.neuronUpdates||0)+' · бюджет '+Number(c?.lastBudget||0).toFixed(3)+' · ограничений '+(c?.budgetClips||0)+' · создано '+(c&&c.born||0)+' · удалено '+(c&&c.pruned||0)+' · отклонено '+(c&&c.rejected||0)+' · очередь '+fdbExperience.length;
 }
 function startTrainingGame(){playing=true;controlsEnabled(true);$('play').textContent='Пауза';nativeCall('resume');openGame();updateGmodeHud();trainingView();}
 function learningStats(){ trainingView();$('learningStats').textContent='Обновлений подражания: '+learner.demonstrations+' · '+learner.demonstrationSeconds.toFixed(1)+' с · пропущено '+learner.skippedDemonstrations+(learner.archive?' · архив: '+learner.archive.train.length+' сесс., '+learner.archive.passes+' проход(а); после проверки добавлено '+learner.archive.additionalSamples+' живых примеров':'')+' · обновлений по награде: '+learner.updates+' · эпизодов: '+learner.episodes+' · награда: '+episodeReward.toFixed(2)+' · шаг: '+episodeSteps+' · кнопки: '+brainMask;
@@ -73,6 +75,12 @@ function fdbRewardSnapshot(memory){
 function fdbOutcomeReward(outcome,manualReward){
  const start=outcome&&outcome.rewardStart,end=outcome&&outcome.rewardEnd;
  if(!start||!end||start.context!==end.context)return {reward:0,valid:false};
+ if(!['manual','ram','score','diagnostic'].includes(start.source))return {reward:0,valid:false};
+ if(start.diagnostic&&(labPlatform!=='nes'||typeof diagnosticHash==='undefined'||romHash!==diagnosticHash))return {reward:0,valid:false};
+ if(start.source==='score'){try{FlyScoreSearch.validate(profileValues().scoreSource,profileValues(),labPlatform,romHash,ramLimit);}catch(_){return {reward:0,valid:false};}}
+ // Manual play and an unobserved result supply no reward evidence. Explicit
+ // research ratings and configured RAM terminal transitions remain supported.
+ if(start.source==='manual'&&manualReward===0&&!(end.death&&!start.death)&&!(end.success&&!end.death&&!start.success))return {reward:0,valid:false};
  let reward=manualReward;
  if(start.diagnostic)reward+=(end.value-start.value)/8-.01;
  else if(start.source==='ram'||start.source==='score'){const delta=FlyGameTools.delta(end.value,start.value,start.spec,start.source==='score'?false:start.wrap);reward+=(start.source==='score'?Math.max(0,delta):delta)*start.scale;}
@@ -113,7 +121,7 @@ function learnedButtons(data){
  if(mode!=='teach'&&lastDecisionFeatures&&!interrupted){
   // Automatic FDB credit is accepted only through a cached neural decision, never a retina label.
   transitions.push({romHash,episode:learner.episodes,frame,sequence:data.sequence,state:lastDecisionFeatures,action:lastDecisionAction,reward,next:features.slice(),terminal,mode});if(transitions.length>200)transitions.shift();}
- if(window.fdbAgent){window.fdbAgent.settle(sampledFdbOutcome,credit.reward,interrupted||!credit.valid);sampledFdbOutcome=null;}
+ if(window.fdbAgent){window.fdbAgent.settle(sampledFdbOutcome,credit.reward,interrupted||!credit.valid,credit.valid);sampledFdbOutcome=null;}
  if(exo&&mode!=='teach'&&!data.fdbDecision)throw Error('Нейронное управление не получило решение FDB');
  const mask=mode==='teach'?0:exo?data.fdbDecision.mask:learner.step(features,reward,terminal,mode==='train');
  if(exo&&terminal&&mode!=='teach')learner.episodes++;
@@ -121,8 +129,10 @@ function learnedButtons(data){
  if(mode==='teach'&&terminal)learner.episodes++;
  if(terminal){trials.push({reward:episodeReward,success:success&&!death,death,steps:episodeSteps,mode});if(trials.length>100)trials.shift();log('Эпизод '+learner.episodes+': '+episodeReward.toFixed(2)+'; успех '+success);learningStats();
   if(window.layerExperience)window.layerExperience.terminal({source:success||death?(diagnostic?'diagnostic':'ram'):'boundary',outcome:death?'loss':success?'win':manualFinish?'finished':'timeout',reward:episodeReward,steps:episodeSteps,mode});
+  const historyBoundary=window.trainingHistory?window.trainingHistory.boundary({generation,frame,outcome:death?'death':success?'success':'unknown'}):Promise.resolve();
   if((mode==='train'||mode==='teach')&&$('autosavePolicy').checked){try{persistPolicy(false);}catch(error){log('Автосохранение: '+error.message);}}
-  if($('runMode').value==='continuous'){learningBoundary();updateGmodeHud();}
+  if(window.autonomousEpisodes?.terminal({outcome:death?'death':success?'success':'unknown',source:$('rewardMode').value,boundary:manualFinish?'manual':success||death?'terminal':'limit'},historyBoundary)){/* The controller owns the acknowledged next-start transition. */}
+  else if($('runMode').value==='continuous'){learningBoundary();updateGmodeHud();}
   else if($('autoEpisode').checked){restartEpisode();learningBoundary();connectBrain(false);}
   else {playing=false;connected=false;releaseBrain();$('play').textContent='Запустить эмулятор';$('brainToggle').textContent='Включить связь';nativeCall('stop');learningBoundary();updateGmodeHud();}
  }
@@ -143,7 +153,7 @@ function updateGmodeHud(){
  const active=gmodeMode!=='off',coop=gmodeMode==='coop';
  const badge=$('gmodeBadge'),left=$('gmodeLeft'),right=$('gmodeRight'),brain=$('brainBadge'),state=$('gameState');
  if(!badge)return;
- if(window.dualAgents&&window.dualAgents.active()){
+ if(!window.labNeuralSuspended&&window.dualAgents&&window.dualAgents.active()){
   badge.textContent='ДВЕ СЕТИ · CPU';badge.className='hud-live';
   left.textContent=window.dualAgents.label(1);right.textContent=window.dualAgents.label(2);
   const running=window.dualAgents.running();brain.textContent=running?'СЕТИ ON':'СЕТИ · ПАУЗА';brain.className=running?'hud-live':'hud-idle';
@@ -163,7 +173,7 @@ function updateGmodeHud(){
 let mapReceivedAt=0;
 function updateMapFreshness(){
  const state=$('mapState');if(!state)return;
- const paused=window.dualAgents&&window.dualAgents.active()?!window.dualAgents.running():!connected||(!playing&&pendingToken===null),stale=paused||!mapReceivedAt||performance.now()-mapReceivedAt>2000;
+ const paused=!window.labNeuralSuspended&&window.dualAgents&&window.dualAgents.active()?!window.dualAgents.running():!connected||(!playing&&pendingToken===null),stale=paused||!mapReceivedAt||performance.now()-mapReceivedAt>2000;
  state.textContent=!mapReceivedAt?'Ожидает расчёта':paused?'Пауза · окно сети':stale?(pendingToken!==null?'Считает новое окно':'Ждём новое окно'):'Живое окно сети';
  state.parentElement.classList.toggle('stale',stale);
 }
@@ -220,11 +230,13 @@ function setGmodeBoost(enabled){
  learningBoundary();updateButtons();if(resumeLink)connectBrain();if(resumeGame){playing=true;$('play').textContent='Пауза';nativeCall('resume');}updateGmodeHud();status(enabled?'Boost включён для текущего игрока. Включите связь и продолжите игру.':'Boost выключен; обычные параметры восстановлены.');
 }
 function log(text) {
+  if(!String(text).startsWith('окно '))window.guLogger?.event?.('ui.message',{message:String(text)});
   const lines = ($('log').textContent + '\n' + text).trim().split('\n').slice(-80);
   $('log').textContent = lines.join('\n');
 }
 let noticeTimer;
 function status(text,error=false) {
+ if(error)window.guLogger?.event?.('ui.error',{message:String(text)},'error');
  $('status').textContent=text;$('status').className=error?'error':'';
  const notice=$('gameNotice');if(!notice)return;
  notice.textContent=text;notice.classList.toggle('error',error);notice.classList.add('visible');
@@ -271,10 +283,21 @@ function applyPortMask(port,mask,old) {
     if(mask&(1<<i))nes.buttonDown(port,i);else nes.buttonUp(port,i);
   }
 }
+function manualOnlyButtons(){
+  const port=window.labAgentFailure?.manualPort||(gmodeMode==='coop-reverse'?2:1),mask=normalizeMask(manualMask);
+  applyPortMask(1,port===1?mask:0,appliedDualMasks[0]);
+  applyPortMask(2,port===2?mask:0,appliedDualMasks[1]);
+  appliedDualMasks=[port===1?mask:0,port===2?mask:0];dualOverrides=[port===1&&!!mask,port===2&&!!mask];
+  appliedHumanMask=mask;appliedAgentMask=0;appliedMask=mask;
+}
 function updateButtons() {
+  if(typeof window!=='undefined'&&window.labNeuralSuspended){manualOnlyButtons();return;}
+  try{updateAgentButtons();}catch(error){window.labError({message:String(error.message||error)});}
+}
+function updateAgentButtons() {
   if(typeof window!=='undefined'&&window.dualAgents&&window.dualAgents.active()){
     const masks=window.dualAgents.route().map(mask=>normalizeMask(filterAgentMask(mask))),port=window.dualAgents.manualPort()||1;
-    const manual=$('learnMode').value==='train'&&!$('liveHints').checked?(manualMask&~agentAllowedMask()):manualMask;
+    const manual=window.dualAgents.running()&&$('learnMode').value==='train'&&!$('liveHints').checked?(manualMask&~agentAllowedMask()):manualMask;
     dualOverrides=[false,false];dualOverrides[port-1]=Boolean(manual);masks[port-1]|=manual;
     if(manual&16)masks[port-1]&=~32;if(manual&32)masks[port-1]&=~16;
     if(manual&64)masks[port-1]&=~128;if(manual&128)masks[port-1]&=~64;
@@ -283,7 +306,7 @@ function updateButtons() {
     appliedDualMasks=masks;appliedHumanMask=manual;appliedAgentMask=appliedMask=0;window.userInterface?.telemetry?.();return;
   }
   const showing=$('learnMode').value==='teach',pureAuto=$('learnMode').value==='train'&&!$('liveHints').checked;
-  const manual=pureAuto&&gmodeMode==='off'?(manualMask&~agentAllowedMask()):manualMask;
+ const manual=pureAuto&&connected&&!window.labCurrentPending&&gmodeMode==='off'?(manualMask&~agentAllowedMask()):manualMask;
   const hint=$('learnMode').value==='train'&&$('liveHints').checked&&(gmodeMode==='off'||$('hintAgent').checked)&&Boolean(manual&agentAllowedMask());
   if(manual&&gmodeMode==='off'&&!showing)agentIntervened=true;
   let human=normalizeMask(manual),agent=showing?0:normalizeMask(filterAgentMask(brainMask));
@@ -321,7 +344,7 @@ function coreOptions(){return {
     sampleRate:audioContext?audioContext.sampleRate:labPlatform==='nes'?48000:44100,
     onAudioSample:(left,right)=>{
       if(!soundEnabled||emulationRate>1)return;
-      if(audioWrite-audioRead>=audioLeft.length)audioRead++;
+      if(audioWrite-audioRead>=audioLeft.length){audioRead++;window.guLogger?.audioOverrun?.(1);}
       audioLeft[audioWrite%audioLeft.length]=left;audioRight[audioWrite%audioRight.length]=right;audioWrite++;
     },
     onStatusUpdate:text=>log(text)
@@ -336,11 +359,12 @@ function toggleSound() {
       audioContext=new Audio({sampleRate:labPlatform==='nes'?48000:44100});
       audioNode=audioContext.createScriptProcessor(2048,0,2);
       audioNode.onaudioprocess=event=>{
-        const l=event.outputBuffer.getChannelData(0),r=event.outputBuffer.getChannelData(1);
+        const l=event.outputBuffer.getChannelData(0),r=event.outputBuffer.getChannelData(1);let starved=0;
         for(let i=0;i<l.length;i++) {
           if(soundEnabled&&emulationRate===1&&audioRead<audioWrite){l[i]=audioLeft[audioRead%audioLeft.length];r[i]=audioRight[audioRead%audioRight.length];audioRead++;}
-          else {l[i]=0;r[i]=0;}
+          else {l[i]=0;r[i]=0;if(playing&&soundEnabled&&emulationRate===1)starved++;}
         }
+        window.guLogger?.audio?.(l.length,starved);
       };
       audioNode.connect(audioContext.destination);
       nes.opts.sampleRate=audioContext.sampleRate;if(labPlatform==='nes'){nes.papu.sampleRate=audioContext.sampleRate;nes.setFramerate(60);}
@@ -355,7 +379,7 @@ function resetSession() {
   connected=false;$('brainToggle').textContent='Включить связь';
 }
 window.labLoadRom=async function(data) {
-  const sequence=++romLoadSequence;romLoading=true;
+  const sequence=++romLoadSequence;romLoading=true;window.labContinuing=false;let launched=false;
   try {
     if(window.labState)await window.labState.prepare();if(sequence!==romLoadSequence)return;
     window.labPause();
@@ -371,9 +395,9 @@ window.labLoadRom=async function(data) {
     if(sequence!==romLoadSequence)return;
     const actions=FlyGameTools.actions($('actionMasks').value,(labPlatform==='sega'||labPlatform==='snes')?4095:255),changedRom=romHash!==data.sha256;
     if(loaded&&(learner.updates||learner.demonstrations)){try{persistPolicy(false);}catch(error){log('Перед сменой ROM: '+error.message);}}
-    nes=candidate;if(labPlatform==='gb'||labPlatform==='snes')ramLimit=candidate.ramSize;loaded=true;committed=true;romHash=data.sha256;frame=5;appliedMask=appliedHumanMask=appliedAgentMask=0;manualMask=0;audioRead=audioWrite;
+    nes=candidate;if(labPlatform==='gb'||labPlatform==='snes')ramLimit=candidate.ramSize;loaded=true;committed=true;romHash=data.sha256;window.labStartStateId='rom-boot';window.flyOriginId=window.FlyLayerSets?.id?FlyLayerSets.id():null;window.labCoreIdentity=labPlatform==='nes'?'jsnes-sha256:84946f0dae4bcf3b2dfebe84ad3bfeb1dbcb413bd9b1a69e1f45910a95fd7b41':candidate.toJSON().core;frame=5;appliedMask=appliedHumanMask=appliedAgentMask=0;manualMask=0;audioRead=audioWrite;
     resetSession();if(bootFrame)rgbaAndRetina(bootFrame.buffer,bootFrame.width,bootFrame.height);
-    if(data.name.includes('diagnostic'))diagnosticHash=romHash;
+    diagnosticHash=labPlatform==='nes'&&romHash===FlyGameTools.diagnosticSha256?romHash:null;
     if(changedRom){pendingFdbReplay=null;humanExamples=[];latestOutputs=new Array(buttonNames.length).fill(0);sampledRam=null;learner.reset(Number($('seed').value));learner.setActions(actions);startSnapshot=null;}
     terminalLatch={success:false,death:false};if(window.sharedExperience)window.sharedExperience.contextChanged();if(window.layerExperience)window.layerExperience.contextChanged();
     learningBoundary();updateStartInfo();measuredFrames=0;measuredCpuMs=0;measuredWindows=0;measuredNetworkMs=0;measuredStarted=performance.now();
@@ -381,7 +405,7 @@ window.labLoadRom=async function(data) {
     for(const id of ['rewardAddress','deathAddress','winAddress'])$(id).max=String(ramLimit-1);$('ramOffset').max=ramLimit-64;
     $('platformInfo').textContent=FlyPlatforms[labPlatform].label+' · '+FlyPlatforms[labPlatform].core+' · '+(labPlatform==='nes'?60:nes.fps).toFixed(2)+' FPS · RAM '+ramLimit+' байт';
     status('ROM загружен. Ручное управление доступно; связь включается отдельно.');updateGmodeHud();
-    nativeCall('acceptRom',romHash);log('ROM SHA256: '+romHash+' · '+(labPlatform==='nes'?'mapper '+info.mapper:FlyPlatforms[labPlatform].core+', '+nes.fps+' FPS'));
+    window.guLogger?.boundary?.('emulator.rom-loaded',{core:window.labCoreIdentity,romHash});nativeCall('acceptRom',romHash);log('ROM SHA256: '+romHash+' · '+(labPlatform==='nes'?'mapper '+info.mapper:FlyPlatforms[labPlatform].core+', '+nes.fps+' FPS'));
     if(labPlatform==='sega'){$('segaCompatibility').textContent='Genesis Plus GX · '+nes.regionName+' · '+nes.fps+' FPS · P1/P2 '+nes.controllerTypes.join('/')+' кнопок · '+info.format;log('Mega Drive: '+info.format+' · '+bytes.length+' байт · регион ROM '+(info.region||'не указан')+' · '+nes.regionName+' · P1/P2 '+nes.controllerTypes.join('/'));}
     if(info.submapper)log('NES2 submapper '+info.submapper+': специальная совместимость не гарантирована.');
     if(info.warnings)info.warnings.forEach(log);
@@ -389,9 +413,16 @@ window.labLoadRom=async function(data) {
     if(info.battery)log('Battery RAM .sav отдельно не сохраняется; используйте снимки.');
     if(!data.name.includes('diagnostic')){$('rewardMode').value='manual';$('learnMode').value='off';status('Внешний ROM загружен. Откройте «Обучение»: покажите приёмы сами или выберите Automode и оценку результата.');}
     trials.length=0;transitions.length=0;learningStats();
+    if(window.labGameStates)await window.labGameStates.list();
     if(window.labState)await window.labState.restore();
+    launched=true;window.labContinuing=Boolean(data.resume);
   }catch(error){status('ROM не запущен: '+error.message,true);log(error.stack||error.message);}
   finally{if(sequence===romLoadSequence)romLoading=false;if(window.dualAgents)window.dualAgents.refresh();}
+  if(launched&&sequence===romLoadSequence){
+    if(data.resume&&window.labGameStates)try{await window.labGameStates.continueLast();}catch(error){status('ROM открыт; продолжение игры не восстановлено: '+error.message,true);}finally{if(sequence===romLoadSequence)window.labContinuing=false;}
+    if(sequence===romLoadSequence&&typeof window.dispatchEvent==='function')window.dispatchEvent(new Event('lab-rom-loaded'));
+  }
+  return launched;
 };
 window.labReady=function(data) {
   const changed=ready&&(graphIdentity.sha256||'')!==(data.graph_sha256||'');
@@ -412,10 +443,40 @@ window.labReady=function(data) {
   log(data.kind+'; heap '+data.heapMiB+' МиБ. Автопорты — технические.');if(data.notice)log(data.notice);if(window.labState){window.labState.ready(data,changed);return window.labState.settle();}
 };
 window.labError=function(data) {
-  if(window.dualAgents&&window.dualAgents.active())window.dualAgents.pause('native-error');
-  if(window.fdbAgent)window.fdbAgent.boundary();sampledFdbOutcome=null;status(data.message,true);log(data.message);$('console').disabled=false;connected=false;configuring=false;pendingToken=null;window.startAfterConfig=false;window.startTrainingAfterConfig=false;if(benchmark)finishBenchmark('error');
-  $('brainToggle').textContent='Включить связь';releaseBrain();updateGmodeHud();
+  if(data&&Number.isInteger(data.generation)&&data.generation!==generation)return;
+  if(data&&data.token!==undefined&&data.token!==null&&data.token!==pendingToken)return;
+  const message=data&&data.message?String(data.message):'Ошибка нейронного backend';
+  window.guLogger?.boundary?.('neural.failure',{message,token:data?.token??null,replyGeneration:data?.generation??null,manualContinues:playing},'error');
+  // Keep the failure visible to diagnostics even when later game messages replace the toast.
+  const manualPort=null;
+  window.labAgentFailure={message,frame,platform:labPlatform,at:Date.now(),manualPort,cleanupErrors:[]};
+  window.labNeuralSuspended=true;
+  connected=false;configuring=false;generation++;pendingToken=null;window.startAfterConfig=false;window.startTrainingAfterConfig=false;
+  brainMask=0;sampledFdbOutcome=null;fdbExperience.length=0;pendingFdbReplay=null;
+  const failure=window.labAgentFailure,cleanupError=error=>{const message=String(error.message||error);failure.cleanupErrors.push(message);try{log('Ошибка завершения нейронного шага: '+message);}catch(_){}};
+  const clean=fn=>{try{const result=fn();if(result&&typeof result.catch==='function')result.catch(cleanupError);}catch(error){cleanupError(error);}};
+  clean(()=>{if(window.dualAgents&&window.dualAgents.active()){
+    const port=window.dualAgents.manualPort();if(port===1||port===2)failure.manualPort=port;
+    return window.dualAgents.pause('native-error');
+  }});
+  clean(()=>learningBoundary());
+  clean(()=>window.autonomousEpisodes?.failed(new Error(message)));
+  clean(()=>window.humanTeaching?window.humanTeaching.stop('neural-error'):null);
+  clean(()=>{if(benchmark)finishBenchmark('error');});
+  // Release both ports before restoring human input: a failed agent must never hold a button.
+  clean(()=>releasePorts());clean(()=>releaseBrain());
+  clean(()=>{$('console').disabled=false;$('brainToggle').textContent='Включить связь';});
+  const detail='Агент остановлен: '+message+'. Игра доступна вручную.';
+  clean(()=>status(detail,true));clean(()=>log(detail));clean(()=>updateGmodeHud());
 };
+window.labAgentStatus=()=>({connected,playing,failure:window.labAgentFailure?{...window.labAgentFailure,cleanupErrors:window.labAgentFailure.cleanupErrors.slice()}:null});
+function neuralStep(fn){
+ try{const expectedGeneration=generation,value=fn();if(value&&typeof value.catch==='function')value.catch(error=>{if(generation===expectedGeneration)neuralStep(()=>{throw error;});else{try{log('Устаревшая операция сети: '+String(error.message||error));}catch(_){}}});return {ok:true,value};}catch(error){
+  const message=String(error.message||error),failure=window.labAgentFailure;
+  if(window.labNeuralSuspended&&failure){if(failure.cleanupErrors.length<20&&!failure.cleanupErrors.includes(message))failure.cleanupErrors.push(message);}
+  else window.labError({message});return {ok:false};
+ }
+}
 function ids(id) { return $(id).value.split(/[\s,;]+/).filter(Boolean); }
 function fdbConfiguration(){
  const raw=$('fdbJson').value.trim();if(!raw)return null;
@@ -466,9 +527,9 @@ function neuralConfiguration(value){
   const copy=JSON.parse(JSON.stringify(value));delete copy.gmode;delete copy.gmodeBoost;delete copy.systemButtons;delete copy.controllerSource;delete copy.actionHold;return copy;
 }
 function apply(start=false,restoreStart=true,reset=false) {
-  if(window.labState&&window.labState.restoring())return window.labState.settle().then(()=>apply(start,restoreStart,reset));
-  if(window.dualAgents&&window.dualAgents.active())return window.dualAgents.exit().then(ok=>{if(ok)return apply(start,restoreStart,reset);});
   try {
+  if(window.labState&&window.labState.restoring())return window.labState.settle().then(()=>apply(start,restoreStart,reset));
+  if(window.dualAgents&&window.dualAgents.active())return window.dualAgents.exit().then(ok=>{if(ok)return apply(start,restoreStart,reset);}).catch(error=>window.labError({message:String(error.message||error)}));
     if(!ready)throw Error('Коннектом ещё не готов');if(romLoading)throw Error('Дождитесь загрузки ROM');
     resetSession();configuring=true;configurationApplied=false;window.startAfterConfig=start;
     if($('learnMode').value!=='off')validateProfile(profileValues());
@@ -478,31 +539,33 @@ function apply(start=false,restoreStart=true,reset=false) {
   }catch(error){status(error.message,true);configuring=false;}
 }
 function connectBrain(restoreStart=true){
- if(window.labState&&window.labState.restoring())return window.labState.settle().then(()=>connectBrain(restoreStart));
- if(window.dualAgents&&window.dualAgents.active())return window.dualAgents.exit().then(ok=>{if(ok)return connectBrain(restoreStart);});
  try{
+ if(window.labState&&window.labState.restoring())return window.labState.settle().then(()=>connectBrain(restoreStart));
+ if(window.dualAgents&&window.dualAgents.active())return window.dualAgents.exit().then(ok=>{if(ok)return connectBrain(restoreStart);}).catch(error=>window.labError({message:String(error.message||error)}));
   if(!ready||romLoading||configuring)throw Error('Дождитесь ROM и конфигурации');
   const current=configuration();validateConfiguration(current);
   if(!configurationApplied||!requestedConfiguration||!keysEqual(JSON.stringify({configuration:neuralConfiguration(current)}),JSON.stringify({configuration:neuralConfiguration(requestedConfiguration)}))){apply(true,restoreStart);return;}
   const systemButtonsChanged=requestedConfiguration.systemButtons!==current.systemButtons;
   requestedConfiguration.gmode=current.gmode;requestedConfiguration.systemButtons=current.systemButtons;requestedConfiguration.actionHold=current.actionHold;
-  if(systemButtonsChanged&&ready)nativeCall('systemButtons',JSON.stringify({mode:current.systemButtons,generation}));
+  if(systemButtonsChanged&&ready)nativeCall('systemButtons',JSON.stringify({mode:current.systemButtons,generation:generation+1}));
   if($('learnMode').value!=='off')validateProfile(profileValues());
   learner.setActions(FlyGameTools.actions($('actionMasks').value,(labPlatform==='sega'||labPlatform==='snes')?4095:255));learner.setAllowedMask(agentAllowedMask());
-  generation++;pendingToken=null;lastSample=0;learningBoundary();releaseBrain();connected=true;
+  generation++;pendingToken=null;lastSample=0;learningBoundary();releaseBrain();window.labNeuralSuspended=false;connected=true;
   $('brainToggle').textContent='Отключить связь';nativeCall('resume');status('Связь возобновлена: динамика коннектома, FDB и веса сохранены.');updateGmodeHud();
- }catch(error){status(error.message,true);}
+ }catch(error){window.labError({message:String(error.message||error)});}
 }
 window.labConfigured=function(data) {
+ if(!data||Number.isInteger(data.generation)&&data.generation>=0&&data.generation!==generation)return;
+ return neuralStep(()=>{
  window.fdbDiagnostics?.record('configure',{nativeMs:data.configureMs,workerQueueMs:data.configureQueueMs});
-  if(Number.isInteger(data.generation)&&data.generation>=0&&data.generation!==generation)return;
   if(Number.isFinite(data.configureMs))log('Применение параметров сети: '+data.configureMs.toFixed(1)+' мс (без ожидания очереди и сохранения)');
-  configurationApplied=true;configuring=false;connected=Boolean(window.startAfterConfig);window.startAfterConfig=false;
+  configurationApplied=true;configuring=false;connected=Boolean(window.startAfterConfig);window.guLogger?.boundary?.('neural.configured',{configVersion:data.configVersion,backend:data.backend,reset:data.reset});if(connected)window.labNeuralSuspended=false;window.startAfterConfig=false;
   restoreGrowthStatePending=false;
   $('brainToggle').textContent=connected?'Отключить связь':'Включить связь';
   if(data.reset!==false){history.length=0;mapReceivedAt=0;drawHistory();}
   status((data.initial?'Сеть инициализирована.':data.reset===false?'Параметры применены; динамика сети сохранена.':'Динамика сети сброшена.')+ ' Конфигурация '+data.configVersion+' · '+data.mode+' · backend '+(data.backend||'cpu')+(connected?' · связь включена':' · связь выключена'));
-  learningBoundary();nativeCall('resume');updateGmodeHud();if(window.startTrainingAfterConfig){window.startTrainingAfterConfig=false;startTrainingGame();}
+  learningBoundary();window.fdbAgent?.configured?.(data.configVersion);nativeCall('resume');updateGmodeHud();if(window.startTrainingAfterConfig){window.startTrainingAfterConfig=false;startTrainingGame();}
+ });
 };
 // Reward bytes and retina share one capture time. Avoid copying full WRAM via WASM proxies.
 function sampleRewardMemory(){
@@ -511,9 +574,42 @@ function sampleRewardMemory(){
  for(const name of ['win','death'])if($(name+'Enabled').checked){const a=Number($(name+'Address').value);result[a]=mem[a];}
  return result;
 }
+let durableCurrentGate=null;
+function durableCurrentContext(){
+ const fields=['inputIds','outputIds','lesions','mode','clock','maxHz','thresholdHz','windowMs','seed','gain','backend','learnerController','systemButtons','learnMode','liveHints','freeze',...profileFields];
+ // Acquired deltas, eligibility and growth state are intentionally excluded: ordinary learning must not trigger a full save every frame.
+ return JSON.stringify({generation,originId:window.flyOriginId||null,system:labPlatform,romHash,graph:graphIdentity&&graphIdentity.sha256,fields:fields.map(id=>{const el=$(id);return [id,el&&el.value,Boolean(el&&el.checked)];}),learning:requestedConfiguration?.fdb?.learning||null,growth:requestedConfiguration?.fdb?.growth||null});
+}
+function requireDurableCurrent(){
+ const layers=window.layerExperience;
+ if(!layers||typeof layers.ensureCurrent!=='function'||typeof layers.activeId!=='function')throw Error('Current checkpoint недоступен: запуск агента запрещён');
+ const context=durableCurrentContext(),id=layers.activeId();
+ const gate=durableCurrentGate;
+ if(gate&&gate.context===context&&gate.confirmed&&gate.id===id&&(!window.fdbAgent?.isBound||window.fdbAgent.isBound(id))){window.labCurrentPending=false;return id;}
+ if(gate&&gate.context===context&&!gate.confirmed)return null;
+ const request={context,generation,initialId:id,confirmed:false};durableCurrentGate=request;window.labCurrentPending=true;
+ // The old decision cannot keep acting or collecting reward while its replacement has no durable recovery point.
+ learningBoundary();releaseBrain();
+ Promise.resolve().then(()=>layers.ensureCurrent()).then(async savedId=>{if(window.curriculumSessions)await window.curriculumSessions.ensure(savedId);return savedId;}).then(savedId=>{
+  if(durableCurrentGate!==request||generation!==request.generation||!connected||window.labNeuralSuspended)return;
+  if(durableCurrentContext()!==request.context){durableCurrentGate=null;return;}
+  if(typeof savedId!=='string'||!savedId)throw Error('Current checkpoint не подтверждён активным слоем');
+  if(layers.activeId()!==savedId){durableCurrentGate=null;try{log('Прежний Current checkpoint: активный слой изменён');}catch(_){}return;}
+  if(window.fdbAgent?.isBound&&!window.fdbAgent.isBound(savedId))throw Error('Current checkpoint не привязан к neural backend');
+  request.id=savedId;request.confirmed=true;window.labCurrentPending=false;
+ }).catch(error=>{
+  if(error?.stale||error?.code==='STALE_CURRENT'||durableCurrentGate!==request||generation!==request.generation||!connected||window.labNeuralSuspended||durableCurrentContext()!==request.context){if(durableCurrentGate===request)durableCurrentGate=null;try{log('Прежний Current checkpoint: '+String(error.message||error));}catch(_){}return;}
+  durableCurrentGate=null;window.labCurrentPending=false;window.labError({message:'Current checkpoint: '+String(error.message||error)});
+ });
+ return null;
+}
 function sampleFrame(now,force=false) {
+  if(window.trainingHistory?.pending())return;
+  if(window.labNeuralSuspended)return;
   if(window.dualAgents&&window.dualAgents.active()){if(!window.dualAgents.waiting())observeVideo();window.dualAgents.sample({retina:retina.slice(),frame,now,force});return;}
   if(!connected||!ready||pendingToken!==null||configuring)return;
+  const currentId=requireDurableCurrent();if(!currentId)return;
+  if(window.autonomousEpisodes?.waiting())return;
   const interval=$('clock').value==='realtime'?Math.max(50,Math.min(1000,lastWindowWall*1.25)):$('clock').value==='async'?200:0;
   if(!force&&now-lastSample<interval)return;
   observeVideo();lastSample=now;pendingSince=now;pendingToken=++token;
@@ -521,22 +617,24 @@ function sampleFrame(now,force=false) {
   if($('freeze').checked){if(frozen===null)frozen=retina.slice();input=frozen;}else frozen=null;
   sampledRetina=input.slice();sampledRam=sampleRewardMemory();sampledControllerMask=appliedMask;sampledFdbOutcome=window.fdbAgent?window.fdbAgent.capture(fdbRewardSnapshot(sampledRam)):null;
   if(pendingFdbReplay&&!$('freeze').checked&&['teach','train'].includes($('learnMode').value)){fdbExperience.push(...pendingFdbReplay);fdbExperience=fdbExperience.slice(-200);pendingFdbReplay=null;}
-  nativeCall('sample',JSON.stringify({retina:input,token:pendingToken,generation,frame,manualMask,humanMask:manualMask,agentMask:brainMask,gmode:gmodeMode,controllerMask:appliedMask,backend:$('backend').value,controllerSource:$('learnerController').value,layerId:window.layerExperience&&window.layerExperience.activeId?window.layerExperience.activeId():null,actions:learner.actions,epsilon:Number($('epsilon').value),learningMode:benchmark?'benchmark-'+benchmark.policy:$('learnMode').value,learningReward:benchmark?0:learnReward,experience:!$('freeze').checked&&['teach','train'].includes($('learnMode').value)?fdbExperience.splice(0,16):[],frozen:$('freeze').checked}));
+  nativeCall('sample',JSON.stringify({retina:input,token:pendingToken,generation,frame,originId:window.flyOriginId||null,gameFeedback:labPlatform==='nes'&&typeof diagnosticHash!=='undefined'&&romHash===diagnosticHash?{kind:'fly-nes-target-v1',x:sampledRam[0],y:sampledRam[1]}:null,runtimeClock:$('clock').value,emulationRate,rewardSource:$('rewardMode').value,core:window.labCoreIdentity||'unknown',startStateId:window.labStartStateId||'rom-boot',manualMask,humanMask:manualMask,intervened:agentIntervened,agentMask:brainMask,gmode:gmodeMode,controllerMask:appliedMask,backend:$('backend').value,controllerSource:$('learnerController').value,layerId:currentId,actions:learner.actions,epsilon:Number($('epsilon').value),learningMode:benchmark?'benchmark-'+benchmark.policy:$('learnMode').value,learningReward:benchmark?0:learnReward,experience:!$('freeze').checked&&['teach','train'].includes($('learnMode').value)?fdbExperience.splice(0,16):[],frozen:$('freeze').checked}));
 }
 window.labResult=function(data) {
+ if(!data||pendingToken===null||data.generation!==generation||data.token!==pendingToken)return;
+ return neuralStep(()=>{
  window.fdbDiagnostics?.gpu(data.gpuUploads);
  window.fdbDiagnostics?.record('sample',{totalMs:data.sampleTotalMs,workerQueueMs:data.workerQueueMs,gpuSyncMs:data.gpuSyncMs});
   if(data.generation!==generation||data.token!==pendingToken)return;
   checkBrainHold(performance.now());if(data.generation!==generation||data.token!==pendingToken)return;
   pendingToken=null;acceleratedFrames=0;brainGameAge=0;brainExpired=false;lastResponse=performance.now();
-  if(data.error){window.labError({message:'Расчёт сети прерван; ROM сохранён. Возобновите связь.'});return;}
+  if(data.error){window.labError({message:typeof data.error==='string'?data.error:'Расчёт сети прерван; ROM сохранён. Возобновите связь.'});return;}
   lastWindowWall=data.wallMs;measuredWindows++;measuredNetworkMs+=data.wallMs;if(benchmark)benchmark.cpuMs+=data.wallMs;
-  if(data.fdbSaveError)status('FDB применён; сохранение Layer Set: '+data.fdbSaveError,true);
   if(data.fdbState){$('fdbJson').value=JSON.stringify(data.fdbState,null,2);if(requestedConfiguration)requestedConfiguration.fdb=data.fdbState;}
   if(data.fdbGrowthState){const value=fdbConfiguration();if(value){value.growthState=data.fdbGrowthState;$('fdbJson').value=JSON.stringify(value,null,2);if(requestedConfiguration)requestedConfiguration.fdb=value;}}
   latestOutputs=data.outputs.slice();
   if(data.fdbLearningState){const value=fdbConfiguration();if(value){value.learningState=data.fdbLearningState;$('fdbJson').value=JSON.stringify(value,null,2);if(requestedConfiguration)requestedConfiguration.fdb=value;}}
-  try{brainMask=connected?learnedButtons(data):0;}catch(error){window.labError({message:error.message});brainMask=0;}updateButtons();learningStats();
+  if(data.fdbSaveError)throw Error('FDB применён, но checkpoint не сохранён: '+data.fdbSaveError);
+  try{brainMask=connected?learnedButtons(data):0;}catch(error){window.labError({message:error.message});return;}updateButtons();learningStats();
   $('fdbStatus').textContent='FDB v'+(data.fdbRevision||0)+' · адаптировано '+(data.fdbAdapted||0)+' · выросло '+(data.fdbGrown||0)+' · дельт '+(data.fdbDeltas||0)+' · новых связей '+(data.fdbEdges||0);
   $('spikes').textContent=data.spikes;$('active').textContent=data.active;$('compute').textContent=data.wallMs.toFixed(1);
   updateNeuralMap(data);
@@ -545,11 +643,12 @@ window.labResult=function(data) {
   $('performance').textContent='Измерено: '+measuredFrames+' кадров · '+measuredWindows+' окон · эмуляция '+measuredCpuMs.toFixed(1)+' мс · backend '+(data.backend||'cpu')+' '+measuredNetworkMs.toFixed(1)+' мс · среднее окно '+(measuredNetworkMs/Math.max(1,measuredWindows)).toFixed(1)+' мс. Скорость попыток — в отдельном отчёте.';
   $('timing').textContent=(labPlatform.toUpperCase()+': ')+frame+' кадров · сеть: '+data.simMs.toFixed(1)+' мс · '+(data.backend||'cpu')+' · '+$('clock').selectedOptions[0].textContent;
   if(performance.now()-lastTelemetry>1000){log('окно '+data.sequence+': '+data.spikes+' импульсов; активных '+data.active+'; кнопки '+data.buttons);lastTelemetry=performance.now();}
-};
+});};
 window.labDualTelemetry=function(data){
  if(!window.dualAgents||!window.dualAgents.active()||!Array.isArray(data.agents))return;
  const agents=data.agents,p1=agents.find(a=>a.id==='p1'),spikes=agents.reduce((n,a)=>n+(a.spikes||0),0),active=agents.reduce((n,a)=>n+(a.active||0),0);
  if(Number.isFinite(data.wallMs)){lastWindowWall=data.wallMs;measuredWindows++;measuredNetworkMs+=data.wallMs;}
+ window.fdbDiagnostics?.record('dual',{wallMs:data.wallMs,pipelineWallMs:data.pipelineWallMs});
  $('spikes').textContent=spikes;$('active').textContent=active;$('compute').textContent=lastWindowWall.toFixed(1);
  if(p1&&p1.neuralGroups){updateNeuralMap({...p1,backend:'cpu',fdbEdges:p1.fdbState&&p1.fdbState.edges?p1.fdbState.edges.length:0});$('mapStats').textContent='P1 · CPU · активных '+(p1.active||0)+' · Wexo '+(p1.fdbState&&p1.fdbState.edges?p1.fdbState.edges.length:0);}
  history.push(Math.log10(1+spikes));if(history.length>100)history.shift();drawHistory();
@@ -564,8 +663,22 @@ function drawHistory() {
 }
 function advanceFrame(now,forceSample=false) {
   if(!loaded||romLoading)return;
-  try {updateButtons();const dual=window.dualAgents&&window.dualAgents.active(),observation=!dual&&window.humanTeaching?window.humanTeaching.beforeFrame():null;const started=performance.now();nes.frame();const elapsed=performance.now()-started;measuredCpuMs+=elapsed;measuredFrames++;if(benchmark){benchmark.frames++;benchmark.emulatorMs+=elapsed;}frame++;const dt=1/(labPlatform==='nes'?60:nes.fps);if(dual)window.dualAgents.frame({masks:appliedDualMasks.slice(),dt,overrides:dualOverrides.slice()});else{if(window.fdbAgent)window.fdbAgent.frame(appliedAgentMask,dt);if(window.humanTeaching)window.humanTeaching.commit(dt,observation);}if(!dual&&connected){brainGameAge+=dt;checkBrainHold(performance.now());}sampleFrame(now,forceSample);}
-  catch(error){if(window.dualAgents&&window.dualAgents.active())window.dualAgents.pause('emulator-error');if(window.humanTeaching)window.humanTeaching.stop('error');playing=false;connected=false;releaseBrain();status('Эмуляция остановлена: '+error.message,true);$('play').textContent='Запустить эмулятор';}
+  let dual=false,observation=null;
+  if(!window.labNeuralSuspended)neuralStep(()=>{
+   dual=Boolean(window.dualAgents&&window.dualAgents.active());
+   if(!dual&&window.humanTeaching&&connected)observation=window.humanTeaching.beforeFrame();
+  });
+  // Button routing contains neural/UI callbacks; only the actual core frame belongs to the core boundary.
+  neuralStep(()=>updateButtons());
+  try {const started=performance.now();nes.frame();const elapsed=performance.now()-started;measuredCpuMs+=elapsed;measuredFrames++;window.guLogger?.coreFrame?.(elapsed,started+elapsed);if(benchmark){benchmark.frames++;benchmark.emulatorMs+=elapsed;}frame++;}
+  catch(error){playing=false;window.guLogger?.event?.('emulator.frame-error',{message:error.message},'error');window.labError({message:'Ошибка эмулятора: '+error.message});status('Эмуляция остановлена: '+error.message,true);$('play').textContent='Запустить эмулятор';return;}
+  if(!window.labNeuralSuspended)neuralStep(()=>{
+   if(!connected&&!(dual&&window.dualAgents.running()))return;
+   const dt=1/(labPlatform==='nes'?60:nes.fps);
+   if(dual)window.dualAgents.frame({masks:appliedDualMasks.slice(),dt,overrides:dualOverrides.slice()});
+   else{if(window.fdbAgent)window.fdbAgent.frame(appliedAgentMask,dt);if(window.humanTeaching)window.humanTeaching.commit(dt,observation);}
+   if(!dual&&connected){brainGameAge+=dt;checkBrainHold(performance.now());}sampleFrame(now,forceSample);
+  });
 }
 function emulationSpeedLabel(){
  const nominal=labPlatform!=='nes'&&nes?nes.fps:60,actual=liveFps/nominal;
@@ -574,10 +687,10 @@ function emulationSpeedLabel(){
 }
 function loop(now) {
   if((pendingToken!==null||configuring)&&now-pendingSince>30000)window.labError({message:'Нет ответа сети более 30 секунд: опыт остановлен'});
-  const dual=window.dualAgents&&window.dualAgents.active(),fps=labPlatform!=='nes'&&nes?nes.fps:60;
-  checkBrainHold(now);window.dualAgents?.watchdog(now);
+  const fps=labPlatform!=='nes'&&nes?nes.fps:60;
+  if(!window.labNeuralSuspended)neuralStep(()=>{checkBrainHold(now);if(window.dualAgents?.active()&&window.dualAgents.running())window.dualAgents.watchdog(now);});
   const lockstep=connected&&$('clock').value==='lockstep';
-  if(now-fpsAt>=1000){liveFps=(measuredFrames-fpsFrames)*1000/(now-fpsAt);fpsFrames=measuredFrames;fpsAt=now;updateGmodeHud();const label=$('gameMetrics');if(label)label.textContent=liveFps.toFixed(1)+' FPS · '+(liveFps/fps).toFixed(2)+'× · сеть '+lastWindowWall.toFixed(1)+' мс';if(window.learningUI)window.learningUI.refresh();}
+  if(now-fpsAt>=1000){liveFps=(measuredFrames-fpsFrames)*1000/(now-fpsAt);fpsFrames=measuredFrames;fpsAt=now;neuralStep(()=>updateGmodeHud());const label=$('gameMetrics');if(label)label.textContent=liveFps.toFixed(1)+' FPS · '+(liveFps/fps).toFixed(2)+'× · сеть '+lastWindowWall.toFixed(1)+' мс';if(window.learningUI)neuralStep(()=>window.learningUI.refresh());}
   presentVideo();
   requestAnimationFrame(loop);
 }
@@ -586,9 +699,11 @@ function loop(now) {
 // clamp imposing a false speed ceiling. Video presentation stays on RAF.
 const emulationChannel=new MessageChannel();
 function emulationPump(){
- const now=performance.now(),fps=labPlatform!=='nes'&&nes?nes.fps:60,dual=window.dualAgents&&window.dualAgents.active();
- const lockstep=connected&&$('clock').value==='lockstep',waiting=()=>dual?window.dualAgents.waiting():pendingToken!==null;
- const active=playing&&loaded&&!romLoading&&!configuring&&!document.hidden&&!(lockstep&&waiting());
+ const now=performance.now(),fps=labPlatform!=='nes'&&nes?nes.fps:60;
+ const dual=!window.labNeuralSuspended&&window.dualAgents?neuralStep(()=>window.dualAgents.active()).value:false;
+ const lockstep=connected&&$('clock').value==='lockstep',waiting=()=>dual&&!window.labNeuralSuspended?Boolean(neuralStep(()=>window.dualAgents.waiting()).value):pendingToken!==null;
+ const preparing=!window.labNeuralSuspended?Boolean(neuralStep(()=>window.autonomousEpisodes?.waiting()).value):false;
+ const active=playing&&loaded&&!romLoading&&!configuring&&!preparing&&!document.hidden&&!(lockstep&&waiting());
  emulationClock.configure(now,fps,emulationRate,active);
  const measureState=[playing&&!romLoading&&!document.hidden,fps,emulationRate].join(':');
  if(measureState!==emulationMeasureState){emulationMeasureState=measureState;fpsFrames=measuredFrames;fpsAt=now;liveFps=0;}
@@ -609,16 +724,35 @@ function emulationPump(){
 emulationChannel.port1.onmessage=emulationPump;
 setTimeout(emulationPump,0);
 window.labPause=function() {
-  if(window.dualAgents&&window.dualAgents.active())window.dualAgents.pause('pause');
-  if(window.humanArchive)window.humanArchive.cancel();
-  if(window.humanTeaching)window.humanTeaching.stop('pause');
-  if(benchmark)finishBenchmark('interrupted');window.startAfterConfig=false;window.startTrainingAfterConfig=false;fdbExperience.length=0;learningBoundary();
+  // Commit the pause before any backend cleanup: save/load and Android backgrounding must always stop the core.
   playing=false;connected=false;configuring=false;generation++;pendingToken=null;
-  manualMask=0;holding.clear();controllerMasks.clear();controlsEnabled(false);releasePorts();releaseBrain();audioRead=audioWrite;
-  $('play').textContent='Запустить эмулятор';$('brainToggle').textContent='Включить связь';nativeCall('stop');updateGmodeHud();
+  window.guLogger?.boundary?.('emulator.pause');
+  window.startAfterConfig=false;window.startTrainingAfterConfig=false;fdbExperience.length=0;
+  manualMask=0;holding.clear();controllerMasks.clear();audioRead=audioWrite;
+  const pauseGeneration=generation,pauseError=error=>{
+   const message=String(error.message||error);
+   if(generation!==pauseGeneration){try{log('Завершение прежней паузы: '+message);}catch(_){}return;}
+   if(window.labNeuralSuspended&&window.labAgentFailure){if(window.labAgentFailure.cleanupErrors.length<20&&!window.labAgentFailure.cleanupErrors.includes(message))window.labAgentFailure.cleanupErrors.push(message);}
+   else window.labError({message});
+  };
+  const pauseStep=fn=>{try{const result=fn();if(result&&typeof result.catch==='function')result.catch(pauseError);}catch(error){pauseError(error);}};
+  pauseStep(()=>{if(!window.labNeuralSuspended&&window.dualAgents&&window.dualAgents.active())return window.dualAgents.pause('pause');});
+  pauseStep(()=>{if(window.humanArchive)window.humanArchive.cancel();});
+  pauseStep(()=>window.humanTeaching?window.humanTeaching.stop('pause'):null);
+  pauseStep(()=>{if(benchmark)finishBenchmark('interrupted');});pauseStep(()=>learningBoundary());
+  pauseStep(()=>controlsEnabled(false));pauseStep(()=>releasePorts());pauseStep(()=>releaseBrain());
+  pauseStep(()=>{$('play').textContent='Запустить эмулятор';$('brainToggle').textContent='Включить связь';});
+  pauseStep(()=>nativeCall('stop'));pauseStep(()=>updateGmodeHud());
 };
-$('play').onclick=()=>{if(benchmark){window.labPause();return;}if(!loaded||romLoading){status('Сначала загрузите ROM',true);return;}if(playing&&window.humanTeaching)window.humanTeaching.stop('pause');playing=!playing;$('play').textContent=playing?'Пауза':'Запустить эмулятор';if(playing){controlsEnabled(true);nativeCall('resume');if(window.dualAgents&&window.dualAgents.active())window.dualAgents.resume();}else{if(window.dualAgents&&window.dualAgents.active())window.dualAgents.pause('pause');generation++;pendingToken=null;learningBoundary();releaseBrain();nativeCall('stop');}updateGmodeHud();};
-$('step').onclick=()=>{if(!playing&&pendingToken===null){nativeCall('resume');advanceFrame(performance.now(),true);}};
+$('play').onclick=()=>{
+ if(benchmark){window.labPause();return;}if(!loaded||romLoading||window.labContinuing){status('Дождитесь загрузки ROM и снимка',true);return;}
+ const pausing=playing;playing=!playing;$('play').textContent=playing?'Пауза':'Запустить эмулятор';window.guLogger?.boundary?.(playing?'emulator.resume':'emulator.pause');
+ if(pausing&&window.humanTeaching)neuralStep(()=>window.humanTeaching.stop('pause'));
+ if(playing){controlsEnabled(true);neuralStep(()=>{nativeCall('resume');if(!window.labNeuralSuspended&&window.dualAgents&&window.dualAgents.active())return window.dualAgents.resume();});}
+ else{generation++;pendingToken=null;neuralStep(()=>{if(!window.labNeuralSuspended&&window.dualAgents&&window.dualAgents.active())window.dualAgents.pause('pause');});neuralStep(()=>learningBoundary());neuralStep(()=>releaseBrain());neuralStep(()=>nativeCall('stop'));}
+ neuralStep(()=>updateGmodeHud());
+};
+$('step').onclick=()=>{if(!playing&&pendingToken===null){neuralStep(()=>nativeCall('resume'));advanceFrame(performance.now(),true);}};
 $('console').onclick=()=>nativeCall('console');
 $('demo').onclick=()=>nativeCall('demo');$('import').onclick=()=>nativeCall('pickRom');$('audio').onclick=toggleSound;
 $('apply').onclick=()=>apply(false);
@@ -665,7 +799,7 @@ updateSystemButtonsInfo();
 updateGmodeHud();
 $('backend').onchange=()=>{window.labPause();status('Смена backend требует явного сброса сети. ROM и веса сохраняются.');};
 $('brainToggle').onclick=()=>{if(connected){connected=false;resetSession();nativeCall('stop');status('Связь отключена; эмулятор доступен вручную.');updateGmodeHud();}else connectBrain();};
-$('resetNes').onclick=()=>{if(loaded){window.labPause();restartEpisodeFromRom();learningBoundary();status(labPlatform.toUpperCase()+' сброшена. Коннектом, FDB и веса сохранены; связь можно возобновить.');}};
+$('resetNes').onclick=()=>{if(loaded){window.labPause();try{restartEpisodeFromRom();try{learningBoundary();}catch(error){window.labError({message:String(error.message||error)});}status(labPlatform.toUpperCase()+' сброшена. Коннектом, FDB и веса сохранены; связь можно возобновить.');}catch(error){status('Перезапуск эмулятора не выполнен: '+error.message,true);}}};
 $('gain').oninput=()=>$('gainLabel').textContent=Number($('gain').value).toFixed(2);
 $('freeze').onchange=()=>{if(window.dualAgents&&window.dualAgents.active())window.dualAgents.boundary('freeze');if(window.fdbAgent)window.fdbAgent.boundary();sampledFdbOutcome=null;if(benchmark)window.labPause();if(window.humanTeaching)window.humanTeaching.stop('freeze');frozen=null;log('Freeze retina: '+$('freeze').checked);};
 $('saveState').onclick=()=>{try{if(!loaded)throw Error('ROM не загружен');localStorage.setItem(labPlatform+'-slot',JSON.stringify({hash:romHash,system:labPlatform,frame,state:JSON.parse(JSON.stringify(nes.toJSON()))}));status('Снимок '+labPlatform.toUpperCase()+' сохранён. Состояние коннектома не входит в снимок.');}catch(error){status(error.message,true);}};
@@ -732,7 +866,7 @@ window.onkeydown=event=>{
  const code=event.code||event.key,button=keys[code];if(button!==undefined){event.preventDefault();holding.set('key-'+code,1<<button);refreshManual();}
 };
 window.onkeyup=event=>{holding.delete('key-'+(event.code||event.key));refreshManual();};
-window.onblur=()=>{window.labPause();if(window.dualAgents&&window.dualAgents.active())window.dualAgents.pause('blur');if(window.fdbAgent)window.fdbAgent.boundary();sampledFdbOutcome=null;if(window.humanTeaching)window.humanTeaching.stop('blur');holding.clear();controllerMasks.clear();refreshManual();releaseBrain();controlsEnabled(false);};
+window.onblur=()=>window.labPause();
 window.onfocus=()=>controlsEnabled(document.querySelector('main').dataset.tab==='game');
 document.addEventListener('focusin',event=>{if(['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName))controlsEnabled(false);});
 document.addEventListener('focusout',()=>controlsEnabled(document.querySelector('main').dataset.tab==='game'));
@@ -785,8 +919,8 @@ function validateSnapshot(snapshot){
  }
  check(snapshot.state,template,'state');for(const bytes of [snapshot.state.cpu.mem,snapshot.state.ppu.vramMem,snapshot.state.ppu.spriteMem])if(!Array.isArray(bytes)||bytes.some(x=>!Number.isInteger(x)||x<0||x>255))throw Error('Неверные байты RAM снимка');probe.fromJSON(snapshot.state);
 }
-function restartEpisodeFromRom(){if(window.humanTeaching)window.humanTeaching.stop('restart');emulatorRestarts++;holding.clear();controllerMasks.clear();manualMask=0;brainMask=0;releasePorts();nes.reloadROM();frame=0;for(let i=0;i<5;i++){nes.frame();frame++;}frozen=null;audioRead=audioWrite;releasePorts();}
-function restartEpisode(){if(window.humanTeaching)window.humanTeaching.stop('restart');emulatorRestarts++;holding.clear();manualMask=0;brainMask=0;if(startSnapshot){nes.fromJSON(JSON.parse(JSON.stringify(startSnapshot.state)));frame=startSnapshot.frame;if(labPlatform==='nes')rgbaAndRetina(nes.ppu.buffer);}else{nes.reloadROM();frame=0;for(let i=0;i<5;i++){nes.frame();frame++;}}releasePorts();audioRead=audioWrite;updateButtons();}
+function restartEpisodeFromRom(){window.guLogger?.boundary?.('emulator.reset-rom');window.flyOriginId=window.FlyLayerSets?.id?FlyLayerSets.id():null;if(window.humanTeaching)neuralStep(()=>window.humanTeaching.stop('restart'));emulatorRestarts++;holding.clear();controllerMasks.clear();manualMask=0;brainMask=0;releasePorts();nes.reloadROM();frame=0;for(let i=0;i<5;i++){nes.frame();frame++;}frozen=null;audioRead=audioWrite;releasePorts();}
+function restartEpisode(){if(window.humanTeaching)neuralStep(()=>window.humanTeaching.stop('restart'));emulatorRestarts++;holding.clear();manualMask=0;brainMask=0;if(startSnapshot){nes.fromJSON(JSON.parse(JSON.stringify(startSnapshot.state)));window.flyOriginId=startSnapshot.originId||(window.FlySaveStates?FlySaveStates.legacyOrigin(romHash):null);frame=startSnapshot.frame;if(labPlatform==='nes')rgbaAndRetina(nes.ppu.buffer);}else{nes.reloadROM();frame=0;for(let i=0;i<5;i++){nes.frame();frame++;}}releasePorts();audioRead=audioWrite;updateButtons();}
 function policyPackage(includeStart=false){if(!ready||!loaded)throw Error("Дождитесь ROM и коннектома");validateProfile(profileValues());validateConfiguration(configuration());const actions=FlyGameTools.actions($('actionMasks').value,(labPlatform==='sega'||labPlatform==='snes')?4095:255);if(JSON.stringify(actions)!==JSON.stringify(learner.actions))throw Error('Сначала примените набор действий');const result={version:2,system:labPlatform,romHash,key:learningKey(),profile:profileValues(),configuration:configuration(),policy:learner.save(),experience:{version:1,human:humanExamples.slice(-200)},training:{mode:$('learnMode').value,runMode:$('runMode').value,guidance:$('liveHints').checked?'assist':'auto'},trials:trials.slice()};if(includeStart){result.start=startSnapshot;result.transitions=transitions.slice();result.graph=graphIdentity;}return result;}
 function modelStorageKey(prefix){return prefix+labPlatform+'-'+romHash+'-'+(graphIdentity&&graphIdentity.sha256||'unavailable');}
 function persistPolicy(show=true){const text=JSON.stringify(policyPackage(false));localStorage.setItem(modelStorageKey('fly-policy-'),text);if(show){$('policyJson').value=text;status('Веса сохранены. Для переноса со стартом используйте экспорт JSON.');}}
@@ -808,7 +942,7 @@ function validateModelPackage(data){
 }
 $('savePolicy').onclick=async()=>{try{if(window.fdbAgent)await window.fdbAgent.drain();persistPolicy();}catch(error){status(error.message,true);}};
 $('loadPolicy').onclick=()=>{try{const raw=$('policyJson').value.trim()||localStorage.getItem(modelStorageKey('fly-policy-'))||localStorage.getItem('fly-policy-'+romHash+'-'+graphIdentity.sha256)||localStorage.getItem('fly-policy-'+romHash);if(!raw||raw.length>8*1024*1024)throw Error('Модель отсутствует или слишком велика');restorePolicy(JSON.parse(raw));status('Модель загружена. Выберите оценку и включите связь.');}catch(error){status(error.message,true);}};
-$('captureStart').onclick=()=>{try{if(!loaded)throw Error('Загрузите ROM');window.labPause();startSnapshot={hash:romHash,frame,state:JSON.parse(JSON.stringify(nes.toJSON()))};learningBoundary();updateStartInfo();status('Старт эпизода сохранён. Автоперезапуск будет возвращаться сюда.');}catch(error){status(error.message,true);}};
+$('captureStart').onclick=()=>{try{if(!loaded)throw Error('Загрузите ROM');window.labPause();startSnapshot={hash:romHash,frame,originId:window.flyOriginId,state:JSON.parse(JSON.stringify(nes.toJSON()))};learningBoundary();updateStartInfo();status('Старт эпизода сохранён. Автоперезапуск будет возвращаться сюда.');}catch(error){status(error.message,true);}};
 $('clearStart').onclick=()=>{window.labPause();startSnapshot=null;learningBoundary();updateStartInfo();};
 $('saveProfile').onclick=()=>{try{if(!ready||!loaded)throw Error('Дождитесь ROM и коннектома');validateProfile(profileValues());validateConfiguration(configuration());localStorage.setItem(modelStorageKey('fly-profile-'),JSON.stringify({version:2,romHash,system:labPlatform,graph_sha256:graphIdentity&&graphIdentity.sha256||'unavailable',profile:profileValues(),configuration:configuration(),start:startSnapshot}));status('Профиль игры сохранён.');}catch(error){status(error.message,true);}};
 function restoreProfile(data){
@@ -883,7 +1017,7 @@ function benchmarkReset(){benchmark.decisions=0;benchmark.frames=0;benchmark.cpu
 function finishBenchmark(reason){
  if(!benchmark)return;const run=benchmark;
  if(reason!=='complete')benchmarkTrial(reason);
- lastBenchmark={version:1,type:'fly-evaluation-report',game:run.game,system:labPlatform,rom_sha256:romHash,graph:graphIdentity,configuration:run.configuration,profile:run.profile,policy:run.policy,seed:run.seed,criterion:run.criterion,start_frame:run.startFrame,nominal_fps:labPlatform==='nes'?60:nes.fps,trials:run.trials,summary:FlyBenchmark.summary(run.trials),weights_unchanged:JSON.stringify(learner.weights)===run.weights,finished_reason:reason,limitations:['Success means the user-configured criterion was reached; game completion is not independently verified.','The 4x4 visual adapter and LIF model are not a validated simulation of biological fly behavior.','SARSA uses raw retinal and neural features; it is an external readout.']};
+ lastBenchmark={version:1,type:'fly-evaluation-report',game:run.game,system:labPlatform,rom_sha256:romHash,graph:graphIdentity,configuration:run.configuration,profile:run.profile,policy:run.policy,seed:run.seed,criterion:run.criterion,start_frame:run.startFrame,nominal_fps:labPlatform==='nes'?60:nes.fps,trials:run.trials,summary:FlyBenchmark.summary(run.trials),weights_unchanged:JSON.stringify(learner.weights)===run.weights,fdb_inference_windows_unchanged:run.fdbVerified>0&&run.fdbVerified===run.fdbWindows?true:null,fdb_verified_windows:run.fdbVerified||0,fdb_proof_scope:'Full native FDB state around inference windows; configuration/episode resets are outside this proof. Not sufficient for Best promotion.',finished_reason:reason,limitations:['Success means the user-configured criterion was reached; game completion is not independently verified.','The 4x4 visual adapter and LIF model are not a validated simulation of biological fly behavior.','SARSA uses raw retinal and neural features; it is an external readout.']};
  benchmark=null;playing=false;connected=false;pendingToken=null;generation++;releaseBrain();nativeCall('stop');$('play').textContent='Запустить эмулятор';$('brainToggle').textContent='Включить связь';renderBenchmark();
 }
 function renderBenchmark(){
@@ -892,6 +1026,7 @@ function renderBenchmark(){
 }
 function benchmarkDecision(data){
  const run=benchmark;if(!run)return 0;
+ run.fdbWindows=(run.fdbWindows||0)+1;if(data.fdbFrozen){if(!data.fdbFrozen.unchanged||data.fdbFrozen.before!==data.fdbFrozen.after)throw Error('Frozen-проверка выявила изменение FDB');run.fdbVerified=(run.fdbVerified||0)+1;}
  const diagnostic=run.profile.rewardMode==='diagnostic';const memory=sampledRam||nes.cpu.mem,x=memory[0],y=memory[1];
  const success=diagnostic?x>=200&&Math.abs(y-100)<=4:FlyGameTools.predicate(memory,run.profile.winAddress,run.profile.winValue,ramLimit);
  const death=run.profile.deathEnabled&&FlyGameTools.predicate(memory,run.profile.deathAddress,run.profile.deathValue,ramLimit);
@@ -933,4 +1068,4 @@ $('ramInspect').onclick=()=>{try{
  }catch(error){status(error.message,true);}};
 $('ramOffset').max=ramLimit-64;$('benchmarkGame').value=labPlatform.toUpperCase()+' experiment';
 
-drawHistory();learningStats();requestAnimationFrame(loop);nativeCall('demo');
+drawHistory();learningStats();requestAnimationFrame(loop);if(!window.FlyBridge||typeof FlyBridge.romLibrary!=='function')nativeCall('demo');

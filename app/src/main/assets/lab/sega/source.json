@@ -4,8 +4,12 @@
   "compiler": "Emscripten 3.1.57",
   "license": "Genesis Plus GX noncommercial + component notices",
   "source_archive": "genplus-source.zip",
-  "core_api": "genplus-fly-6090aff9-api4",
-  "wasm_sha256": "d8c072295a884027d963c3fa52aeced6a0f2a6de322daadb9f58c28f8d072429",
-  "source_sha256": "7de8660355314e23298d0e799360988c07668d0bd4ba7bb194d26d7cb2a49d05",
-  "controllers": 2
+  "core_api": "genplus-fly-49c5847-api6",
+  "wasm_sha256": "dc73bd69e789596cf69fb3649eed0c29c1010f7840b181c3e8cf0292e0d1d74a",
+  "source_sha256": "446d479dd526651cf6ec7fa1457f97b43c2ecd6cab855acdd36820396c147295",
+  "controllers": 2,
+  "core_upstream": "https://github.com/ekeeke/Genesis-Plus-GX",
+  "core_commit": "49c584764893b0505ac7f768a754f97330fa4392",
+  "core_archive_sha256": "f04f89c20ec286a23d7a10bc5ec0329bdc4954d3d41062d836fccba7b18c7d85",
+  "max_rom_bytes": 33554432
 }

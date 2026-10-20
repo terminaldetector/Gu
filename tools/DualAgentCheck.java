@@ -83,9 +83,12 @@ public final class DualAgentCheck {
   Graph graph=fixture();DualAgentContext a=actor("p1",FIXTURE,graph,descriptor(graph,ports(graph,FIXTURE),7,5));double[] retina=new double[16];Arrays.fill(retina,1);
   JSONObject first=a.sample(request("p1","train",new int[]{0,1},null),retina,"hold:first",new AtomicBoolean());
   a.sample(request("p1","train",new int[]{0,1},outcome(first,1)),retina,"hold:second",new AtomicBoolean());
-  String weights=weightsKey(a.layer);long automatic=a.learning.automatic();
+  String weights=weightsKey(a.layer);long automatic=a.learning.automatic(),observations=a.learning.observations(),rejected=a.learning.rejected();double baseline=a.learning.baseline();
+  require(baseline>0,"discard regression must start with a learned nonzero baseline");
   JSONObject next=a.sample(request("p1","train",new int[]{0,1},null).put("discardOutcome",true),retina,"hold:after-gap",new AtomicBoolean());
   require(weights.equals(weightsKey(a.layer))&&a.learning.automatic()==automatic,"discarding overlong hold credit does not train or remove acquired weights");
+  require(a.learning.baseline()==baseline&&a.learning.observations()==observations&&a.learning.rejected()==rejected,"unknown/expired feedback does not invent zero reward, change baseline or count a rejected action");
+  for(FdbLearning.Trace t:a.learning.traces())require(t.eligibility==0&&t.slowEligibility==0,"discard clears both eligibility channels before new decision");
   a.sample(request("p1","train",new int[]{0,1},outcome(next,1)),retina,"hold:timely",new AtomicBoolean());require(a.learning.automatic()==automatic+1,"timely learning continues after long hold");
   String unchanged=a.fdbState().toString();rejects(()->a.sample(request("p1","train",new int[]{0,1},null).put("discardOutcome","true"),retina,"bad",new AtomicBoolean()),"discard flag must be boolean");
   rejects(()->a.sample(request("p1","train",new int[]{0,1},outcome(next,1)).put("discardOutcome",true),retina,"bad",new AtomicBoolean()),"discard conflicts with reward");require(unchanged.equals(a.fdbState().toString()),"bad discard cannot mutate state");
