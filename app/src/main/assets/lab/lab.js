@@ -209,8 +209,8 @@ function fitVideo(){
  const space=screen.parentElement,fit=Math.min(space.clientWidth/screen.width,space.clientHeight/screen.height),scale=window.userInterface?window.userInterface.videoScale(fit):fit;
  if(scale>0){screen.style.width=(screen.width*scale)+'px';screen.style.height=(screen.height*scale)+'px';const at=window.userInterface?.videoOffset(Math.max(0,space.clientWidth-screen.width*scale),Math.max(0,space.clientHeight-screen.height*scale));screen.style.transform=at?'translate('+at.x+'px,'+at.y+'px)':'';}
 }
-function openGame(){showTab('game');document.body.classList.add('game-mode');if(window.userInterface)window.userInterface.layout();fitVideo();}
-function leaveGame(tab='game'){if(window.userInterface)window.userInterface.leave();document.body.classList.remove('game-mode');showTab(tab);fitVideo();}
+function openGame(){showTab('game');document.body.classList.add('game-mode');if(window.userInterface)window.userInterface.layout();fitVideo();window.consoleNavigation?.gameOpened();}
+function leaveGame(tab='game'){if(window.userInterface)window.userInterface.leave();document.body.classList.remove('game-mode');showTab(tab);fitVideo();window.consoleNavigation?.legacyOpened(tab);}
 function setGmodeBoost(enabled){
  enabled=Boolean(enabled);if(enabled===gmodeBoost)return;
  const resumeGame=playing,resumeLink=connected;window.labPause();
@@ -420,7 +420,7 @@ window.labLoadRom=async function(data) {
   finally{if(sequence===romLoadSequence)romLoading=false;if(window.dualAgents)window.dualAgents.refresh();}
   if(launched&&sequence===romLoadSequence){
     if(data.resume&&window.labGameStates)try{await window.labGameStates.continueLast();}catch(error){status('ROM открыт; продолжение игры не восстановлено: '+error.message,true);}finally{if(sequence===romLoadSequence)window.labContinuing=false;}
-    if(sequence===romLoadSequence&&typeof window.dispatchEvent==='function')window.dispatchEvent(new Event('lab-rom-loaded'));
+    if(sequence===romLoadSequence&&typeof window.dispatchEvent==='function')window.dispatchEvent(new CustomEvent('lab-rom-loaded',{detail:{userOpened:data.userOpened===true}}));
   }
   return launched;
 };
@@ -847,7 +847,7 @@ document.querySelectorAll('[data-button]').forEach(element=>{
  const button=Number(element.dataset.button);
  // Android WebView long presses must remain held game inputs, not text actions.
  for(const type of ['contextmenu','selectstart','dragstart'])element.addEventListener(type,event=>event.preventDefault());
- element.addEventListener('touchstart',event=>event.preventDefault(),{passive:false});
+ element.addEventListener('touchstart',event=>{if(event.cancelable)event.preventDefault();},{passive:false});
  if(element.closest('.dpad'))return;
  element.onpointerdown=event=>{event.preventDefault();element.setPointerCapture(event.pointerId);holding.set(event.pointerId,1<<button);refreshManual();};
  element.onpointerup=element.onpointercancel=element.onlostpointercapture=event=>{holding.delete(event.pointerId);refreshManual();};
@@ -855,7 +855,7 @@ document.querySelectorAll('[data-button]').forEach(element=>{
 const dpad=document.querySelector('.dpad');
 function movePad(event){const r=dpad.getBoundingClientRect();holding.set(event.pointerId,FlyController.dpad((event.clientX-r.left)/r.width,(event.clientY-r.top)/r.height));refreshManual();}
 for(const type of ['contextmenu','selectstart','dragstart'])dpad.addEventListener(type,event=>event.preventDefault());
-dpad.addEventListener('touchstart',event=>event.preventDefault(),{passive:false});
+dpad.addEventListener('touchstart',event=>{if(event.cancelable)event.preventDefault();},{passive:false});
 dpad.onpointerdown=event=>{event.preventDefault();dpad.setPointerCapture(event.pointerId);movePad(event);};
 dpad.onpointermove=event=>{if(dpad.hasPointerCapture(event.pointerId))movePad(event);};
 dpad.onpointerup=dpad.onpointercancel=dpad.onlostpointercapture=event=>{holding.delete(event.pointerId);refreshManual();};

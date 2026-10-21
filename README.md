@@ -1,5 +1,7 @@
 ## Development direction: Autonomous Learning Emulator
 
+Version 2.1.2 introduces a game-first interface with MD.emu-style hierarchical menus. Gameplay shows video and controls; agent status, saves, settings and research have separate screens. See the [UI changes, Android log findings and validation](docs/reports/game-console-ui-2026-10-21/README.md).
+
 The current development plan prioritizes stable independent emulation, separate game/learned/history storage and evidence-based autonomous FDB learning. See the [Russian technical strategy and implementation status](docs/AUTONOMOUS_LEARNING_EMULATOR_RU.md). This is work in progress; guarded paired evaluation and Best promotion are implemented, while universal game-result detection and physical-device acceptance remain open.
 
 Version 2.1.1 includes an automatic bounded local Android journal and ZIP export under Settings → Diagnostics, with an independent export screen after WebView renderer failure. See the [diagnostics guide](docs/DEVICE_DIAGNOSTICS_RU.md) and [implementation report](docs/reports/device-logger-2026-10-20/README.md).

@@ -6,7 +6,7 @@ let browser;
  browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_EXECUTABLE});
  const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[],exits=[],acks=[];
  page.on('pageerror',e=>errors.push(e.message));
- await page.route('https://flyconsole.local/**',r=>{const f=path.join(assets,new URL(r.request().url()).pathname.slice(1));return r.fulfill(fs.existsSync(f)?{contentType:f.endsWith('.js')?'application/javascript':f.endsWith('.json')?'application/json':'text/html',body:fs.readFileSync(f)}:{status:404,body:''});});
+ await page.route('https://flyconsole.local/**',r=>{const f=path.join(assets,new URL(r.request().url()).pathname.slice(1));return r.fulfill(fs.existsSync(f)?{contentType:f.endsWith('.js')?'application/javascript':f.endsWith('.css')?'text/css':f.endsWith('.json')?'application/json':'text/html',body:fs.readFileSync(f)}:{status:404,body:''});});
  const demo=JSON.parse(fs.readFileSync(path.join(assets,'lab/demo-rom.json')));demo.sha256=crypto.createHash('sha256').update(Buffer.from(demo.base64,'base64')).digest('hex');demo.name='Continuation diagnostic';demo.resume=true;
  const row={system:'nes',sha256:demo.sha256,name:demo.name,openedAt:Date.now()};let opens=0;
  await page.exposeFunction('libraryFixture',async raw=>{const q=JSON.parse(raw);if(q.op==='open'){opens++;setTimeout(()=>page.evaluate(d=>labLoadRom(d),demo).catch(()=>{}),0);return row;}return {games:[row],last:row};});

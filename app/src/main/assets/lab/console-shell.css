@@ -1,0 +1,442 @@
+/* Final presentation layer: a quiet emulator surface and flat, hierarchical menus. */
+body.emulator-shell {
+  padding: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;
+}
+body.emulator-shell main {
+  max-width: none;
+  margin: 0;
+}
+body.emulator-shell:not(.game-mode) .app-header,
+body.emulator-shell:not(.game-mode) .tab-bar,
+body.emulator-shell:not(.game-mode) main > .row,
+body.emulator-shell:not(.game-mode) main > #modeInfo,
+body.emulator-shell:not(.game-mode) main > .bar {
+  display: none !important;
+}
+body.emulator-shell #consoleShell { min-width: 0; }
+body.emulator-shell #consoleHeader {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  align-items: center;
+  min-height: 56px;
+  padding: 0 max(8px, var(--safe-right)) 0 max(0px, var(--safe-left));
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  position: sticky;
+  top: 0;
+  z-index: 18;
+}
+body.emulator-shell #consoleBack {
+  min-height: 52px;
+  min-width: 52px;
+  padding: 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink);
+  font-size: 28px;
+}
+body.emulator-shell #consoleTitle {
+  min-width: 0;
+  margin: 0;
+  padding: 12px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+body.emulator-shell #consoleHeader:has(#consoleBack[hidden]) { grid-template-columns: minmax(0, 1fr); }
+body.emulator-shell #consoleHeader:has(#consoleBack[hidden]) #consoleTitle { text-align: center; }
+body.emulator-shell .console-list,
+body.emulator-shell #consoleNav {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+body.emulator-shell .console-list button,
+body.emulator-shell .console-list > a,
+body.emulator-shell #consoleNav > button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24px;
+  align-content: center;
+  align-items: center;
+  gap: 3px 12px;
+  width: 100%;
+  min-height: 58px;
+  margin: 0;
+  padding: 15px max(16px, var(--safe-right)) 15px max(16px, var(--safe-left));
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink);
+  text-align: left;
+  text-decoration: none;
+  font: inherit;
+  font-size: 18px;
+  line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+body.emulator-shell .console-list button::after,
+body.emulator-shell .console-list > a::after,
+body.emulator-shell #consoleNav > button::after {
+  content: none;
+}
+body.emulator-shell .console-list button > span:first-child {
+  grid-column: 1;
+  grid-row: 1;
+}
+body.emulator-shell .console-list button > small {
+  grid-column: 1;
+  grid-row: 2;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+body.emulator-shell .console-list button > .console-chevron {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  justify-self: end;
+  align-self: center;
+  color: var(--muted);
+  font-size: 24px;
+  line-height: 1;
+}
+body.emulator-shell .console-list button:disabled { color: var(--muted); }
+body.emulator-shell .console-list button:disabled > .console-chevron { visibility: hidden; }
+body.emulator-shell .console-list button:focus-visible,
+body.emulator-shell #consoleBack:focus-visible {
+  outline: 2px solid var(--mint);
+  outline-offset: -3px;
+}
+body.emulator-shell .console-list button:active { background: var(--panel); }
+body.emulator-shell .console-value {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 14px;
+}
+body.emulator-shell #consoleContent {
+  min-width: 0;
+  padding: 16px max(16px, var(--safe-right)) 16px max(16px, var(--safe-left));
+}
+body.emulator-shell #consoleContent:empty,
+body.emulator-shell #consoleMessage:empty { display: none; }
+body.emulator-shell #consoleContent > :first-child { margin-top: 0; }
+body.emulator-shell #consoleContent .tab-panel {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+body.emulator-shell #consoleContent > button,
+body.emulator-shell #consoleContent > select,
+body.emulator-shell #consoleContent > input { width: 100%; }
+body.emulator-shell #consoleContent .row { flex-wrap: wrap; }
+body.emulator-shell #consoleContent .row > * { min-width: 0; }
+body.emulator-shell #consoleContent .rom-library { padding: 0; margin: 0; }
+body.emulator-shell #consoleContent[data-route=open] .tab-panel h2,
+body.emulator-shell #consoleContent[data-route=open] .tab-panel p,
+body.emulator-shell #consoleContent[data-route=open] #platformDemo { display: none !important; }
+body.emulator-shell #consoleMessage { margin: 12px 16px; font-size: 14px; color: var(--muted); }
+body.emulator-shell #consoleMessage.error { color: #e2a18c; }
+body.emulator-shell[data-theme=light] #consoleMessage.error { color: #9a3412; }
+body.emulator-shell.console-menu-page .console-research-only { display: none !important; }
+body.emulator-shell:not(.game-mode) .tab-panel {
+  max-width: 100%;
+  margin: 0;
+  padding: 16px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+body.emulator-shell.console-home main .tab-panel,
+body.emulator-shell.console-menu-page main .tab-panel {
+  display: none !important;
+}
+body.emulator-shell:not(.game-mode) .settings-nav,
+body.emulator-shell:not(.game-mode) .settings-category:not(.console-category-active) {
+  display: none !important;
+}
+body.emulator-shell:not(.game-mode) .settings-category.console-category-active {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  scroll-margin-top: 68px;
+}
+
+/* This allow-list also covers UI inserted later by the ROM/library modules. */
+body.emulator-shell.game-mode,
+body.emulator-shell.game-mode main {
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #000;
+}
+body.emulator-shell.game-mode main { display: block !important; }
+body.emulator-shell.game-mode #consoleShell { display: none !important; }
+body.emulator-shell.game-mode #gamePanel {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: 42px minmax(0, 1fr) auto auto !important;
+  gap: 6px !important;
+  position: relative;
+  width: 100%;
+  height: 100dvh !important;
+  max-height: 100dvh;
+  margin: 0;
+  padding: 0 max(6px, var(--safe-right)) max(6px, env(safe-area-inset-bottom)) max(6px, var(--safe-left)) !important;
+  border: 0;
+  border-radius: 0;
+  background: #000;
+  overflow: hidden;
+}
+body.emulator-shell.game-mode #gamePanel > :not(#gameToolbar):not(.screen-stage):not(.controller):not(.system-pad):not(#touchEditorBar):not(#gameNotice),
+body.emulator-shell.game-mode #liveTrainingBar,
+body.emulator-shell.game-mode #landscapeHud,
+body.emulator-shell.game-mode .game-hud,
+body.emulator-shell.game-mode #gamePlot {
+  display: none !important;
+}
+body.emulator-shell.game-mode #gameToolbar {
+  display: flex !important;
+  grid-column: 1 / -1 !important;
+  grid-row: 1 !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px !important;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  height: 42px;
+  min-height: 42px;
+  margin: 0;
+  padding: 0;
+  background: #000;
+  z-index: 8;
+}
+body.emulator-shell.game-mode #gameToolbar > :not(#gameExit):not(#gameBoost):not(#gameFastForward) { display: none !important; }
+body.emulator-shell.game-mode #gameToolbar #gameExit,
+body.emulator-shell.game-mode #gameToolbar #gameBoost,
+body.emulator-shell.game-mode #gameToolbar #gameFastForward {
+  display: block !important;
+  flex: 0 0 auto !important;
+  min-width: 48px;
+  min-height: 40px;
+  max-width: 170px;
+  height: 40px;
+  margin: 0;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #d3d7dc;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+body.emulator-shell.game-mode #gameToolbar #gameExit { order: 2; margin-left: auto; }
+body.emulator-shell.game-mode #gameToolbar #gameBoost,
+body.emulator-shell.game-mode #gameToolbar #gameFastForward { order: 0; margin-right: auto; }
+body.emulator-shell.game-mode .screen-stage {
+  display: grid !important;
+  grid-column: 1 / -1 !important;
+  grid-row: 2 !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  gap: 0 !important;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  margin: 0;
+  padding: 0 !important;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+  background: #000;
+}
+body.emulator-shell.game-mode .screen {
+  display: flex !important;
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  align-items: flex-start;
+  justify-content: center;
+  align-self: stretch;
+  justify-self: stretch;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  min-height: 0;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: #000;
+}
+body.emulator-shell.game-mode .screen canvas {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  margin: 0;
+  object-fit: contain;
+}
+body.emulator-shell.game-mode .controller {
+  display: grid;
+  grid-column: 1 / -1 !important;
+  grid-row: 3 !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: end;
+  gap: 12px;
+  position: static !important;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
+body.emulator-shell.game-mode .dpad {
+  gap: 0;
+  padding: 2px;
+  border: 1px solid #555c65;
+  border-radius: var(--ui-radius);
+  background: radial-gradient(ellipse at center, #272d33 0, #11151a 68%, #050608 100%);
+}
+body.emulator-shell.game-mode .dpad button {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #c5cbd2;
+}
+body.emulator-shell.game-mode .dpad button[data-pad-mask] { color: transparent; }
+body.emulator-shell.game-mode .pad-centre { color: #79838c; opacity: .65; }
+body.emulator-shell.game-mode .actions button {
+  border: 1px solid #69727b;
+  background: radial-gradient(ellipse at 45% 35%, #2d343b, #11161b 75%);
+  box-shadow: none;
+  color: #d8dde3;
+}
+body.emulator-shell.game-mode .system-pad {
+  display: flex;
+  grid-column: 1 / -1 !important;
+  grid-row: 4 !important;
+  position: static;
+  transform: none;
+  width: min(220px, 100%);
+  max-width: none;
+  min-height: 34px;
+  margin: 0 auto;
+  gap: 8px;
+  pointer-events: auto;
+}
+body.emulator-shell.game-mode .system-pad button {
+  min-height: 34px;
+  padding: 4px 10px;
+  border: 1px solid #505962;
+  border-radius: 20px;
+  background: #12171c;
+  box-shadow: none;
+  color: #c5ccd3;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+body.emulator-shell.game-mode .controller button.active,
+body.emulator-shell.game-mode .system-pad button.active {
+  border-color: #82d9ac;
+  background: #345a4c;
+  color: #fff;
+  opacity: 1;
+}
+body.emulator-shell.game-mode #gameNotice.visible {
+  display: block !important;
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: clamp(120px, 31dvh, 290px);
+  width: auto;
+  max-width: 680px;
+  max-height: 96px;
+  margin: 0 auto;
+  padding: 10px 12px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #141b22ef;
+  color: #edf1f4;
+  font-size: 13px;
+  line-height: 1.4;
+  z-index: 22;
+  pointer-events: none;
+}
+body.emulator-shell.game-mode #gameNotice.error { border-color: #cb856f; color: #ffd8cb; }
+body.emulator-shell.game-mode #gameNotice.visible:not(.error) { display: none !important; }
+
+@media (orientation: landscape) {
+  body.emulator-shell.game-mode #gamePanel { grid-template-rows: 42px minmax(0, 1fr) !important; }
+  body.emulator-shell.game-mode .screen-stage { grid-template-columns: var(--left-rail, 140px) minmax(0, 1fr) var(--right-rail, 150px) !important; }
+  body.emulator-shell.game-mode .screen { grid-column: 2 !important; align-items: center; }
+  body.emulator-shell.game-mode .controller {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    position: absolute !important;
+    left: max(6px, var(--safe-left));
+    right: max(6px, var(--safe-right));
+    bottom: max(6px, env(safe-area-inset-bottom));
+    width: auto;
+  }
+  body.emulator-shell.game-mode .system-pad {
+    position: absolute;
+    left: 50%;
+    bottom: max(6px, env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    width: min(180px, 28vw);
+    margin: 0;
+  }
+  body.emulator-shell.game-mode #gameNotice.visible { left: 20%; right: 20%; bottom: 48px; }
+  body.emulator-shell.game-mode.landscape-overlay .screen-stage,
+  body.emulator-shell.game-mode.landscape-gamepad:not(.touch-editing) .screen-stage,
+  body.emulator-shell.game-mode.hide-touch:not(.touch-editing) .screen-stage { grid-template-columns: minmax(0, 1fr) !important; }
+  body.emulator-shell.game-mode.landscape-overlay .screen,
+  body.emulator-shell.game-mode.landscape-gamepad:not(.touch-editing) .screen,
+  body.emulator-shell.game-mode.hide-touch:not(.touch-editing) .screen { grid-column: 1 !important; }
+}
+body.emulator-shell.game-mode.landscape-gamepad:not(.touch-editing) .controller,
+body.emulator-shell.game-mode.landscape-gamepad:not(.touch-editing) .system-pad,
+body.emulator-shell.game-mode.hide-touch:not(.touch-editing) .controller,
+body.emulator-shell.game-mode.hide-touch:not(.touch-editing) .system-pad { display: none !important; }
+@media (orientation: portrait) {
+  body.emulator-shell.game-mode.hide-touch:not(.touch-editing) #gamePanel { grid-template-rows: 42px minmax(0, 1fr) !important; }
+}
+@media (orientation: landscape) and (max-height: 300px) {
+  body.emulator-shell.game-mode #gamePanel { grid-template-rows: 36px minmax(0, 1fr) !important; gap: 3px !important; }
+  body.emulator-shell.game-mode #gameToolbar { min-height: 36px; height: 36px; }
+  body.emulator-shell.game-mode #gameToolbar #gameExit,
+  body.emulator-shell.game-mode #gameToolbar #gameBoost,
+  body.emulator-shell.game-mode #gameToolbar #gameFastForward { min-height: 34px; height: 34px; }
+}

@@ -19,7 +19,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
  });
  for(const system of ['nes','snes']){
   await page.goto('https://flyconsole.local/lab/index.html?system='+system);await page.waitForFunction(()=>loaded);
-  await page.evaluate(()=>{window.labReady({kind:'fixture',neurons:64,edges:100,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:buttonNames.length},(_,i)=>String(i+17)),backend:'cpu'});showTab('learning');$('trainingEngineSettings').open=true;$('learnerController').value='adaptive';$('rewardMode').value='manual';});
+  await page.evaluate(()=>{window.labReady({kind:'fixture',neurons:64,edges:100,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:buttonNames.length},(_,i)=>String(i+17)),backend:'cpu'});consoleNavigation.legacy('learning');$('trainingEngineSettings').open=true;$('learnerController').value='adaptive';$('rewardMode').value='manual';});
   await page.selectOption('#learnMode','teach');await page.click('#trainingStart');await page.waitForFunction(()=>playing&&connected);
   await page.keyboard.down('ArrowRight');await page.waitForFunction(()=>learner.demonstrations>=10);await page.keyboard.up('ArrowRight');
   const taught=await page.evaluate(()=>({samples:learner.demonstrations,human:humanExamples.slice(),updates:learner.updates,policy:JSON.stringify(learner.save()),frame}));
@@ -37,7 +37,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
    const m=(await humanTeaching.store.request('list')).find(m=>!prior.has(m.id));const report=await humanTeaching.store.request('export',{id:m.id});playing=true;return {fps:labPlatform==='nes'?60:nes.fps,report};
   });
   const one=oneFrame.report.events.find(e=>e.kind==='sample');assert.equal(one.mask,1);assert.equal(one.frames,1);assert(Math.abs(one.seconds-1/oneFrame.fps)<1e-10);assert.equal(oneFrame.report.session.accepted,1);
-  await page.evaluate(()=>leaveGame('learning'));await page.click('#trainingPause');
+  await page.evaluate(()=>consoleNavigation.legacy('learning'));await page.click('#trainingPause');
   await page.waitForFunction(()=>$('humanSessionSelect').options.length>=3);assert(await page.locator('#humanSessionStats').textContent());
   const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem(modelStorageKey('fly-policy-'))));assert.equal(saved.policy.version,3);assert(saved.experience.human.length>0);
   await page.evaluate(()=>{learner.reset();humanExamples=[];});await page.click('#loadPolicy');assert.equal(await page.evaluate(()=>learner.demonstrations),saved.policy.demonstration.samples);
@@ -55,16 +55,16 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   await page.locator('#fdbLearningPanel summary').click();await page.click('#trainingFdb');await page.waitForFunction(()=>connected&&!configuring);await page.click('#trainingStart');
   await page.waitForFunction(()=>trainingRequests.some(r=>r.experience.length>0));assert(await page.evaluate(()=>trainingRequests.every(r=>r.experience.length<=16)),'bounded native batches');
   await page.waitForFunction(()=>fdbConfiguration().learningState?.human>0);
-  await page.evaluate(()=>leaveGame('learning'));await page.selectOption('#learnMode','eval');
+  await page.evaluate(()=>consoleNavigation.legacy('learning'));await page.selectOption('#learnMode','eval');
   const frozen=await page.evaluate(()=>({weights:JSON.stringify([learner.weights,learner.demonstrationWeights]),samples:learner.demonstrations,state:JSON.stringify(fdbConfiguration().learningState)}));
   await page.click('#trainingStart');await page.waitForFunction(()=>playing&&connected&&trainingRequests.at(-1)?.learningMode==='eval'&&pendingToken===null);
   // Finish work submitted before the mode boundary before measuring frozen evaluation.
   Object.assign(frozen,await page.evaluate(()=>({weights:JSON.stringify([learner.weights,learner.demonstrationWeights]),samples:learner.demonstrations,state:JSON.stringify(fdbConfiguration().learningState)})));await page.waitForTimeout(400);
   assert.deepEqual(await page.evaluate(()=>({weights:JSON.stringify([learner.weights,learner.demonstrationWeights]),samples:learner.demonstrations,state:JSON.stringify(fdbConfiguration().learningState)})),frozen);
-  await page.evaluate(()=>leaveGame('learning'));await page.selectOption('#learnMode','train');await page.click('#trainingStart');await page.waitForFunction(()=>playing&&connected);
+  await page.evaluate(()=>consoleNavigation.legacy('learning'));await page.selectOption('#learnMode','train');await page.click('#trainingStart');await page.waitForFunction(()=>playing&&connected);
   const intervention=await page.evaluate(()=>{$('liveHints').checked=true;manualMask=128;updateButtons();agentIntervened=true;const before=learner.updates;rewardPending=1;learnedButtons({buttons:0,outputs:new Array(buttonNames.length).fill(0)});return {before,after:learner.updates};});
   assert.equal(intervention.after,intervention.before,'manual intervention never receives automatic reward credit');
-  await page.evaluate(()=>{manualMask=0;window.labPause();leaveGame('learning');});
+  await page.evaluate(()=>{manualMask=0;window.labPause();consoleNavigation.legacy('learning');});
   const benchmarkFrozen=await page.evaluate(async()=>{
    $('learnMode').value='teach';$('rewardMode').value='manual';$('winEnabled').checked=true;$('winAddress').value='100';$('winValue').value=String((nes.cpu.mem[100]+1)&255);$('episodeLength').value='10';$('benchmarkCriterion').value='Fixture RAM criterion';$('benchmarkAttempts').value='1';$('benchmarkPolicy').value='random';$('captureStart').onclick();
    const before={weights:JSON.stringify([learner.weights,learner.demonstrationWeights]),samples:learner.demonstrations,sessions:(await humanTeaching.store.request('list')).length};
@@ -73,7 +73,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
   await page.waitForFunction(()=>!configuring);await page.waitForTimeout(300);
   assert.equal(await page.evaluate(()=>$('learnMode').value),'eval','benchmark explicitly owns frozen evaluation');
   assert.deepEqual(await page.evaluate(async()=>({weights:JSON.stringify([learner.weights,learner.demonstrationWeights]),samples:learner.demonstrations,sessions:(await humanTeaching.store.request('list')).length})),benchmarkFrozen,'benchmark cannot train or archive neutral frames after teaching');
-  await page.evaluate(()=>{window.labPause();leaveGame('learning');});
+  await page.evaluate(()=>{window.labPause();consoleNavigation.legacy('learning');});
   await page.locator('#humanSessionsPanel > summary').click();await page.check('#humanAllSessions');
   const allSessions=await page.evaluate(()=>humanTeaching.store.request('list'));if(system==='snes')assert(allSessions.some(m=>m.system==='nes'),'archive survives platform navigation');
   await page.selectOption('#humanSessionSelect',shortTap.report.session.id);page.once('dialog',d=>d.dismiss());await page.click('#humanSessionDelete');

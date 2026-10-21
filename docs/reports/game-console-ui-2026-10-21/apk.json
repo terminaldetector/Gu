@@ -1,0 +1,12 @@
+{
+  "apk": "/workspace/Gu/app/build/outputs/apk/debug/app-debug.apk",
+  "sha256": "90082357f6b20d7c377dfd95ccad0cede68fef0aface852794d4bac67a2c3bc1",
+  "bytes": 208315810,
+  "version": "2.1.2",
+  "versionCode": 36,
+  "sourceId": "2740adcf8aaede3bfb4e72407ac5626f03fac3cdb56a4fcb973ef461bd26a08b",
+  "labResourcesCompared": 51,
+  "signatureV2": true,
+  "nativeUserOpenedMarker": true,
+  "physicalAcceptance": false
+}

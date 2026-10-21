@@ -639,6 +639,9 @@ public final class NesLabActivity extends Activity {
     private RomLibrary romLibrary()throws IOException{return new RomLibrary(new File(getFilesDir(),"rom-library"));}
     private void loadRom(byte[] bytes,String name)throws Exception {loadRom(bytes,name,false);}
     private void loadRom(byte[] bytes, String name,boolean resume) throws Exception {
+        loadRom(bytes,name,resume,false);
+    }
+    private void loadRom(byte[] bytes, String name,boolean resume,boolean userOpened) throws Exception {
         bytes=RomImport.normalize(bytes,labSystem);
         StringBuilder hash = new StringBuilder();
         for (byte b : MessageDigest.getInstance("SHA-256").digest(bytes)) hash.append(String.format(Locale.US, "%02x", b & 255));
@@ -648,7 +651,7 @@ public final class NesLabActivity extends Activity {
         offeredRomHashes.addLast(candidateHash);
         if (offeredRomHashes.size() > 8) offeredLibraryRoms.remove(offeredRomHashes.removeFirst());
         // Commit model/recording identity only after the JS core accepts the ROM.
-        emit("labLoadRom", new JSONObject().put("base64", Base64.encodeToString(bytes, Base64.NO_WRAP)).put("name", name).put("sha256", candidateHash).put("resume",resume).put("system",labSystem));
+        emit("labLoadRom", new JSONObject().put("base64", Base64.encodeToString(bytes, Base64.NO_WRAP)).put("name", name).put("sha256", candidateHash).put("resume",resume).put("system",labSystem).put("userOpened",userOpened));
     }
 
     @Override public boolean dispatchKeyEvent(android.view.KeyEvent event){return controllers!=null&&controllers.key(event)||super.dispatchKeyEvent(event);}
@@ -1069,7 +1072,7 @@ public final class NesLabActivity extends Activity {
                     try(InputStream in=getContentResolver().openInputStream(uri)){bytes=RomImport.unpack(RomImport.read(in,RomImport.MAX_FILE),labSystem);}
                     String name="Imported "+labSystem.toUpperCase(Locale.ROOT);
                     try(android.database.Cursor cursor=getContentResolver().query(uri,new String[]{android.provider.OpenableColumns.DISPLAY_NAME},null,null,null)){if(cursor!=null&&cursor.moveToFirst())name=cursor.getString(0);}
-                    loadRom(bytes,name);
+                    loadRom(bytes,name,false,true);
                 } else if (request == PICK_MODEL) {
                     try (InputStream in = getContentResolver().openInputStream(uri)) {
                         emit("labImportModel", new JSONObject(readText(in, 8 * 1024 * 1024)));

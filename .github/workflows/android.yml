@@ -85,6 +85,7 @@ jobs:
           NODE_PATH=/tmp/fly-ui/node_modules node tools/autonomous_episodes_ui_check.cjs || ui_status=1
           NODE_PATH=/tmp/fly-ui/node_modules node tools/episode_starts_ui_check.cjs || ui_status=1
           NODE_PATH=/tmp/fly-ui/node_modules node tools/session_logger_ui_check.cjs || ui_status=1
+          NODE_PATH=/tmp/fly-ui/node_modules node tools/console_navigation_ui_check.cjs || ui_status=1
           NODE_PATH=/tmp/fly-ui/node_modules node tools/plasticity_speed_ui_check.cjs || ui_status=1
           NODE_PATH=/tmp/fly-ui/node_modules node tools/action_hold_ui_check.cjs || ui_status=1
           exit "$ui_status"

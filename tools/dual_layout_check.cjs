@@ -19,7 +19,7 @@ const sha=crypto.createHash('sha256').update(Buffer.from(demo.base64,'base64')).
  });
  await page.goto('https://flyconsole.local/lab/index.html');await page.waitForFunction(()=>loaded&&!romLoading);
  await page.evaluate(()=>window.labReady({modelId:'flywire-v783',kind:'64-node presentation fixture',neurons:64,edges:0,graph_sha256:'1'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:8},(_,i)=>String(i+17)),heapMiB:512,backend:'cpu'}));
- await page.click('[data-tab="network"]');await page.locator('#dualPanel > summary').click();await page.selectOption('#dual1Model','flywire-v783');await page.selectOption('#dual2Model','male-cns-v1.0');
+ await page.evaluate(()=>consoleNavigation.legacy('network'));await page.locator('#dualPanel > summary').click();await page.selectOption('#dual1Model','flywire-v783');await page.selectOption('#dual2Model','male-cns-v1.0');
  // This protocol test needs an observed source: unrated manual play is unknown,
  // and must never be turned into synthetic zero-reward outcomes.
  await page.selectOption('#dual1RewardMode','ram');await page.selectOption('#dual2RewardMode','ram');await page.click('#dualStart');
@@ -30,10 +30,10 @@ const sha=crypto.createHash('sha256').update(Buffer.from(demo.base64,'base64')).
  await page.evaluate(()=>{learningUI.rate(10);window.dualFixtureRequests=[];});await page.waitForTimeout(350);
  const accelerated=await page.evaluate(()=>dualFixtureRequests.filter(q=>q.op==='sample').flatMap(q=>q.agents).filter(a=>a.outcome).map(a=>a.outcome));assert(accelerated.length>2);assert(accelerated.slice(2).every(o=>o.gameSeconds>0&&o.gameSeconds<=.12),'accelerated two-model credit stays within executed game intervals');
  await page.setViewportSize({width:844,height:390});await page.waitForTimeout(80);
- assert.equal(await page.locator('#landscapeP1 b').textContent(),'P1 · FlyWire');assert.equal(await page.locator('#landscapeP2 b').textContent(),'P2 · Male CNS');
- await page.click('#landscapeConnect');await page.waitForFunction(()=>dualAgents.active()&&!dualAgents.running());assert.equal(await page.evaluate(()=>playing),true,'network pause retains the running ROM');
- await page.click('#landscapeConnect');await page.waitForFunction(()=>dualAgents.running());assert(!await page.evaluate(()=>dualFixtureRequests.some(q=>q.op==='configure')),'compact network toggle resumes the existing pair');
- await page.evaluate(()=>{window.labPause();leaveGame('network');});await page.waitForFunction(()=>!dualAgents.running());fs.mkdirSync('ui-preview',{recursive:true});
+ assert(!await page.locator('#landscapeHud').isVisible(),'dual telemetry stays in menus, not the game surface');assert.equal(await page.locator('#landscapeP1 b').textContent(),'P1 · FlyWire');assert.equal(await page.locator('#landscapeP2 b').textContent(),'P2 · Male CNS');
+ await page.evaluate(()=>$('landscapeConnect').click());await page.waitForFunction(()=>dualAgents.active()&&!dualAgents.running());assert.equal(await page.evaluate(()=>playing),true,'network pause retains the running ROM');
+ await page.evaluate(()=>$('landscapeConnect').click());await page.waitForFunction(()=>dualAgents.running());assert(!await page.evaluate(()=>dualFixtureRequests.some(q=>q.op==='configure')),'compact network toggle resumes the existing pair');
+ await page.evaluate(()=>{window.labPause();consoleNavigation.legacy('network');});await page.waitForFunction(()=>!dualAgents.running());fs.mkdirSync('ui-preview',{recursive:true});
  for(const [w,h]of [[390,844],[844,390],[360,640]]){await page.setViewportSize({width:w,height:h});await page.waitForTimeout(80);assert(await page.locator('#dual1Model').isVisible());assert(await page.locator('#dual2Model').isVisible());assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'dual cards have no horizontal overflow');await page.screenshot({path:`ui-preview/dual-models-${w}x${h}.png`,fullPage:true});}
  assert.equal(await page.evaluate(()=>dualAgents.exit()),true);assert(await page.evaluate(()=>dualFixtureRequests.some(q=>q.op==='exit')));assert.equal(await page.evaluate(()=>dualAgents.active()),false);assert.deepEqual(errors,[]);
  await browser.close();console.log('PASS: production dual model cards, real single NES frame clock, independent action outcomes, paused layout and acknowledged exit (native reply fixture only)');

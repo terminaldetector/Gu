@@ -9,7 +9,7 @@ let browser;
  page.on('pageerror',e=>errors.push(e.message));
  await page.route('https://flyconsole.local/**',r=>{
   const f=path.join(assets,new URL(r.request().url()).pathname.slice(1));
-  return r.fulfill(fs.existsSync(f)?{contentType:f.endsWith('.js')?'application/javascript':f.endsWith('.json')?'application/json':'text/html',body:fs.readFileSync(f)}:{status:404,body:''});
+  return r.fulfill(fs.existsSync(f)?{contentType:f.endsWith('.js')?'application/javascript':f.endsWith('.css')?'text/css':f.endsWith('.json')?'application/json':'text/html',body:fs.readFileSync(f)}:{status:404,body:''});
  });
  const demo=JSON.parse(fs.readFileSync(path.join(assets,'lab/demo-rom.json')));
  demo.sha256=crypto.createHash('sha256').update(Buffer.from(demo.base64,'base64')).digest('hex');demo.name='NES diagnostic';

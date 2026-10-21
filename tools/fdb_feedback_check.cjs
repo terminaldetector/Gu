@@ -103,6 +103,34 @@ let checks=0;function check(name,fn){return Promise.resolve().then(fn).then(()=>
   const f=fixture(),p=f.agent.settle(f.outcome(),0,true,false);f.ack(f.calls[0],{error:'boundary failed'});await p;
   assert.equal(f.agent.error(),'boundary failed');f.decision('blocked');f.frames();assert.equal(f.agent.capture(),null);assert.equal(f.calls.length,1);
  });
+ await check('repeated unknown native boundaries adopt full cleared-trace state without duplicate frontend disk writes',async()=>{
+  const f=fixture();
+  for(let i=0;i<64;i++){
+   const p=f.agent.settle(f.outcome('unknown-'+i),0,true,false),call=f.calls.at(-1),state=f.state(i<32?0:16);
+   state.learningState.traces=[{source:'11',target:'21',eligibility:0,slowEligibility:0,slowAge:0,utility:.2,support:.1,evidence:7,bad:0}];state.learningState.rng=100+i;
+   state.neuronDynamics={thresholdOffsets:[{neuron:'21',offsetMv:2}]};
+   assert.equal(call.op,'boundary');assert.equal(call.unknown,true);f.decision('before-ack');f.frames();assert.equal(f.agent.capture(),null,'credit remains blocked until native trace reset ACK');
+   f.ack(call,{data:{fdbState:state,changed:0,memoryBytes:4096}});await p;
+   assert.deepEqual(f.context.requestedConfiguration.fdb,state,'RNG, acquired paths, thresholds and cleared eligibility are still adopted');assert.equal(f.agent.error(),null);
+  }
+  assert.equal(f.calls.length,64);assert.deepEqual(f.counts(),{persisted:0,autosaved:0,views:64});
+ });
+ await check('zero automatic updates never trigger a sixteen-update checkpoint on unattributed reward ACKs',async()=>{
+  const f=fixture();f.context.agentIntervened=true;
+  for(let i=0;i<32;i++){const p=f.agent.settle(f.outcome('unattributed-'+i),0,false);assert.equal(f.calls.at(-1).valid,false);f.ack(f.calls.at(-1),{data:{fdbState:f.state(0),changed:0,memoryBytes:4096}});await p;}
+  assert.deepEqual(f.counts(),{persisted:0,autosaved:0,views:32});
+ });
+ await check('positive known-update milestones checkpoint once and do not repeat on unchanged feedback',async()=>{
+  const f=fixture();
+  for(const [i,automatic] of [15,16,16,17,32,32].entries()){const p=f.agent.settle(f.outcome('known-'+i),0,false);f.ack(f.calls.at(-1),{data:{fdbState:f.state(automatic),changed:0,memoryBytes:4096}});await p;}
+  assert.deepEqual(f.counts(),{persisted:2,autosaved:2,views:6});assert.equal(f.context.requestedConfiguration.fdb.learningState.automatic,32);
+ });
+ await check('a real timeout recovery retries frontend persistence even with zero learned updates',async()=>{
+  const f=fixture(),p=f.agent.settle(f.outcome(),0,false);[...f.timers.values()][0]();await p;
+  assert.match(f.agent.error(),/не подтверждено/);const recovery=f.calls[1];assert.equal(recovery.op,'boundary');
+  f.ack(recovery,{data:{fdbState:f.state(0),changed:0,memoryBytes:4096}});await f.agent.drain();
+  assert.equal(f.agent.error(),null);assert.deepEqual(f.counts(),{persisted:1,autosaved:1,views:1});
+ });
  await check('executed mask mismatch cannot earn positive credit',async()=>{
   const f=fixture();f.decision();f.frames(64);const p=f.agent.settle(f.agent.capture(),1,false);assert.equal(f.calls[0].valid,false);f.ack();await p;
  });
@@ -203,6 +231,13 @@ let checks=0;function check(name,fn){return Promise.resolve().then(fn).then(()=>
   await assert.rejects(binding,/не подтверждена/);assert.equal(f.agent.isBound('layer-A'),false);
   const retry=f.agent.bindCurrent('layer-A');await Promise.resolve();f.ack(f.calls[1],{error:'disk full'});
   await assert.rejects(retry,/disk full/);assert.equal(f.agent.isBound('layer-A'),false);f.ack(f.calls[2]);
+ });
+ await check('durable Current bind already covers its counter milestone without an extra feedback save',async()=>{
+  const f=fixture();f.agent.configured(7);const binding=f.agent.bindCurrent('layer-A');await Promise.resolve();f.ack(f.calls[0],{data:{bound:true,layerId:'layer-A',configVersion:7,fdbState:f.state(16),changed:0,memoryBytes:4096}});await binding;
+  const p=f.agent.settle(f.outcome('unchanged'),0,false);f.ack(f.calls[1],{data:{fdbState:f.state(16),changed:0,memoryBytes:4096}});await p;
+  assert.deepEqual(f.counts(),{persisted:0,autosaved:0,views:2});
+  const q=f.agent.settle(f.outcome('new-milestone'),0,false);f.ack(f.calls[2],{data:{fdbState:f.state(32),changed:0,memoryBytes:4096}});await q;
+  assert.deepEqual(f.counts(),{persisted:1,autosaved:1,views:3});
  });
  await check('stale bind ACK cannot authorize a new ROM or native configuration',async()=>{
   const f=fixture();f.agent.configured(1);const binding=f.agent.bindCurrent('layer-A');await Promise.resolve();f.agent.configured(2);

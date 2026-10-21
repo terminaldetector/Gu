@@ -1,0 +1,153 @@
+{
+  "date": "2026-10-21",
+  "version": "2.1.2",
+  "branch": "feature/autonomous-learning-emulator",
+  "fullcheck": {
+    "exit": 0,
+    "log": "check.log"
+  },
+  "build": {
+    "exit": 0,
+    "debug": true,
+    "release": true,
+    "lintErrors": 0,
+    "lintWarningsPerVariant": 19,
+    "log": "build.log"
+  },
+  "browserSuites": [
+    {
+      "suite": "console_layout",
+      "exit": 0,
+      "seconds": 9.02,
+      "logSha256": "8d43426612749dd5fbd5266acf35cbc52edd6291bf28326dcc16073ef52679db"
+    },
+    {
+      "suite": "layer_ui",
+      "exit": 0,
+      "seconds": 1.67,
+      "logSha256": "617ff5d0be3f3c12a98eb9366b68817cae025d3e4995ae4512535056553998d2"
+    },
+    {
+      "suite": "platform_ui",
+      "exit": 0,
+      "seconds": 4.54,
+      "logSha256": "33c09fa81574ab4e6b08b5edd57ad96a0e391098da880dc844697e7c30a593c2"
+    },
+    {
+      "suite": "training_ui",
+      "exit": 0,
+      "seconds": 8.41,
+      "logSha256": "f601b07e97e026891727a1a279e2de6880b7c903aa91b64e2b84fcddf3dd34aa"
+    },
+    {
+      "suite": "dual_layout",
+      "exit": 0,
+      "seconds": 2.58,
+      "logSha256": "be4afff00e918cfef3737c8a4d38309419329caf405381dff48e253a7b5af8bd"
+    },
+    {
+      "suite": "polish_ui",
+      "exit": 0,
+      "seconds": 3.28,
+      "logSha256": "2d159a0a7a3f567a417b740c5012aa4ed713fa31a28038c744d529217b5abd3d"
+    },
+    {
+      "suite": "training_flow_ui",
+      "exit": 0,
+      "seconds": 15.05,
+      "logSha256": "2a856648d236d61bb2819d38258603f231ce9dff54086970b11e709149b74aab"
+    },
+    {
+      "suite": "release_regression_ui",
+      "exit": 0,
+      "seconds": 7.85,
+      "logSha256": "e8c23215eb05fce40aab67f73be64f0df031efed6e09ed9935ac4ab37af4bd48"
+    },
+    {
+      "suite": "autonomous_console_ui",
+      "exit": 0,
+      "seconds": 7.55,
+      "logSha256": "cc0911d00e8a6d6bbc77cb20471ada4cc5c1cb47791705e6edf983249fe2024b"
+    },
+    {
+      "suite": "autonomous_episodes_ui",
+      "exit": 0,
+      "seconds": 9.3,
+      "logSha256": "51606ae7a0df25844f0e17a3b32a41e0e6282a20c09bc4afbb7b37c200ea8e05"
+    },
+    {
+      "suite": "episode_starts_ui",
+      "exit": 0,
+      "seconds": 5.08,
+      "logSha256": "58bf2098c909daefe923d764596fba335273e8dfa2ffa07881941947be5c113a"
+    },
+    {
+      "suite": "session_logger_ui",
+      "exit": 0,
+      "seconds": 4.14,
+      "logSha256": "46260dfb08696f37435b21b1e889115b4ee12ac71b7d7f0025edfc0ed2c371d6"
+    },
+    {
+      "suite": "plasticity_speed_ui",
+      "exit": 0,
+      "seconds": 23.41,
+      "logSha256": "cfe2d04668b3096da0bef7ae9c4508b3437132bd5499e54b3502be4acd2ed814"
+    },
+    {
+      "suite": "action_hold_ui",
+      "exit": 0,
+      "seconds": 14.03,
+      "logSha256": "2d660b0bf6d72b932401d0c66f47db1fdf5eaa477e32522590763602c07e9704"
+    },
+    {
+      "suite": "console_navigation_ui",
+      "exit": 0,
+      "seconds": 10.35,
+      "checkedAfterFinalNavigationReview": true,
+      "logSha256": "c2754ebbd839508da6e53418deb582b39791b1a596a22fe8bc739dfec4045a08"
+    },
+    {
+      "suite": "continuation_ui",
+      "exit": 0,
+      "seconds": 3.58,
+      "checkedAfterFinalNavigationReview": true,
+      "logSha256": "fb0365ceda774c0c5d475e9b25b53c7081bc0a70eeab8a3b685321e01b616dc5"
+    },
+    {
+      "suite": "interface_ui",
+      "exit": 0,
+      "seconds": 10.78,
+      "checkedAfterFinalNavigationReview": true,
+      "logSha256": "b492a9e411acde46eedbb44319e45afae8f68ff6cf1d1c60240f435af697a399"
+    },
+    {
+      "suite": "landscape_ui",
+      "exit": 0,
+      "seconds": 6.85,
+      "checkedAfterFinalNavigationReview": true,
+      "logSha256": "315e65bac12f76acf72b197a6555f3855782b68983de318925f696207efd1015"
+    }
+  ],
+  "browserSummary": {
+    "total": 18,
+    "passed": 18,
+    "failed": 0
+  },
+  "newNavigationFinalReview": true,
+  "apkSignatureV2": true,
+  "labResourcesExact": 51,
+  "deviceLog": {
+    "records": 864,
+    "droppedEvents": 0,
+    "writeErrors": 0,
+    "successfulSaves": 15,
+    "successfulLoads": 2,
+    "rawIncluded": false,
+    "userIdentifiersIncluded": false,
+    "fullAcceptance": false
+  },
+  "newUIPhysicalAcceptance": false,
+  "wholeConnectomeLearningProved": false,
+  "fullSpecificationComplete": false,
+  "publishedToMain": false
+}
