@@ -311,8 +311,9 @@ body.emulator-shell.game-mode #gameToolbar #gameAgentToggle {
   text-align: left;
 }
 #agentQuickPanel #agentQuickClose { flex: 0 0 44px; min-width: 44px; padding: 8px; border: 0; background: transparent; text-align: center; }
-#agentQuickPanel .agent-quick-modes { display: grid; gap: 6px; }
+#agentQuickPanel .agent-quick-modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
 #agentQuickPanel .agent-quick-modes button { display: grid; gap: 3px; width: 100%; }
+#agentQuickPanel #agentQuickNetwork { width: 100%; margin-top: 8px; text-align: center; }
 #agentQuickPanel strong { font-size: 14px; font-weight: 500; }
 #agentQuickPanel small { color: #bdc7d0; font-size: 12px; }
 #agentQuickPanel button[aria-pressed=true] { border-color: #95c5b3; background: #95c5b31a; }
@@ -496,10 +497,14 @@ body.emulator-shell.game-mode #gameNotice.visible:not(.error) { display: none !i
   body.emulator-shell.game-mode.landscape-gamepad:not(.touch-editing) .screen,
   body.emulator-shell.game-mode.hide-touch:not(.touch-editing) .screen { grid-column: 1 !important; }
 }
-body.emulator-shell.game-mode.landscape-gamepad:not(.touch-editing) .controller,
-body.emulator-shell.game-mode.landscape-gamepad:not(.touch-editing) .system-pad,
 body.emulator-shell.game-mode.hide-touch:not(.touch-editing) .controller,
 body.emulator-shell.game-mode.hide-touch:not(.touch-editing) .system-pad { display: none !important; }
+/* Orientation can settle before Android delivers the queued layout callback. A
+   retained landscape class must never hide the portrait touch controls. */
+@media (orientation: landscape) {
+  body.emulator-shell.game-mode.landscape-gamepad:not(.touch-editing) .controller,
+  body.emulator-shell.game-mode.landscape-gamepad:not(.touch-editing) .system-pad { display: none !important; }
+}
 @media (orientation: portrait) {
   body.emulator-shell.game-mode.hide-touch:not(.touch-editing) #gamePanel { grid-template-rows: 42px minmax(0, 1fr) !important; }
 }

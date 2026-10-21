@@ -124,7 +124,7 @@ function currentDevice(){const id=$('controllerDevice').value==='auto'?selectedC
 function fullscreen(enabled){if(enabled===lastFullscreen)return;lastFullscreen=enabled;if(typeof window.FlyBridge?.gameDisplay==='function')window.FlyBridge.gameDisplay(enabled);}
 function closeTraining(){body.classList.remove('landscape-training-open');$('landscapeTraining').setAttribute('aria-expanded','false');}
 function profile(){
- const l=settings.landscape,land=orientation()==='landscape',pad=land&&!editing&&(l.input==='gamepad'||l.input==='auto'&&Boolean(currentDevice()));
+ const l=settings.landscape,land=orientation()==='landscape',pad=land&&!editing&&(l.input==='gamepad'||l.input==='auto'&&Boolean(currentDevice()?.used));
  const touchVisible=settings.visible||land&&l.input==='touch';body.classList.toggle('hide-touch',!touchVisible);
  body.classList.toggle('landscape-compact',land&&(l.panel==='compact'||pad));body.classList.toggle('landscape-gamepad',pad);
  body.classList.toggle('landscape-overlay',land&&(pad||!touchVisible||l.screenLayout==='overlay'));body.classList.toggle('landscape-hud-bottom',land&&l.monitorPlacement==='bottom'&&l.monitors>0);
@@ -172,13 +172,19 @@ $('cancelPhysicalPad').onclick=()=>cancelBinding('Назначение отме�
 $('resetPhysicalPad').onclick=()=>{
  cancelBinding();try{const next={...physicalMaps},device=currentDevice();if(device&&!deviceError)delete next[device.descriptor];else for(const k of Object.keys(next))delete next[k];localStorage.setItem(physicalKey,JSON.stringify({version:1,devices:next}));physicalMaps=next;deviceError='';$('controllerAB').value='direct';$('controllerAB').onchange();controllerMasks.clear();refreshManual();physicalInfo();}catch(e){padNotice(e.message,true);}
 };
-$('controllerDevice').addEventListener('change',()=>{cancelBinding('Назначение отменено при смене устройства.');physicalInfo();});
+$('controllerDevice').addEventListener('change',()=>{cancelBinding('Назначение отменено при смене устройства.');physicalInfo();queueLayout();});
 $('controllerAB').addEventListener('change',physicalInfo);
 function controller(data){
  if(!data.connected){devices.delete(data.id);if(binding)cancelBinding('Геймпад отключён: назначение отменено.');queueMicrotask(physicalInfo);queueLayout();return 0;}
  const descriptor=typeof data.descriptor==='string'&&data.descriptor.length<=512?data.descriptor:'legacy:'+String(data.name||data.id);
  const defaults=Array.isArray(data.defaults)?data.defaults.filter(v=>Number.isInteger(v.code)&&v.code>=0&&v.code<=255&&Number.isInteger(v.mask)&&v.mask>=0&&v.mask<=4095).slice(0,64):[];
- const previous=devices.get(data.id),name=String(data.name||'Геймпад').slice(0,120);devices.set(data.id,{descriptor,id:data.id,name,defaults});
+ const previous=devices.get(data.id),name=String(data.name||'Геймпад').slice(0,120);
+ // Android may enumerate neutral service/uinput devices as gamepads. Keep
+ // their bindings, but do not remove touch controls until a gamepad is used.
+ const meaningful=data.virtual!==true&&(data.pressed===true&&Number.isInteger(data.keyCode)||Number.isInteger(data.mask)&&data.mask>0||Number.isInteger(data.axisMask)&&data.axisMask>0||Array.isArray(data.keyMasks)&&data.keyMasks.some(key=>Number.isInteger(key.mask)&&key.mask>0));
+ const used=data.virtual!==true&&Boolean(meaningful||previous?.descriptor===descriptor&&previous.used);
+ devices.set(data.id,{descriptor,id:data.id,name,defaults,used});
+ if(meaningful&&$('controllerDevice').value==='auto')selectedController=data.id;
  if(binding){
   const selected=$('controllerDevice').value;
   if(data.pressed&&Number.isInteger(data.keyCode)&&data.keyCode>=0&&data.keyCode<=255&&(selected==='auto'||Number(selected)===data.id)){
@@ -191,6 +197,7 @@ function controller(data){
   return 0;
  }
  if(!previous||previous.descriptor!==descriptor||previous.name!==name){queueMicrotask(physicalInfo);queueLayout();}
+ else if(previous.used!==used)queueLayout();
  if(editing||document.querySelector('main').dataset.tab!=='game'||$('quickMenu').open||window.agentQuickPanel?.active())return 0;
  try{return prefs.physical(data,deviceMap(devices.get(data.id)),buttonNames.length===12);}catch(e){padNotice(e.message,true);return 0;}
 }

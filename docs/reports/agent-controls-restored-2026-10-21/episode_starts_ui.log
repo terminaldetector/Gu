@@ -1,0 +1,1 @@
+PASS: real NES start archive beyond eight slots, two training/eight heldout trajectories, immutable origin, repeated/concurrent writes, independent auto slot overwrite, quota abort, process reopen, ROM/core isolation and corruption rejection

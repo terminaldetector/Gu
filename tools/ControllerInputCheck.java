@@ -8,7 +8,8 @@ public final class ControllerInputCheck {
  private static void check(boolean value,String message){if(!value)throw new AssertionError(message);}
  public static void main(String[] args){
   InputDevice.DEVICES.put(7,new InputDevice("stable-descriptor"));List<JSONObject> packets=new ArrayList<>();ControllerInput input=new ControllerInput(new Context(),packets::add);
-  input.enabled(true);JSONObject p=packets.get(packets.size()-1);check(p.getString("descriptor").equals("stable-descriptor")&&p.getInt("mask")==0,"enumerate enabled devices");
+  input.enabled(true);JSONObject p=packets.get(packets.size()-1);check(p.getString("descriptor").equals("stable-descriptor")&&p.getInt("mask")==0,"enumerate enabled devices");check(p.getInt("sources")== (InputDevice.SOURCE_GAMEPAD|InputDevice.SOURCE_JOYSTICK)&&!p.getBoolean("virtual"),"native capability metadata reaches browser without implying active input");
+  InputDevice.DEVICES.put(8,new InputDevice("virtual-descriptor","Virtual fixture",InputDevice.SOURCE_GAMEPAD,true));input.onInputDeviceAdded(8);p=packets.get(packets.size()-1);check(p.getInt("id")==8&&p.getBoolean("virtual")&&p.getInt("sources")==InputDevice.SOURCE_GAMEPAD&&p.getInt("mask")==0,"virtual enumeration is explicit and neutral");check(input.key(new KeyEvent(8,KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_BUTTON_A)),"virtual controllers remain usable when explicitly selected");p=packets.get(packets.size()-1);check(p.getBoolean("virtual")&&p.getInt("mask")==1,"metadata does not discard valid virtual input");input.onInputDeviceRemoved(8);InputDevice.DEVICES.remove(8);
   check(!input.key(new KeyEvent(7,KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_BACK)),"Android Back is not a bindable game button");
   check(input.key(new KeyEvent(7,KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_BUTTON_A)),"default A accepted");p=packets.get(packets.size()-1);check(p.getInt("mask")==1&&p.getBoolean("pressed"),"default A bit");
   check(input.key(new KeyEvent(7,KeyEvent.ACTION_DOWN,KeyEvent.KEYCODE_BUTTON_L2)),"unmapped trigger is capturable");p=packets.get(packets.size()-1);check(p.getInt("mask")==1&&p.getInt("keyCode")==104&&p.getJSONArray("keyMasks").length()==2,"raw trigger and held A preserved");
@@ -21,6 +22,6 @@ public final class ControllerInputCheck {
   input.enabled(false);p=packets.get(packets.size()-1);check(p.getInt("mask")==0&&p.getJSONArray("keyMasks").length()==0,"disabling clears every raw source");check(!input.key(new KeyEvent(7,0,96)),"disabled inputs are rejected");
   input.system("snes");input.enabled(true);input.key(new KeyEvent(7,0,KeyEvent.KEYCODE_BUTTON_Y));p=packets.get(packets.size()-1);check(p.getInt("mask")==4,"SNES Y retains its existing API bit");
   input.onInputDeviceRemoved(7);p=packets.get(packets.size()-1);check(!p.getBoolean("connected")&&p.getInt("mask")==0&&p.getJSONArray("keyMasks").length()==0,"disconnect releases all sources");input.close();
-  System.out.println("PASS: production Android input with fixture events: raw/default keys, stable device identity, analog triggers, chords/releases, disable/disconnect and SNES compatibility");
+  System.out.println("PASS: production Android input with fixture events: raw/default keys, stable device identity, source/virtual metadata without rejecting virtual controls, analog triggers, chords/releases, disable/disconnect and SNES compatibility");
  }
 }

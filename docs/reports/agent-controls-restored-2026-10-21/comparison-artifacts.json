@@ -1,0 +1,12 @@
+[
+  {
+    "name": "fdb-comparison.json",
+    "sha256": "a7c9c49992ce6bbde0a291790c12d747e944243173f8e0b9edbfd3e279b67b64",
+    "bytes": 824535
+  },
+  {
+    "name": "expanded-comparison.json",
+    "sha256": "f944935999000876e65105cd3d141a2b3874c9814583f5d02c1161c1b7cf23fa",
+    "bytes": 103593
+  }
+]

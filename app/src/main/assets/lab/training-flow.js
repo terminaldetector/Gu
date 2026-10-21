@@ -64,7 +64,7 @@ const waitSample=()=>new Promise((resolve,reject)=>{const started=performance.no
 // Keep this separate from the research launcher, whose episode protocol may restore a start.
 async function startCurrent(kind,{guard=()=>true}={}){
  if(busy)throw Error('Дождитесь завершения настройки агента.');
- if(!['auto','eval'].includes(kind))throw Error('Неизвестный режим агента.');
+ if(!['auto','eval','rec','assist','connect'].includes(kind))throw Error('Неизвестный режим агента.');
  busy=true;refresh();
  try{
   const pausedGeneration=generation,validPause=()=>guard()&&generation===pausedGeneration;
@@ -74,7 +74,7 @@ async function startCurrent(kind,{guard=()=>true}={}){
   if(window.humanTeaching)await window.humanTeaching.stop('quick-mode');
   if(!validPause())return false;
   if(window.fdbAgent){await window.fdbAgent.drain();if(!validPause())return false;if(window.fdbAgent.error())throw Error(window.fdbAgent.error());}
-  choose(kind);$('learnerController').value='exo';fdb();
+  if(kind!=='connect'){choose(kind);$('learnerController').value='exo';fdb();}
   connectBrain(false);
   // Configuration may be asynchronous. Never start playback over a later menu or background pause.
   const began=performance.now(),configuredGeneration=generation;
@@ -88,16 +88,39 @@ async function startCurrent(kind,{guard=()=>true}={}){
   startTrainingGame();return true;
  }finally{busy=false;refresh();}
 }
+// Stop the game clock first, while keeping the current neural request alive long
+// enough to acknowledge every executed teaching label. Ordinary labPause discards
+// its generation/queue, so it must only run after this flush completes.
+async function flushTeaching({guard=()=>true,reason='agent-panel',checkpoint=true,onStage=()=>{}}={}){
+ playing=false;controlsEnabled(false);audioRead=audioWrite;
+ const core=nes,hash=romHash,graph=graphIdentity?.sha256,epoch=generation,began=performance.now();
+ const valid=()=>guard()&&core===nes&&hash===romHash&&graph===graphIdentity?.sha256&&epoch===generation;
+ const verify=()=>{if(!valid())throw Error('Сохранение REC прервано сменой игры, агента или паузой.');if(performance.now()-began>30000)throw Error('Агент не подтвердил последние примеры за 30 секунд.');};
+ if(window.humanTeaching)await window.humanTeaching.stop(reason);verify();
+ holding.clear();controllerMasks.clear();refreshManual();releasePorts();
+ while(pendingToken!==null||configuring||fdbExperience.length){
+  verify();
+  if(!connected||window.labNeuralSuspended)throw Error(window.labAgentStatus?.().failure?.message||'Последние примеры не подтверждены: сеть отключена.');
+  if(pendingToken===null&&!configuring&&fdbExperience.length)sampleFrame(performance.now(),true);
+  // Current binding and archive ACKs run on later tasks. Never spin microtasks.
+  await new Promise(resolve=>setTimeout(resolve,20));
+ }
+ onStage('stopAndWaitMs');
+ if(window.fdbAgent){await window.fdbAgent.drain();verify();if(window.fdbAgent.error())throw Error(window.fdbAgent.error());}
+ onStage('drainMs');
+ if(checkpoint){await window.labState.checkpoint({force:true});verify();}
+ if(window.humanTeaching?.error())throw Error('Архив REC не подтверждён: '+window.humanTeaching.error());
+ return true;
+}
+async function pauseCurrent(options={}){
+ if(busy)throw Error('Дождитесь завершения настройки агента.');
+ busy=true;refresh();try{return await flushTeaching(options);}finally{busy=false;refresh();}
+}
 async function stopRec(next='auto'){
  if(busy)return;busy=true;refresh();
  try{
-  playing=false;await window.humanTeaching.stop('rec-stop');if(window.humanTeaching.error())log('Полная запись недоступна: '+window.humanTeaching.error()+'. Сохраняю приобретённые веса и отправленные примеры.');
-  await waitSample();
-  // Flush only unsubmitted, executed human labels; never replay the whole archive twice.
-  while(fdbExperience.length&&connected){sampleFrame(performance.now(),true);await waitSample();}
-  await window.fdbAgent.drain();if(window.fdbAgent.error())throw Error(window.fdbAgent.error());
-  await window.labState.checkpoint();if($('autosavePolicy').checked)persistPolicy(false);
-  choose(next);fdb();startOriginal();status((window.humanTeaching.error()?'Приобретённые веса сохранены; полная запись недоступна. ':'Запись сохранена. ')+labels[next]+' продолжает с текущего кадра.');
+  await flushTeaching({reason:'rec-stop'});if($('autosavePolicy').checked)persistPolicy(false);
+  busy=false;if(!await startCurrent(next))throw Error('Режим после STOP не запущен.');status('Запись сохранена. '+labels[next]+' продолжает с текущего кадра.');
  }catch(e){window.labPause();status('Запись остановлена; переход в AUTO: '+e.message,true);}finally{busy=false;refresh();}
 }
 async function switchLive(kind){
@@ -113,10 +136,8 @@ $('trainingBase').onchange=$('trainingPlasticity').onchange=$('trainingCredit').
   if(!ready||!loaded)throw Error('Дождитесь ROM и модели');
   if(pair())throw Error('Для двух моделей настройте ΔW отдельно в карточках P1/P2');
   status('Смена пластичности: завершаю текущий шаг и сохраняю обучение…');
-  playing=false;await window.humanTeaching.stop('plasticity-change');await waitSample();measure('stopAndWaitMs');
-  while(fdbExperience.length&&connected){sampleFrame(performance.now(),true);await waitSample();}
-  await window.fdbAgent.drain();if(window.fdbAgent.error())throw Error(window.fdbAgent.error());
-  measure('drainMs');window.labPause();await window.labState.checkpoint();measure('saveBeforeMs');
+  await flushTeaching({reason:'plasticity-change',checkpoint:false,onStage:measure});
+  window.labPause();await window.labState.checkpoint();measure('saveBeforeMs');
   const f=fdbConfiguration()||{version:2,graph_sha256:graphIdentity.sha256,deltas:[],edges:[]};
   if(!f.learning)f.learning={enabled:true,rate:.05,maxEdges:256,maxWeight:32};
   f.learning.trainBase=enabled;f.learning.plasticityMode=plasticity;f.learning.creditProfile=credit;f.learning.maxEdges=plasticity==='expanded'||plasticity==='wexo'?2048:Math.min(1024,f.learning.maxEdges);$('fdbJson').value=JSON.stringify(f,null,2);configurationApplied=false;
@@ -143,5 +164,5 @@ $('gmodeLaunch').onclick=async()=>{
   fdb();startOriginal();
  }catch(e){status('Напарник не запущен: '+e.message,true);}finally{busy=false;refresh();}
 };
-window.learningUI={phase,refresh,choose,start,startCurrent,stopRec,rate,busy:()=>busy};refresh();
+window.learningUI={phase,refresh,choose,start,startCurrent,pauseCurrent,stopRec,rate,busy:()=>busy};refresh();
 })();

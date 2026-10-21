@@ -6,9 +6,9 @@
  toggle.setAttribute('aria-label','Быстрые настройки агента');toggle.setAttribute('aria-haspopup','dialog');toggle.setAttribute('aria-controls','agentQuickPanel');toggle.setAttribute('aria-expanded','false');
  $('gameToolbar').append(toggle);
  const panel=document.createElement('dialog');panel.id='agentQuickPanel';panel.setAttribute('aria-labelledby','agentQuickTitle');panel.setAttribute('aria-describedby','agentQuickStatus');
- panel.innerHTML='<header><div><h2 id="agentQuickTitle">Агент</h2><p id="agentQuickStatus"></p></div><button id="agentQuickClose" type="button" aria-label="Закрыть настройки агента">✕</button></header><div class="agent-quick-modes" role="group" aria-label="Управление игрой"><button id="agentQuickManual" type="button" aria-pressed="false"><strong>Ручной</strong><small>Вы управляете игрой</small></button><button id="agentQuickAuto" type="button" aria-pressed="false"><strong>AUTO</strong><small>Коннектом управляет игрой</small></button><button id="agentQuickEval" type="button" aria-pressed="false"><strong>Без обучения</strong><small>Агент играет с приобретёнными весами</small></button></div><p id="agentQuickFeedback"></p><p id="agentQuickMessage" role="status" aria-live="polite"></p><button id="agentQuickMore" type="button">Все настройки агента <span aria-hidden="true">›</span></button>';
+ panel.innerHTML='<header><div><h2 id="agentQuickTitle">Агент</h2><p id="agentQuickStatus"></p></div><button id="agentQuickClose" type="button" aria-label="Закрыть настройки агента">✕</button></header><div class="agent-quick-modes" role="group" aria-label="Управление игрой"><button id="agentQuickManual" type="button" aria-pressed="false"><strong>Ручной</strong><small>Вы управляете игрой</small></button><button id="agentQuickAuto" type="button" aria-pressed="false"><strong>AUTO</strong><small>Агент играет сам</small></button><button id="agentQuickRec" type="button" aria-pressed="false"><strong>REC</strong><small>Показать свои действия</small></button><button id="agentQuickStop" type="button"><strong>STOP → AUTO</strong><small>Сохранить пример</small></button><button id="agentQuickAssist" type="button" aria-pressed="false"><strong>Подсказки</strong><small>Помогать агенту в игре</small></button><button id="agentQuickEval" type="button" aria-pressed="false"><strong>Без обучения</strong><small>Веса не меняются</small></button></div><button id="agentQuickNetwork" type="button" aria-pressed="false">Подключить сеть</button><p id="agentQuickFeedback"></p><p id="agentQuickMessage" role="status" aria-live="polite"></p><button id="agentQuickMore" type="button">Все настройки агента <span aria-hidden="true">›</span></button>';
  document.body.append(panel);
- let session=null,busy=false,failed=false,version=0;
+ let session=null,busy=false,failed=false,version=0,suspending=false,pendingDismiss=false;
  const buttons=()=>[...panel.querySelectorAll('button:not(:disabled)')];
  function feedback(){
   if($('rewardMode').value==='diagnostic'&&labPlatform==='nes'&&romHash===diagnosticHash)return 'Обратная связь: встроенный тест NES.';
@@ -21,18 +21,23 @@
  function refresh(){
   if(!session)return;
   const labels={manual:'Ручной',auto:'AUTO',eval:'Без обучения',rec:'Запись примера',assist:'Подсказки',dual:'Два агента',external:'Внешний адаптер'};
-  $('agentQuickStatus').textContent=(labels[session.mode]||'Агент')+' · '+(busy?'настройка…':'игра на паузе');
-  for(const [id,kind]of [['agentQuickManual','manual'],['agentQuickAuto','auto'],['agentQuickEval','eval']]){
+  $('agentQuickStatus').textContent=(labels[session.mode]||'Агент')+' · '+(suspending?'сохраняю пример…':busy?'настройка…':'игра на паузе');
+  for(const [id,kind]of [['agentQuickManual','manual'],['agentQuickAuto','auto'],['agentQuickEval','eval'],['agentQuickRec','rec'],['agentQuickAssist','assist']]){
    $(id).setAttribute('aria-pressed',String(session.mode===kind));$(id).disabled=busy||kind!=='manual'&&(!ready||romLoading||window.learningUI.busy());
   }
-  $('agentQuickMore').disabled=busy;$('agentQuickFeedback').textContent=!ready?'Коннектом загружается. Ручное управление доступно.':feedback();
+  $('agentQuickStop').disabled=busy||session.phase!=='rec'||!ready||romLoading||window.learningUI.busy();
+  $('agentQuickNetwork').disabled=busy||!session.connected&&(!ready||romLoading||window.learningUI.busy());
+  $('agentQuickNetwork').textContent=session.connected?'Отключить сеть':'Подключить сеть';$('agentQuickNetwork').setAttribute('aria-pressed',String(session.connected));
+  $('agentQuickMore').disabled=busy;$('agentQuickFeedback').textContent=!ready?'Коннектом загружается. Ручное управление доступно.':session.mode==='rec'?'REC сохраняет выполненные действия человека. STOP передаёт управление агенту.':session.mode==='assist'?'Ваши нажатия служат подсказками. Они не считаются положительной наградой.':feedback();
  }
  function sameGame(s){return s&&loaded&&s.core===nes&&s.hash===romHash&&document.body.classList.contains('game-mode');}
  function dismiss(resume=true){
   if(!panel.open)return;
+  if(suspending&&resume){pendingDismiss=true;$('agentQuickMessage').textContent='Завершаю сохранение примера перед продолжением…';return;}
   const previous=session,canResume=resume&&!failed&&!busy&&sameGame(previous)&&previous.generation===generation;
+  if(suspending)window.guLogger?.event('agent.teaching-pause-cancelled',{queuedLabels:fdbExperience.length,pendingSample:pendingToken!==null},'error');
   version++;session=null;panel.close();toggle.setAttribute('aria-expanded','false');
-  if(busy)window.labPause();busy=false;
+  if(busy)window.labPause();busy=false;suspending=false;pendingDismiss=false;
   controlsEnabled(playing&&document.body.classList.contains('game-mode'));
   if(canResume){
    const closedVersion=version,pausedGeneration=generation;
@@ -46,15 +51,33 @@
   if(document.body.classList.contains('game-mode'))toggle.focus({preventScroll:true});
  }
  function open(){
+  if(window.consoleNavigation.pending())return;
   if(panel.open){dismiss();return;}
   if(!document.body.classList.contains('game-mode'))return;
   const pair=window.dualAgents?.active(),linked=connected||pair;
-  session={core:nes,hash:romHash,mode:pair?'dual':!linked?'manual':$('learnerController').value!=='exo'?'external':window.learningUI.phase()};
-  failed=false;busy=false;version++;$('agentQuickMessage').textContent='';
-  window.consoleNavigation.pause();session.generation=generation;
+  const phase=window.learningUI.phase();
+  session={core:nes,hash:romHash,phase,connected:linked,playing,mode:pair?'dual':!linked?'manual':$('learnerController').value!=='exo'?'external':phase};
+  failed=false;busy=false;pendingDismiss=false;version++;$('agentQuickMessage').textContent='';
+  const teaching=!pair&&connected&&(['rec','assist'].includes(phase)||fdbExperience.some(example=>example.human));
+  if(!teaching)window.consoleNavigation.pause();session.generation=generation;
   panel.showModal();toggle.setAttribute('aria-expanded','true');controlsEnabled(false);refresh();
   (buttons().find(button=>button.getAttribute('aria-pressed')==='true')||$('agentQuickClose')).focus({preventScroll:true});
   window.guLogger?.event('agent.quick-panel',{open:true,mode:session.mode});
+  if(teaching){
+   const s=session,request=version;busy=true;suspending=true;refresh();
+   const valid=()=>session===s&&version===request&&sameGame(s)&&s.generation===generation;
+   window.learningUI.pauseCurrent({guard:valid}).then(()=>{
+    if(!valid())return;
+    window.consoleNavigation.pause(true,{connected:s.connected,playing:s.playing});s.generation=generation;
+    window.guLogger?.event('agent.teaching-paused',{queuedLabels:fdbExperience.length});
+   }).catch(error=>{
+    window.guLogger?.event('agent.teaching-pause-error',{message:String(error.message||error),queuedLabels:fdbExperience.length},'error');
+    if(session!==s)return;failed=true;window.labPause();s.generation=generation;
+    $('agentQuickMessage').textContent=String(error.message||error)+' Игра остаётся на паузе.';
+   }).finally(()=>{
+    if(session!==s)return;busy=false;suspending=false;refresh();if(pendingDismiss)dismiss();
+   });
+  }
  }
  async function select(kind){
   if(busy||!panel.open)return;
@@ -73,7 +96,8 @@
   }finally{if(session===s){busy=false;refresh();}}
  }
  toggle.onclick=open;$('agentQuickClose').onclick=()=>dismiss();
- for(const [id,kind]of [['agentQuickManual','manual'],['agentQuickAuto','auto'],['agentQuickEval','eval']])$(id).onclick=()=>select(kind);
+ for(const [id,kind]of [['agentQuickManual','manual'],['agentQuickAuto','auto'],['agentQuickEval','eval'],['agentQuickRec','rec'],['agentQuickStop','auto'],['agentQuickAssist','assist']])$(id).onclick=()=>select(kind);
+ $('agentQuickNetwork').onclick=()=>select(session.connected?'disconnect':'connect');
  $('agentQuickMore').onclick=()=>{const preserveResume=!failed&&session?.generation===generation;dismiss(false);window.consoleNavigation.go('agent',{preserveResume});};
  panel.addEventListener('cancel',event=>{event.preventDefault();dismiss();});
  // A tap outside is a dismissal; scrolling within a short landscape window stays local.
@@ -97,5 +121,6 @@
  document.addEventListener('visibilitychange',()=>{if(document.hidden)dismiss(false);});
  window.addEventListener('blur',()=>dismiss(false));
  window.addEventListener('lab-rom-loaded',()=>dismiss(false));
+ new MutationObserver(()=>{if(panel.open&&!busy)refresh();}).observe($('brainInfo'),{childList:true,characterData:true,subtree:true});
  window.agentQuickPanel={open,close:dismiss,active:()=>panel.open};
 })();

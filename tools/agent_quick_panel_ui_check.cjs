@@ -23,8 +23,13 @@ const assets=path.resolve('app/src/main/assets');let browser;
   const state=await page.evaluate(()=>{const rect=el=>{const r=el.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height};};const p=$('agentQuickPanel');return{panel:rect(p),viewport:[innerWidth,innerHeight],scroll:[document.documentElement.scrollWidth,document.documentElement.scrollHeight],buttons:[...p.querySelectorAll('button')].filter(el=>el.getClientRects().length).map(rect),modal:p.matches(':modal'),focused:p.contains(document.activeElement)};});
   assert(state.modal,label+' is a native modal with inert background');assert(state.focused,label+' receives keyboard focus');
   assert(state.panel.width>=260&&state.panel.width<=420,label+' stays compact');
-  for(const r of [state.panel,...state.buttons])assert(r.x>=-1&&r.y>=-1&&r.right<=state.viewport[0]+1&&r.bottom<=state.viewport[1]+1,label+' inside viewport');
+  const r=state.panel;assert(r.x>=-1&&r.y>=-1&&r.right<=state.viewport[0]+1&&r.bottom<=state.viewport[1]+1,label+' inside viewport');
   assert(state.buttons.every(r=>r.height>=40),label+' usable touch targets');assert(state.scroll[0]<=state.viewport[0]+1&&state.scroll[1]<=state.viewport[1]+1,label+' no page scrolling');
+  // Short landscape windows scroll inside the dialog; every action must remain reachable.
+  for(const button of await page.locator('#agentQuickPanel button:visible').all()){
+   await button.scrollIntoViewIfNeeded();const b=await button.boundingBox();assert(b.x>=r.x&&b.y>=r.y&&b.x+b.width<=r.right+1&&b.y+b.height<=r.bottom+1,label+' action reachable inside dialog');
+  }
+  await page.evaluate(()=>$('agentQuickPanel').scrollTop=0);
  };
  for(const system of ['nes','sega']){
   await page.goto('https://flyconsole.local/lab/index.html?system='+system);await page.waitForFunction(()=>window.consoleNavigation&&loaded&&!romLoading);

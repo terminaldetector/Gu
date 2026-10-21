@@ -6,7 +6,7 @@
  shell.innerHTML='<header id="consoleHeader"><button id="consoleBack" aria-label="Назад">‹</button><h1 id="consoleTitle">GU</h1></header><nav id="consoleNav" class="console-list" aria-label="Меню приложения"></nav><div id="consoleContent"></div><p id="consoleMessage" role="status" aria-live="polite"></p>';
  main.before(shell);body.classList.add('emulator-shell');
  const nav=$('consoleNav'),content=$('consoleContent'),message=$('consoleMessage');
- let current='home',stack=['home'],rendering=false,resumeLink=false,resumePlaying=false,navigationVersion=0,actionVersion=0,loadIntent=null;
+ let current='home',stack=['home'],rendering=false,resumeLink=false,resumePlaying=false,navigationVersion=0,actionVersion=0,loadIntent=null,teachingNavigation=null;
  const portals=[];
  const titles={home:'GU',open:'Открыть игру',recent:'Недавние игры','game-actions':'Действия с игрой',saves:'Сохранения игры',options:'Настройки',input:'Клавиатура и геймпад',agent:'Агент и обучение','agent-model':'Модель агента','agent-training':'Автономное обучение',progress:'Прогресс обучения',lab:'Лаборатория',about:'О приложении',audio:'Звук',timing:'Скорость игры','settings-display':'Видео','settings-touch':'Экранное управление','settings-pad':'Геймпад','settings-keyboard':'Клавиатура','settings-console':'Система','settings-diagnostics':'Диагностика','settings-appearance':'Интерфейс','settings-landscape':'Альбомная ориентация'};
  function say(text,error=false){message.textContent=text;message.className=error?'error':'';}
@@ -24,7 +24,7 @@
  const romTitle=()=>loaded?$('romName').textContent.replace(/ · [a-f0-9]{12}$/,''):'Игра не открыта';
  function cancelKeyBinding(){if(bindingKey){bindingKey=false;$('bindKey').textContent='Назначить клавишу';}}
  function clearLoadIntent(){loadIntent=null;try{sessionStorage.removeItem('gu-console-library-intent');}catch(_){}}
- function pauseForMenu(remember=true){cancelKeyBinding();if(remember&&body.classList.contains('game-mode')){resumeLink=connected;resumePlaying=playing;}if(window.autonomousEpisodes?.active())window.autonomousEpisodes.stop();if(playing||connected||configuring||pendingToken!==null||window.dualAgents?.running())window.labPause();holding.clear();controllerMasks.clear();refreshManual();controlsEnabled(false);}
+ function pauseForMenu(remember=true,intent=null){cancelKeyBinding();if(remember&&body.classList.contains('game-mode')){resumeLink=intent?.connected??connected;resumePlaying=intent?.playing??playing;}if(window.autonomousEpisodes?.active())window.autonomousEpisodes.stop();if(playing||connected||configuring||pendingToken!==null||window.dualAgents?.running())window.labPause();holding.clear();controllerMasks.clear();refreshManual();controlsEnabled(false);}
  function gameOpened(){restore();shell.hidden=true;body.classList.remove('console-home','console-menu-page');current='game';navigationVersion++;clearLoadIntent();}
  async function prepareSingle(){
   const version=navigationVersion,action=actionVersion,core=nes,hash=romHash;
@@ -32,14 +32,15 @@
   return version===navigationVersion&&action===actionVersion&&core===nes&&hash===romHash;
  }
  async function playMode(kind,{guard=()=>true}={}){
-  if(!['manual','auto','eval'].includes(kind))throw Error('Неизвестный режим агента.');
+  if(!['manual','auto','eval','rec','assist','connect','disconnect'].includes(kind))throw Error('Неизвестный режим агента.');
   actionVersion++;const version=navigationVersion,action=actionVersion,core=nes,hash=romHash,pausedGeneration=generation;
   const valid=()=>version===navigationVersion&&action===actionVersion&&core===nes&&hash===romHash&&guard();
   if(!loaded)throw Error('Сначала откройте игру.');
-  if(kind!=='manual'&&!ready)throw Error('Дождитесь загрузки коннектома.');
+  if(!['manual','disconnect'].includes(kind)&&!ready)throw Error('Дождитесь загрузки коннектома.');
   if(!await prepareSingle()||!valid()||generation!==pausedGeneration)return false;
-  if(kind!=='manual'){await window.labState.settle();if(!valid()||generation!==pausedGeneration)return false;}
-  if(gmodeMode!=='off')setGMode('off');
+  if(!['manual','disconnect'].includes(kind)){await window.labState.settle();if(!valid()||generation!==pausedGeneration)return false;}
+  if(kind==='disconnect'){window.labPause();resumeLink=false;resume();return true;}
+  if(kind!=='connect'&&gmodeMode!=='off')setGMode('off');
   if(kind==='manual'){
    window.learningUI.choose('off');resumeLink=false;resume();return true;
   }
@@ -118,26 +119,40 @@
   }else if(route==='lab'){
    for(const [id,label,target]of [['navLabNetwork','Параметры коннектома и Layer Sets','legacy-network'],['navLabLearning','Обучение и ручная оценка','legacy-learning'],['navLabResearch','Нейродинамика и эксперименты','legacy-research'],['navLabPlatform','Тестовые картриджи','legacy-platform'],['navCode','Программная лаборатория','code']])link(id,label,target);
   }else if(route==='code'){$('console').click();}
-  else if(route==='about'){paragraph('GU · 2.1.3');paragraph('Игровой эмулятор с агентом на основе коннектома. Игровые сохранения и приобретённый опыт хранятся отдельно.');link('navAboutDiagnostics','Диагностический отчёт','settings-diagnostics');}
+  else if(route==='about'){paragraph('GU · 2.1.4');paragraph('Игровой эмулятор с агентом на основе коннектома. Игровые сохранения и приобретённый опыт хранятся отдельно.');link('navAboutDiagnostics','Диагностический отчёт','settings-diagnostics');}
   else if(route.startsWith('legacy-')){
    const tab=route.slice(7);body.classList.remove('console-menu-page','console-home');showTab(tab);if(tab==='info')document.querySelectorAll('.settings-category').forEach(el=>el.classList.add('console-category-active'));
   }
   window.scrollTo(0,0);requestAnimationFrame(()=>nav.querySelector('button:not(:disabled)')?.focus({preventScroll:true}));
  }
- function go(route,{replace=false,preserveResume=false}={}){
+ function go(route,options={}){
+  if(teachingNavigation)return teachingNavigation;
+  const teaching=body.classList.contains('game-mode')&&connected&&!window.dualAgents?.active()&&['rec','assist'].includes(window.learningUI?.phase());
+  if(!teaching)return goNow(route,options);
+  const intent={connected,playing},epoch=generation,core=nes,hash=romHash,version=++navigationVersion,action=++actionVersion;
+  const button=$('gameExit'),toggle=$('gameAgentToggle'),label=button.textContent;button.disabled=true;button.textContent='Сохраняю…';if(toggle)toggle.disabled=true;
+  const valid=()=>epoch===generation&&core===nes&&hash===romHash&&version===navigationVersion&&action===actionVersion&&!document.hidden;
+  teachingNavigation=(async()=>{
+   try{await window.learningUI.pauseCurrent({guard:valid,reason:'console-menu'});if(!valid())return;pauseForMenu(true,intent);goNow(route,{...options,preserveResume:true});}
+   catch(error){window.guLogger?.event('agent.teaching-menu-error',{message:String(error.message||error)},'error');if(core===nes&&hash===romHash&&version===navigationVersion&&action===actionVersion){if(epoch===generation)window.labPause();status('Переход в меню: '+String(error.message||error),true);}}
+   finally{button.disabled=false;button.textContent=label;if(toggle)toggle.disabled=false;teachingNavigation=null;}
+  })();return teachingNavigation;
+ }
+ function goNow(route,{replace=false,preserveResume=false}={}){
   if(rendering)return;rendering=true;
   try{window.agentQuickPanel?.close(false);navigationVersion++;actionVersion++;clearLoadIntent();pauseForMenu(!preserveResume);if($('quickMenu').open)$('quickMenu').close();leaveGame('info');if(replace||route==='home')stack=[route];else if(stack.at(-1)!==route)stack.push(route);current=route;render(route);window.guLogger?.event('navigation.page',{page:route});}
   finally{rendering=false;}
  }
  const previousBack=window.labBack;
  function back(){
+  if(teachingNavigation)return true;
   if(bindingKey){cancelKeyBinding();return true;}
   if(window.userInterface?.editing()||window.userInterface?.binding()||$('quickMenu').open)return previousBack?.()||false;
   if(body.classList.contains('game-mode')){stack=['home'];go('game-actions');return true;}
   if(stack.length>1){stack.pop();go(stack.at(-1));return true;}
   if(loaded){resume(false);return true;}return window.labRequestExit?.()||false;
  }
- window.consoleNavigation={go,legacy:tab=>go('legacy-'+tab),back,resume,pause:pauseForMenu,playMode,gameOpened,legacyOpened:tab=>{if(!rendering)go(tab==='game'?'home':'legacy-'+tab);},page:()=>current};
+ window.consoleNavigation={go,legacy:tab=>go('legacy-'+tab),back,resume,pause:pauseForMenu,playMode,pending:()=>!!teachingNavigation,gameOpened,legacyOpened:tab=>{if(!rendering)go(tab==='game'?'home':'legacy-'+tab);},page:()=>current};
  window.labBack=back;$('consoleBack').onclick=back;$('gameExit').onclick=()=>{stack=['home'];go('game-actions');};
  document.addEventListener('keydown',event=>{
   if(event.defaultPrevented||bindingKey||window.userInterface?.binding()||window.userInterface?.editing())return;

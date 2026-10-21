@@ -1,0 +1,149 @@
+{
+  "version": "2.1.4",
+  "versionCode": 38,
+  "browser": [
+    {
+      "name": "console_layout",
+      "exitCode": 0,
+      "seconds": 6.94
+    },
+    {
+      "name": "interface_ui",
+      "exitCode": 0,
+      "seconds": 10.02
+    },
+    {
+      "name": "landscape_ui",
+      "exitCode": 0,
+      "seconds": 6.85
+    },
+    {
+      "name": "layer_ui",
+      "exitCode": 0,
+      "seconds": 1.88
+    },
+    {
+      "name": "platform_ui",
+      "exitCode": 0,
+      "seconds": 4.73
+    },
+    {
+      "name": "training_ui",
+      "exitCode": 0,
+      "seconds": 8.61
+    },
+    {
+      "name": "dual_layout",
+      "exitCode": 0,
+      "seconds": 2.61
+    },
+    {
+      "name": "polish_ui",
+      "exitCode": 0,
+      "seconds": 3.38
+    },
+    {
+      "name": "training_flow_ui",
+      "exitCode": 0,
+      "seconds": 15.43
+    },
+    {
+      "name": "release_regression_ui",
+      "exitCode": 0,
+      "seconds": 8.63
+    },
+    {
+      "name": "autonomous_console_ui",
+      "exitCode": 0,
+      "seconds": 7.2
+    },
+    {
+      "name": "continuation_ui",
+      "exitCode": 0,
+      "seconds": 3.91
+    },
+    {
+      "name": "autonomous_episodes_ui",
+      "exitCode": 0,
+      "seconds": 9.32
+    },
+    {
+      "name": "episode_starts_ui",
+      "exitCode": 0,
+      "seconds": 5.01
+    },
+    {
+      "name": "session_logger_ui",
+      "exitCode": 0,
+      "seconds": 4.13
+    },
+    {
+      "name": "console_navigation_ui",
+      "exitCode": 0,
+      "seconds": 6.12
+    },
+    {
+      "name": "agent_quick_panel_ui",
+      "exitCode": 0,
+      "seconds": 7.51
+    },
+    {
+      "name": "agent_teaching_panel_ui",
+      "exitCode": 0,
+      "seconds": 9.03
+    },
+    {
+      "name": "portrait_rotation_ui",
+      "exitCode": 0,
+      "seconds": 2.67
+    },
+    {
+      "name": "plasticity_speed_ui",
+      "exitCode": 0,
+      "seconds": 23.42
+    },
+    {
+      "name": "action_hold_ui",
+      "exitCode": 0,
+      "seconds": 14.29
+    }
+  ],
+  "hostCheck": {
+    "name": "host-check",
+    "exitCode": 0,
+    "seconds": 183.58
+  },
+  "androidBuild": {
+    "name": "android-build",
+    "exitCode": 0,
+    "seconds": 14.08
+  },
+  "lint": {
+    "debug": {
+      "Error": 0,
+      "Fatal": 0,
+      "Warning": 19
+    },
+    "release": {
+      "Error": 0,
+      "Fatal": 0,
+      "Warning": 19
+    }
+  },
+  "apk": {
+    "version": "2.1.4",
+    "versionCode": 38,
+    "sha256": "dcf57bb773dffa1fde3f184f5f407cdd7475c392cd4375a05d2b2cddce1b4088",
+    "bytes": 208105797,
+    "sourceId": "e3f0f962347d1eabd7e983e2d19d759bb36f75b24568ebd1e77e8621facacf8b",
+    "exactLabResources": 49,
+    "signature": "verified debug APK"
+  },
+  "limits": [
+    "New version not yet run on physical Android",
+    "Native neural/device replies in browser tests are explicit fixtures",
+    "Male CNS reaction latency is measured, not optimized or claimed fixed",
+    "No proof of active-game lifecycle save/restore in newest device ZIP",
+    "Original full technical roadmap remains partially open"
+  ]
+}
