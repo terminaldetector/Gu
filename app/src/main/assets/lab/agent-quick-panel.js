@@ -74,7 +74,7 @@
  }
  toggle.onclick=open;$('agentQuickClose').onclick=()=>dismiss();
  for(const [id,kind]of [['agentQuickManual','manual'],['agentQuickAuto','auto'],['agentQuickEval','eval']])$(id).onclick=()=>select(kind);
- $('agentQuickMore').onclick=()=>{dismiss(false);window.consoleNavigation.go('agent');};
+ $('agentQuickMore').onclick=()=>{const preserveResume=!failed&&session?.generation===generation;dismiss(false);window.consoleNavigation.go('agent',{preserveResume});};
  panel.addEventListener('cancel',event=>{event.preventDefault();dismiss();});
  // A tap outside is a dismissal; scrolling within a short landscape window stays local.
  let outside=false;

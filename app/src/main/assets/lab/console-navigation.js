@@ -24,7 +24,7 @@
  const romTitle=()=>loaded?$('romName').textContent.replace(/ · [a-f0-9]{12}$/,''):'Игра не открыта';
  function cancelKeyBinding(){if(bindingKey){bindingKey=false;$('bindKey').textContent='Назначить клавишу';}}
  function clearLoadIntent(){loadIntent=null;try{sessionStorage.removeItem('gu-console-library-intent');}catch(_){}}
- function pauseForMenu(){cancelKeyBinding();if(body.classList.contains('game-mode')){resumeLink=connected;resumePlaying=playing;}if(window.autonomousEpisodes?.active())window.autonomousEpisodes.stop();if(playing||connected||configuring||pendingToken!==null||window.dualAgents?.running())window.labPause();holding.clear();controllerMasks.clear();refreshManual();controlsEnabled(false);}
+ function pauseForMenu(remember=true){cancelKeyBinding();if(remember&&body.classList.contains('game-mode')){resumeLink=connected;resumePlaying=playing;}if(window.autonomousEpisodes?.active())window.autonomousEpisodes.stop();if(playing||connected||configuring||pendingToken!==null||window.dualAgents?.running())window.labPause();holding.clear();controllerMasks.clear();refreshManual();controlsEnabled(false);}
  function gameOpened(){restore();shell.hidden=true;body.classList.remove('console-home','console-menu-page');current='game';navigationVersion++;clearLoadIntent();}
  async function prepareSingle(){
   const version=navigationVersion,action=actionVersion,core=nes,hash=romHash;
@@ -124,9 +124,9 @@
   }
   window.scrollTo(0,0);requestAnimationFrame(()=>nav.querySelector('button:not(:disabled)')?.focus({preventScroll:true}));
  }
- function go(route,{replace=false}={}){
+ function go(route,{replace=false,preserveResume=false}={}){
   if(rendering)return;rendering=true;
-  try{window.agentQuickPanel?.close(false);navigationVersion++;actionVersion++;clearLoadIntent();pauseForMenu();if($('quickMenu').open)$('quickMenu').close();leaveGame('info');if(replace||route==='home')stack=[route];else if(stack.at(-1)!==route)stack.push(route);current=route;render(route);window.guLogger?.event('navigation.page',{page:route});}
+  try{window.agentQuickPanel?.close(false);navigationVersion++;actionVersion++;clearLoadIntent();pauseForMenu(!preserveResume);if($('quickMenu').open)$('quickMenu').close();leaveGame('info');if(replace||route==='home')stack=[route];else if(stack.at(-1)!==route)stack.push(route);current=route;render(route);window.guLogger?.event('navigation.page',{page:route});}
   finally{rendering=false;}
  }
  const previousBack=window.labBack;

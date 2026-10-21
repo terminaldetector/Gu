@@ -77,12 +77,12 @@
   {
     "name": "console_navigation_ui",
     "exitCode": 0,
-    "seconds": 6.47
+    "seconds": 6.33
   },
   {
     "name": "agent_quick_panel_ui",
     "exitCode": 0,
-    "seconds": 5.96
+    "seconds": 10.24
   },
   {
     "name": "plasticity_speed_ui",

@@ -1,9 +1,9 @@
 {
   "version": "2.1.3",
   "versionCode": 37,
-  "sha256": "e9cbf8ac940010a133de700b58b8ddb02a3719bb518f09ae17dfb1cb56fd5e80",
-  "bytes": 208322396,
-  "sourceId": "f3903f0700f412d54dbb702884ae8c12fbcce4116b54862d4c85668ce2cf4ff6",
+  "sha256": "8e441b759f033488b9ff42216f1fa1e6f332600f6192bd3aceb7b24aaa9fdcb1",
+  "bytes": 208322405,
+  "sourceId": "d5a122680a63f2ca4a26d6123dfe4f1b60c761aba17ef50ff52d47444c9c318d",
   "exactLabResources": 49,
   "signature": "verified debug APK"
 }
