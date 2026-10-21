@@ -31,6 +31,22 @@
   if(window.dualAgents?.active()&&!await window.dualAgents.exit())throw Error('Не удалось сохранить обе модели. Режим игры не изменён.');
   return version===navigationVersion&&action===actionVersion&&core===nes&&hash===romHash;
  }
+ async function playMode(kind,{guard=()=>true}={}){
+  if(!['manual','auto','eval'].includes(kind))throw Error('Неизвестный режим агента.');
+  actionVersion++;const version=navigationVersion,action=actionVersion,core=nes,hash=romHash,pausedGeneration=generation;
+  const valid=()=>version===navigationVersion&&action===actionVersion&&core===nes&&hash===romHash&&guard();
+  if(!loaded)throw Error('Сначала откройте игру.');
+  if(kind!=='manual'&&!ready)throw Error('Дождитесь загрузки коннектома.');
+  if(!await prepareSingle()||!valid()||generation!==pausedGeneration)return false;
+  if(kind!=='manual'){await window.labState.settle();if(!valid()||generation!==pausedGeneration)return false;}
+  if(gmodeMode!=='off')setGMode('off');
+  if(kind==='manual'){
+   window.learningUI.choose('off');resumeLink=false;resume();return true;
+  }
+  const started=await window.learningUI.startCurrent(kind,{guard:valid});
+  if(started){resumeLink=true;resumePlaying=true;}
+  return started;
+ }
  function resume(forcePlay=true){
   if(!loaded){say('Сначала откройте игру.',true);return;}
   openGame();
@@ -60,7 +76,7 @@
   const failure=window.labAgentStatus?.().failure;
   paragraph(failure?'Последняя ошибка агента: '+failure.message:!ready?'Коннектом загружается. Ручная игра доступна.':resumeLink?'Агент приостановлен вместе с игрой.':'Агент отключён. Можно играть вручную.');
   row('navAgentPlay',resumeLink?'Продолжить с агентом':'Играть с агентом',async()=>{if(!ready)throw Error('Дождитесь загрузки коннектома');if(!await prepareSingle())return;resumeLink=false;$('mode').value='closed';$('learnerController').value='exo';openGame();connectBrain(false);if(!playing)$('play').click();},{disabled:!loaded||!ready});
-  row('navManualPlay','Играть вручную',async()=>{if(!await prepareSingle())return;resumeLink=false;if(gmodeMode!=='off')setGMode('off');resume();},{disabled:!loaded});
+  row('navManualPlay','Играть вручную',()=>playMode('manual'),{disabled:!loaded});
   link('navModel','Выбор коннектома','agent-model');link('navAutonomous','Автономное обучение','agent-training');link('navProgress','Прогресс обучения','progress');
   link('navLearned','Обученная модель','learned');link('navTwoPlayers','Два игрока','two-players');
  }
@@ -102,7 +118,7 @@
   }else if(route==='lab'){
    for(const [id,label,target]of [['navLabNetwork','Параметры коннектома и Layer Sets','legacy-network'],['navLabLearning','Обучение и ручная оценка','legacy-learning'],['navLabResearch','Нейродинамика и эксперименты','legacy-research'],['navLabPlatform','Тестовые картриджи','legacy-platform'],['navCode','Программная лаборатория','code']])link(id,label,target);
   }else if(route==='code'){$('console').click();}
-  else if(route==='about'){paragraph('GU · 2.1.2');paragraph('Игровой эмулятор с агентом на основе коннектома. Игровые сохранения и приобретённый опыт хранятся отдельно.');link('navAboutDiagnostics','Диагностический отчёт','settings-diagnostics');}
+  else if(route==='about'){paragraph('GU · 2.1.3');paragraph('Игровой эмулятор с агентом на основе коннектома. Игровые сохранения и приобретённый опыт хранятся отдельно.');link('navAboutDiagnostics','Диагностический отчёт','settings-diagnostics');}
   else if(route.startsWith('legacy-')){
    const tab=route.slice(7);body.classList.remove('console-menu-page','console-home');showTab(tab);if(tab==='info')document.querySelectorAll('.settings-category').forEach(el=>el.classList.add('console-category-active'));
   }
@@ -110,7 +126,7 @@
  }
  function go(route,{replace=false}={}){
   if(rendering)return;rendering=true;
-  try{navigationVersion++;actionVersion++;clearLoadIntent();pauseForMenu();if($('quickMenu').open)$('quickMenu').close();leaveGame('info');if(replace||route==='home')stack=[route];else if(stack.at(-1)!==route)stack.push(route);current=route;render(route);window.guLogger?.event('navigation.page',{page:route});}
+  try{window.agentQuickPanel?.close(false);navigationVersion++;actionVersion++;clearLoadIntent();pauseForMenu();if($('quickMenu').open)$('quickMenu').close();leaveGame('info');if(replace||route==='home')stack=[route];else if(stack.at(-1)!==route)stack.push(route);current=route;render(route);window.guLogger?.event('navigation.page',{page:route});}
   finally{rendering=false;}
  }
  const previousBack=window.labBack;
@@ -121,7 +137,7 @@
   if(stack.length>1){stack.pop();go(stack.at(-1));return true;}
   if(loaded){resume(false);return true;}return window.labRequestExit?.()||false;
  }
- window.consoleNavigation={go,legacy:tab=>go('legacy-'+tab),back,resume,gameOpened,legacyOpened:tab=>{if(!rendering)go(tab==='game'?'home':'legacy-'+tab);},page:()=>current};
+ window.consoleNavigation={go,legacy:tab=>go('legacy-'+tab),back,resume,pause:pauseForMenu,playMode,gameOpened,legacyOpened:tab=>{if(!rendering)go(tab==='game'?'home':'legacy-'+tab);},page:()=>current};
  window.labBack=back;$('consoleBack').onclick=back;$('gameExit').onclick=()=>{stack=['home'];go('game-actions');};
  document.addEventListener('keydown',event=>{
   if(event.defaultPrevented||bindingKey||window.userInterface?.binding()||window.userInterface?.editing())return;

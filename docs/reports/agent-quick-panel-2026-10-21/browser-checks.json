@@ -1,0 +1,97 @@
+[
+  {
+    "name": "console_layout",
+    "exitCode": 0,
+    "seconds": 6.92
+  },
+  {
+    "name": "interface_ui",
+    "exitCode": 0,
+    "seconds": 10.54
+  },
+  {
+    "name": "landscape_ui",
+    "exitCode": 0,
+    "seconds": 6.8
+  },
+  {
+    "name": "layer_ui",
+    "exitCode": 0,
+    "seconds": 2.17
+  },
+  {
+    "name": "platform_ui",
+    "exitCode": 0,
+    "seconds": 5.6
+  },
+  {
+    "name": "training_ui",
+    "exitCode": 0,
+    "seconds": 8.87
+  },
+  {
+    "name": "dual_layout",
+    "exitCode": 0,
+    "seconds": 2.58
+  },
+  {
+    "name": "polish_ui",
+    "exitCode": 0,
+    "seconds": 3.4
+  },
+  {
+    "name": "training_flow_ui",
+    "exitCode": 0,
+    "seconds": 15.51
+  },
+  {
+    "name": "release_regression_ui",
+    "exitCode": 0,
+    "seconds": 8.49
+  },
+  {
+    "name": "autonomous_console_ui",
+    "exitCode": 0,
+    "seconds": 7.21
+  },
+  {
+    "name": "continuation_ui",
+    "exitCode": 0,
+    "seconds": 4.28
+  },
+  {
+    "name": "autonomous_episodes_ui",
+    "exitCode": 0,
+    "seconds": 9.7
+  },
+  {
+    "name": "episode_starts_ui",
+    "exitCode": 0,
+    "seconds": 5.06
+  },
+  {
+    "name": "session_logger_ui",
+    "exitCode": 0,
+    "seconds": 4.03
+  },
+  {
+    "name": "console_navigation_ui",
+    "exitCode": 0,
+    "seconds": 5.88
+  },
+  {
+    "name": "agent_quick_panel_ui",
+    "exitCode": 0,
+    "seconds": 6.23
+  },
+  {
+    "name": "plasticity_speed_ui",
+    "exitCode": 0,
+    "seconds": 23.31
+  },
+  {
+    "name": "action_hold_ui",
+    "exitCode": 0,
+    "seconds": 13.85
+  }
+]

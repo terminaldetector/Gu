@@ -811,7 +811,7 @@ buttonNames.forEach(name=>{const span=document.createElement('span');span.textCo
 const controllerMasks=new Map();let selectedController=null,customKeys={};
 try{customKeys=JSON.parse(localStorage.getItem('fly-keys-'+labPlatform)||'{}');}catch(_){}
 let keys=FlyController.keyboard(labPlatform,customKeys),bindingKey=false;
-function controlsEnabled(on){if(window.userInterface&&window.userInterface.editing())on=false;if(window.FlyBridge&&typeof window.FlyBridge.controls==='function')window.FlyBridge.controls(on);}
+function controlsEnabled(on){if(window.userInterface&&window.userInterface.editing()||window.agentQuickPanel?.active())on=false;if(window.FlyBridge&&typeof window.FlyBridge.controls==='function')window.FlyBridge.controls(on);}
 function refreshManual(){
  if(benchmark&&holding.size){finishBenchmark('manual_control');window.labPause();}
  manualMask=0;for(const mask of holding.values())manualMask|=mask;
@@ -861,7 +861,7 @@ dpad.onpointermove=event=>{if(dpad.hasPointerCapture(event.pointerId))movePad(ev
 dpad.onpointerup=dpad.onpointercancel=dpad.onlostpointercapture=event=>{holding.delete(event.pointerId);refreshManual();};
 window.onkeydown=event=>{
  if(bindingKey){event.preventDefault();if(event.code!=='Escape'){if(!event.code)return;customKeys=FlyController.bind(labPlatform,customKeys,Number($('keyButton').value),event.code);keys=FlyController.keyboard(labPlatform,customKeys);localStorage.setItem('fly-keys-'+labPlatform,JSON.stringify(customKeys));}bindingKey=false;holding.clear();refreshManual();$('bindKey').textContent='Назначить клавишу';keyboardInfo();return;}
- if(document.querySelector('main').dataset.tab!=='game'||$('quickMenu').open)return;
+ if(document.querySelector('main').dataset.tab!=='game'||$('quickMenu').open||window.agentQuickPanel?.active())return;
  if(['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName)||event.target.isContentEditable)return;
  const code=event.code||event.key,button=keys[code];if(button!==undefined){event.preventDefault();holding.set('key-'+code,1<<button);refreshManual();}
 };

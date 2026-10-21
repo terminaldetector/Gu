@@ -233,9 +233,10 @@ body.emulator-shell.game-mode #gameToolbar {
   background: #000;
   z-index: 8;
 }
-body.emulator-shell.game-mode #gameToolbar > :not(#gameExit):not(#gameBoost):not(#gameFastForward) { display: none !important; }
+body.emulator-shell.game-mode #gameToolbar > :not(#gameExit):not(#gameBoost):not(#gameFastForward):not(#gameAgentToggle) { display: none !important; }
 body.emulator-shell.game-mode #gameToolbar #gameExit,
 body.emulator-shell.game-mode #gameToolbar #gameBoost,
+body.emulator-shell.game-mode #gameToolbar #gameAgentToggle,
 body.emulator-shell.game-mode #gameToolbar #gameFastForward {
   display: block !important;
   flex: 0 0 auto !important;
@@ -260,6 +261,75 @@ body.emulator-shell.game-mode #gameToolbar #gameFastForward {
 body.emulator-shell.game-mode #gameToolbar #gameExit { order: 2; margin-left: auto; }
 body.emulator-shell.game-mode #gameToolbar #gameBoost,
 body.emulator-shell.game-mode #gameToolbar #gameFastForward { order: 0; margin-right: auto; }
+body.emulator-shell.game-mode #gameToolbar #gameAgentToggle {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  order: 1;
+  margin-left: auto;
+  color: #bfc7ce;
+}
+.agent-bars { display: grid; gap: 4px; width: 17px; }
+.agent-bars i { display: block; height: 1px; background: currentColor; }
+#agentQuickPanel {
+  box-sizing: border-box;
+  position: fixed;
+  inset: max(48px, env(safe-area-inset-top)) max(10px, var(--safe-right)) auto auto;
+  width: min(328px, calc(100vw - 20px));
+  max-width: calc(100vw - 20px);
+  max-height: calc(100dvh - max(48px, env(safe-area-inset-top)) - max(10px, env(safe-area-inset-bottom)));
+  margin: 0;
+  padding: 14px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid #65717b80;
+  border-radius: 14px;
+  background: #151d26eb;
+  color: #edf1f5;
+  box-shadow: 0 8px 32px #0006;
+  font-size: 14px;
+  line-height: 1.4;
+  touch-action: pan-y;
+}
+#agentQuickPanel:not([open]) { display: none; }
+#agentQuickPanel::backdrop { background: #0002; }
+#agentQuickPanel header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+#agentQuickPanel h2 { margin: 0; color: inherit; font-size: 18px; font-weight: 500; letter-spacing: 0; }
+#agentQuickPanel #agentQuickStatus { margin: 4px 0 0; color: #b9c3cd; font-size: 12px; }
+#agentQuickPanel button {
+  min-height: 44px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #a7b5c333;
+  border-radius: 8px;
+  background: #ffffff06;
+  color: inherit;
+  box-shadow: none;
+  font-size: 14px;
+  line-height: 1.3;
+  text-align: left;
+}
+#agentQuickPanel #agentQuickClose { flex: 0 0 44px; min-width: 44px; padding: 8px; border: 0; background: transparent; text-align: center; }
+#agentQuickPanel .agent-quick-modes { display: grid; gap: 6px; }
+#agentQuickPanel .agent-quick-modes button { display: grid; gap: 3px; width: 100%; }
+#agentQuickPanel strong { font-size: 14px; font-weight: 500; }
+#agentQuickPanel small { color: #bdc7d0; font-size: 12px; }
+#agentQuickPanel button[aria-pressed=true] { border-color: #95c5b3; background: #95c5b31a; }
+#agentQuickPanel button:focus-visible,
+body.emulator-shell.game-mode #gameAgentToggle:focus-visible { outline: 2px solid #a5d4c3; outline-offset: -3px; }
+#agentQuickPanel button:disabled { opacity: .45; }
+#agentQuickPanel #agentQuickFeedback { margin: 12px 0; color: #bac4ce; font-size: 12px; }
+#agentQuickPanel #agentQuickMessage { margin: 8px 0; color: #ffd2bd; font-size: 12px; overflow-wrap: anywhere; }
+#agentQuickPanel #agentQuickMessage:empty { display: none; }
+#agentQuickPanel #agentQuickMore { display: flex; justify-content: space-between; gap: 8px; width: 100%; border: 0; border-top: 1px solid #a7b5c333; border-radius: 0; background: transparent; }
+@media (orientation: landscape) and (max-height: 460px) {
+  #agentQuickPanel { padding: 10px 12px; }
+  #agentQuickPanel header { margin-bottom: 6px; }
+  #agentQuickPanel .agent-quick-modes { gap: 4px; }
+  #agentQuickPanel .agent-quick-modes button { padding: 6px 10px; }
+  #agentQuickPanel #agentQuickFeedback { margin: 8px 0; }
+}
 body.emulator-shell.game-mode .screen-stage {
   display: grid !important;
   grid-column: 1 / -1 !important;

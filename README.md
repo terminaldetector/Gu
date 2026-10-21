@@ -1,5 +1,7 @@
 ## Development direction: Autonomous Learning Emulator
 
+Version 2.1.3 adds a small **≡ Agent** button during play. A translucent pause panel offers Manual, AUTO and frozen-weight play, plus full agent settings. Switching modes continues the current game; unverified reward remains unknown. See the [quick-panel validation and device-log limits](docs/reports/agent-quick-panel-2026-10-21/README.md).
+
 Version 2.1.2 introduces a game-first interface with MD.emu-style hierarchical menus. Gameplay shows video and controls; agent status, saves, settings and research have separate screens. See the [UI changes, Android log findings and validation](docs/reports/game-console-ui-2026-10-21/README.md).
 
 The current development plan prioritizes stable independent emulation, separate game/learned/history storage and evidence-based autonomous FDB learning. See the [Russian technical strategy and implementation status](docs/AUTONOMOUS_LEARNING_EMULATOR_RU.md). This is work in progress; guarded paired evaluation and Best promotion are implemented, while universal game-result detection and physical-device acceptance remain open.

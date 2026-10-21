@@ -191,7 +191,7 @@ function controller(data){
   return 0;
  }
  if(!previous||previous.descriptor!==descriptor||previous.name!==name){queueMicrotask(physicalInfo);queueLayout();}
- if(editing||document.querySelector('main').dataset.tab!=='game'||$('quickMenu').open)return 0;
+ if(editing||document.querySelector('main').dataset.tab!=='game'||$('quickMenu').open||window.agentQuickPanel?.active())return 0;
  try{return prefs.physical(data,deviceMap(devices.get(data.id)),buttonNames.length===12);}catch(e){padNotice(e.message,true);return 0;}
 }
 document.addEventListener('keydown',event=>{

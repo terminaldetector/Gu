@@ -42,7 +42,7 @@ function fdb(){
 function choose(kind){
  if(!Object.hasOwn(modes,kind))throw Error('Неизвестный формат обучения');
  if(pair()&&['rec','assist'].includes(kind))throw Error('Для REC / подсказок завершите две сети и выберите одного нейронного игрока.');
- if(window.labState.restoring())throw Error('Дождитесь восстановления приобретённых весов.');
+ if(kind!=='off'&&window.labState.restoring())throw Error('Дождитесь восстановления приобретённых весов.');
  window.labPause();$('learnMode').value=modes[kind];$('liveHints').checked=kind==='assist';$('hintAgent').checked=false;
  if(kind==='rec'){gmodeMode='off';$('gmode').value='off';rate(1);}
  if(kind!=='off'){$('mode').value='closed';$('clock').value='realtime';$('runMode').value='continuous';}
@@ -60,6 +60,34 @@ async function start(){
  }catch(e){status(e.message,true);}finally{busy=false;refresh();}
 }
 const waitSample=()=>new Promise((resolve,reject)=>{const started=performance.now();function check(){if(pendingToken===null&&!configuring)return resolve();if(performance.now()-started>30000)return reject(Error('Сеть не подтвердила конец записи'));setTimeout(check,20);}check();});
+// In-game shortcuts continue from the displayed frame, with the same durable Current gate.
+// Keep this separate from the research launcher, whose episode protocol may restore a start.
+async function startCurrent(kind,{guard=()=>true}={}){
+ if(busy)throw Error('Дождитесь завершения настройки агента.');
+ if(!['auto','eval'].includes(kind))throw Error('Неизвестный режим агента.');
+ busy=true;refresh();
+ try{
+  const pausedGeneration=generation,validPause=()=>guard()&&generation===pausedGeneration;
+  await window.labState.settle();if(!validPause())return false;
+  if(!loaded||!ready||romLoading)throw Error('Дождитесь ROM и коннектома.');
+  if(pair())throw Error('Сначала сохраните и завершите две нейронные модели.');
+  if(window.humanTeaching)await window.humanTeaching.stop('quick-mode');
+  if(!validPause())return false;
+  if(window.fdbAgent){await window.fdbAgent.drain();if(!validPause())return false;if(window.fdbAgent.error())throw Error(window.fdbAgent.error());}
+  choose(kind);$('learnerController').value='exo';fdb();
+  connectBrain(false);
+  // Configuration may be asynchronous. Never start playback over a later menu or background pause.
+  const began=performance.now(),configuredGeneration=generation;
+  while(configuring){
+   if(!guard())return false;
+   if(performance.now()-began>30000){window.labPause();throw Error('Коннектом не подтвердил настройку за 30 секунд.');}
+   await new Promise(resolve=>setTimeout(resolve,20));
+  }
+  if(!guard()||generation!==configuredGeneration)return false;
+  if(!connected)throw Error(window.labAgentStatus?.().failure?.message||'Связь с агентом не включена.');
+  startTrainingGame();return true;
+ }finally{busy=false;refresh();}
+}
 async function stopRec(next='auto'){
  if(busy)return;busy=true;refresh();
  try{
@@ -115,5 +143,5 @@ $('gmodeLaunch').onclick=async()=>{
   fdb();startOriginal();
  }catch(e){status('Напарник не запущен: '+e.message,true);}finally{busy=false;refresh();}
 };
-window.learningUI={phase,refresh,choose,start,stopRec,rate,busy:()=>busy};refresh();
+window.learningUI={phase,refresh,choose,start,startCurrent,stopRec,rate,busy:()=>busy};refresh();
 })();

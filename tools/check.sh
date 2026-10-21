@@ -34,6 +34,7 @@ node --check app/src/main/assets/lab/interface-ui.js
 node --check app/src/main/assets/lab/state-ui.js
 node --check app/src/main/assets/lab/session-logger.js
 node --check app/src/main/assets/lab/console-navigation.js
+node --check app/src/main/assets/lab/agent-quick-panel.js
 python tools/inspect_diagnostics_check.py
 node --check app/src/main/assets/lab/episode-starts.js
 node --check app/src/main/assets/lab/shell-ui.js
