@@ -25,8 +25,8 @@ Note: Recompile with -Xlint:deprecation for details.
 > Task :app:compileDebugShaders NO-SOURCE
 > Task :app:generateDebugAssets UP-TO-DATE
 > Task :app:mergeDebugAssets
-> Task :app:processDebugJavaRes NO-SOURCE
 > Task :app:compressDebugAssets
+> Task :app:processDebugJavaRes NO-SOURCE
 > Task :app:mergeDebugJavaResource UP-TO-DATE
 > Task :app:checkDebugDuplicateClasses UP-TO-DATE
 > Task :app:desugarDebugFileDependencies UP-TO-DATE
@@ -98,14 +98,14 @@ Note: Recompile with -Xlint:deprecation for details.
 > Task :app:generateReleaseAssets UP-TO-DATE
 > Task :app:mergeReleaseAssets
 > Task :app:compressReleaseAssets
-> Task :app:extractReleaseVersionControlInfo UP-TO-DATE
+> Task :app:extractReleaseVersionControlInfo
 > Task :app:processReleaseJavaRes NO-SOURCE
 > Task :app:mergeReleaseJavaResource UP-TO-DATE
 > Task :app:optimizeReleaseResources UP-TO-DATE
-> Task :app:mergeDexRelease
 > Task :app:collectReleaseDependencies UP-TO-DATE
 > Task :app:sdkReleaseDependencyData UP-TO-DATE
 > Task :app:writeReleaseAppMetadata UP-TO-DATE
+> Task :app:mergeDexRelease
 > Task :app:writeReleaseSigningConfigVersions UP-TO-DATE
 > Task :app:generateReleaseLintReportModel
 > Task :app:bundleReleaseClassesToCompileJar
@@ -121,4 +121,4 @@ Note: Recompile with -Xlint:deprecation for details.
 > Task :app:lintRelease
 
 BUILD SUCCESSFUL in 9s
-95 actionable tasks: 31 executed, 64 up-to-date
+95 actionable tasks: 32 executed, 63 up-to-date

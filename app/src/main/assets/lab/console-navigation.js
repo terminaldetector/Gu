@@ -50,7 +50,7 @@
  function resume(forcePlay=true){
   if(!loaded){say('Сначала откройте игру.',true);return;}
   openGame();
-  if(resumeLink&&!window.labAgentStatus?.().failure&&!window.dualAgents?.active())connectBrain(false);
+  if(resumeLink&&!window.labNeuralSuspended&&!window.dualAgents?.active())connectBrain(false);
   if((forcePlay||resumePlaying)&&!playing)$('play').click();
  }
  async function gameOperation(op){if(!loaded)throw Error('Сначала откройте игру');await window.labGameStates[op]('quick');say(op==='save'?'Состояние игры сохранено.':'Состояние игры загружено.');}
