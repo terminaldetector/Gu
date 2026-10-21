@@ -68,30 +68,12 @@ jobs:
           fi
       - name: Check portrait and landscape console layouts
         timeout-minutes: 10
-        run: |
-          ui_status=0
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/console_layout_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/interface_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/landscape_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/layer_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/platform_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/training_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/dual_layout_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/polish_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/training_flow_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/release_regression_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/autonomous_console_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/continuation_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/autonomous_episodes_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/episode_starts_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/session_logger_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/console_navigation_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/agent_quick_panel_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/agent_teaching_panel_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/portrait_rotation_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/plasticity_speed_ui_check.cjs || ui_status=1
-          NODE_PATH=/tmp/fly-ui/node_modules node tools/action_hold_ui_check.cjs || ui_status=1
-          exit "$ui_status"
+        run: NODE_PATH=/tmp/fly-ui/node_modules node tools/run_ui_checks.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: FlyConsole-ui-check-results
+          path: ui-check-results/
       - uses: actions/upload-artifact@v4
         if: always()
         with:

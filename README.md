@@ -189,6 +189,8 @@ JDK 17, Gradle 8.9, Android SDK 35 / minSdk 26. Install `tools/requirements.txt`
 
 Optional mobile browser protocol test: compile `tools/FixtureBridge.java` with the `org.json` library, set `FIXTURE_CLASSPATH` and `CHROMIUM_EXECUTABLE`, then run `node tools/lab_ui_check.cjs` with Playwright installed. It couples the actual rendered NES screen to the Java Engine on a clearly labelled 24-node fixture. This test is not an Android-device or whole-brain behaviour benchmark.
 
+Run the 21 console browser suites with `NODE_PATH=/path/to/node_modules CHROMIUM_EXECUTABLE=/path/to/chromium node tools/run_ui_checks.cjs` (Playwright 1.51.1). Optional suite names, such as `agent_teaching_panel_ui portrait_rotation_ui`, select a subset. The runner saves each suite's stdout/stderr, exit status and browser versions in `ui-check-results/summary.json` and adjacent logs; CI uploads these as **FlyConsole-ui-check-results**, including after a failure. Screenshots remain in **FlyConsole-ui-preview**.
+
 Full-data validation on the workspace JVM (256 MiB heap): original graph loaded and ran 20 ms of 16-port stimulus; 47 spikes / 28 active neurons, about 152 ms CPU on this host. This result depends on selected inputs, seed and host. Real-time phone performance and biological fidelity are not established.
 
 ## Original console and data details
