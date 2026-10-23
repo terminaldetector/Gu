@@ -56,7 +56,7 @@ public final class NesLabActivity extends Activity {
     private final java.util.Map<String,JSONObject> offeredLibraryRoms=new java.util.HashMap<>();
     private String pendingLibrarySystem="",pendingLibraryHash="";
     private long lifecycleSequence;
-    private String lifecycleTicket="";
+    private volatile String lifecycleTicket="";
     private String lifecycleFailure="";
     private final String historyRun=java.util.UUID.randomUUID().toString();
     private JSONObject activeEpisode;
@@ -794,6 +794,11 @@ public final class NesLabActivity extends Activity {
         }
         @JavascriptInterface public void stop() { controlEpoch.incrementAndGet();cancel.set(true);diagnostic("info","neural.stop-request",new JSONObject()); }
         @JavascriptInterface public void resume() { if(foreground)cancel.set(false);diagnostic("info",foreground?"neural.resume-request":"neural.resume-background-rejected",new JSONObject()); }
+        // WebView may defer the pause script until after onResume. Read only volatile
+        // state here: the JavaScript-interface thread must never wait for the UI thread.
+        @JavascriptInterface public boolean lifecyclePending(String ticket) {
+            return ticket!=null&&!ticket.isEmpty()&&!destroyed&&!foreground&&ticket.equals(lifecycleTicket);
+        }
         @JavascriptInterface public void lifecycleSaved(String raw) {
             if(destroyed||raw.length()>8192)return;
             try{JSONObject result=new JSONObject(raw);String ticket=result.getString("token");runOnUiThread(()->{
@@ -981,14 +986,14 @@ public final class NesLabActivity extends Activity {
         }
         @JavascriptInterface public void trainingSessions(String json) {
             if(destroyed)return;
-            final long epoch=pageEpoch.get();
+            final long epoch=pageEpoch.get(),queued=System.nanoTime();
             try{worker.execute(() -> {
-                taskPage.set(epoch);String token="";JSONObject response=new JSONObject();
+                taskPage.set(epoch);String token="",operation="";JSONObject response=new JSONObject();long began=System.nanoTime(),storageStarted=0,storageEnded=0;
                 try {
                     if(json.getBytes(StandardCharsets.UTF_8).length>260*1024)throw new IllegalArgumentException("Запрос показа слишком велик");
-                    JSONObject request=new JSONObject(json);token=request.getString("token");
+                    JSONObject request=new JSONObject(json);token=request.getString("token");operation=request.getString("op");
                     TrainingSessionStore store=new TrainingSessionStore(new File(getFilesDir(),"human-sessions"));Object result;
-                    switch(request.getString("op")){
+                    storageStarted=System.nanoTime();switch(operation){
                         case "list":result=store.list();break;
                         case "begin":result=store.begin(request.getJSONObject("session"));break;
                         case "append":result=store.append(request.getString("id"),request.getLong("sequence"),request.getJSONArray("events"));break;
@@ -1001,8 +1006,11 @@ public final class NesLabActivity extends Activity {
                             break;
                         default:throw new IllegalArgumentException("Неизвестная операция показа");
                     }
-                    response.put("token",token).put("data",result);
+                    storageEnded=System.nanoTime();response.put("token",token).put("data",result);
                 } catch(Exception ex){try{response.put("token",token).put("error",ex.getMessage()==null?"Запись показа недоступна":ex.getMessage());}catch(Exception ignored){}}
+                // Record completion before the WebView ACK: a later JS timeout can then
+                // be separated from worker queue/storage latency without logging labels.
+                try{long ended=System.nanoTime();diagnostic(response.has("error")?"warn":"info","training.archive-result",new JSONObject().put("token",token).put("operation",operation).put("ok",!response.has("error")).put("workerQueueMs",(began-queued)/1e6).put("storageMs",storageStarted==0?0:((storageEnded==0?ended:storageEnded)-storageStarted)/1e6).put("totalMs",(ended-queued)/1e6));}catch(Exception ignored){}
                 emit("labTrainingSessions",response);taskPage.remove();
             });}catch(java.util.concurrent.RejectedExecutionException ignored){}
         }

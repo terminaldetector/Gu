@@ -32,11 +32,15 @@ let sampledRetina=new Array(16).fill(0),previousRetina=null,startSnapshot=null;
 const profileFields=["rewardMode","rewardAddress","rewardScale","ramWidth","ramFormat","ramEndian","ramWrap","actionMasks","deathEnabled","deathAddress","deathValue","deathReward","winEnabled","winAddress","winValue","winReward","epsilon","alpha","episodeLength","autoEpisode"];
 const learner=new FlyLearner(1),trials=[],transitions=[];
 let lastDecisionFeatures=null,sampledControllerMask=0,graphIdentity=null,sampledFdbOutcome=null;
-let episodeSteps=0,episodeReward=0,rewardPending=0,finishPending=false,lastRewardValue=null,diagnosticHash=null,learnReward=0;
+let episodeSteps=0,episodeReward=0,episodeFeedback={known:0,unknown:0,reward:0},rewardPending=0,finishPending=false,lastRewardValue=null,diagnosticHash=null,learnReward=0;
 let pendingFdbReplay=null;
 let humanExamples=[],fdbExperience=[],latestOutputs=new Array(8).fill(0),sampledRam=null,lastDecisionAction=0,agentIntervened=false;
 let restoreGrowthStatePending=false,terminalLatch={success:false,death:false};
-function learningBoundary(){if(window.fdbAgent)window.fdbAgent.boundary();sampledFdbOutcome=null;learner.boundary();agentIntervened=false;lastRewardValue=null;episodeSteps=0;episodeReward=0;rewardPending=0;finishPending=false;previousRetina=null;lastDecisionFeatures=null;learnReward=0;}
+function learningBoundary(){if(window.fdbAgent)window.fdbAgent.boundary();sampledFdbOutcome=null;learner.boundary();agentIntervened=false;lastRewardValue=null;episodeSteps=0;episodeReward=0;episodeFeedback={known:0,unknown:0,reward:0};rewardPending=0;finishPending=false;previousRetina=null;lastDecisionFeatures=null;learnReward=0;}
+function episodeRewardStatus(){
+ if($('learnerController').value!=='exo')return episodeReward.toFixed(2);
+ return episodeFeedback.known?episodeFeedback.reward.toFixed(2)+(episodeFeedback.unknown?' (частичные данные)':''):'неизвестна';
+}
 function keysEqual(a,b){try{const x=JSON.parse(a),y=JSON.parse(b);x.system=x.system||'nes';y.system=y.system||'nes';for(const v of [x,y]){v.gmode=v.gmode||'off';if(v.configuration){v.configuration.backend=v.configuration.backend||'cpu';v.configuration.controllerSource=v.configuration.controllerSource||'adaptive';v.configuration.fdb=v.configuration.fdb||null;v.configuration.sharedExperience=v.configuration.sharedExperience||null;if(v.configuration.fdb){delete v.configuration.fdb.growthState;delete v.configuration.fdb.learningState;}delete v.configuration.actionHold;v.configuration.gmode=v.configuration.gmode||v.gmode;v.configuration.systemButtons=v.configuration.systemButtons||'auto';}}const sort=v=>Array.isArray(v)?v.map(sort):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,sort(v[k])])):v;return JSON.stringify(sort(x))===JSON.stringify(sort(y));}catch(_){return false;}}
 function learningKey(){return JSON.stringify({romHash,inputs:ids('inputIds'),outputs:ids('outputIds'),system:labPlatform,graph_sha256:graphIdentity&&graphIdentity.sha256||'unavailable',profile:profileValues(),configuration:policyConfiguration(),gmode:gmodeMode});}
 function policyConfiguration(value=configuration()){const c=JSON.parse(JSON.stringify(value));delete c.actionHold;if(c.fdb){delete c.fdb.growthState;delete c.fdb.learningState;}return c;}
@@ -58,9 +62,9 @@ function trainingView(){
  $('trainingFdbStatus').textContent=(f&&f.learning&&f.learning.enabled?(['teach','train'].includes(mode)&&!$('freeze').checked&&connected&&playing?(mode==='train'&&!evidence?'Агент действует; достоверная награда не настроена, FDB ждёт обратной связи':'FDB принимает опыт'):'FDB подключён · обучение на паузе'):'Обучение FDB выключено')+' · примеров '+(c?c.observations:0)+' (человек '+(c?c.human:0)+', auto '+(c?c.automatic:0)+') · обновлений ΔW '+(c&&c.baseUpdates||0)+' · исходных связей в обучении '+(c&&c.baseCandidates||0)+' · порогов '+(f?.neuronDynamics?.thresholdOffsets?.length||0)+' / обновлений '+(c?.neuronUpdates||0)+' · бюджет '+Number(c?.lastBudget||0).toFixed(3)+' · ограничений '+(c?.budgetClips||0)+' · создано '+(c&&c.born||0)+' · удалено '+(c&&c.pruned||0)+' · отклонено '+(c&&c.rejected||0)+' · очередь '+fdbExperience.length;
 }
 function startTrainingGame(){playing=true;controlsEnabled(true);$('play').textContent='Пауза';nativeCall('resume');openGame();updateGmodeHud();trainingView();}
-function learningStats(){ trainingView();$('learningStats').textContent='Обновлений подражания: '+learner.demonstrations+' · '+learner.demonstrationSeconds.toFixed(1)+' с · пропущено '+learner.skippedDemonstrations+(learner.archive?' · архив: '+learner.archive.train.length+' сесс., '+learner.archive.passes+' проход(а); после проверки добавлено '+learner.archive.additionalSamples+' живых примеров':'')+' · обновлений по награде: '+learner.updates+' · эпизодов: '+learner.episodes+' · награда: '+episodeReward.toFixed(2)+' · шаг: '+episodeSteps+' · кнопки: '+brainMask;
+function learningStats(){ trainingView();$('learningStats').textContent='Обновлений подражания: '+learner.demonstrations+' · '+learner.demonstrationSeconds.toFixed(1)+' с · пропущено '+learner.skippedDemonstrations+(learner.archive?' · архив: '+learner.archive.train.length+' сесс., '+learner.archive.passes+' проход(а); после проверки добавлено '+learner.archive.additionalSamples+' живых примеров':'')+' · обновлений по награде: '+learner.updates+' · эпизодов: '+learner.episodes+' · награда: '+episodeRewardStatus()+' · шаг: '+episodeSteps+' · кнопки: '+brainMask;
  if(window.layerExperience)window.layerExperience.refreshStats();
- const c=$('rewardChart').getContext('2d');c.fillStyle='#111626';c.fillRect(0,0,600,100);if(trials.length<2)return;const low=Math.min(0,...trials.map(t=>t.reward)),high=Math.max(1,...trials.map(t=>t.reward));c.strokeStyle='#b39bff';c.beginPath();trials.forEach((t,i)=>{const x=i*600/99,y=95-(t.reward-low)/(high-low)*85;i?c.lineTo(x,y):c.moveTo(x,y);});c.stroke();
+ const c=$('rewardChart').getContext('2d');c.fillStyle='#111626';c.fillRect(0,0,600,100);if(trials.length<2)return;const value=t=>t.rewardKnown===false?null:Number.isFinite(t.verifiedReward)?t.verifiedReward:t.reward,known=trials.map(value).filter(Number.isFinite);if(!known.length)return;const low=Math.min(0,...known),high=Math.max(1,...known);c.strokeStyle='#b39bff';c.beginPath();let joined=false;trials.forEach((t,i)=>{const reward=value(t);if(!Number.isFinite(reward)){joined=false;return;}const x=i*600/99,y=95-(reward-low)/(high-low)*85;joined?c.lineTo(x,y):c.moveTo(x,y);joined=true;});c.stroke();
 }
 // A realtime backend may leave the preceding action running while calculating.
 // FDB reward starts at activation of its own decision, not the older observation.
@@ -117,6 +121,8 @@ function learnedButtons(data){
  const features=learner.features(sampledRetina,data.outputs,position,previousRetina);previousRetina=sampledRetina.slice();
  const exo=$('learnerController').value==='exo',credit=window.fdbAgent?fdbOutcomeReward(sampledFdbOutcome,manualReward):{reward:0,valid:false};
  if(exo&&mode==='train')reward=sampledFdbOutcome&&credit.valid&&!interrupted?credit.reward:0;
+ // Display only observed FDB credit; the numeric legacy reward remains unchanged.
+ if(exo&&sampledFdbOutcome){if(credit.valid&&!interrupted){episodeFeedback.known++;episodeFeedback.reward+=credit.reward;}else episodeFeedback.unknown++;}
  learnReward=reward;episodeReward+=reward;episodeSteps++;
  if(mode!=='teach'&&lastDecisionFeatures&&!interrupted){
   // Automatic FDB credit is accepted only through a cached neural decision, never a retina label.
@@ -127,7 +133,7 @@ function learnedButtons(data){
  if(exo&&terminal&&mode!=='teach')learner.episodes++;
  if(!terminal&&window.fdbAgent)window.fdbAgent.remember(data,fdbRewardSnapshot(nes.cpu.mem));lastDecisionFeatures=mode==='teach'?null:features.slice();lastDecisionAction=mask;
  if(mode==='teach'&&terminal)learner.episodes++;
- if(terminal){trials.push({reward:episodeReward,success:success&&!death,death,steps:episodeSteps,mode});if(trials.length>100)trials.shift();log('Эпизод '+learner.episodes+': '+episodeReward.toFixed(2)+'; успех '+success);learningStats();
+ if(terminal){trials.push({reward:episodeReward,success:success&&!death,death,steps:episodeSteps,mode,rewardKnown:!exo||episodeFeedback.known>0,verifiedReward:exo?(episodeFeedback.known?episodeFeedback.reward:null):episodeReward,knownFeedback:exo?episodeFeedback.known:null,unknownFeedback:exo?episodeFeedback.unknown:null,outcome:death?'loss':success?'win':'unknown'});if(trials.length>100)trials.shift();log('Эпизод '+learner.episodes+': награда '+episodeRewardStatus()+'; результат: '+(death?'поражение':success?'успех':'неизвестен'));learningStats();
   if(window.layerExperience)window.layerExperience.terminal({source:success||death?(diagnostic?'diagnostic':'ram'):'boundary',outcome:death?'loss':success?'win':manualFinish?'finished':'timeout',reward:episodeReward,steps:episodeSteps,mode});
   const historyBoundary=window.trainingHistory?window.trainingHistory.boundary({generation,frame,outcome:death?'death':success?'success':'unknown'}):Promise.resolve();
   if((mode==='train'||mode==='teach')&&$('autosavePolicy').checked){try{persistPolicy(false);}catch(error){log('Автосохранение: '+error.message);}}

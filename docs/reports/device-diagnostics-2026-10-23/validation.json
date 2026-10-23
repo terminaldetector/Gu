@@ -1,0 +1,40 @@
+{
+  "versionName": "2.1.5",
+  "versionCode": 39,
+  "baselineCommit": "1c6f58e9755f22537cfd9df0ee270738546c2186",
+  "commands": [
+    {
+      "command": "CHROMIUM_EXECUTABLE=/usr/bin/chromium NODE_PATH=/workspace/.gu-env/ui/node_modules node tools/run_ui_checks.cjs",
+      "exitCode": 0,
+      "passedSuites": 21
+    },
+    {
+      "command": "source /workspace/.gu-env/activate && bash tools/check.sh",
+      "exitCode": 0
+    },
+    {
+      "command": "source /workspace/.gu-env/activate && gradle assembleDebug lintDebug assembleRelease lintRelease",
+      "exitCode": 0
+    },
+    {
+      "command": "apksigner verify --verbose --print-certs app-debug.apk",
+      "exitCode": 0
+    }
+  ],
+  "lint": {
+    "debug": {
+      "Warning": 19
+    },
+    "release": {
+      "Warning": 19
+    }
+  },
+  "localDebugApk": {
+    "bytes": 208106945,
+    "sha256": "bafa0557cf0d78a6feef823fbc35b3d957b3c6f1fa850ab3d303cda3f5cba953",
+    "sourceId": "02f8ae6bd55922b5bbedd8b601986f8969db78b7ff9b4216585f283543cb1daf",
+    "matchingTopLevelLabResources": 49
+  },
+  "physicalAndroid": "DEVICE-PENDING: uploaded logs cover 2.1.4; 2.1.5 fixes require new device verification",
+  "learningEvidence": "unknown game outcomes in uploaded archives; no full-connectome improvement claim"
+}

@@ -96,7 +96,7 @@ async function flushTeaching({guard=()=>true,reason='agent-panel',checkpoint=tru
  const core=nes,hash=romHash,graph=graphIdentity?.sha256,epoch=generation,began=performance.now();
  const valid=()=>guard()&&core===nes&&hash===romHash&&graph===graphIdentity?.sha256&&epoch===generation;
  const verify=()=>{if(!valid())throw Error('Сохранение REC прервано сменой игры, агента или паузой.');if(performance.now()-began>30000)throw Error('Агент не подтвердил последние примеры за 30 секунд.');};
- if(window.humanTeaching)await window.humanTeaching.stop(reason);verify();
+ const recording=window.humanTeaching?await window.humanTeaching.stop(reason):null;verify();
  holding.clear();controllerMasks.clear();refreshManual();releasePorts();
  while(pendingToken!==null||configuring||fdbExperience.length){
   verify();
@@ -109,7 +109,10 @@ async function flushTeaching({guard=()=>true,reason='agent-panel',checkpoint=tru
  if(window.fdbAgent){await window.fdbAgent.drain();verify();if(window.fdbAgent.error())throw Error(window.fdbAgent.error());}
  onStage('drainMs');
  if(checkpoint){await window.labState.checkpoint({force:true});verify();}
- if(window.humanTeaching?.error())throw Error('Архив REC не подтверждён: '+window.humanTeaching.error());
+ // Preserve a failed current recording (including STOP) as an explicit error.
+ // A closed failed archive from an earlier mode/game stays in history, rather
+ // than blocking a later hints pause that has no new human observations.
+ if(recording?.error&&recording.current&&(recording.attempted||phase()==='rec'))throw Error('Архив REC не подтверждён: '+recording.error);
  return true;
 }
 async function pauseCurrent(options={}){

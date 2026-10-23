@@ -68,10 +68,15 @@
  }
  function commit(seconds,observation){if(capture&&observation)capture.commit(seconds,observation);}
  function stop(reason='pause'){
+  // A closed writer remains visible as archive history. It is not a new save
+  // attempt when another mode/context pauses without recording more input.
+  const attempted=Boolean(capture||writer&&(!writer.closed||writer.pending));
   if(capture){capture.stop();capture=null;previous=null;}
-  if(!writer)return Promise.resolve();const old=writer;const done=old.close(reason);state(old);return done;
+  if(!writer)return Promise.resolve({attempted:false,current:false,error:null});
+  const old=writer,current=contextMatches(old.metadata),done=old.close(reason);state(old);
+  return done.then(()=>({attempted,current,recordingId:old.metadata.id,error:old.failed?old.error:null}));
  }
- window.humanTeaching={input,beforeFrame,commit,stop,refresh,store,error:()=>writer&&writer.failed?writer.error:null};
+ window.humanTeaching={input,beforeFrame,commit,stop,refresh,store,error:()=>writer&&writer.failed?writer.error:null,currentError:()=>writer&&writer.failed&&contextMatches(writer.metadata)?writer.error:null};
  if($('archiveIssue'))$('archiveIssue').onclick=()=>{window.labPause();leaveGame('learning');$('humanSessionsPanel').open=true;$('humanAllSessions').checked=true;refresh();};
  if($('humanSessionRetry'))$('humanSessionRetry').onclick=async()=>{await stop('retry');writer=null;capture=null;previous=null;if($('archiveIssue'))$('archiveIssue').hidden=true;await refresh();$('humanSessionStatus').textContent='Повтор записи при следующем REC или подсказке. Сохранённые веса не меняются.';};
  $('humanSessionRefresh').onclick=refresh;$('humanSessionSelect').onchange=render;

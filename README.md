@@ -1,5 +1,7 @@
 ## Development direction: Autonomous Learning Emulator
 
+Version 2.1.5 fixes repeated REC archive failures blocking later hint pauses, rejects expired background-save requests before they pause a resumed game, and distinguishes unknown game feedback from observed zero. The logger adds archive RPC timings and Android exit process attribution. See the [two-device-log findings, fixes and limits](docs/reports/device-diagnostics-2026-10-23/README.md).
+
 Version 2.1.4 restores REC → STOP, streaming hints and a separate network switch in the compact agent panel. Teaching labels flush before pause/menu transitions; portrait controls survive rotation, and neutral system input devices no longer trigger automatic gamepad layout. See the [regression fixes and device evidence](docs/reports/agent-controls-restored-2026-10-21/README.md).
 
 Version 2.1.3 adds a small **≡ Agent** button during play. A translucent pause panel offers Manual, AUTO and frozen-weight play, plus full agent settings. Switching modes continues the current game; unverified reward remains unknown. See the [quick-panel validation and device-log limits](docs/reports/agent-quick-panel-2026-10-21/README.md).

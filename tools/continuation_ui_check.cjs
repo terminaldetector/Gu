@@ -12,13 +12,37 @@ let browser;
  await page.exposeFunction('libraryFixture',async raw=>{const q=JSON.parse(raw);if(q.op==='open'){opens++;setTimeout(()=>page.evaluate(d=>labLoadRom(d),demo).catch(()=>{}),0);return row;}return {games:[row],last:row};});
  await page.exposeFunction('exitFixture',raw=>exits.push(JSON.parse(raw)));
  await page.exposeFunction('lifecycleFixture',raw=>acks.push(JSON.parse(raw)));
- await page.addInitScript(()=>{window.FlyBridge={romLibrary:raw=>libraryFixture(raw).then(data=>labRomLibrary({token:JSON.parse(raw).token,data})),acceptRom(){},orientation(){},stop(){},resume(){},finishExit:raw=>exitFixture(raw),lifecycleSaved:raw=>lifecycleFixture(raw)};});
+ await page.addInitScript(()=>{window.lifecycleForeground=true;window.lifecycleTicket=null;window.FlyBridge={romLibrary:raw=>libraryFixture(raw).then(data=>labRomLibrary({token:JSON.parse(raw).token,data})),acceptRom(){},orientation(){},stop(){},resume(){},finishExit:raw=>exitFixture(raw),lifecyclePending:token=>!lifecycleForeground&&token===lifecycleTicket,lifecycleSaved:raw=>lifecycleFixture(raw)};});
  await page.goto('https://flyconsole.local/lab/index.html');await page.waitForFunction(()=>loaded&&!romLoading&&!window.labContinuing);
  assert.equal(opens,1,'startup reopens last private ROM, not a demo call');assert.equal(await page.evaluate(()=>ready),false,'resume requires no connectome');
  await page.evaluate(async()=>{window.labPause();frame=321;await labGameStates.save('auto',{automatic:true});});
  await page.reload();await page.waitForFunction(()=>loaded&&!romLoading&&!window.labContinuing&&frame===321);
  assert.equal(opens,2);assert.equal(await page.evaluate(()=>playing),false,'restored session waits for user input');assert(await page.locator('#continueLastGame').isEnabled());
- const result=await page.evaluate(async()=>{playing=true;frame=444;return labLifecycleSuspend('pause-fixture');});assert.equal(result.gameSaved,true);await page.waitForFunction(()=>!playing);assert.equal(acks.at(-1).token,'pause-fixture');
+ const result=await page.evaluate(async()=>{lifecycleForeground=false;lifecycleTicket='pause-fixture';playing=true;frame=444;return labLifecycleSuspend('pause-fixture');});assert.equal(result.gameSaved,true);await page.waitForFunction(()=>!playing);assert.equal(acks.at(-1).token,'pause-fixture');
+ await page.reload();await page.waitForFunction(()=>loaded&&!romLoading&&!window.labContinuing&&frame===444);
+ // Android may deliver an old evaluateJavascript only after the app has resumed.
+ // Retain the closure across a real ROM replacement as well as a foreground change.
+ await page.evaluate(()=>{window.delayedLifecycle=()=>labLifecycleSuspend('pause-fixture');});
+ const cancelledLifecycle=async(label,foreground,ticket)=>{
+  const beforeAcks=acks.length;
+  const state=await page.evaluate(async({foreground,ticket})=>{
+   lifecycleForeground=foreground;lifecycleTicket=ticket;playing=true;
+   const autosave=labGameStates.autosave;let saves=0;labGameStates.autosave=()=>{saves++;return autosave();};
+   const before={frame,generation,romHash,core:nes,connected};
+   try{const result=await delayedLifecycle();return{result,saves,playing,unchanged:frame===before.frame&&generation===before.generation&&romHash===before.romHash&&nes===before.core&&connected===before.connected};}
+   finally{labGameStates.autosave=autosave;labPause();}
+  },{foreground,ticket});
+  assert.equal(state.result.cancelled,true,label+' is cancelled');assert.equal(state.result.gameSaved,false,label+' does not claim a game save');assert.equal(state.result.learnedSaved,false,label+' does not claim a learned save');
+  assert.equal(state.saves,0,label+' does not start persistence');assert.equal(state.playing,true,label+' does not pause the current game');assert(state.unchanged,label+' preserves current frame/core/generation/connection');assert.equal(acks.length,beforeAcks,label+' sends no saved ACK');
+ };
+ await cancelledLifecycle('resumed request',true,'pause-fixture');
+ await cancelledLifecycle('expired request',false,null);
+ await cancelledLifecycle('superseded request',false,'pause-new');
+ const alternateBytes=Buffer.from(demo.base64,'base64');alternateBytes[alternateBytes.length-1]^=1;
+ const alternate={...demo,name:'Continuation replacement fixture',base64:alternateBytes.toString('base64'),sha256:crypto.createHash('sha256').update(alternateBytes).digest('hex'),resume:false};
+ await page.evaluate(d=>labLoadRom(d),alternate);await page.waitForFunction(hash=>loaded&&!romLoading&&romHash===hash,alternate.sha256);
+ await cancelledLifecycle('old request after ROM replacement',true,'pause-fixture');
+ assert.deepEqual(await page.evaluate(()=>labGameStates.list()),[],'cancelled old request creates no snapshot for the new ROM');
  await page.reload();await page.waitForFunction(()=>loaded&&!romLoading&&!window.labContinuing&&frame===444);
  const failed=await page.evaluate(async()=>{const put=IDBObjectStore.prototype.put;IDBObjectStore.prototype.put=function(value,key){if(typeof key==='string'&&!key.endsWith(':recovery'))throw new DOMException('fixture quota','QuotaExceededError');return put.apply(this,arguments);};try{frame=555;return await labState.suspend();}finally{IDBObjectStore.prototype.put=put;}});
  assert.equal(failed.gameSaved,false,'failed game write is not acknowledged as saved');assert.match(failed.error,/fixture quota/);
@@ -31,5 +55,5 @@ let browser;
  await page.evaluate(()=>labRequestExit());await page.waitForFunction(()=>!playing);for(let i=0;i<100&&!exits.length;i++)await new Promise(r=>setTimeout(r,20));
  assert.equal(exits.length,1,'explicit exit reaches native only after game persistence');assert.equal(exits[0].gameSaved,true);assert.equal(exits[0].learnedSaved,false,'neural failure remains explicit during exit');
  assert.deepEqual(errors,[]);await browser.close();browser=null;
- console.log('PASS: native-library startup fixture with real NES/IndexedDB, reload/last snapshot without graph, lifecycle ACK, quota rollback, forced learned save, neural failure isolation and saved exit');
+ console.log('PASS: native-library startup fixture with real NES/IndexedDB, reload/last snapshot without graph, valid lifecycle ACK, cancelled deferred/expired/superseded requests after foreground or ROM change without mutation, quota rollback, forced learned save, neural failure isolation and saved exit');
 })().catch(async e=>{console.error(e);if(browser)await browser.close();process.exitCode=1;});

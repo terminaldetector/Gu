@@ -118,7 +118,19 @@ function suspend(){
  suspendJob=Promise.allSettled([window.labGameStates.autosave(),checkpoint({force:true})]).then(([game,learned])=>({gameSaved:game.status==='fulfilled',learnedSaved:learned.status==='fulfilled',error:[game,learned].filter(r=>r.status==='rejected').map(r=>r.reason?.message||String(r.reason)).join('; ')})).finally(()=>{suspendJob=null;});return suspendJob;
 }
 window.labState={ready:readyModel,restore,prepare,checkpoint,suspend,pending:()=>!!saveJob,restoring:()=>restoring,settle:()=>restoreJob,accepted:()=>{blocked=null;}};
-window.labLifecycleSuspend=token=>{window.guLogger?.event?.('lifecycle.js-save-start',{token});return suspend().then(result=>{window.guLogger?.event?.('lifecycle.js-save-end',{token,...result},result.error?'error':'info');void window.guLogger?.flush?.();if(result.error)status('Сохранение при уходе в фон: '+result.error,true);if(window.FlyBridge?.lifecycleSaved)FlyBridge.lifecycleSaved(JSON.stringify({token,...result}));return result;});};
+window.labLifecycleSuspend=token=>{
+ // Android can defer this script while backgrounded. An expired request must not
+ // pause or save whichever game the user has already resumed in the foreground.
+ try{if(window.FlyBridge?.lifecyclePending&&!FlyBridge.lifecyclePending(token)){
+  window.guLogger?.event?.('lifecycle.js-save-cancelled',{token,reason:'request-not-pending'});
+  return Promise.resolve({cancelled:true,gameSaved:false,learnedSaved:false,error:''});
+ }}catch(e){
+  const error='Проверка запроса сохранения: '+e.message;
+  window.guLogger?.event?.('lifecycle.js-save-cancelled',{token,reason:'validation-failed',error},'error');
+  return Promise.resolve({cancelled:true,gameSaved:false,learnedSaved:false,error});
+ }
+ window.guLogger?.event?.('lifecycle.js-save-start',{token});return suspend().then(result=>{window.guLogger?.event?.('lifecycle.js-save-end',{token,...result},result.error?'error':'info');void window.guLogger?.flush?.();if(result.error)status('Сохранение при уходе в фон: '+result.error,true);if(window.FlyBridge?.lifecycleSaved)FlyBridge.lifecycleSaved(JSON.stringify({token,...result}));return result;});
+};
 window.labLifecycleNotice=result=>status(result.error,true);
 // This handshake lets Android keep the old page alive until durable storage acknowledges it.
 window.labPrepareSystemSwitch=async system=>{let okay=false;try{await prepare();okay=true;}catch(e){status('Платформа не переключена: '+e.message,true);$('platformSelect').value=labPlatform;}window.FlyBridge?.finishSystemSwitch?.(system,okay);};

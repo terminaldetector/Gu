@@ -5,6 +5,7 @@
 Сверка выполнена по исходному ТЗ, production-коду, тестам и сохранённым результатам.
 Актуальный срез: [игровой интерфейс, журнал Android и проверки](reports/game-console-ui-2026-10-21/README.md).
 Дополнение 2.1.4: [возвращение REC/подсказок, сети и исправления портрета](reports/agent-controls-restored-2026-10-21/README.md).
+Дополнение 2.1.5: [два журнала Android, REC/lifecycle, unknown feedback и задержка сохранения FDB](reports/device-diagnostics-2026-10-23/README.md).
 Дополнение 2.1.3: [компактная панель агента и пределы нового журнала](reports/agent-quick-panel-2026-10-21/README.md).
 Наличие debug APK не означает закрытия ТЗ или поставки изменений в main.
 

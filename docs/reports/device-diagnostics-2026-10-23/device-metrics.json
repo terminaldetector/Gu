@@ -1,0 +1,451 @@
+{
+  "kind": "sanitized-two-archive-device-aggregation",
+  "windowSelection": "periodic Sega realtime playing=true hidden=false interval>=2000ms; grouping uses context at window boundary",
+  "statistics": "Window p50/p95 summaries are distributions of per-window percentiles, not recovered global percentiles. Native metrics exclude WebView renderer. Archives are different retained ranges, not controlled A/B.",
+  "reports": [
+    {
+      "archive": 1,
+      "version": "2.1.4",
+      "integrityOk": true,
+      "retainedEvents": 1430,
+      "processRuns": 1,
+      "collectorWarningsCount": 0,
+      "severityCounts": {
+        "info": 1425,
+        "error": 3,
+        "warn": 2
+      },
+      "observed": {
+        "systemsWithFrameMetrics": [
+          "nes",
+          "sega"
+        ],
+        "gameSaveOutcomes": {
+          "ok": 29,
+          "failed": 0
+        },
+        "gameLoadOutcomes": {
+          "ok": 0,
+          "failed": 0
+        },
+        "lifecycleAcknowledgements": 2,
+        "frozenProofsAttached": 0
+      },
+      "performance": [
+        {
+          "model": "FlyWire",
+          "mode": "teach",
+          "rate": 1,
+          "connected": true,
+          "windows": 4,
+          "seconds": 17.264199999958276,
+          "samples": 49,
+          "samplesPerSecond": 2.8382433011734354,
+          "fps": {
+            "count": 4,
+            "min": 59.4399022647415,
+            "median": 59.917434591625124,
+            "max": 60.00480038410226
+          },
+          "sampleWindowP50Ms": {
+            "count": 4,
+            "min": 267.796407,
+            "median": 278.102812,
+            "max": 321.416614
+          },
+          "sampleWindowP95Ms": {
+            "count": 4,
+            "min": 281.794011,
+            "median": 340.6971095,
+            "max": 851.726718
+          },
+          "sampleQueueWindowP50Ms": {
+            "count": 4,
+            "min": 0.454063,
+            "median": 0.6192185,
+            "max": 0.699375
+          },
+          "feedbackSaveWindowP50Ms": null,
+          "webApplyWindowP50Ms": null
+        },
+        {
+          "model": "Male CNS",
+          "mode": "off",
+          "rate": 1,
+          "connected": false,
+          "windows": 2,
+          "seconds": 7.11340000000596,
+          "samples": 0,
+          "samplesPerSecond": 0.0,
+          "fps": {
+            "count": 2,
+            "min": 58.29107625247497,
+            "median": 59.12575118554686,
+            "max": 59.960426118618756
+          },
+          "sampleWindowP50Ms": null,
+          "sampleWindowP95Ms": null,
+          "sampleQueueWindowP50Ms": null,
+          "feedbackSaveWindowP50Ms": null,
+          "webApplyWindowP50Ms": null
+        },
+        {
+          "model": "Male CNS",
+          "mode": "teach",
+          "rate": 1,
+          "connected": true,
+          "windows": 10,
+          "seconds": 48.71399999991059,
+          "samples": 81,
+          "samplesPerSecond": 1.6627663505388321,
+          "fps": {
+            "count": 10,
+            "min": 59.59974068914468,
+            "median": 60.01080216053823,
+            "max": 60.56133743897908
+          },
+          "sampleWindowP50Ms": {
+            "count": 10,
+            "min": 313.867813,
+            "median": 557.254167,
+            "max": 667.378906
+          },
+          "sampleWindowP95Ms": {
+            "count": 10,
+            "min": 383.136302,
+            "median": 594.1797915,
+            "max": 866.211926
+          },
+          "sampleQueueWindowP50Ms": {
+            "count": 10,
+            "min": 0.571093,
+            "median": 1.949662,
+            "max": 89.255729
+          },
+          "feedbackSaveWindowP50Ms": null,
+          "webApplyWindowP50Ms": null
+        },
+        {
+          "model": "Male CNS",
+          "mode": "train",
+          "rate": 1,
+          "connected": true,
+          "windows": 129,
+          "seconds": 639.4936999998689,
+          "samples": 1028,
+          "samplesPerSecond": 1.6075217003704818,
+          "fps": {
+            "count": 129,
+            "min": 58.67113684825533,
+            "median": 60.00480038410226,
+            "max": 60.34724728358777
+          },
+          "sampleWindowP50Ms": {
+            "count": 129,
+            "min": 295.965729,
+            "median": 378.351093,
+            "max": 675.585261
+          },
+          "sampleWindowP95Ms": {
+            "count": 129,
+            "min": 376.968282,
+            "median": 389.484427,
+            "max": 737.510468
+          },
+          "sampleQueueWindowP50Ms": {
+            "count": 129,
+            "min": 0.402865,
+            "median": 58.021094,
+            "max": 354.047656
+          },
+          "feedbackSaveWindowP50Ms": {
+            "count": 128,
+            "min": 236.041093,
+            "median": 271.66682249999997,
+            "max": 290.379115
+          },
+          "webApplyWindowP50Ms": {
+            "count": 129,
+            "min": 0.7999999821186066,
+            "median": 1.0999999940395355,
+            "max": 8.5
+          }
+        }
+      ],
+      "native": {
+        "allPssMiB": {
+          "count": 185,
+          "min": 361.142578125,
+          "median": 530.490234375,
+          "max": 655.4091796875
+        },
+        "allJavaUsedMiB": {
+          "count": 185,
+          "min": 122.48326110839844,
+          "median": 270.0011444091797,
+          "max": 367.0239944458008
+        },
+        "allTemperatureC": {
+          "count": 185,
+          "min": 38.1,
+          "median": 40.7,
+          "max": 41.0
+        },
+        "foregroundMaleCpuCorePercent": {
+          "count": 135,
+          "min": 144.51109778044392,
+          "median": 173.98520295940813,
+          "max": 284.62
+        }
+      },
+      "gameSaveMs": {
+        "count": 29,
+        "min": 115.89999997615814,
+        "median": 255.80000001192093,
+        "max": 659.2999999821186
+      }
+    },
+    {
+      "archive": 2,
+      "version": "2.1.4",
+      "integrityOk": true,
+      "retainedEvents": 1658,
+      "processRuns": 3,
+      "collectorWarningsCount": 0,
+      "severityCounts": {
+        "error": 6,
+        "info": 1641,
+        "warn": 11
+      },
+      "observed": {
+        "systemsWithFrameMetrics": [
+          "sega"
+        ],
+        "gameSaveOutcomes": {
+          "ok": 52,
+          "failed": 0
+        },
+        "gameLoadOutcomes": {
+          "ok": 0,
+          "failed": 0
+        },
+        "lifecycleAcknowledgements": 7,
+        "frozenProofsAttached": 0
+      },
+      "performance": [
+        {
+          "model": "Male CNS",
+          "mode": "off",
+          "rate": 3,
+          "connected": false,
+          "windows": 2,
+          "seconds": 7.262799999982119,
+          "samples": 0,
+          "samplesPerSecond": 0.0,
+          "fps": {
+            "count": 2,
+            "min": 179.52450266907945,
+            "median": 179.7396318820251,
+            "max": 179.9547610949707
+          },
+          "sampleWindowP50Ms": null,
+          "sampleWindowP95Ms": null,
+          "sampleQueueWindowP50Ms": null,
+          "feedbackSaveWindowP50Ms": null,
+          "webApplyWindowP50Ms": null
+        },
+        {
+          "model": "Male CNS",
+          "mode": "train",
+          "rate": 1,
+          "connected": false,
+          "windows": 2,
+          "seconds": 9.79879999998212,
+          "samples": 0,
+          "samplesPerSecond": 0.0,
+          "fps": {
+            "count": 2,
+            "min": 59.395248380276634,
+            "median": 59.796348004284596,
+            "max": 60.19744762829256
+          },
+          "sampleWindowP50Ms": null,
+          "sampleWindowP95Ms": null,
+          "sampleQueueWindowP50Ms": null,
+          "feedbackSaveWindowP50Ms": null,
+          "webApplyWindowP50Ms": null
+        },
+        {
+          "model": "Male CNS",
+          "mode": "train",
+          "rate": 1,
+          "connected": true,
+          "windows": 12,
+          "seconds": 55.98939999997616,
+          "samples": 79,
+          "samplesPerSecond": 1.4109813643302775,
+          "fps": {
+            "count": 12,
+            "min": 59.89936905990795,
+            "median": 60.02521097303875,
+            "max": 60.2199771069909
+          },
+          "sampleWindowP50Ms": {
+            "count": 12,
+            "min": 379.340885,
+            "median": 488.41169249999996,
+            "max": 651.409167
+          },
+          "sampleWindowP95Ms": {
+            "count": 12,
+            "min": 390.313594,
+            "median": 532.844661,
+            "max": 658.211718
+          },
+          "sampleQueueWindowP50Ms": {
+            "count": 12,
+            "min": 0.577865,
+            "median": 12.800780999999999,
+            "max": 265.000833
+          },
+          "feedbackSaveWindowP50Ms": {
+            "count": 12,
+            "min": 61.904688,
+            "median": 196.187734,
+            "max": 267.713073
+          },
+          "webApplyWindowP50Ms": {
+            "count": 12,
+            "min": 0.800000011920929,
+            "median": 1.0499999970197678,
+            "max": 1.2000000178813934
+          }
+        },
+        {
+          "model": "Male CNS",
+          "mode": "train",
+          "rate": 2,
+          "connected": true,
+          "windows": 196,
+          "seconds": 978.8379000000656,
+          "samples": 1606,
+          "samplesPerSecond": 1.640721104076469,
+          "fps": {
+            "count": 196,
+            "min": 115.37617023002882,
+            "median": 120.02400480096018,
+            "max": 122.96969818290604
+          },
+          "sampleWindowP50Ms": {
+            "count": 196,
+            "min": 292.494636,
+            "median": 379.0084635,
+            "max": 664.586875
+          },
+          "sampleWindowP95Ms": {
+            "count": 196,
+            "min": 335.051301,
+            "median": 405.476927,
+            "max": 948.753072
+          },
+          "sampleQueueWindowP50Ms": {
+            "count": 196,
+            "min": 0.410729,
+            "median": 216.000469,
+            "max": 592.089011
+          },
+          "feedbackSaveWindowP50Ms": {
+            "count": 196,
+            "min": 216.295677,
+            "median": 270.269323,
+            "max": 374.841979
+          },
+          "webApplyWindowP50Ms": {
+            "count": 196,
+            "min": 0.7999999821186066,
+            "median": 1.199999988079071,
+            "max": 1.7000000178813934
+          }
+        },
+        {
+          "model": "Male CNS",
+          "mode": "train",
+          "rate": 3,
+          "connected": true,
+          "windows": 1,
+          "seconds": 2.9995,
+          "samples": 5,
+          "samplesPerSecond": 1.666944490748458,
+          "fps": {
+            "count": 1,
+            "min": 184.03067177862977,
+            "median": 184.03067177862977,
+            "max": 184.03067177862977
+          },
+          "sampleWindowP50Ms": {
+            "count": 1,
+            "min": 425.854791,
+            "median": 425.854791,
+            "max": 425.854791
+          },
+          "sampleWindowP95Ms": {
+            "count": 1,
+            "min": 444.300729,
+            "median": 444.300729,
+            "max": 444.300729
+          },
+          "sampleQueueWindowP50Ms": {
+            "count": 1,
+            "min": 0.537552,
+            "median": 0.537552,
+            "max": 0.537552
+          },
+          "feedbackSaveWindowP50Ms": {
+            "count": 1,
+            "min": 33.011511,
+            "median": 33.011511,
+            "max": 33.011511
+          },
+          "webApplyWindowP50Ms": {
+            "count": 1,
+            "min": 0.5,
+            "median": 0.5,
+            "max": 0.5
+          }
+        }
+      ],
+      "native": {
+        "allPssMiB": {
+          "count": 228,
+          "min": 220.0576171875,
+          "median": 516.4013671875,
+          "max": 566.9873046875
+        },
+        "allJavaUsedMiB": {
+          "count": 228,
+          "min": 201.03144073486328,
+          "median": 271.81070709228516,
+          "max": 323.7830123901367
+        },
+        "allTemperatureC": {
+          "count": 228,
+          "min": 24.6,
+          "median": 42.3,
+          "max": 44.9
+        },
+        "foregroundMaleCpuCorePercent": {
+          "count": 205,
+          "min": 141.6516696660668,
+          "median": 149.89002199560088,
+          "max": 177.7
+        }
+      },
+      "gameSaveMs": {
+        "count": 52,
+        "min": 63.69999998807907,
+        "median": 392.50000001490116,
+        "max": 11577.300000011921
+      }
+    }
+  ]
+}

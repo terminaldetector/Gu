@@ -25,10 +25,11 @@
   for(const [id,kind]of [['agentQuickManual','manual'],['agentQuickAuto','auto'],['agentQuickEval','eval'],['agentQuickRec','rec'],['agentQuickAssist','assist']]){
    $(id).setAttribute('aria-pressed',String(session.mode===kind));$(id).disabled=busy||kind!=='manual'&&(!ready||romLoading||window.learningUI.busy());
   }
-  $('agentQuickStop').disabled=busy||session.phase!=='rec'||!ready||romLoading||window.learningUI.busy();
+  $('agentQuickStop').disabled=busy||failed||session.phase!=='rec'||Boolean(window.humanTeaching?.currentError())||!ready||romLoading||window.learningUI.busy();
   $('agentQuickNetwork').disabled=busy||!session.connected&&(!ready||romLoading||window.learningUI.busy());
   $('agentQuickNetwork').textContent=session.connected?'Отключить сеть':'Подключить сеть';$('agentQuickNetwork').setAttribute('aria-pressed',String(session.connected));
   $('agentQuickMore').disabled=busy;$('agentQuickFeedback').textContent=!ready?'Коннектом загружается. Ручное управление доступно.':session.mode==='rec'?'REC сохраняет выполненные действия человека. STOP передаёт управление агенту.':session.mode==='assist'?'Ваши нажатия служат подсказками. Они не считаются положительной наградой.':feedback();
+  if(!busy&&!$('agentQuickMessage').textContent&&window.humanTeaching?.error())$('agentQuickMessage').textContent='Прежняя запись не подтверждена: '+window.humanTeaching.error()+'. Проверьте «Записи обучения».';
  }
  function sameGame(s){return s&&loaded&&s.core===nes&&s.hash===romHash&&document.body.classList.contains('game-mode');}
  function dismiss(resume=true){
