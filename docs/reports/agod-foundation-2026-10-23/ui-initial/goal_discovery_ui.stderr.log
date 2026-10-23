@@ -1,0 +1,8 @@
+page.evaluate: Error: Objective profile is future-dated; clock freshness is unknown
+    at fail (https://flyconsole.local/lab/objective-profiles.js:5:29)
+    at Store.read (https://flyconsole.local/lab/objective-profiles.js:125:65)
+    at async https://flyconsole.local/lab/objective-profiles.js:131:68
+    at async Store.request (https://flyconsole.local/lab/objective-profiles.js:119:142)
+    at async eval (eval at evaluate (:234:30), <anonymous>:3:18)
+    at async <anonymous>:260:30
+    at /workspace/Gu/tools/goal_discovery_ui_check.cjs:58:35

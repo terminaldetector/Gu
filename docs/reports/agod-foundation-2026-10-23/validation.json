@@ -1,0 +1,64 @@
+{
+  "versionName": "2.1.6",
+  "versionCode": 40,
+  "baselineCommit": "9fd9f69413e43610bd01c5d05fe09eb63783ccbe",
+  "branch": "feature/agod-foundation",
+  "scope": "AGOD PR1 only; no reward/FDB mutation",
+  "commands": [
+    {
+      "command": "CHROMIUM_EXECUTABLE=/usr/bin/chromium NODE_PATH=/workspace/.gu-env/ui/node_modules node tools/run_ui_checks.cjs",
+      "initialExitCode": 1,
+      "initialPassed": 22,
+      "initialTotal": 23,
+      "recheckCommand": "CHROMIUM_EXECUTABLE=/usr/bin/chromium NODE_PATH=/workspace/.gu-env/ui/node_modules node tools/run_ui_checks.cjs goal_discovery_ui",
+      "recheckExitCode": 0,
+      "finalCombinedPassedSuites": 23,
+      "note": "Explicit expired-cache fixture corrected; product future-clock guard unchanged."
+    },
+    {
+      "command": "source /workspace/.gu-env/activate && AGOD_ROM_REPORT=/workspace/.gu-env/agod-pr1-controlled-final.json bash tools/check.sh",
+      "status": "completed-through-final-ReleaseCheck",
+      "exitCode": null,
+      "note": "Exec session identity was lost during environment reconnect; final ReleaseCheck PASS and no error markers verified. Full raw log retained; CI provides a fresh process-exit check."
+    },
+    {
+      "command": "source /workspace/.gu-env/activate && gradle assembleDebug lintDebug assembleRelease lintRelease",
+      "exitCode": 0,
+      "durationSeconds": 37.79968523979187
+    },
+    {
+      "command": "apksigner verify --verbose --print-certs app/build/outputs/apk/debug/app-debug.apk",
+      "exitCode": 0
+    }
+  ],
+  "lint": {
+    "debug": {
+      "Warning": 19
+    },
+    "release": {
+      "Warning": 19
+    }
+  },
+  "localDebugApk": {
+    "bytes": 208130248,
+    "sha256": "e3251995f79f1a584c9fb00a330a100262c9fc8f51bf3f6623afcb0d7f567bd3",
+    "sourceId": "d7e8dde592ca412e2a1baa9d701d53d62c53ac630b790fb363ca12eb99b4d18a",
+    "independentlyRecomputedSourceId": true,
+    "packagedDexContainsSourceId": true,
+    "matchingTopLevelLabResources": 53
+  },
+  "stageGate": {
+    "PR1": "host candidate/profile/cold-start/regression checks passed; CI publication separately linked",
+    "S0": "supported NES boot: no per-ROM manual addresses or labels; engine pilot gate defaults OFF",
+    "S1": "NOT-PASSED: seven variants are one generator family, not blind real-game generalization",
+    "S2": "NOT-PASSED: no causal validation or semantic polarity",
+    "S3": "DEVICE-PENDING: no Android paired overhead/battery acceptance",
+    "S4": "NOT-PASSED: no verified reward or frozen behavioural improvement"
+  },
+  "knownLimitations": [
+    "Restored Save State discovery is inhibited pending origin classification; emulator remains playable.",
+    "Only structural counter span in 7/7 variants; exact typed candidate in 1/7; equal observed full value in 2/7.",
+    "All rewards UNKNOWN; no VERIFIED admission; cache is separate from Learned Layer.",
+    "Work quantum may overshoot on JIT/GC; runtime explicitly stops instead of implying success."
+  ]
+}

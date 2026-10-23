@@ -65,6 +65,12 @@ node tools/current_layer_check.cjs
 node --check app/src/main/assets/lab/layer-ui.js
 
 node tools/game_tools_check.cjs
+node --check app/src/main/assets/lab/core-probe.js
+node --check app/src/main/assets/lab/goal-discovery-ui.js
+node tools/core_probe_check.cjs
+node tools/goal_discovery_check.cjs
+node tools/objective_profiles_check.cjs
+node tools/agod_rom_check.cjs
 
 python - "$task_tmp/json.jar" <<'PYJSON'
 import urllib.request,hashlib,sys

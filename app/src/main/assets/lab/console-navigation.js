@@ -109,6 +109,7 @@
   else if(route==='two-players'){mount($('partnerPanel'));link('navDualResearch','Две нейронные модели · лаборатория','legacy-network');}
   else if(route==='agent-training'){
    paragraph('Обучение использует подтверждённую игровую обратную связь. Неизвестный результат не считается наградой.');
+   mount($('gameObjectiveStatus'));
    if($('autonomousStart')){for(const id of ['autonomousStart','autonomousStop','autonomousStatus'])mount($(id));}else paragraph('Автономные серии доступны в Android-приложении после загрузки коннектома.');
    link('navFeedback','Настройки обратной связи · лаборатория','legacy-learning');
   }else if(route==='progress'){

@@ -49,6 +49,12 @@ jobs:
       - run: bash tools/check.sh
         env:
           FDB_TEMPORAL_REPORT: fdb-temporal
+          AGOD_ROM_REPORT: agod-controlled-rom.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: FlyConsole-agod-controlled-results
+          path: agod-controlled-rom.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -66,7 +72,7 @@ jobs:
           else
             /tmp/fly-ui/node_modules/.bin/playwright install chromium
           fi
-      - name: Check portrait and landscape console layouts
+      - name: Check console and objective discovery interfaces
         timeout-minutes: 10
         run: NODE_PATH=/tmp/fly-ui/node_modules node tools/run_ui_checks.cjs
       - uses: actions/upload-artifact@v4

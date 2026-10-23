@@ -36,7 +36,7 @@ let episodeSteps=0,episodeReward=0,episodeFeedback={known:0,unknown:0,reward:0},
 let pendingFdbReplay=null;
 let humanExamples=[],fdbExperience=[],latestOutputs=new Array(8).fill(0),sampledRam=null,lastDecisionAction=0,agentIntervened=false;
 let restoreGrowthStatePending=false,terminalLatch={success:false,death:false};
-function learningBoundary(){if(window.fdbAgent)window.fdbAgent.boundary();sampledFdbOutcome=null;learner.boundary();agentIntervened=false;lastRewardValue=null;episodeSteps=0;episodeReward=0;episodeFeedback={known:0,unknown:0,reward:0};rewardPending=0;finishPending=false;previousRetina=null;lastDecisionFeatures=null;learnReward=0;}
+function learningBoundary(){try{window.gameObjectiveDiscovery?.boundary('emulator-boundary');}catch(error){try{window.guLogger?.event?.('goal.discovery-error',{message:String(error.message||error)},'error');}catch(_){}}if(window.fdbAgent)window.fdbAgent.boundary();sampledFdbOutcome=null;learner.boundary();agentIntervened=false;lastRewardValue=null;episodeSteps=0;episodeReward=0;episodeFeedback={known:0,unknown:0,reward:0};rewardPending=0;finishPending=false;previousRetina=null;lastDecisionFeatures=null;learnReward=0;}
 function episodeRewardStatus(){
  if($('learnerController').value!=='exo')return episodeReward.toFixed(2);
  return episodeFeedback.known?episodeFeedback.reward.toFixed(2)+(episodeFeedback.unknown?' (частичные данные)':''):'неизвестна';
@@ -417,7 +417,7 @@ window.labLoadRom=async function(data) {
     if(info.warnings)info.warnings.forEach(log);
     if(info.timing)log('PAL/Dendy: NES ядро работает с NTSC таймингом.');
     if(info.battery)log('Battery RAM .sav отдельно не сохраняется; используйте снимки.');
-    if(!data.name.includes('diagnostic')){$('rewardMode').value='manual';$('learnMode').value='off';status('Внешний ROM загружен. Откройте «Обучение»: покажите приёмы сами или выберите Automode и оценку результата.');}
+    if(!data.name.includes('diagnostic')){$('rewardMode').value='manual';$('learnMode').value='off';status('Игра готова. Цель не подтверждена; можно играть вручную или наблюдать за агентом.');}
     trials.length=0;transitions.length=0;learningStats();
     if(window.labGameStates)await window.labGameStates.list();
     if(window.labState)await window.labState.restore();
@@ -678,6 +678,13 @@ function advanceFrame(now,forceSample=false) {
   neuralStep(()=>updateButtons());
   try {const started=performance.now();nes.frame();const elapsed=performance.now()-started;measuredCpuMs+=elapsed;measuredFrames++;window.guLogger?.coreFrame?.(elapsed,started+elapsed);if(benchmark){benchmark.frames++;benchmark.emulatorMs+=elapsed;}frame++;}
   catch(error){playing=false;window.guLogger?.event?.('emulator.frame-error',{message:error.message},'error');window.labError({message:'Ошибка эмулятора: '+error.message});status('Эмуляция остановлена: '+error.message,true);$('play').textContent='Запустить эмулятор';return;}
+  try{
+   // P1's appliedAgentMask also contains manual buttons in solo mode. Describe
+   // actually executed ownership, without the FDB credit window's sticky flag.
+   const manual=connected&&!window.labNeuralSuspended&&gmodeMode==='off'&&$('learnMode').value==='train'&&!$('liveHints').checked&&!window.labCurrentPending?(manualMask&~agentAllowedMask()):manualMask;
+   const human=!connected?appliedMask:gmodeMode==='off'?(appliedMask&manual):appliedHumanMask;
+   window.gameObjectiveDiscovery?.observeFrame({frame,generation,atMs:performance.now(),action:{mask:appliedMask,humanMask:human,agentMask:connected?(appliedAgentMask&~human):0,manualOverride:Boolean(connected&&human)}});
+  }catch(error){try{window.guLogger?.event?.('goal.discovery-error',{message:String(error.message||error)},'error');}catch(_){}}
   if(!window.labNeuralSuspended)neuralStep(()=>{
    if(!connected&&!(dual&&window.dualAgents.running()))return;
    const dt=1/(labPlatform==='nes'?60:nes.fps);

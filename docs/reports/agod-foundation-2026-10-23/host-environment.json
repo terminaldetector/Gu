@@ -1,0 +1,9 @@
+{
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.41",
+  "python": "3.12.14",
+  "node": "v24.19.0",
+  "measurementScope": "nearest-rank wall-time samples inside this instrumented Node run; observer cost covers the 160 sampled intervals, excluding baseline; not paired A/B, browser/WebView or Android; no energy or performance-improvement claim",
+  "runtimeWallThrottle": "separate real browser test, not this emulated clock",
+  "snapshotMemory": "typedBufferBytes excludes JS object/probe/whole-process memory",
+  "rawReportSha256": "87e0ef3ec55f556dcd58e576c93a57698d2c5b0d50e3027028f09ed5c5670674"
+}
