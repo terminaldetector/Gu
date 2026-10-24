@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "startedAt": "2026-10-24T13:40:07.720Z",
+  "status": "passed",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "architecture": "x64",
+    "osRelease": "6.18.55",
+    "playwright": "1.51.1",
+    "browserExecutable": "/usr/bin/chromium",
+    "browserVersion": "Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)"
+  },
+  "selectedSuites": [
+    "goal_discovery_ui"
+  ],
+  "results": [
+    {
+      "name": "goal_discovery_ui",
+      "script": "tools/goal_discovery_ui_check.cjs",
+      "status": "passed",
+      "startedAt": "2026-10-24T13:40:07.721Z",
+      "stdout": "goal_discovery_ui.stdout.log",
+      "stderr": "goal_discovery_ui.stderr.log",
+      "code": 0,
+      "signal": null,
+      "launchError": null,
+      "durationMs": 10202,
+      "completedAt": "2026-10-24T13:40:17.923Z"
+    }
+  ],
+  "completedAt": "2026-10-24T13:40:17.923Z"
+}

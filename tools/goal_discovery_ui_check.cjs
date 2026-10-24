@@ -91,6 +91,21 @@ const assets=path.resolve('app/src/main/assets');let browser;
   },kind);assert.equal(proof.after,proof.before,kind+' cannot enter discovery evidence');assert.equal(proof.candidatesAfter,proof.candidatesBefore);assert(proof.advanced,kind+' keeps ordinary core frames running');assert.equal(proof.running,false,kind+' is shown as inhibited');assert.equal(proof.suspended,false,kind+' fixture preserves a healthy neural boundary: '+proof.failure);
   if(kind==='restored'){assert.equal(proof.reason,'unclassified-restored-start');assert.equal(proof.resumed.accepted,proof.after+1,'ROM boot resumes with a fresh first observation');assert(proof.resumed.boundaries>proof.resumed.priorBoundaries,'ROM boot explicitly clears the restored-state comparator');assert.equal(proof.resumed.ramChanges,proof.resumed.priorRamChanges,'resuming cannot compare RAM across excluded restored gameplay');}
  }
+ // Exercise the real captured episode start, including an empty curriculum
+ // assignment. A fresh ROM reload must clear the comparator before resuming.
+ const episodeStart=await page.evaluate(async()=>{
+  const prior={curriculum:window.curriculumSessions,snapshot:startSnapshot};
+  try{
+   labPause();window.curriculumSessions={assignment:()=>null};$('captureStart').click();const captured=Boolean(startSnapshot);
+   gameObjectiveDiscovery.setEnabled(true);advanceFrame(performance.now(),true);for(let i=0;i<6;i++)advanceFrame(performance.now(),true);await new Promise(resolve=>setTimeout(resolve,220));advanceFrame(performance.now(),true);
+   const before=gameObjectiveDiscovery.report();restartEpisode();const restoredLabel=window.labStartStateId;
+   advanceFrame(performance.now(),true);await new Promise(resolve=>setTimeout(resolve,220));for(let i=0;i<7;i++)advanceFrame(performance.now(),true);
+   const restored=gameObjectiveDiscovery.report(),inhibited=gameObjectiveDiscovery.status();
+   restartEpisodeFromRom();const bootLabel=window.labStartStateId;advanceFrame(performance.now(),true);const boot=gameObjectiveDiscovery.report();
+   return{captured,restoredLabel,bootLabel,before:before.stats,restored:restored.stats,reason:inhibited.reason,restoredTrace:restored.trace,boot:boot.stats,bootReason:gameObjectiveDiscovery.status().reason};
+  }finally{window.curriculumSessions=prior.curriculum;startSnapshot=prior.snapshot;}
+ });
+ assert.equal(episodeStart.captured,true,'the production capture-start control stores a real NES start');assert(episodeStart.before.accepted>=2);assert.equal(episodeStart.restoredLabel,'episode-snapshot');assert.equal(episodeStart.reason,'unclassified-restored-start','episode snapshot restoration stays excluded after its curriculum assignment is cleared');assert.equal(episodeStart.restored.accepted,episodeStart.before.accepted,'actual restored episode frames add no discovery observations');assert.equal(episodeStart.restored.ramChanges,episodeStart.before.ramChanges);assert.equal(episodeStart.restoredTrace.active,false);assert.equal(episodeStart.bootLabel,'rom-boot','an actual ROM reload restores boot provenance');assert.equal(episodeStart.boot.accepted,episodeStart.restored.accepted+1,'a genuine boot resumes with a fresh baseline observation');assert.equal(episodeStart.boot.ramChanges,episodeStart.restored.ramChanges,'ROM reboot never compares RAM across an excluded restored trajectory');assert(episodeStart.boot.boundaries>episodeStart.restored.boundaries);assert.notEqual(episodeStart.bootReason,'unclassified-restored-start');
  // Lifecycle fixtures reuse a genuinely mined candidate only as the trigger.
  // An untouched RAM watchpoint keeps the real trace open until each boundary;
  // no fixture address or semantics enter the production detector.

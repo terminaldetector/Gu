@@ -1,0 +1,6 @@
+$ node tools/console_reset_check.cjs
+PASS: actual NES reset/snapshot with production UI handlers, reconnect without native configure, model weight preservation and no reset on ROM acceptance
+$ node tools/neural_isolation_check.cjs
+PASS: neural observation/plasticity/inference failure isolation on four platform frontends, real NES continuity, manual fallback, stale results, core error distinction and cleanup diagnostics
+PASS: accessor/route/HUD failure quarantine, correlated native errors, actual pump/RAF continuity, safe pause/manual resume and async cleanup
+$ node --check app/src/main/assets/lab/lab.js

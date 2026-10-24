@@ -33,21 +33,28 @@
     {
       "command": "CHROMIUM_EXECUTABLE=/usr/bin/chromium NODE_PATH=/workspace/.gu-env/ui/node_modules node tools/run_ui_checks.cjs",
       "exitCode": 0,
-      "passedSuites": 23
+      "passedSuites": 23,
+      "phase": "pre-episode-restore-fix",
+      "testedCommit": "4018ce2442dcfb4a85da3845e1fe7154a8279c9f"
     },
     {
       "command": "source /workspace/.gu-env/activate && AGOD_ROM_REPORT=/workspace/.gu-env/agod-pr2-controlled-final.json AGOD_TRACE_REPORT=/workspace/.gu-env/agod-pr2-trace-final.json bash tools/check.sh",
       "exitCode": 0,
-      "durationSeconds": 209.9223153591156
+      "durationSeconds": 209.9223153591156,
+      "phase": "pre-episode-restore-fix",
+      "testedCommit": "4018ce2442dcfb4a85da3845e1fe7154a8279c9f"
     },
     {
       "command": "source /workspace/.gu-env/activate && gradle assembleDebug lintDebug assembleRelease lintRelease",
       "exitCode": 0,
-      "durationSeconds": 37.41831350326538
+      "durationSeconds": 37.41831350326538,
+      "phase": "pre-episode-restore-fix",
+      "testedCommit": "4018ce2442dcfb4a85da3845e1fe7154a8279c9f"
     },
     {
       "command": "apksigner verify --verbose --print-certs app/build/outputs/apk/debug/app-debug.apk",
-      "exitCode": 0
+      "exitCode": 0,
+      "phase": "post-episode-restore-fix"
     }
   ],
   "lint": {
@@ -59,9 +66,9 @@
     }
   },
   "localDebugApk": {
-    "bytes": 208164083,
-    "sha256": "b28e2b640ba5ab2b55aa0bed5d6aeb9e99c4a99cd0841e6769e15df8464ff615",
-    "sourceId": "84f7e2d657cfa255c8365a97adabefa8e3261d49f36cd730d25b3d2d0885878c",
+    "bytes": 208212692,
+    "sha256": "2ff652fa446f3dc86b6939e632ad73b43a59687c2971e823e07f39a91c654a65",
+    "sourceId": "faeb6d964d95cc67b569260eefe19008efb5ccc1eb96a516dad6379e486eecff",
     "independentlyRecomputedSourceId": true,
     "packagedDexContainsSourceId": true,
     "matchingTopLevelLabResources": 54,
@@ -93,5 +100,31 @@
     "No rewards, native reward bridge, causal validator or FDB/Best changes",
     "Restored Save State discovery remains inhibited pending persistent origin classification",
     "Timing is host Node controlled workload, not Android/WebView/energy acceptance"
-  ]
+  ],
+  "postRestoreChecks": [
+    {
+      "command": "node tools/console_reset_check.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node tools/neural_isolation_check.cjs",
+      "exitCode": 0
+    },
+    {
+      "command": "node --check app/src/main/assets/lab/lab.js",
+      "exitCode": 0
+    },
+    {
+      "command": "CHROMIUM_EXECUTABLE=/usr/bin/chromium NODE_PATH=/workspace/.gu-env/ui/node_modules node tools/run_ui_checks.cjs goal_discovery_ui",
+      "exitCode": 0,
+      "report": "ui-restore-recheck/summary.json"
+    },
+    {
+      "command": "source /workspace/.gu-env/activate && gradle assembleDebug lintDebug assembleRelease lintRelease",
+      "exitCode": 0,
+      "durationSeconds": 10.23012661933899,
+      "log": "restore-build.log"
+    }
+  ],
+  "restoreFix": "Captured/legacy episode snapshots are labelled before restore and excluded; true ROM reload resets boot label and comparator. Full CI reruns final head."
 }
