@@ -1,0 +1,6092 @@
+{
+  "type": "gu-nes-write-trace-check",
+  "version": 1,
+  "status": "PASS",
+  "engine": "actual vendored JSNES 2.1.0",
+  "scope": "host emulator / original MIT controlled NROM-256 cartridge",
+  "oracle": "assembler output, checker only; never passed into production tracer/probe",
+  "conditions": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "arch": "x64",
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "serializedParity": "every executed oracle instruction, every defined frame, external write, NMI, save/load and reset boundary: entire core.toJSON() SHA256 plus emitted audio/video stream hashes and NES frame counter",
+    "outputHash": "all emitted 256x240 RGB pixels encoded as little-endian uint32; all stereo samples as little-endian float64",
+    "timing": "nearest-rank wall-time p50/p95/p99; paired AB/BA balanced order, equal restored start states, warmup excluded; raw frames retained; serialization and hash checks outside timed sections",
+    "limitations": "host Node timing only; short controlled cartridge workload, not browser/WebView, game generalization, physical Android, battery or an energy/performance-improvement claim",
+    "benchmark": {
+      "pairCount": 12,
+      "framesPerRun": 8,
+      "warmupFramesPerRun": 12,
+      "warmup": "each fresh core restores the same fixture state, executes twelve excluded frames in its own condition, then starts timing; active warmup has its own bounded window",
+      "orders": "AB,BA repeated six times for each comparison",
+      "active": "production bounded CoreProbe window, default canonical RAM coverage, maxEvents=4096, maxFrames=8; frame advance included",
+      "disabled": "helper loaded, no attachment",
+      "detached": "attach then detach before warmup and timing; original CPU methods restored",
+      "baseline": "unmodified vendor CPU",
+      "callbacks": "no-op video/audio in every timed core",
+      "restoredStateSha256": "49c984b0c7d5aed18ce76bdf12c085a00740b1569abd6161acf63fe564f0af3f"
+    }
+  },
+  "categories": {
+    "unit": "separate core_probe_check.cjs",
+    "hostEmulator": "PASS",
+    "controlledRom": "PASS",
+    "frozenGeneralization": "NOT-TESTED",
+    "physicalAndroid": "DEVICE-PENDING"
+  },
+  "parity": {
+    "boundaries": [
+      {
+        "label": "loaded",
+        "serializedStateSha256": "31ab3c3a608526c56062be8df4194f54eef53a149e626f52bd87d3570735c202",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-1",
+        "serializedStateSha256": "ee079bfeb4ef15e2f2de0f7817085c094613909f290d5091b336e65ffbb1815f",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-2",
+        "serializedStateSha256": "7543a6ccec4167e4d693e72b115d4288264f3274cfa985eb0e9e6195ccdbd916",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-3",
+        "serializedStateSha256": "9c8096c16827c300ce3c1942995b2dbd18f82550e6a1ca87e9df6657a860d5a7",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-4",
+        "serializedStateSha256": "ff7f1424e7e6259392634013de50e5299b71311d1a473de27bfc393cf603d062",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-5",
+        "serializedStateSha256": "0a8ea597b5527297ea563db282644c19fe9f5e2f3bbbfeb2c7de95fb2f378e5b",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-6",
+        "serializedStateSha256": "681c4cb3e25bf970a9057976e730c8f010842ff7129b85be750c4d41474aa53c",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-7",
+        "serializedStateSha256": "a9aa274a247551ee28dd53d2920c72d4877996df991a267081274e5b8db1a0a7",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-8",
+        "serializedStateSha256": "8eeb37b11be273c1e79313c9646975dc3ce31332b0adf158397b566a17c18422",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-9",
+        "serializedStateSha256": "9886eb5a96fe6e9c81df8043282077955a36572abfe5f56604b17d5345e30f47",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-10",
+        "serializedStateSha256": "e0d3e8e42a52bee203adcc77c40fabc5572790013a7ef20c9309765a7b532c45",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-11",
+        "serializedStateSha256": "555dc1028e1527008596ed34a7d750e78789ed4ef1217416a215d095606eccac",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-12",
+        "serializedStateSha256": "c021993d3a6c4942e6104cdb6c202a61006c5734d0617e11e9671cf08ef22aac",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-13",
+        "serializedStateSha256": "b3bd1a80a979ecea2d76eaef8728cd7ea30a30a84dc6c26e860a3ec8b4669b18",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-14",
+        "serializedStateSha256": "8dd8c2af0625dedc01f635e6210987f39b2ac8bfc203e58ed413e1b78fe909b7",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-15",
+        "serializedStateSha256": "c041bbc0970fe4b3ef52832e4f51dd3465d1ab37a610177f5cf9379d85862e7e",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-16",
+        "serializedStateSha256": "b87725ebd7a7265ba660e631527a1de7af3163e1a286f381bd92ae7257ff5e67",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-17",
+        "serializedStateSha256": "fbb8135f90245e2126f14d6713af9d2eb7a52cd956d3cfa0f24de28037a88281",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-18",
+        "serializedStateSha256": "b0a0b27ffa75d99b24f902eb9caeddaf820f4a0ef141c07918eddf00d939966b",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-19",
+        "serializedStateSha256": "507480a9ac48b6c13b82c825637883ee847ab316f3ebdbb90e0f91a37a9baf5d",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-20",
+        "serializedStateSha256": "8822bcd85c8e7f442ec7781882a0aecde575c0b7803d2cf9f2c4d27079e5e8af",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-21",
+        "serializedStateSha256": "2d07df4422a48517bc391749478ad024c9d789ede3c04021df378853ed0765cf",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-22",
+        "serializedStateSha256": "f054a7c6d1a09a3ed61d8487004de71880e81a7092ed14945a14d5fff5cd5f1f",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-23",
+        "serializedStateSha256": "f63b1566c285addbf3607a80b0fb4a31865b635dce1edf58fa96d8dd69b38462",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-24",
+        "serializedStateSha256": "d843e406bfa6b31406ac50c6367f88bf626bf0300e6b14fa8dda5b6ec3dd26e9",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-25",
+        "serializedStateSha256": "18f8274312563304c3d214dde5e2311a7acc10c6ef9a3c86dfb715fa7d059939",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-26",
+        "serializedStateSha256": "2f4fca75c49232ed71877291c0d5f9c360284a843e4feebae5d5fbde9fef1bfe",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-27",
+        "serializedStateSha256": "6435859390c034d5f1cd44b29504efa615a35b68b708a8cc71d7af7e94773748",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-28",
+        "serializedStateSha256": "8825893cdd5757c10b4501fab237fc448c75d52ebaa0f5de3f5d0d857712fe0f",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-29",
+        "serializedStateSha256": "cde3b49c0bf097e0a60cf8bd2810734827c48e0c62232a01d888a0783ffb5862",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-30",
+        "serializedStateSha256": "173c0d593acbd30cdb8c44234461d9cb84809157e0b01e6d011deae11b3e7162",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-31",
+        "serializedStateSha256": "809f84c8e64174f87c9ca62f2e800d06886531f9e6c09a6fd2164d95d826e520",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-32",
+        "serializedStateSha256": "803891304b4dffc03b025f31121aac47c4005f5dcaf58dbcaf8810b8864a1f07",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-33",
+        "serializedStateSha256": "2ec0d26b3e36fe6278ce44895ec8d1b37bc6be1b4ebaf19bf06aa8e547f480b2",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-34",
+        "serializedStateSha256": "80ca480ef8a2127d6a6ea2f0e280ef95335cd90077b2dbc19b6aed5ea0f1f02c",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-35",
+        "serializedStateSha256": "1e81f364f09fd4c4d6c0b7f9954a99324ded68623b1f62f912018c99d1189ae7",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-36",
+        "serializedStateSha256": "d7c6f190b4697478d9ccb0c533a787b09d64dccf60205ffdf7cc09ae407ebdec",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-37",
+        "serializedStateSha256": "aa9557328a212c7e8abdd00f3a1e5020a68340ab7c8f09b0c58f546e0cdbf28c",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-38",
+        "serializedStateSha256": "afb17a4e5f26e7430a8581b4de6458fda8a59d0844db7077cdd509fc836548e4",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-39",
+        "serializedStateSha256": "99b768a30f6c2e2894e4daad157f2a56c57b5e96d4904ccea6e943829550078d",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-40",
+        "serializedStateSha256": "215b02cf30aedb45f5506d1ede48a9a674e09c698838cad3a1a65773c5a18196",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-41",
+        "serializedStateSha256": "8715d3e232f53c4cc45a350be9e89eb683e2cd9025b928f72aceda73780c78d8",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-42",
+        "serializedStateSha256": "09d4559ec9274c81f5f9fe7365cfe0893e20cafc571543b50683f974330c74db",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-43",
+        "serializedStateSha256": "3e3a676442f83fef10ec1db67624c98fc677f25d050626bf38be4316d7ed0f49",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-44",
+        "serializedStateSha256": "bc86b04cb7e0a6dfc36e495a199e1c4b595124db5cb4a036fd9d288b24ceb7a2",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-45",
+        "serializedStateSha256": "85cdd29e191abddbd210977e44bfefa2030792540f63453ec96daddaf1163cb9",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-46",
+        "serializedStateSha256": "e71a9d1b1ee7e555b0ca8a0b43715fc47fabeee4cb1056a7d6fec6463eb7a08c",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-47",
+        "serializedStateSha256": "77068b3d8d34301a95d3bf8e4ae818efb1f3848a804b9dc96b6f836bf6f2e16c",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-48",
+        "serializedStateSha256": "3d6920e197f8228a5c74ef463b9035bdfb53bec5db84596f429ae62e9b431606",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-49",
+        "serializedStateSha256": "40fda9f13c14b68ec6dea0a648eb606af8a80046ff05cc0a306234b67b114441",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-50",
+        "serializedStateSha256": "7caa8564b0a30018707a360637d2c7d27f1f710a9b220c089459241623de9a77",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-51",
+        "serializedStateSha256": "b81b0f1fb18b4160a886f26c6aab4a4f81324e6eb0fbe63c3df6804d353d6481",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-52",
+        "serializedStateSha256": "11bd7b4c18c380bb51564531f2d488b4a66d6cce27f4e915b89093afd8673c82",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-53",
+        "serializedStateSha256": "8732141cfdc613531a997bd47ef8522815cba760f217ab3f01f5a32cdebbbbe0",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-54",
+        "serializedStateSha256": "be5436852576fcbd758eca35bfe635815a0449d8f4f46ec5c24038a7a22400b6",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-55",
+        "serializedStateSha256": "ea732f4eb338a8e0eec0bb9fb0a927c8aab62fe9bac0cbf69c9a2a0aa1df34a5",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-56",
+        "serializedStateSha256": "d388eedd4d5fb22bc6dcf794dcdd27974842c60a534caf1f60baaf0090df0c10",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-57",
+        "serializedStateSha256": "26ad88cfa3853266cce4955c84ccad4325b2c6dec8ef331fc20ef7951ae28a79",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "instruction-58",
+        "serializedStateSha256": "dd177a1b4ad38b7fbfa644bb2891b1a15c9b1398a9a4545f0378663f1fb0553b",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "external-write",
+        "serializedStateSha256": "ed8407cf621bc0a9a7a5cc8dd04e2575eb40744404142afbd12e74b2a98b27a0",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "forced-nmi-entry",
+        "serializedStateSha256": "5aff1f439b11a65e4d79800d56631e9dbc7b0178c15f578ea70f208685122498",
+        "output": {
+          "frames": 0,
+          "samples": 0,
+          "videoSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "audioSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "peak": 0,
+          "maxColors": 0
+        }
+      },
+      {
+        "label": "frame-1",
+        "serializedStateSha256": "9e8927807e2a33ac01ca58268e2b4d70c2374e3822bd211874d53b4a8ced3237",
+        "output": {
+          "frames": 1,
+          "samples": 793,
+          "videoSha256": "ec4bf44fd5bfdecc45918a01df2ceea5c84fa910136a098b082d5fe29b426739",
+          "audioSha256": "0b57a476e093a2b2c3f502f090a45c4d845cbcf43eadef207ce66a5bcfdbb6b0",
+          "peak": 0.762664794921875,
+          "maxColors": 2
+        }
+      },
+      {
+        "label": "frame-2",
+        "serializedStateSha256": "dff7ea5590d15d085b5a24b4abfc75d5ed511229b80e93e425554a73a2facc1c",
+        "output": {
+          "frames": 2,
+          "samples": 1592,
+          "videoSha256": "4f6c32c0ae4f8171f331d3e9006315007e15ecd96239baec3e7fb235241730ff",
+          "audioSha256": "aeb14e28a7b3a56dc81fe6530cdf58ca7c98cb65bd3142b3c759e484e545ee07",
+          "peak": 0.762664794921875,
+          "maxColors": 2
+        }
+      },
+      {
+        "label": "frame-3",
+        "serializedStateSha256": "8dd2a348a78f51ffa9a6319a394edd069d746e7f5b280460032945d61fe534e4",
+        "output": {
+          "frames": 3,
+          "samples": 2391,
+          "videoSha256": "3ba9d04b3fe982c4b6ddb5518d1d583a7927d61ce19069c31ec931d340364419",
+          "audioSha256": "b14a3a63f8f1f732d7d08cf501ca973b00ca6bb5e4ab3421393252019c7807e5",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-4",
+        "serializedStateSha256": "8d260a290788cf5e8798b724a558d4fa7aeef54bfdd3577ededfee59454b2bed",
+        "output": {
+          "frames": 4,
+          "samples": 3189,
+          "videoSha256": "be40a8971f483292b8082a0f3551611a30e8651490eb301c66dd4be53bc80024",
+          "audioSha256": "f5f768a7dd25349605931b66e38ee8fc93f80de0c65a2687f15894572d11ac1e",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-5",
+        "serializedStateSha256": "f974d4acb53605c422417433d22dccec30bde86402228c3170fd6962f8ec1266",
+        "output": {
+          "frames": 5,
+          "samples": 3988,
+          "videoSha256": "c38c5c17fd5f2f14d5a2d8ed2bf5c85b64403fd4585c05aed072e8716474020e",
+          "audioSha256": "cb9081855dcc51e60e19cacf7bd7a00b096b41b316584b4b607d2b4f47f312e0",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-6",
+        "serializedStateSha256": "875448b1e5f7b1de09407179d6a8ffab3c20efda2cfda797140335fd56d1b8a1",
+        "output": {
+          "frames": 6,
+          "samples": 4787,
+          "videoSha256": "a9387e98cc5377a1fc5d8df0c28d4d905e467d583983ffdb932b30a3aacc0421",
+          "audioSha256": "b40e8d9809df628245fec98ff6b3fc04f8004b87b94902166ed468d27dd55d97",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-7",
+        "serializedStateSha256": "e592320fdb81595903207664e5a9196ac08bce6b73ba480158ae9f526689ba33",
+        "output": {
+          "frames": 7,
+          "samples": 5585,
+          "videoSha256": "ede41003ef6e72d6b0af3072c35018c81c49c610b778c410c7712aaee59a22cd",
+          "audioSha256": "efac454b0caa11bc25241dc7f04e3dff277ecec6051cf4d3a36cb1564f2f1fa0",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-8",
+        "serializedStateSha256": "4bc59367b9b37af73af001fba696fbcb675193083d85fa7818ab4fdb8ef667f1",
+        "output": {
+          "frames": 8,
+          "samples": 6384,
+          "videoSha256": "39d607c0ea59ce412033652cf1cb4944d2ce823b9d72f0f48dc74c8f889180e4",
+          "audioSha256": "a589c2ece76c65b76f12462d7d263b62a2f88aae46a4c85922e75563b21cbd4f",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-9",
+        "serializedStateSha256": "67a081fcbe48632e1fe2ebb2e1c1a437971acdd84242475a2178b24d70ea0258",
+        "output": {
+          "frames": 9,
+          "samples": 7183,
+          "videoSha256": "d1350e4ceba7a746f13c2d9d18ae9681b2fa05a0fa736599e3d8c8fb7c5764f3",
+          "audioSha256": "16eea9bbd14e4727e0e58084e55e15abe05eb96e05db9bb8a207696f6a4f95d1",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-10",
+        "serializedStateSha256": "0a97768dd7697ff4137a9bfee060f6034c6a7b1e8a6592c9ea8b1eeff938cb1d",
+        "output": {
+          "frames": 10,
+          "samples": 7981,
+          "videoSha256": "fb71e1c163050f1b895cc5c63107f60349e51a9a08d52793e56a843edb66cd50",
+          "audioSha256": "9953dd3e6ab1b61ecd8ad20fc47c70d666b1e08ba8f4127ba4a63c171b58f857",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-11",
+        "serializedStateSha256": "a30762fdd8b4e11a176dc388326e1d5d248fcf19ce4dd36b3c3d9c9b422f9a4c",
+        "output": {
+          "frames": 11,
+          "samples": 8780,
+          "videoSha256": "33af661f65896b5477cc22e1cd2a693c89b9b68127a8d43c8813151ff9eb3784",
+          "audioSha256": "d817c7fa19a783b39ca6f6d424dc964442c864850b4d8f8e2af6ff2e1a443f46",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-12",
+        "serializedStateSha256": "c5f4a6a51db3a63736eebbfe8721764d5e2229feb78bd0d5a6841864b9849229",
+        "output": {
+          "frames": 12,
+          "samples": 9579,
+          "videoSha256": "e86b923766952f2d72194e303dd276b999d1d9845f380d6ad1f2f581afccc11d",
+          "audioSha256": "83511f740cf337272b9d62b629b3d8cdd7a9748c8a062ade5986c6ed01f44847",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-13",
+        "serializedStateSha256": "5a9cd04919dbbf281ec6caafb6a6c0b3c37ecf19a1d5da500e0b6132c6ebec73",
+        "output": {
+          "frames": 13,
+          "samples": 10378,
+          "videoSha256": "861fae05520aeff9cb0195e4f45876f2171e5163ed158ac5bfb1c326f672a7ad",
+          "audioSha256": "ac9c60ef9655a41bb7015edea7056b61e1613cdc2b9d720dedb9e84843155929",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-14",
+        "serializedStateSha256": "e2100f52f1cb243f495240bc918b3c80f28b889ed5ebea5203b8071ecf6f8eef",
+        "output": {
+          "frames": 14,
+          "samples": 11176,
+          "videoSha256": "03503b63720fa0f3412589788660a9ee43710aa39e0127f21963571995507bf1",
+          "audioSha256": "21f0fa1c3bad9d9b74f8b5aea7fe20370b3d5465eb1d689fdb6b93f4533a22b7",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-15",
+        "serializedStateSha256": "10ca6b9b9d53088a72ea3cfe2544115526d28e944306da08df63c89c133244f0",
+        "output": {
+          "frames": 15,
+          "samples": 11975,
+          "videoSha256": "102bd0eb7ebc9a57528ab6bd1b6a72266978177963663d484b38c83c4799afc6",
+          "audioSha256": "7156a0a2336d5f5b8cd622201e7e76845ed49c9ee45307000cfd04e0ed6ac5b1",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-16",
+        "serializedStateSha256": "777a77a810c2ff88acf560c222d92d0e89f77d6b7ccea64ecec74c12e1887826",
+        "output": {
+          "frames": 16,
+          "samples": 12774,
+          "videoSha256": "24dc21e4ee787606ab0a08be2e0e38d5a7b08ba3049db7df35c8136540271781",
+          "audioSha256": "74020278f742a04de16486f001ed7b0accb8f12d33d9b46cde605df2ad8d98b6",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-17",
+        "serializedStateSha256": "d91082d1a939ea41643aed295d190420b89a6ad1fdb019f590a34c496c8f8370",
+        "output": {
+          "frames": 17,
+          "samples": 13572,
+          "videoSha256": "4b6e924e678e4bb748380bfb9f18a93f54f7507ed7e3db512adf5ee103c22947",
+          "audioSha256": "14f835ff32b48a87e551fa991f4c8744fa10ff339559e0abc9de89ac55ef672c",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-18",
+        "serializedStateSha256": "cf262a55aef25cf05a2cee087c52f872d293dc1ebefe2da8945d485509fb4e30",
+        "output": {
+          "frames": 18,
+          "samples": 14371,
+          "videoSha256": "244afd5f0089363a7dcdb4b744cdba082ef490bf27bdb74deeadf84c95b3cc77",
+          "audioSha256": "fd7fe6537dbfc82419de69656eee7a9038c28217d120fb200c6f1540d6f46b1d",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-19",
+        "serializedStateSha256": "42b0b6cbab2b688cb3756be49f1938551512030d78bfbf568500c043d0bcefd2",
+        "output": {
+          "frames": 19,
+          "samples": 15170,
+          "videoSha256": "3198c529668700bb4577fece0b5f20a7364bc4abefd5e13b1e9e4df4e9f22f55",
+          "audioSha256": "8a765ecdf97fe19cbc2a11d0247c9ab5d642958464fbefeaadb9727af176192d",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-20",
+        "serializedStateSha256": "9bef07fa920b3b1b413edd2510ba5b939ba113b77aa14b9cae28c23dd1909f56",
+        "output": {
+          "frames": 20,
+          "samples": 15968,
+          "videoSha256": "d58cfdfd27d10ebdc71a7f6cd27c73a8d0b149e6f790a07c08f808830917df73",
+          "audioSha256": "2fc381a5dcc22c62ec5a420227894f3eb040c32b78f1c03079f06f3d212ebb98",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-21",
+        "serializedStateSha256": "9382a66bf4c6e3d7221842b472c20d7e44ef3fc9c434163d90f18b3049cceee6",
+        "output": {
+          "frames": 21,
+          "samples": 16767,
+          "videoSha256": "813585de0130baa7ba32b5026adc1758a7692f1f542bbe3250ed8e9174b44183",
+          "audioSha256": "dbae51e9dfe54a82c73e34866b63edf3b5f2a7f0ac6563b09df085a4b72ca1d7",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-22",
+        "serializedStateSha256": "645c44dc2fa8acac8c6c08599f5088da654072d1af9dbc9964248dc1fb3227ce",
+        "output": {
+          "frames": 22,
+          "samples": 17566,
+          "videoSha256": "623d594346d91ff31abf2448b63881b9c44c15f96c0a53a077056523d516ffbc",
+          "audioSha256": "6eb78012955a790aff0121daf2de0c6752a2d9fb5336c7e25016034b06ee20a2",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-23",
+        "serializedStateSha256": "12f5296ae307f6923a0f0507d8ecc62a0c4c3aab72a4b934cf3991612fbb0854",
+        "output": {
+          "frames": 23,
+          "samples": 18365,
+          "videoSha256": "df1ae75f467bd0bec2ccd9df20e86e25aaa45be9b5d4e7c9966e6efba992eb55",
+          "audioSha256": "86f587933969f03bd8885123ee34049c4963b29255a0fa225b5a0e1e8c6afd44",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "frame-24",
+        "serializedStateSha256": "77f18f2c5de1e723f38bbfeaf6e1a581add6d95f9027dffcfcd8347bd2430bab",
+        "output": {
+          "frames": 24,
+          "samples": 19163,
+          "videoSha256": "2b1e1be977d4c27ff58be4b7d349967c5d237fbea5947adc90bf8722bcc2ad27",
+          "audioSha256": "77ac8b4a8d58b1dd02fdf448fba5e58ce8a608deb2962e75bf80de192781de03",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "detached-1",
+        "serializedStateSha256": "337e28e01ba8a8b325f8ec9094b598845184f165c263b3e5ef1dca5206eef2ce",
+        "output": {
+          "frames": 25,
+          "samples": 19962,
+          "videoSha256": "9832e32f34c8bba5bdbf86525e4c6400c9a1699559896abdfe02dd6e59a3ec82",
+          "audioSha256": "810c7dc7babdfa3206f535ab3325f421dae8dc5e71e2d202466d8017d0dab872",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "detached-2",
+        "serializedStateSha256": "9af49bf74ba8b0a2452edb6398468d53107a466af4affc4bf2c8ce09acc1541e",
+        "output": {
+          "frames": 26,
+          "samples": 20761,
+          "videoSha256": "cff692b6ed96655c419156f06ee2fc0f7587783173c80bbd6c190624e78217e2",
+          "audioSha256": "841da94370eed0bb0a4d9a357dfd60543f33b1458b493c23c42574081b89bacc",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "detached-3",
+        "serializedStateSha256": "5c066e27553358a99378da782958c49c158f3013cd80121092b359b2a51b9138",
+        "output": {
+          "frames": 27,
+          "samples": 21560,
+          "videoSha256": "691178dd074c36f2334cef7faac481278a3c62b062a13c6d03481e71039c860c",
+          "audioSha256": "80150a60fa2fda902c40e99db762fc8c50da7c3364158d5bd555a7a3fdf68316",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "save",
+        "serializedStateSha256": "5c066e27553358a99378da782958c49c158f3013cd80121092b359b2a51b9138",
+        "output": {
+          "frames": 27,
+          "samples": 21560,
+          "videoSha256": "691178dd074c36f2334cef7faac481278a3c62b062a13c6d03481e71039c860c",
+          "audioSha256": "80150a60fa2fda902c40e99db762fc8c50da7c3364158d5bd555a7a3fdf68316",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "load",
+        "serializedStateSha256": "5c066e27553358a99378da782958c49c158f3013cd80121092b359b2a51b9138",
+        "output": {
+          "frames": 27,
+          "samples": 21560,
+          "videoSha256": "691178dd074c36f2334cef7faac481278a3c62b062a13c6d03481e71039c860c",
+          "audioSha256": "80150a60fa2fda902c40e99db762fc8c50da7c3364158d5bd555a7a3fdf68316",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "restored-frame-1",
+        "serializedStateSha256": "8fb8749a14ce1278cfe7a49e687461da4ec0b4ca73fb42f4814f1b6669b08601",
+        "output": {
+          "frames": 28,
+          "samples": 22358,
+          "videoSha256": "65b0bf054ba85510b6ee79a05dbcf1044fc8b59b0a794cfeb000ad4f774dc389",
+          "audioSha256": "cf896325681362d93b84f19417189805137a77a2f54819331e9e4fd2c927709c",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "restored-frame-2",
+        "serializedStateSha256": "433e6f2909854d7469395bcba8e2a4dc36aaa29b567d946de983d225f50f7f54",
+        "output": {
+          "frames": 29,
+          "samples": 23157,
+          "videoSha256": "3a1ab40779402890adad38b41ce4dd1c25291adba9b9e40381179ea62bb1b77f",
+          "audioSha256": "9b715d849f439c7b928dca99e0e636c878d570e8b4f1da2d7d797bdb5abfbc2c",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "restored-frame-3",
+        "serializedStateSha256": "0728e4bdadacae01f1ce176bdd6e3e85aeba121a59e563b1da9cfee86b293041",
+        "output": {
+          "frames": 30,
+          "samples": 23956,
+          "videoSha256": "a0829bcefaf61702671a38538d807e09500835c46f9374b3e1f53f0fdf32ff00",
+          "audioSha256": "83028397c5e21f173616517139afa8f2238f8668dcf00aafa699a0bb8678d4a9",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "restored-frame-4",
+        "serializedStateSha256": "b56f63a01e949367cfb5e89423d45e11c2cd89500c268dc71d8fc18081ae6539",
+        "output": {
+          "frames": 31,
+          "samples": 24754,
+          "videoSha256": "a493fd4a12017b3717d3d19480f932e229f7edc4a2acc7bef6cb358cf61eb661",
+          "audioSha256": "e49309eaa7b0299a2391f022e6462cfc192d5cf641dd688ed94a510327afd036",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "restored-frame-5",
+        "serializedStateSha256": "150befb3d16d7304b5c002df9e5eec5f6bc7835e235df574b3f4bc96cfe36c67",
+        "output": {
+          "frames": 32,
+          "samples": 25553,
+          "videoSha256": "23a0bbc9f0327623875ca95c645681af94927d2a92d854e24091c40df38dd1f6",
+          "audioSha256": "0a7a15e63c767fd9c638968d56bbac1529dd91da00e800fbd0875dc37e390a73",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "restored-frame-6",
+        "serializedStateSha256": "7048aac5c9713f05e10bd707d1c30731f6f36eada6ebc78816dfd6b0014ae03f",
+        "output": {
+          "frames": 33,
+          "samples": 26352,
+          "videoSha256": "06b721d895480acebc7f608eb167866f1640adb0e78e6a33b8d4d181afd22d43",
+          "audioSha256": "b0a8b4bba92d85502d802787feef06e1a96d367e9283b2f3fee6397c60ab1e8c",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "restored-frame-7",
+        "serializedStateSha256": "f570c967233633fc2e769e336220e67c65a347a11a5c2c07f9d4e1f4982b446b",
+        "output": {
+          "frames": 34,
+          "samples": 27150,
+          "videoSha256": "8d77a7f0957e89872a4a56abab7d5b8062f637ab5d2ad7f1351a3cc71e2508cc",
+          "audioSha256": "d67e6c5a1aedb4bc5e1fa9498526da6390cbf8ceb65dd0a5db2cb853c60aab13",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "restored-frame-8",
+        "serializedStateSha256": "049bbc4fed745bb6273050788a3e91e297a27e352128f2b377f371066f22399b",
+        "output": {
+          "frames": 35,
+          "samples": 27949,
+          "videoSha256": "d2046cb8019bb20b0e8bbb2f4ecf91aa8baa27a83177deb702e5f7b2e96d0e91",
+          "audioSha256": "6537c0b01f0df928db801ba29f7fdcf737bbfc5c2b83ed5f7179a32a4c78a1b8",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "restored-frame-9",
+        "serializedStateSha256": "d80d63eba9b6bf025840b38edf4fde17f163ae82448403d2c1fbc6bc4f7a006d",
+        "output": {
+          "frames": 36,
+          "samples": 28748,
+          "videoSha256": "c6c491966248340eb20e43e7b482cb1482119affe2f5d515d86a4ae29a421758",
+          "audioSha256": "d7cfbb28966c04f45d1d93e4b19cd271b02b293f4e6ba44672cecde6b9125d20",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "restored-frame-10",
+        "serializedStateSha256": "fd5a53c73a5d48cef0558d131c4c8b8c06137704cd277e803e650ce9b0d7a1af",
+        "output": {
+          "frames": 37,
+          "samples": 29547,
+          "videoSha256": "24d3b2ad0aa7266b6daf4a9d46c450c7e4f21da68d52fa48d1a401166bd42a0f",
+          "audioSha256": "3656911bc16013a3d2f76ffa62b6d405a460a582b5fc8699365386c2d1a1f2cf",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "restored-frame-11",
+        "serializedStateSha256": "a005f83f36162abf70c60ac55fee8baf21c5269bc99a00096e0cc157e50793c6",
+        "output": {
+          "frames": 38,
+          "samples": 30345,
+          "videoSha256": "f3cdacbd57fcdfd1ff862fca296cf76a464f990c3f455089f5f8a8f657aafe6d",
+          "audioSha256": "e238e6a25970b1ac7f376640d77f68960a5c9b33642605f1b10ad21b1f3aabb2",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "restored-frame-12",
+        "serializedStateSha256": "39d791c7455045de1e2be6716e889c102ae2624ebb08265ba95762e057605eca",
+        "output": {
+          "frames": 39,
+          "samples": 31144,
+          "videoSha256": "80a13ef206c9474952adb708dca5fea1c3e328160c8536b8ae352c1c52d5f89a",
+          "audioSha256": "05e9835516d49674fcb50b605ab34449b361a7cdcbf24c4e668bfc5a490826a8",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "reset-and-reload",
+        "serializedStateSha256": "ac28fc4def44bd0ff011add67f81bfa7c44f20604127c3f1a92f1ea597887d8b",
+        "output": {
+          "frames": 39,
+          "samples": 31144,
+          "videoSha256": "80a13ef206c9474952adb708dca5fea1c3e328160c8536b8ae352c1c52d5f89a",
+          "audioSha256": "05e9835516d49674fcb50b605ab34449b361a7cdcbf24c4e668bfc5a490826a8",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "reset-frame-1",
+        "serializedStateSha256": "a69cf80357218b79c26a94078a624eefe1c27dc0a8694c67ef696a04ab7c125e",
+        "output": {
+          "frames": 40,
+          "samples": 31942,
+          "videoSha256": "1d757806a80d79e3868399edd17df7f6712992c500a156cab25f9bd90198c127",
+          "audioSha256": "7076486263af2bb44055902d5cd96950bb1299462c3ca0486472370e65763e49",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "reset-frame-2",
+        "serializedStateSha256": "80e0754f73b52c30d99b7e3c409c61aa49e53918c903ec007b9cff97e68d4a21",
+        "output": {
+          "frames": 41,
+          "samples": 32741,
+          "videoSha256": "ea319430b78fb5ab0e61a7a890947d2d9ee3f95b5bab82421a0b151ea972257b",
+          "audioSha256": "befab20beaf1412374bc5c1f1f85d279687141b6a3ed64e6a3a95bc49b0fe240",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "reset-frame-3",
+        "serializedStateSha256": "1dc6b8520c89e9cc2bbb573b12b5833e692b3cee3c583be1765f34081317904d",
+        "output": {
+          "frames": 42,
+          "samples": 33540,
+          "videoSha256": "5e76b2c93a2594a380bbb8991180728db67023d06868398f2fc2c9c59ee202fc",
+          "audioSha256": "14c75fc258683e91fcbacea9df990fac42acfa6fb1069b71148607cb9a54deeb",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "reset-frame-4",
+        "serializedStateSha256": "58f01fbec2ac402f7412601189920f918b893b2ec64201192c9d21a8cb86d03f",
+        "output": {
+          "frames": 43,
+          "samples": 34339,
+          "videoSha256": "29997377fa53dab8ae3f0b432568ab08a9be0b1e5b82a01aec4fd2eae69d1434",
+          "audioSha256": "6578a81b3b783db328aca989f50585b1915529d32e20519cbbe4d868c57ac00c",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "reset-frame-5",
+        "serializedStateSha256": "3509f9f7bce6ca175112b7fa468d50b7cb996a03820e9304c516bbb2efcd373c",
+        "output": {
+          "frames": 44,
+          "samples": 35137,
+          "videoSha256": "8d5a723face9241b3ac0bfeb8ff987eb56b8555435f82cbfe964a0a53dafed70",
+          "audioSha256": "48523681d3064b6ea00640bdcc01b466c813eafc91a3f616dd764227474edbe1",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "reset-frame-6",
+        "serializedStateSha256": "c9e8a8d9f82c1aa41f75015edc6e9634fcea5db960e6ce6e7939dfebe494578c",
+        "output": {
+          "frames": 45,
+          "samples": 35936,
+          "videoSha256": "01ec678a08ddc05de97e09b5c8915c97e755d08d79376facff346d9230ba93c3",
+          "audioSha256": "7fd7470413916aed42bb91e0b279062506991da0fc01542e8402612ddc3e4beb",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "reset-frame-7",
+        "serializedStateSha256": "eadd0ecd30ab965d9446296fa3001090078df424317c8a3a822baaa6f173cdc0",
+        "output": {
+          "frames": 46,
+          "samples": 36735,
+          "videoSha256": "b990ecf882a71432e758212ffbec5720c4da4524f681625c2a0271eb57508c5b",
+          "audioSha256": "41332a0cae476d13a700eef877bb7b1cd6d942c99c4662de307ed48cfeb8d5a9",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "reset-frame-8",
+        "serializedStateSha256": "f0b2da9131f5a7f431485f2a10edd611e5328c3ab843e097bbc2ac868e16842c",
+        "output": {
+          "frames": 47,
+          "samples": 37533,
+          "videoSha256": "e0b99631a202fd88d0d35e4d572d5d45e2abc4577401db33cd744507d32f8a77",
+          "audioSha256": "4dd0152cfc2d78e2a4e1a48e1389b244f56340485896126532919f056f9c5458",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "reset-frame-9",
+        "serializedStateSha256": "6112813aa1c6a85c26911d0ccec83c1a8203c6d2425c1e6231f5b1610b15ddae",
+        "output": {
+          "frames": 48,
+          "samples": 38332,
+          "videoSha256": "741ea79b7f84dde009056a148a1b13cd831b8c5c0283afbd6962ae09dc47f859",
+          "audioSha256": "d6e0fbda4d4868c6c058bf8765c1ba6ba9769cf296997ffdbe92344b0c2eb28a",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "reset-frame-10",
+        "serializedStateSha256": "6c215bbb7e5442f04b624268344b79f7cbf267630eea911df402dcdb42055e19",
+        "output": {
+          "frames": 49,
+          "samples": 39131,
+          "videoSha256": "d3b12976809f6a974e0f77d75ce5ab1a0ae8fafa36759a0aa483706440b0a33b",
+          "audioSha256": "9f97581de76d554e60a3ad53844699e44225d8e7cd0480b0f37b8babe26329b9",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "reset-frame-11",
+        "serializedStateSha256": "0eed0caedbef72e335ee7797c976d8f982424767b429d6b43695969b9750dd17",
+        "output": {
+          "frames": 50,
+          "samples": 39929,
+          "videoSha256": "590be658c037ea8d10e047f22c09a77fd66376db0a7f0bf4124c937000c3ba9a",
+          "audioSha256": "d5fd557525bf9ff12198b058788238504cfe5a30290ec69cfd635569bf2fce21",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "reset-frame-12",
+        "serializedStateSha256": "caaa40cfa575aeb406f3e8ccd05d0b66cff54750a62540927b4603579a418b0f",
+        "output": {
+          "frames": 51,
+          "samples": 40728,
+          "videoSha256": "7d3ddc9caa2523474ba9eb7e69b8c8d9326eb167e38492507918c81f08043163",
+          "audioSha256": "c9a329ea482e72135f3ad9940e7b4daf98c91cb833f4a7dcf40153d64a89a401",
+          "peak": 0.762664794921875,
+          "maxColors": 3
+        }
+      },
+      {
+        "label": "sink-fault-1",
+        "serializedStateSha256": "c01a6253459e11228ce80d786314bef1f2b880a6d587768453b3d8b17afbc37e",
+        "output": {
+          "frames": 1,
+          "samples": 799,
+          "videoSha256": "9eb8fa54d87a9b9775dd55c07b3d164453884695bd1ed83fe2f63259ee9e6afc",
+          "audioSha256": "62341b1044252db6c7f25e1341b0bfb15224471afdfe6ea40ae01152852bfb3d",
+          "peak": 0.0989990234375,
+          "maxColors": 1
+        }
+      },
+      {
+        "label": "sink-fault-2",
+        "serializedStateSha256": "3edb82d5963b89d30e36677dde423c5decff634e3f9ade20ad648cd464b6ae4c",
+        "output": {
+          "frames": 2,
+          "samples": 1598,
+          "videoSha256": "be4481ff8d6cf5d03132fe333186ff65057ce36871b4e216889a48b0181a2681",
+          "audioSha256": "ee63fdc2c5e1fa0962d503d577c52545fa7bbf5359c69f7227333919535d5a2e",
+          "peak": 0.0989990234375,
+          "maxColors": 1
+        }
+      }
+    ],
+    "instructionCount": 58,
+    "frameCount": 53
+  },
+  "writers": {
+    "status": "PASS",
+    "orderedEvents": 32,
+    "distinctSites": 25,
+    "sameCanonicalVariableSites": 6,
+    "staticPrgBanks": [
+      0,
+      1
+    ],
+    "rmwBusWrites": 12,
+    "events": [
+      {
+        "address": 64,
+        "logicalAddress": 64,
+        "oldValue": 255,
+        "newValue": 17,
+        "value": 17,
+        "writerPC": 32775,
+        "writerPc": 32775,
+        "opcode": 133,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 7,
+          "prgOffset": 7,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 64,
+        "logicalAddress": 2112,
+        "oldValue": 17,
+        "newValue": 34,
+        "value": 34,
+        "writerPC": 32779,
+        "writerPc": 32779,
+        "opcode": 141,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 11,
+          "prgOffset": 11,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 64,
+        "logicalAddress": 64,
+        "oldValue": 34,
+        "newValue": 51,
+        "value": 51,
+        "writerPC": 32786,
+        "writerPc": 32786,
+        "opcode": 149,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 18,
+          "prgOffset": 18,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 64,
+        "logicalAddress": 4160,
+        "oldValue": 51,
+        "newValue": 68,
+        "value": 68,
+        "writerPC": 32792,
+        "writerPc": 32792,
+        "opcode": 153,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 24,
+          "prgOffset": 24,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 16,
+        "logicalAddress": 16,
+        "oldValue": 255,
+        "newValue": 80,
+        "value": 80,
+        "writerPC": 32797,
+        "writerPc": 32797,
+        "opcode": 133,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 29,
+          "prgOffset": 29,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 17,
+        "logicalAddress": 17,
+        "oldValue": 255,
+        "newValue": 24,
+        "value": 24,
+        "writerPC": 32801,
+        "writerPc": 32801,
+        "opcode": 133,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 33,
+          "prgOffset": 33,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 80,
+        "logicalAddress": 6224,
+        "oldValue": 255,
+        "newValue": 85,
+        "value": 85,
+        "writerPC": 32807,
+        "writerPc": 32807,
+        "opcode": 129,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 39,
+          "prgOffset": 39,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 83,
+        "logicalAddress": 6227,
+        "oldValue": 255,
+        "newValue": 102,
+        "value": 102,
+        "writerPC": 32813,
+        "writerPc": 32813,
+        "opcode": 145,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 45,
+          "prgOffset": 45,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 64,
+        "logicalAddress": 2112,
+        "oldValue": 68,
+        "newValue": 119,
+        "value": 119,
+        "writerPC": 32819,
+        "writerPc": 32819,
+        "opcode": 157,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 51,
+          "prgOffset": 51,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 65,
+        "logicalAddress": 65,
+        "oldValue": 255,
+        "newValue": 136,
+        "value": 136,
+        "writerPC": 32824,
+        "writerPc": 32824,
+        "opcode": 132,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 56,
+          "prgOffset": 56,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 66,
+        "logicalAddress": 2114,
+        "oldValue": 255,
+        "newValue": 153,
+        "value": 153,
+        "writerPC": 32828,
+        "writerPc": 32828,
+        "opcode": 142,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 60,
+          "prgOffset": 60,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 65,
+        "logicalAddress": 65,
+        "oldValue": 136,
+        "newValue": 136,
+        "value": 136,
+        "writerPC": 32833,
+        "writerPc": 32833,
+        "opcode": 148,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 65,
+          "prgOffset": 65,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 66,
+        "logicalAddress": 66,
+        "oldValue": 153,
+        "newValue": 153,
+        "value": 153,
+        "writerPC": 32839,
+        "writerPc": 32839,
+        "opcode": 150,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 71,
+          "prgOffset": 71,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 67,
+        "logicalAddress": 67,
+        "oldValue": 255,
+        "newValue": 15,
+        "value": 15,
+        "writerPC": 32843,
+        "writerPc": 32843,
+        "opcode": 133,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 75,
+          "prgOffset": 75,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 67,
+        "logicalAddress": 67,
+        "oldValue": 15,
+        "newValue": 15,
+        "value": 15,
+        "writerPC": 32845,
+        "writerPc": 32845,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 77,
+          "prgOffset": 77,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 67,
+        "logicalAddress": 67,
+        "oldValue": 15,
+        "newValue": 16,
+        "value": 16,
+        "writerPC": 32845,
+        "writerPc": 32845,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 77,
+          "prgOffset": 77,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 67,
+        "logicalAddress": 2115,
+        "oldValue": 16,
+        "newValue": 16,
+        "value": 16,
+        "writerPC": 32847,
+        "writerPc": 32847,
+        "opcode": 206,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 79,
+          "prgOffset": 79,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 67,
+        "logicalAddress": 2115,
+        "oldValue": 16,
+        "newValue": 15,
+        "value": 15,
+        "writerPC": 32847,
+        "writerPc": 32847,
+        "opcode": 206,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 79,
+          "prgOffset": 79,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 67,
+        "logicalAddress": 67,
+        "oldValue": 15,
+        "newValue": 15,
+        "value": 15,
+        "writerPC": 32850,
+        "writerPc": 32850,
+        "opcode": 6,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 82,
+          "prgOffset": 82,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 67,
+        "logicalAddress": 67,
+        "oldValue": 15,
+        "newValue": 30,
+        "value": 30,
+        "writerPC": 32850,
+        "writerPc": 32850,
+        "opcode": 6,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 82,
+          "prgOffset": 82,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 67,
+        "logicalAddress": 4163,
+        "oldValue": 30,
+        "newValue": 30,
+        "value": 30,
+        "writerPC": 32852,
+        "writerPc": 32852,
+        "opcode": 78,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 84,
+          "prgOffset": 84,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 67,
+        "logicalAddress": 4163,
+        "oldValue": 30,
+        "newValue": 15,
+        "value": 15,
+        "writerPC": 32852,
+        "writerPc": 32852,
+        "opcode": 78,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 84,
+          "prgOffset": 84,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 67,
+        "logicalAddress": 67,
+        "oldValue": 15,
+        "newValue": 15,
+        "value": 15,
+        "writerPC": 32856,
+        "writerPc": 32856,
+        "opcode": 38,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 88,
+          "prgOffset": 88,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 67,
+        "logicalAddress": 67,
+        "oldValue": 15,
+        "newValue": 30,
+        "value": 30,
+        "writerPC": 32856,
+        "writerPc": 32856,
+        "opcode": 38,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 88,
+          "prgOffset": 88,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 67,
+        "logicalAddress": 6211,
+        "oldValue": 30,
+        "newValue": 30,
+        "value": 30,
+        "writerPC": 32859,
+        "writerPc": 32859,
+        "opcode": 110,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 91,
+          "prgOffset": 91,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 67,
+        "logicalAddress": 6211,
+        "oldValue": 30,
+        "newValue": 143,
+        "value": 143,
+        "writerPC": 32859,
+        "writerPc": 32859,
+        "opcode": 110,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 91,
+          "prgOffset": 91,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 511,
+        "logicalAddress": 511,
+        "oldValue": 255,
+        "newValue": 165,
+        "value": 165,
+        "writerPC": 32864,
+        "writerPc": 32864,
+        "opcode": 72,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 96,
+          "prgOffset": 96,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 511,
+        "logicalAddress": 511,
+        "oldValue": 165,
+        "newValue": 128,
+        "value": 128,
+        "writerPC": 32866,
+        "writerPc": 32866,
+        "opcode": 32,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 98,
+          "prgOffset": 98,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 510,
+        "logicalAddress": 510,
+        "oldValue": 255,
+        "newValue": 100,
+        "value": 100,
+        "writerPC": 32866,
+        "writerPc": 32866,
+        "opcode": 32,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 98,
+          "prgOffset": 98,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 64,
+        "logicalAddress": 64,
+        "oldValue": 119,
+        "newValue": 171,
+        "value": 171,
+        "writerPC": 49154,
+        "writerPc": 49154,
+        "opcode": 133,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 1,
+          "bankOffset": 2,
+          "prgOffset": 16386,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 509,
+        "logicalAddress": 509,
+        "oldValue": 255,
+        "newValue": 205,
+        "value": 205,
+        "writerPC": 49158,
+        "writerPc": 49158,
+        "opcode": 72,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 1,
+          "bankOffset": 6,
+          "prgOffset": 16390,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 127,
+        "logicalAddress": 127,
+        "oldValue": 255,
+        "newValue": 1,
+        "value": 1,
+        "writerPC": 32871,
+        "writerPc": 32871,
+        "opcode": 133,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 103,
+          "prgOffset": 103,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 64,
+        "logicalAddress": 2112,
+        "oldValue": 171,
+        "newValue": 250,
+        "value": 250,
+        "writerPC": null,
+        "writerPc": null,
+        "opcode": null,
+        "origin": "unknown",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "UNKNOWN",
+          "mapper": 0,
+          "physicalBank": null,
+          "bankOffset": null,
+          "prgOffset": null,
+          "bankSize": 16384,
+          "reason": "outside_instruction"
+        }
+      },
+      {
+        "address": 511,
+        "logicalAddress": 511,
+        "oldValue": 128,
+        "newValue": 128,
+        "value": 128,
+        "writerPC": null,
+        "writerPc": null,
+        "opcode": null,
+        "origin": "unknown",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "UNKNOWN",
+          "mapper": 0,
+          "physicalBank": null,
+          "bankOffset": null,
+          "prgOffset": null,
+          "bankSize": 16384,
+          "reason": "outside_instruction"
+        }
+      },
+      {
+        "address": 510,
+        "logicalAddress": 510,
+        "oldValue": 100,
+        "newValue": 105,
+        "value": 105,
+        "writerPC": null,
+        "writerPc": null,
+        "opcode": null,
+        "origin": "unknown",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "UNKNOWN",
+          "mapper": 0,
+          "physicalBank": null,
+          "bankOffset": null,
+          "prgOffset": null,
+          "bankSize": 16384,
+          "reason": "outside_instruction"
+        }
+      },
+      {
+        "address": 509,
+        "logicalAddress": 509,
+        "oldValue": 205,
+        "newValue": 36,
+        "value": 36,
+        "writerPC": null,
+        "writerPc": null,
+        "opcode": null,
+        "origin": "unknown",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "UNKNOWN",
+          "mapper": 0,
+          "physicalBank": null,
+          "bankOffset": null,
+          "prgOffset": null,
+          "bankSize": 16384,
+          "reason": "outside_instruction"
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 255,
+        "newValue": 255,
+        "value": 255,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 255,
+        "newValue": 0,
+        "value": 0,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 0,
+        "newValue": 0,
+        "value": 0,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 0,
+        "newValue": 1,
+        "value": 1,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 1,
+        "newValue": 1,
+        "value": 1,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 1,
+        "newValue": 2,
+        "value": 2,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 2,
+        "newValue": 2,
+        "value": 2,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 2,
+        "newValue": 3,
+        "value": 3,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 3,
+        "newValue": 3,
+        "value": 3,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 3,
+        "newValue": 4,
+        "value": 4,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 64,
+        "logicalAddress": 64,
+        "oldValue": 250,
+        "newValue": 250,
+        "value": 250,
+        "writerPC": 33004,
+        "writerPc": 33004,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 236,
+          "prgOffset": 236,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 64,
+        "logicalAddress": 64,
+        "oldValue": 250,
+        "newValue": 251,
+        "value": 251,
+        "writerPC": 33004,
+        "writerPc": 33004,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 236,
+          "prgOffset": 236,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 4,
+        "newValue": 4,
+        "value": 4,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 4,
+        "newValue": 5,
+        "value": 5,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 5,
+        "newValue": 5,
+        "value": 5,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 5,
+        "newValue": 6,
+        "value": 6,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 6,
+        "newValue": 6,
+        "value": 6,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 6,
+        "newValue": 7,
+        "value": 7,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 7,
+        "newValue": 7,
+        "value": 7,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 7,
+        "newValue": 8,
+        "value": 8,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 8,
+        "newValue": 8,
+        "value": 8,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 8,
+        "newValue": 9,
+        "value": 9,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 9,
+        "newValue": 9,
+        "value": 9,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 9,
+        "newValue": 10,
+        "value": 10,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 64,
+        "logicalAddress": 64,
+        "oldValue": 251,
+        "newValue": 251,
+        "value": 251,
+        "writerPC": 33004,
+        "writerPc": 33004,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 236,
+          "prgOffset": 236,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 64,
+        "logicalAddress": 64,
+        "oldValue": 251,
+        "newValue": 252,
+        "value": 252,
+        "writerPC": 33004,
+        "writerPc": 33004,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 236,
+          "prgOffset": 236,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 10,
+        "newValue": 10,
+        "value": 10,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 10,
+        "newValue": 11,
+        "value": 11,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 11,
+        "newValue": 11,
+        "value": 11,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 11,
+        "newValue": 12,
+        "value": 12,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 12,
+        "newValue": 12,
+        "value": 12,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 12,
+        "newValue": 13,
+        "value": 13,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 13,
+        "newValue": 13,
+        "value": 13,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 13,
+        "newValue": 14,
+        "value": 14,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 14,
+        "newValue": 14,
+        "value": 14,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 14,
+        "newValue": 15,
+        "value": 15,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 64,
+        "logicalAddress": 64,
+        "oldValue": 252,
+        "newValue": 252,
+        "value": 252,
+        "writerPC": 33004,
+        "writerPc": 33004,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 236,
+          "prgOffset": 236,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 64,
+        "logicalAddress": 64,
+        "oldValue": 252,
+        "newValue": 253,
+        "value": 253,
+        "writerPC": 33004,
+        "writerPc": 33004,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 236,
+          "prgOffset": 236,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 15,
+        "newValue": 15,
+        "value": 15,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 15,
+        "newValue": 16,
+        "value": 16,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 16,
+        "newValue": 16,
+        "value": 16,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 16,
+        "newValue": 17,
+        "value": 17,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 17,
+        "newValue": 17,
+        "value": 17,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 17,
+        "newValue": 18,
+        "value": 18,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 18,
+        "newValue": 18,
+        "value": 18,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 18,
+        "newValue": 19,
+        "value": 19,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 22,
+        "newValue": 22,
+        "value": 22,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 22,
+        "newValue": 23,
+        "value": 23,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 23,
+        "newValue": 23,
+        "value": 23,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 23,
+        "newValue": 24,
+        "value": 24,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 64,
+        "logicalAddress": 64,
+        "oldValue": 254,
+        "newValue": 254,
+        "value": 254,
+        "writerPC": 33004,
+        "writerPc": 33004,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 236,
+          "prgOffset": 236,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 64,
+        "logicalAddress": 64,
+        "oldValue": 254,
+        "newValue": 255,
+        "value": 255,
+        "writerPC": 33004,
+        "writerPc": 33004,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 236,
+          "prgOffset": 236,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 24,
+        "newValue": 24,
+        "value": 24,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 24,
+        "newValue": 25,
+        "value": 25,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 25,
+        "newValue": 25,
+        "value": 25,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 25,
+        "newValue": 26,
+        "value": 26,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 26,
+        "newValue": 26,
+        "value": 26,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 26,
+        "newValue": 27,
+        "value": 27,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 27,
+        "newValue": 27,
+        "value": 27,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 27,
+        "newValue": 28,
+        "value": 28,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 28,
+        "newValue": 28,
+        "value": 28,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 28,
+        "newValue": 29,
+        "value": 29,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 64,
+        "logicalAddress": 64,
+        "oldValue": 255,
+        "newValue": 255,
+        "value": 255,
+        "writerPC": 33004,
+        "writerPc": 33004,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 236,
+          "prgOffset": 236,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 64,
+        "logicalAddress": 64,
+        "oldValue": 255,
+        "newValue": 0,
+        "value": 0,
+        "writerPC": 33004,
+        "writerPc": 33004,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 236,
+          "prgOffset": 236,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 29,
+        "newValue": 29,
+        "value": 29,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 29,
+        "newValue": 30,
+        "value": 30,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 30,
+        "newValue": 30,
+        "value": 30,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 30,
+        "newValue": 31,
+        "value": 31,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 31,
+        "newValue": 31,
+        "value": 31,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 31,
+        "newValue": 32,
+        "value": 32,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 32,
+        "newValue": 32,
+        "value": 32,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      },
+      {
+        "address": 96,
+        "logicalAddress": 96,
+        "oldValue": 32,
+        "newValue": 33,
+        "value": 33,
+        "writerPC": 32985,
+        "writerPc": 32985,
+        "opcode": 230,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "KNOWN",
+          "mapper": 0,
+          "physicalBank": 0,
+          "bankOffset": 217,
+          "prgOffset": 217,
+          "bankSize": 16384,
+          "reason": null
+        }
+      }
+    ],
+    "externalWrite": {
+      "address": 64,
+      "logicalAddress": 2112,
+      "oldValue": 171,
+      "newValue": 250,
+      "value": 250,
+      "writerPC": null,
+      "writerPc": null,
+      "opcode": null,
+      "origin": "unknown",
+      "cycle": null,
+      "cycleStatus": "UNKNOWN",
+      "bank": {
+        "status": "UNKNOWN",
+        "mapper": 0,
+        "physicalBank": null,
+        "bankOffset": null,
+        "prgOffset": null,
+        "bankSize": 16384,
+        "reason": "outside_instruction"
+      }
+    },
+    "interruptStack": [
+      {
+        "address": 511,
+        "logicalAddress": 511,
+        "oldValue": 128,
+        "newValue": 128,
+        "value": 128,
+        "writerPC": null,
+        "writerPc": null,
+        "opcode": null,
+        "origin": "unknown",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "UNKNOWN",
+          "mapper": 0,
+          "physicalBank": null,
+          "bankOffset": null,
+          "prgOffset": null,
+          "bankSize": 16384,
+          "reason": "outside_instruction"
+        }
+      },
+      {
+        "address": 510,
+        "logicalAddress": 510,
+        "oldValue": 100,
+        "newValue": 105,
+        "value": 105,
+        "writerPC": null,
+        "writerPc": null,
+        "opcode": null,
+        "origin": "unknown",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "UNKNOWN",
+          "mapper": 0,
+          "physicalBank": null,
+          "bankOffset": null,
+          "prgOffset": null,
+          "bankSize": 16384,
+          "reason": "outside_instruction"
+        }
+      },
+      {
+        "address": 509,
+        "logicalAddress": 509,
+        "oldValue": 205,
+        "newValue": 36,
+        "value": 36,
+        "writerPC": null,
+        "writerPc": null,
+        "opcode": null,
+        "origin": "unknown",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "UNKNOWN",
+          "mapper": 0,
+          "physicalBank": null,
+          "bankOffset": null,
+          "prgOffset": null,
+          "bankSize": 16384,
+          "reason": "outside_instruction"
+        }
+      }
+    ],
+    "sinkFault": {
+      "status": "isolated",
+      "calls": 1,
+      "session": {
+        "active": false,
+        "attached": false,
+        "reason": "sink_fault",
+        "faultMessage": "intentional checker sink failure"
+      }
+    },
+    "unsupportedMapper": {
+      "mapper": 2,
+      "executedEvents": 32,
+      "status": "UNKNOWN",
+      "sample": {
+        "address": 64,
+        "logicalAddress": 64,
+        "oldValue": 255,
+        "newValue": 17,
+        "value": 17,
+        "writerPC": 32775,
+        "writerPc": 32775,
+        "opcode": 133,
+        "origin": "cpu",
+        "cycle": null,
+        "cycleStatus": "UNKNOWN",
+        "bank": {
+          "status": "UNKNOWN",
+          "mapper": 2,
+          "physicalBank": null,
+          "bankOffset": null,
+          "prgOffset": null,
+          "bankSize": 16384,
+          "reason": "unsupported_mapper"
+        }
+      }
+    }
+  },
+  "bounded": {
+    "status": "PASS",
+    "eventLimit": {
+      "version": 1,
+      "active": false,
+      "reason": "event-limit",
+      "context": {
+        "platform": "nes",
+        "romHash": "7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586",
+        "coreRevision": "jsnes-2.1.0-pr2-test",
+        "mapper": {
+          "id": 0,
+          "submapper": 0
+        },
+        "schema": 1,
+        "detectorRevision": "agod-foundation-1",
+        "ramLayout": {
+          "base": 0,
+          "length": 2048,
+          "canonical": true
+        }
+      },
+      "generation": 7,
+      "startFrame": 0,
+      "lastFrame": 0,
+      "frames": 0,
+      "partialWindow": true,
+      "endedDuringFrame": true,
+      "maxEvents": 3,
+      "maxFrames": 120,
+      "maxWallMs": 1000,
+      "watchpointCount": 0,
+      "watchpointMode": "all-canonical-ram",
+      "eventCount": 3,
+      "queuedEvents": 3,
+      "droppedEvents": 0,
+      "discardedEvents": 0,
+      "overflow": true,
+      "coverage": "canonical-ram-writes",
+      "redacted": true
+    },
+    "frameLimit": {
+      "version": 1,
+      "active": false,
+      "reason": "frame-limit",
+      "context": {
+        "platform": "nes",
+        "romHash": "7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586",
+        "coreRevision": "jsnes-2.1.0-pr2-test",
+        "mapper": {
+          "id": 0,
+          "submapper": 0
+        },
+        "schema": 1,
+        "detectorRevision": "agod-foundation-1",
+        "ramLayout": {
+          "base": 0,
+          "length": 2048,
+          "canonical": true
+        }
+      },
+      "generation": 7,
+      "startFrame": 0,
+      "lastFrame": 2,
+      "frames": 2,
+      "partialWindow": false,
+      "endedDuringFrame": false,
+      "maxEvents": 4096,
+      "maxFrames": 2,
+      "maxWallMs": 1000,
+      "watchpointCount": 0,
+      "watchpointMode": "all-canonical-ram",
+      "eventCount": 29,
+      "queuedEvents": 29,
+      "droppedEvents": 0,
+      "discardedEvents": 0,
+      "overflow": false,
+      "coverage": "canonical-ram-writes",
+      "redacted": true
+    },
+    "manualBoundary": {
+      "version": 1,
+      "active": false,
+      "reason": "manual-override",
+      "context": {
+        "platform": "nes",
+        "romHash": "7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586",
+        "coreRevision": "jsnes-2.1.0-pr2-test",
+        "mapper": {
+          "id": 0,
+          "submapper": 0
+        },
+        "schema": 1,
+        "detectorRevision": "agod-foundation-1",
+        "ramLayout": {
+          "base": 0,
+          "length": 2048,
+          "canonical": true
+        }
+      },
+      "generation": 7,
+      "startFrame": 6,
+      "lastFrame": 7,
+      "frames": 1,
+      "partialWindow": true,
+      "endedDuringFrame": false,
+      "maxEvents": 128,
+      "maxFrames": 2,
+      "maxWallMs": 1000,
+      "watchpointCount": 2,
+      "watchpointMode": "selected",
+      "eventCount": 4,
+      "queuedEvents": 4,
+      "droppedEvents": 0,
+      "discardedEvents": 0,
+      "overflow": false,
+      "coverage": "canonical-ram-writes",
+      "redacted": true
+    },
+    "dataDerivedWatchpoints": [
+      64,
+      96
+    ],
+    "watchpointEvents": 4,
+    "staleEventsDiscarded": 0,
+    "unknownTraceStatus": "observations only; no reward, terminal, semantic role or policy input is created"
+  },
+  "benchmarks": [
+    {
+      "mode": "disabled",
+      "status": "PASS",
+      "raw": [
+        {
+          "pair": 0,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.5069989999992686,
+                3.3197460000010324,
+                3.45386900000085,
+                3.4160420000007434,
+                3.6363249999994878,
+                3.6380470000003697,
+                3.526358999999502,
+                3.6168159999997442
+              ],
+              "totalMs": 28.114203000000998,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                3.45343899999898,
+                3.365606999999727,
+                3.3558310000007623,
+                3.322161000000051,
+                3.4447849999996834,
+                3.417273999999452,
+                3.3643449999999575,
+                3.5500339999998687
+              ],
+              "totalMs": 27.27347599999848,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 1,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                3.3757619999996678,
+                3.294028000000253,
+                3.2980850000003556,
+                3.2890000000006694,
+                3.679559000000154,
+                3.2924960000000283,
+                3.282881000000998,
+                3.329891999999745
+              ],
+              "totalMs": 26.84170300000187,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "baseline": {
+              "frameMs": [
+                3.4238839999998163,
+                3.792851000000155,
+                3.6247569999995903,
+                3.3348800000003394,
+                3.4035729999995965,
+                3.311174000000392,
+                3.366878999999244,
+                3.3320160000002943
+              ],
+              "totalMs": 27.590013999999428,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 2,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.945520999999644,
+                3.4372949999997218,
+                3.5109449999999924,
+                3.3961419999995996,
+                3.5862189999988914,
+                3.589574999999968,
+                3.394119000000501,
+                3.463173000000097
+              ],
+              "totalMs": 28.322988999998415,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                3.456092999998873,
+                3.31114400000115,
+                3.3739580000001297,
+                3.5390580000002956,
+                3.725549000000683,
+                3.48149100000046,
+                3.4532390000003943,
+                3.50872199999867
+              ],
+              "totalMs": 27.849254000000656,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 3,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                3.5165129999986675,
+                3.3845650000002934,
+                3.4826329999996233,
+                3.369431999999506,
+                3.6160540000000765,
+                3.5456369999992603,
+                3.554602000000159,
+                3.8487349999995786
+              ],
+              "totalMs": 28.318170999997164,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "baseline": {
+              "frameMs": [
+                3.390534000000116,
+                3.5617110000002867,
+                3.6129689999997936,
+                3.443162999999913,
+                3.6574370000016643,
+                3.8167169999996986,
+                3.602784000000611,
+                3.580180000000837
+              ],
+              "totalMs": 28.66549500000292,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 4,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.485757000000376,
+                3.7832760000001144,
+                3.808043999999427,
+                3.6887839999999414,
+                3.646509000000151,
+                3.6487429999997403,
+                3.6455089999999473,
+                3.411975999999413
+              ],
+              "totalMs": 29.11859799999911,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                3.574481999999989,
+                3.4430019999999786,
+                3.474941000000399,
+                3.4444950000015524,
+                3.7913680000001477,
+                3.338034999998854,
+                3.5717270000004646,
+                3.5714070000012725
+              ],
+              "totalMs": 28.209457000002658,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 5,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                3.3664369999987684,
+                3.2840329999999085,
+                3.4582159999990836,
+                3.5119660000000295,
+                3.6562340000000404,
+                3.406286999999793,
+                3.54390500000045,
+                3.7486640000006446
+              ],
+              "totalMs": 27.975741999998718,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "baseline": {
+              "frameMs": [
+                3.6480719999999565,
+                3.3068469999998342,
+                3.4689220000000205,
+                3.370333999999275,
+                3.481972000001406,
+                3.5870210000011866,
+                3.3495920000004844,
+                3.5664300000007643
+              ],
+              "totalMs": 27.779190000002927,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 6,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.6779269999988173,
+                3.590505000000121,
+                3.3426019999988057,
+                3.372737000001507,
+                3.382821999999578,
+                3.6735909999988507,
+                3.87080799999967,
+                3.412936999999147
+              ],
+              "totalMs": 28.323928999996497,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                3.3731380000008357,
+                4.247545999998692,
+                3.465766999999687,
+                3.4035140000014508,
+                3.5820929999990767,
+                3.483694000000469,
+                3.594560999999885,
+                3.3288209999991523
+              ],
+              "totalMs": 28.47913399999925,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 7,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                3.4842250000001513,
+                3.7912390000001324,
+                3.543354999999792,
+                3.4964729999992414,
+                3.379117000000406,
+                3.306236999998873,
+                3.547481000001426,
+                3.3843639999995503
+              ],
+              "totalMs": 27.932490999999573,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "baseline": {
+              "frameMs": [
+                3.8702480000010837,
+                3.6985679999997956,
+                3.6667899999993097,
+                3.3124559999996563,
+                3.870758000000933,
+                3.7725499999996828,
+                3.3364220000003115,
+                3.961155000000872
+              ],
+              "totalMs": 29.488947000001644,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 8,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.488671000000977,
+                3.318214999999327,
+                3.285325999999259,
+                3.296100999999908,
+                3.2816399999992427,
+                3.8104679999996733,
+                3.3205789999992703,
+                3.3821609999995417
+              ],
+              "totalMs": 27.1831609999972,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                3.4416909999999916,
+                3.411275000000387,
+                3.367428999999902,
+                3.3804389999986597,
+                3.36938199999895,
+                3.433589000000211,
+                3.310392999999749,
+                3.310914000001503
+              ],
+              "totalMs": 27.025111999999353,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 9,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                3.707431999999244,
+                3.4432639999995445,
+                3.410453000000416,
+                3.471746000001076,
+                3.52016999999978,
+                3.6309970000002068,
+                3.521620999999868,
+                3.4621320000005653
+              ],
+              "totalMs": 28.1678150000007,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "baseline": {
+              "frameMs": [
+                3.72941499999979,
+                3.383492999999362,
+                3.4743299999990995,
+                3.304604000000836,
+                3.231363999999303,
+                3.4428530000004685,
+                3.253247000000556,
+                3.645168000000922
+              ],
+              "totalMs": 27.464474000000337,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 10,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.325424999999086,
+                3.4189560000013444,
+                3.5133889999997336,
+                3.2523650000002817,
+                3.4822120000008,
+                3.568864000000758,
+                3.3908439999995608,
+                4.378311999998914
+              ],
+              "totalMs": 28.33036700000048,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                3.3479889999998704,
+                3.2484690000001137,
+                3.4879610000007233,
+                3.3347389999998995,
+                3.2434420000008686,
+                3.2394660000009026,
+                3.2372730000006413,
+                3.352466000000277
+              ],
+              "totalMs": 26.491805000003296,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 11,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                3.3350309999987076,
+                3.2578730000004725,
+                3.3151900000011665,
+                3.3205780000007508,
+                3.811798999999155,
+                3.261640000000625,
+                3.5505150000008143,
+                3.3166129999990517
+              ],
+              "totalMs": 27.169239000000744,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "baseline": {
+              "frameMs": [
+                3.4633239999984653,
+                3.952993000000788,
+                3.2853049999994255,
+                3.2541979999987234,
+                3.3884610000004614,
+                3.3655969999999797,
+                3.2353100000000268,
+                3.2120149999991554
+              ],
+              "totalMs": 27.157202999997025,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        }
+      ],
+      "baselineFrame": {
+        "count": 96,
+        "totalMs": 337.538569999997,
+        "p50Ms": 3.4689220000000205,
+        "p95Ms": 3.87080799999967,
+        "p99Ms": 4.378311999998914,
+        "maxMs": 4.378311999998914
+      },
+      "conditionFrame": {
+        "count": 96,
+        "totalMs": 331.73339900000246,
+        "p50Ms": 3.4416909999999916,
+        "p95Ms": 3.7912390000001324,
+        "p99Ms": 4.247545999998692,
+        "maxMs": 4.247545999998692
+      },
+      "pairedPerFrameDelta": {
+        "count": 12,
+        "totalMs": -0.7256463749993145,
+        "p50Ms": -0.05921687499971995,
+        "p95Ms": 0.08791762500004552,
+        "p99Ms": 0.08791762500004552,
+        "maxMs": 0.08791762500004552
+      },
+      "pairedTotalRatio": {
+        "count": 12,
+        "p50": 0.9832738345519328,
+        "p95": 1.0256091196212371,
+        "p99": 1.0256091196212371,
+        "max": 1.0256091196212371
+      },
+      "interpretation": "descriptive host samples; noise/JIT/order effects can dominate small differences; no significance or speedup claim"
+    },
+    {
+      "mode": "detached",
+      "status": "PASS",
+      "raw": [
+        {
+          "pair": 0,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.3718859999989945,
+                3.460269999999582,
+                3.226156999999148,
+                3.8883139999998093,
+                3.340910000000804,
+                3.3659569999999803,
+                3.6716579999992973,
+                3.2626499999987573
+              ],
+              "totalMs": 27.587801999996373,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                4.4784249999993335,
+                4.264342000000397,
+                4.264602000001105,
+                4.236730000000534,
+                4.2520129999993515,
+                4.27301400000033,
+                4.246465000000171,
+                4.25284400000055
+              ],
+              "totalMs": 34.26843500000177,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 1,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                4.474968999998964,
+                4.28010600000016,
+                4.648129999999583,
+                5.475368999999773,
+                4.423842999998669,
+                5.254494999999224,
+                5.617852999999741,
+                4.5050240000000485
+              ],
+              "totalMs": 38.67978899999616,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "baseline": {
+              "frameMs": [
+                3.6670820000017557,
+                3.258624999998574,
+                3.3203880000000936,
+                3.3298930000000837,
+                3.230562999999165,
+                3.716846000001169,
+                3.3730579999992187,
+                3.296542000000045
+              ],
+              "totalMs": 27.192997000000105,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 2,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.9010739999994257,
+                3.3203580000008515,
+                3.3058060000003024,
+                3.366868000000977,
+                3.290323000001081,
+                3.4474989999998797,
+                7.286419999998543,
+                6.026960999999574
+              ],
+              "totalMs": 33.945309000000634,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                4.76738000000114,
+                4.34298999999919,
+                4.8239359999988665,
+                5.255285999999614,
+                5.046470999999656,
+                4.541110000000117,
+                4.474088999999367,
+                4.346354999999676
+              ],
+              "totalMs": 37.597616999997626,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 3,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                4.454859999999826,
+                4.407236999999441,
+                4.364481999999043,
+                4.37666100000024,
+                4.250890999999683,
+                4.374838999998246,
+                4.450312999999369,
+                4.2373310000002675
+              ],
+              "totalMs": 34.916613999996116,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "baseline": {
+              "frameMs": [
+                3.3076490000003105,
+                3.239777000000686,
+                3.4788360000002285,
+                3.312034999999014,
+                3.576333999999406,
+                3.311775000000125,
+                3.2462460000006104,
+                3.3879999999990105
+              ],
+              "totalMs": 26.86065199999939,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 4,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.3272890000007465,
+                3.33941699999923,
+                3.323071999999229,
+                3.236550999999963,
+                3.43611299999975,
+                3.5862290000004577,
+                3.4769340000002558,
+                3.2334670000000187
+              ],
+              "totalMs": 26.95907199999965,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                4.580598999998983,
+                4.5605390000000625,
+                4.512255999999979,
+                4.9862709999997605,
+                4.390831999999136,
+                4.749393000000055,
+                4.448508999999831,
+                4.614289999999528
+              ],
+              "totalMs": 36.842688999997335,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 5,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                4.880972000000838,
+                4.713959999999133,
+                4.647568999998839,
+                4.597825000000739,
+                4.789142999999967,
+                4.469191000000137,
+                4.485085000000254,
+                4.489496000000145
+              ],
+              "totalMs": 37.07324100000005,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "baseline": {
+              "frameMs": [
+                3.3310639999999694,
+                3.264763999999559,
+                3.3507140000001527,
+                3.1859850000000733,
+                3.2663069999998697,
+                3.385507000000871,
+                3.291994999999588,
+                3.2805479999988165
+              ],
+              "totalMs": 26.3568839999989,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 6,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.618927999999869,
+                3.2234520000001794,
+                3.23983699999917,
+                3.265666000001147,
+                3.354008000000249,
+                3.3843940000006114,
+                3.2571330000009766,
+                3.2267869999996037
+              ],
+              "totalMs": 26.570205000001806,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                4.724206000000777,
+                4.721520999999484,
+                4.58665800000017,
+                4.886350000000675,
+                4.709092000000965,
+                4.4376329999995505,
+                4.407617999999275,
+                4.5596370000002935
+              ],
+              "totalMs": 37.03271500000119,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 7,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                4.388419000000795,
+                4.688752000000022,
+                4.415400000001682,
+                4.666148000000248,
+                4.403100999999879,
+                4.2851730000002135,
+                4.253746000000319,
+                4.250581000000238
+              ],
+              "totalMs": 35.3513200000034,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "baseline": {
+              "frameMs": [
+                3.7219239999994898,
+                3.6170149999998102,
+                3.48354400000062,
+                3.815565000000788,
+                4.4986750000007305,
+                3.5902959999984887,
+                3.5831940000007307,
+                3.70881399999962
+              ],
+              "totalMs": 30.01902700000028,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 8,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.3845949999995355,
+                3.290323000001081,
+                3.5051669999993464,
+                3.51757600000019,
+                3.531035999998494,
+                3.5211309999995137,
+                4.096718000000692,
+                3.242381000000023
+              ],
+              "totalMs": 28.088926999998876,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                4.573486999999659,
+                4.585336000000098,
+                4.379305000000386,
+                4.2777919999989535,
+                4.635411999999633,
+                4.275669000000562,
+                4.264521999999488,
+                4.314507999999478
+              ],
+              "totalMs": 35.30603099999826,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 9,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                4.825777999998536,
+                5.1317199999994045,
+                4.4932669999998325,
+                6.223486999999295,
+                5.905006999999387,
+                4.4288199999991775,
+                4.428029000000606,
+                4.9943530000000464
+              ],
+              "totalMs": 40.430460999996285,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "baseline": {
+              "frameMs": [
+                3.6941119999992225,
+                3.585687999999209,
+                3.454820999999356,
+                3.285726000000068,
+                3.7765369999997347,
+                3.2373829999996815,
+                3.277933999999732,
+                3.2379040000014356
+              ],
+              "totalMs": 27.55010499999844,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 10,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.4450959999994666,
+                3.2432710000011866,
+                3.3432130000001052,
+                3.50039999999899,
+                3.4838249999993423,
+                3.3428320000002714,
+                3.4176339999994525,
+                3.3633629999985715
+              ],
+              "totalMs": 27.139633999997386,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                4.801922000000559,
+                4.4161910000002536,
+                4.2955889999993815,
+                4.502881000000343,
+                4.306434999998601,
+                4.309079000000565,
+                4.304912999999942,
+                4.2963700000000244
+              ],
+              "totalMs": 35.23337999999967,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 11,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                4.403792000000976,
+                4.241978000000017,
+                4.293195999998716,
+                4.4532970000000205,
+                4.23696100000052,
+                4.495950999998968,
+                4.232712999999421,
+                4.242318000000523
+              ],
+              "totalMs": 34.60020599999916,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "baseline": {
+              "frameMs": [
+                3.3336980000003678,
+                3.2368719999994937,
+                3.2345380000006116,
+                3.2381529999984195,
+                3.4629129999993893,
+                3.265556000000288,
+                3.2517250000000786,
+                3.435281000000032
+              ],
+              "totalMs": 26.45873599999868,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        }
+      ],
+      "baselineFrame": {
+        "count": 96,
+        "totalMs": 334.7293499999905,
+        "p50Ms": 3.3507140000001527,
+        "p95Ms": 3.9010739999994257,
+        "p99Ms": 7.286419999998543,
+        "maxMs": 7.286419999998543
+      },
+      "conditionFrame": {
+        "count": 96,
+        "totalMs": 437.332497999987,
+        "p50Ms": 4.4532970000000205,
+        "p95Ms": 5.255285999999614,
+        "p99Ms": 6.223486999999295,
+        "maxMs": 6.223486999999295
+      },
+      "pairedPerFrameDelta": {
+        "count": 12,
+        "totalMs": 12.825393499999564,
+        "p50Ms": 1.0117182500002855,
+        "p95Ms": 1.6100444999997308,
+        "p99Ms": 1.6100444999997308,
+        "maxMs": 1.6100444999997308
+      },
+      "pairedTotalRatio": {
+        "count": 12,
+        "p50": 1.299916844907447,
+        "p95": 1.4675247517204952,
+        "p99": 1.4675247517204952,
+        "max": 1.4675247517204952
+      },
+      "interpretation": "descriptive host samples; noise/JIT/order effects can dominate small differences; no significance or speedup claim"
+    },
+    {
+      "mode": "active",
+      "status": "PASS",
+      "raw": [
+        {
+          "pair": 0,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                4.3795460000001185,
+                3.326746999999159,
+                3.7043770000000222,
+                3.3485610000007,
+                3.308530000000246,
+                3.5459889999983716,
+                3.373768999999811,
+                3.2773329999999987
+              ],
+              "totalMs": 28.264851999998427,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                5.270378999999593,
+                5.10850500000015,
+                4.9971370000002935,
+                4.933541000000332,
+                4.767530999999508,
+                4.919979999998759,
+                7.8368310000005295,
+                5.106691999999384
+              ],
+              "totalMs": 42.94059599999855,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01",
+              "trace": {
+                "version": 1,
+                "active": false,
+                "reason": "frame-limit",
+                "context": {
+                  "platform": "nes",
+                  "romHash": "7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586",
+                  "coreRevision": "jsnes-2.1.0-pr2-test",
+                  "mapper": {
+                    "id": 0,
+                    "submapper": 0
+                  },
+                  "schema": 1,
+                  "detectorRevision": "agod-foundation-1",
+                  "ramLayout": {
+                    "base": 0,
+                    "length": 2048,
+                    "canonical": true
+                  }
+                },
+                "generation": 1,
+                "startFrame": 12,
+                "lastFrame": 20,
+                "frames": 8,
+                "partialWindow": false,
+                "endedDuringFrame": false,
+                "maxEvents": 4096,
+                "maxFrames": 8,
+                "maxWallMs": 1000,
+                "watchpointCount": 0,
+                "watchpointMode": "all-canonical-ram",
+                "eventCount": 28,
+                "queuedEvents": 28,
+                "droppedEvents": 0,
+                "discardedEvents": 0,
+                "overflow": false,
+                "coverage": "canonical-ram-writes",
+                "redacted": true
+              }
+            }
+          }
+        },
+        {
+          "pair": 1,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                5.212231999999858,
+                5.242426999999225,
+                4.99286100000063,
+                5.0820349999994505,
+                5.24161599999934,
+                4.920870999998442,
+                4.92421700000159,
+                5.46043599999939
+              ],
+              "totalMs": 41.076694999997926,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01",
+              "trace": {
+                "version": 1,
+                "active": false,
+                "reason": "frame-limit",
+                "context": {
+                  "platform": "nes",
+                  "romHash": "7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586",
+                  "coreRevision": "jsnes-2.1.0-pr2-test",
+                  "mapper": {
+                    "id": 0,
+                    "submapper": 0
+                  },
+                  "schema": 1,
+                  "detectorRevision": "agod-foundation-1",
+                  "ramLayout": {
+                    "base": 0,
+                    "length": 2048,
+                    "canonical": true
+                  }
+                },
+                "generation": 1,
+                "startFrame": 12,
+                "lastFrame": 20,
+                "frames": 8,
+                "partialWindow": false,
+                "endedDuringFrame": false,
+                "maxEvents": 4096,
+                "maxFrames": 8,
+                "maxWallMs": 1000,
+                "watchpointCount": 0,
+                "watchpointMode": "all-canonical-ram",
+                "eventCount": 28,
+                "queuedEvents": 28,
+                "droppedEvents": 0,
+                "discardedEvents": 0,
+                "overflow": false,
+                "coverage": "canonical-ram-writes",
+                "redacted": true
+              }
+            },
+            "baseline": {
+              "frameMs": [
+                3.8690459999997984,
+                3.6665310000007594,
+                3.853741999999329,
+                3.495902999999089,
+                3.3206179999997403,
+                3.4094220000006317,
+                3.4337690000011207,
+                3.5090020000006916
+              ],
+              "totalMs": 28.55803300000116,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 2,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.6553729999995994,
+                3.4550010000002658,
+                3.417544000001726,
+                3.323333000000275,
+                3.3466480000006413,
+                3.7575180000003456,
+                3.2870679999996355,
+                3.2915850000008504
+              ],
+              "totalMs": 27.53407000000334,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                4.99444399999993,
+                4.972980999998981,
+                4.817646000001332,
+                4.954412999999477,
+                5.657713000000513,
+                5.2981610000006185,
+                4.879038999999466,
+                4.88402700000006
+              ],
+              "totalMs": 40.45842400000038,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01",
+              "trace": {
+                "version": 1,
+                "active": false,
+                "reason": "frame-limit",
+                "context": {
+                  "platform": "nes",
+                  "romHash": "7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586",
+                  "coreRevision": "jsnes-2.1.0-pr2-test",
+                  "mapper": {
+                    "id": 0,
+                    "submapper": 0
+                  },
+                  "schema": 1,
+                  "detectorRevision": "agod-foundation-1",
+                  "ramLayout": {
+                    "base": 0,
+                    "length": 2048,
+                    "canonical": true
+                  }
+                },
+                "generation": 1,
+                "startFrame": 12,
+                "lastFrame": 20,
+                "frames": 8,
+                "partialWindow": false,
+                "endedDuringFrame": false,
+                "maxEvents": 4096,
+                "maxFrames": 8,
+                "maxWallMs": 1000,
+                "watchpointCount": 0,
+                "watchpointMode": "all-canonical-ram",
+                "eventCount": 28,
+                "queuedEvents": 28,
+                "droppedEvents": 0,
+                "discardedEvents": 0,
+                "overflow": false,
+                "coverage": "canonical-ram-writes",
+                "redacted": true
+              }
+            }
+          }
+        },
+        {
+          "pair": 3,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                5.124077999998917,
+                4.9465499999987514,
+                4.879498999998759,
+                4.904708000000028,
+                4.94032100000004,
+                4.824226999999155,
+                4.957486999999674,
+                4.959240000000136
+              ],
+              "totalMs": 39.53610999999546,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01",
+              "trace": {
+                "version": 1,
+                "active": false,
+                "reason": "frame-limit",
+                "context": {
+                  "platform": "nes",
+                  "romHash": "7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586",
+                  "coreRevision": "jsnes-2.1.0-pr2-test",
+                  "mapper": {
+                    "id": 0,
+                    "submapper": 0
+                  },
+                  "schema": 1,
+                  "detectorRevision": "agod-foundation-1",
+                  "ramLayout": {
+                    "base": 0,
+                    "length": 2048,
+                    "canonical": true
+                  }
+                },
+                "generation": 1,
+                "startFrame": 12,
+                "lastFrame": 20,
+                "frames": 8,
+                "partialWindow": false,
+                "endedDuringFrame": false,
+                "maxEvents": 4096,
+                "maxFrames": 8,
+                "maxWallMs": 1000,
+                "watchpointCount": 0,
+                "watchpointMode": "all-canonical-ram",
+                "eventCount": 28,
+                "queuedEvents": 28,
+                "droppedEvents": 0,
+                "discardedEvents": 0,
+                "overflow": false,
+                "coverage": "canonical-ram-writes",
+                "redacted": true
+              }
+            },
+            "baseline": {
+              "frameMs": [
+                3.370364000000336,
+                3.285184999998819,
+                3.390885000000708,
+                3.730046000000584,
+                3.339606999999887,
+                3.28157900000042,
+                3.458646000000954,
+                3.341630000000805
+              ],
+              "totalMs": 27.197942000002513,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 4,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.4279699999988225,
+                3.3211799999990035,
+                3.320778999999675,
+                3.4864980000002106,
+                3.272837000000436,
+                3.5480120000011084,
+                3.3519559999986086,
+                3.4470089999995253
+              ],
+              "totalMs": 27.17624099999739,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                5.022846000001664,
+                4.811187000001155,
+                4.782473999999638,
+                4.823103999999148,
+                5.053132000000915,
+                5.229927999998836,
+                4.825909000001047,
+                4.923356000001149
+              ],
+              "totalMs": 39.47193600000355,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01",
+              "trace": {
+                "version": 1,
+                "active": false,
+                "reason": "frame-limit",
+                "context": {
+                  "platform": "nes",
+                  "romHash": "7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586",
+                  "coreRevision": "jsnes-2.1.0-pr2-test",
+                  "mapper": {
+                    "id": 0,
+                    "submapper": 0
+                  },
+                  "schema": 1,
+                  "detectorRevision": "agod-foundation-1",
+                  "ramLayout": {
+                    "base": 0,
+                    "length": 2048,
+                    "canonical": true
+                  }
+                },
+                "generation": 1,
+                "startFrame": 12,
+                "lastFrame": 20,
+                "frames": 8,
+                "partialWindow": false,
+                "endedDuringFrame": false,
+                "maxEvents": 4096,
+                "maxFrames": 8,
+                "maxWallMs": 1000,
+                "watchpointCount": 0,
+                "watchpointMode": "all-canonical-ram",
+                "eventCount": 28,
+                "queuedEvents": 28,
+                "droppedEvents": 0,
+                "discardedEvents": 0,
+                "overflow": false,
+                "coverage": "canonical-ram-writes",
+                "redacted": true
+              }
+            }
+          }
+        },
+        {
+          "pair": 5,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                4.995393999999578,
+                4.87124699999913,
+                4.724957000000359,
+                4.721881999999823,
+                4.70453599999928,
+                4.84769199999937,
+                4.834350999999515,
+                5.09288099999867
+              ],
+              "totalMs": 38.792939999995724,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01",
+              "trace": {
+                "version": 1,
+                "active": false,
+                "reason": "frame-limit",
+                "context": {
+                  "platform": "nes",
+                  "romHash": "7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586",
+                  "coreRevision": "jsnes-2.1.0-pr2-test",
+                  "mapper": {
+                    "id": 0,
+                    "submapper": 0
+                  },
+                  "schema": 1,
+                  "detectorRevision": "agod-foundation-1",
+                  "ramLayout": {
+                    "base": 0,
+                    "length": 2048,
+                    "canonical": true
+                  }
+                },
+                "generation": 1,
+                "startFrame": 12,
+                "lastFrame": 20,
+                "frames": 8,
+                "partialWindow": false,
+                "endedDuringFrame": false,
+                "maxEvents": 4096,
+                "maxFrames": 8,
+                "maxWallMs": 1000,
+                "watchpointCount": 0,
+                "watchpointMode": "all-canonical-ram",
+                "eventCount": 28,
+                "queuedEvents": 28,
+                "droppedEvents": 0,
+                "discardedEvents": 0,
+                "overflow": false,
+                "coverage": "canonical-ram-writes",
+                "redacted": true
+              }
+            },
+            "baseline": {
+              "frameMs": [
+                3.3281800000004296,
+                3.2428110000000743,
+                3.3684310000007827,
+                3.337203999999474,
+                3.263732000001255,
+                3.262859999998909,
+                3.246235999999044,
+                3.7085040000001754
+              ],
+              "totalMs": 26.757958000000144,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 6,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.6328389999998763,
+                3.2648339999996097,
+                3.342532000000574,
+                3.2686199999989185,
+                3.3253850000000966,
+                3.32569599999988,
+                3.572908999998617,
+                3.2092699999993783
+              ],
+              "totalMs": 26.94208499999695,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                5.114804000000731,
+                4.947833000000173,
+                4.8890750000009575,
+                5.3728530000007595,
+                4.9310870000008435,
+                4.880291999999827,
+                5.026191000000836,
+                4.982696000000942
+              ],
+              "totalMs": 40.14483100000507,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01",
+              "trace": {
+                "version": 1,
+                "active": false,
+                "reason": "frame-limit",
+                "context": {
+                  "platform": "nes",
+                  "romHash": "7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586",
+                  "coreRevision": "jsnes-2.1.0-pr2-test",
+                  "mapper": {
+                    "id": 0,
+                    "submapper": 0
+                  },
+                  "schema": 1,
+                  "detectorRevision": "agod-foundation-1",
+                  "ramLayout": {
+                    "base": 0,
+                    "length": 2048,
+                    "canonical": true
+                  }
+                },
+                "generation": 1,
+                "startFrame": 12,
+                "lastFrame": 20,
+                "frames": 8,
+                "partialWindow": false,
+                "endedDuringFrame": false,
+                "maxEvents": 4096,
+                "maxFrames": 8,
+                "maxWallMs": 1000,
+                "watchpointCount": 0,
+                "watchpointMode": "all-canonical-ram",
+                "eventCount": 28,
+                "queuedEvents": 28,
+                "droppedEvents": 0,
+                "discardedEvents": 0,
+                "overflow": false,
+                "coverage": "canonical-ram-writes",
+                "redacted": true
+              }
+            }
+          }
+        },
+        {
+          "pair": 7,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                4.8211019999998825,
+                4.7032839999992575,
+                4.6800089999997,
+                5.039980999999898,
+                4.859360000000379,
+                4.743604999999661,
+                4.924917999998797,
+                4.906200999999783
+              ],
+              "totalMs": 38.67845999999736,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01",
+              "trace": {
+                "version": 1,
+                "active": false,
+                "reason": "frame-limit",
+                "context": {
+                  "platform": "nes",
+                  "romHash": "7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586",
+                  "coreRevision": "jsnes-2.1.0-pr2-test",
+                  "mapper": {
+                    "id": 0,
+                    "submapper": 0
+                  },
+                  "schema": 1,
+                  "detectorRevision": "agod-foundation-1",
+                  "ramLayout": {
+                    "base": 0,
+                    "length": 2048,
+                    "canonical": true
+                  }
+                },
+                "generation": 1,
+                "startFrame": 12,
+                "lastFrame": 20,
+                "frames": 8,
+                "partialWindow": false,
+                "endedDuringFrame": false,
+                "maxEvents": 4096,
+                "maxFrames": 8,
+                "maxWallMs": 1000,
+                "watchpointCount": 0,
+                "watchpointMode": "all-canonical-ram",
+                "eventCount": 28,
+                "queuedEvents": 28,
+                "droppedEvents": 0,
+                "discardedEvents": 0,
+                "overflow": false,
+                "coverage": "canonical-ram-writes",
+                "redacted": true
+              }
+            },
+            "baseline": {
+              "frameMs": [
+                3.3681199999991804,
+                3.598237000000154,
+                3.653519999999844,
+                3.289762000000337,
+                3.25460799999928,
+                3.423142999999982,
+                3.2666970000009314,
+                3.421150000000125
+              ],
+              "totalMs": 27.275236999999834,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 8,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.431655000000319,
+                3.3886120000006485,
+                3.334919999999329,
+                3.2479679999996733,
+                3.615263000001505,
+                3.4377949999998236,
+                3.3564820000010513,
+                3.2229910000005475
+              ],
+              "totalMs": 27.035686000002897,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                5.252893000000768,
+                4.981163000000379,
+                4.730944999999338,
+                4.914843000000474,
+                4.872188000001188,
+                4.7332490000007965,
+                4.733049000000392,
+                5.2230970000000525
+              ],
+              "totalMs": 39.44142700000339,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01",
+              "trace": {
+                "version": 1,
+                "active": false,
+                "reason": "frame-limit",
+                "context": {
+                  "platform": "nes",
+                  "romHash": "7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586",
+                  "coreRevision": "jsnes-2.1.0-pr2-test",
+                  "mapper": {
+                    "id": 0,
+                    "submapper": 0
+                  },
+                  "schema": 1,
+                  "detectorRevision": "agod-foundation-1",
+                  "ramLayout": {
+                    "base": 0,
+                    "length": 2048,
+                    "canonical": true
+                  }
+                },
+                "generation": 1,
+                "startFrame": 12,
+                "lastFrame": 20,
+                "frames": 8,
+                "partialWindow": false,
+                "endedDuringFrame": false,
+                "maxEvents": 4096,
+                "maxFrames": 8,
+                "maxWallMs": 1000,
+                "watchpointCount": 0,
+                "watchpointMode": "all-canonical-ram",
+                "eventCount": 28,
+                "queuedEvents": 28,
+                "droppedEvents": 0,
+                "discardedEvents": 0,
+                "overflow": false,
+                "coverage": "canonical-ram-writes",
+                "redacted": true
+              }
+            }
+          }
+        },
+        {
+          "pair": 9,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                4.8099550000006275,
+                4.740219999999681,
+                4.732368000000861,
+                4.933210999999574,
+                4.767350000000079,
+                4.837987000000794,
+                4.725908000000345,
+                4.963435000001482
+              ],
+              "totalMs": 38.51043400000344,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01",
+              "trace": {
+                "version": 1,
+                "active": false,
+                "reason": "frame-limit",
+                "context": {
+                  "platform": "nes",
+                  "romHash": "7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586",
+                  "coreRevision": "jsnes-2.1.0-pr2-test",
+                  "mapper": {
+                    "id": 0,
+                    "submapper": 0
+                  },
+                  "schema": 1,
+                  "detectorRevision": "agod-foundation-1",
+                  "ramLayout": {
+                    "base": 0,
+                    "length": 2048,
+                    "canonical": true
+                  }
+                },
+                "generation": 1,
+                "startFrame": 12,
+                "lastFrame": 20,
+                "frames": 8,
+                "partialWindow": false,
+                "endedDuringFrame": false,
+                "maxEvents": 4096,
+                "maxFrames": 8,
+                "maxWallMs": 1000,
+                "watchpointCount": 0,
+                "watchpointMode": "all-canonical-ram",
+                "eventCount": 28,
+                "queuedEvents": 28,
+                "droppedEvents": 0,
+                "discardedEvents": 0,
+                "overflow": false,
+                "coverage": "canonical-ram-writes",
+                "redacted": true
+              }
+            },
+            "baseline": {
+              "frameMs": [
+                3.9597130000001926,
+                3.9081440000009025,
+                3.8637980000003154,
+                3.582183000000441,
+                3.6190780000015366,
+                3.8700769999995828,
+                3.7898169999989477,
+                3.717387000000599
+              ],
+              "totalMs": 30.310197000002518,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        },
+        {
+          "pair": 10,
+          "order": [
+            "baseline",
+            "condition"
+          ],
+          "runs": {
+            "baseline": {
+              "frameMs": [
+                3.321619999998802,
+                3.218064000000595,
+                3.5032140000002983,
+                3.242881000000125,
+                3.2518849999996746,
+                3.451836000000185,
+                3.2635229999996227,
+                3.5994190000001254
+              ],
+              "totalMs": 26.852441999999428,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            },
+            "condition": {
+              "frameMs": [
+                4.806409999999232,
+                5.071067999999286,
+                5.01911999999902,
+                5.161754999999175,
+                4.9959450000005745,
+                5.187715000000026,
+                4.848463000000265,
+                4.796013999999559
+              ],
+              "totalMs": 39.88648999999714,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01",
+              "trace": {
+                "version": 1,
+                "active": false,
+                "reason": "frame-limit",
+                "context": {
+                  "platform": "nes",
+                  "romHash": "7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586",
+                  "coreRevision": "jsnes-2.1.0-pr2-test",
+                  "mapper": {
+                    "id": 0,
+                    "submapper": 0
+                  },
+                  "schema": 1,
+                  "detectorRevision": "agod-foundation-1",
+                  "ramLayout": {
+                    "base": 0,
+                    "length": 2048,
+                    "canonical": true
+                  }
+                },
+                "generation": 1,
+                "startFrame": 12,
+                "lastFrame": 20,
+                "frames": 8,
+                "partialWindow": false,
+                "endedDuringFrame": false,
+                "maxEvents": 4096,
+                "maxFrames": 8,
+                "maxWallMs": 1000,
+                "watchpointCount": 0,
+                "watchpointMode": "all-canonical-ram",
+                "eventCount": 28,
+                "queuedEvents": 28,
+                "droppedEvents": 0,
+                "discardedEvents": 0,
+                "overflow": false,
+                "coverage": "canonical-ram-writes",
+                "redacted": true
+              }
+            }
+          }
+        },
+        {
+          "pair": 11,
+          "order": [
+            "condition",
+            "baseline"
+          ],
+          "runs": {
+            "condition": {
+              "frameMs": [
+                6.169023999998899,
+                5.540666999999303,
+                5.46634499999891,
+                5.2611049999995885,
+                5.272592000001168,
+                5.325283000000127,
+                5.227754000001369,
+                5.433885000000373
+              ],
+              "totalMs": 43.69665499999974,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01",
+              "trace": {
+                "version": 1,
+                "active": false,
+                "reason": "frame-limit",
+                "context": {
+                  "platform": "nes",
+                  "romHash": "7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586",
+                  "coreRevision": "jsnes-2.1.0-pr2-test",
+                  "mapper": {
+                    "id": 0,
+                    "submapper": 0
+                  },
+                  "schema": 1,
+                  "detectorRevision": "agod-foundation-1",
+                  "ramLayout": {
+                    "base": 0,
+                    "length": 2048,
+                    "canonical": true
+                  }
+                },
+                "generation": 1,
+                "startFrame": 12,
+                "lastFrame": 20,
+                "frames": 8,
+                "partialWindow": false,
+                "endedDuringFrame": false,
+                "maxEvents": 4096,
+                "maxFrames": 8,
+                "maxWallMs": 1000,
+                "watchpointCount": 0,
+                "watchpointMode": "all-canonical-ram",
+                "eventCount": 28,
+                "queuedEvents": 28,
+                "droppedEvents": 0,
+                "discardedEvents": 0,
+                "overflow": false,
+                "coverage": "canonical-ram-writes",
+                "redacted": true
+              }
+            },
+            "baseline": {
+              "frameMs": [
+                3.8262610000001587,
+                3.900041999999303,
+                3.4568139999992127,
+                3.473109000000477,
+                3.9043689999998605,
+                4.182058000000325,
+                3.731607999998232,
+                3.6503560000001016
+              ],
+              "totalMs": 30.12461699999767,
+              "startStateSha256": "c8c616b1d576d499a8d22f4404e5889366a4af13071a4af6439ad9e3777bef4d",
+              "stateSha256": "4f1c9b2283b8c9f4d169059b06f5e5270ffab7f4609b625eaf933b95fcb75d01"
+            }
+          }
+        }
+      ],
+      "baselineFrame": {
+        "count": 96,
+        "totalMs": 334.02936000000227,
+        "p50Ms": 3.4094220000006317,
+        "p95Ms": 3.9043689999998605,
+        "p99Ms": 4.3795460000001185,
+        "maxMs": 4.3795460000001185
+      },
+      "conditionFrame": {
+        "count": 96,
+        "totalMs": 482.6349979999977,
+        "p50Ms": 4.94032100000004,
+        "p95Ms": 5.46634499999891,
+        "p99Ms": 7.8368310000005295,
+        "maxMs": 7.8368310000005295
+      },
+      "pairedPerFrameDelta": {
+        "count": 12,
+        "totalMs": 18.57570474999943,
+        "p50Ms": 1.5507176250000612,
+        "p95Ms": 1.8344680000000153,
+        "p99Ms": 1.8344680000000153,
+        "maxMs": 1.8344680000000153
+      },
+      "pairedTotalRatio": {
+        "count": 12,
+        "p50": 1.452442815767175,
+        "p95": 1.5192223897015606,
+        "p99": 1.5192223897015606,
+        "max": 1.5192223897015606
+      },
+      "interpretation": "descriptive host samples; noise/JIT/order effects can dominate small differences; no significance or speedup claim"
+    }
+  ],
+  "rom": {
+    "name": "GU original NES writer fixture",
+    "sha256": "7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586",
+    "license": "MIT",
+    "prgBanks16KiB": 2
+  },
+  "reproducibility": {
+    "ordinaryCoreSha256": "84946f0dae4bcf3b2dfebe84ad3bfeb1dbcb413bd9b1a69e1f45910a95fd7b41",
+    "helperSha256": "cab19eef6a77c42afb83f4d73c167a0d5d688e552b57bf70d99356972cfacf08",
+    "upstreamArchiveSha256": "167081846a907e19bdd7cba75c648d827d49ea50e0fb58c079ad1a6613dee3c1",
+    "checkerSha256": "5b01ade0f2048cd8aced2b220dfdff06071d1ca065d0d17842c2750d1ef929aa",
+    "fixtureGeneratorSha256": "090ca0205c4fac6bc95ca8a6e29e41fd8f5f8c33e37dd955d8786be880ddabad"
+  }
+}

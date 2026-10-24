@@ -1,0 +1,97 @@
+{
+  "versionName": "2.1.7",
+  "versionCode": 41,
+  "baselineCommit": "134ed71c96e09bdcc09734903fccdd252b8dc856",
+  "branch": "feature/agod-instrumented-nes",
+  "scope": "PR2 writer provenance/limited trace only; reward UNKNOWN",
+  "implementationFiles": [
+    ".github/workflows/android.yml",
+    "README.md",
+    "app/build.gradle",
+    "app/src/main/assets/lab/core-probe.js",
+    "app/src/main/assets/lab/goal-discovery-ui.js",
+    "app/src/main/assets/lab/index.html",
+    "app/src/main/assets/lab/lab.js",
+    "app/src/main/assets/lab/nes-write-trace-LICENSE.txt",
+    "app/src/main/assets/lab/nes-write-trace-source.json",
+    "app/src/main/assets/lab/nes-write-trace.js",
+    "app/src/main/assets/lab/state-ui.js",
+    "docs/AGOD_FOUNDATION_RU.md",
+    "docs/AGOD_INSTRUMENTED_NES_RU.md",
+    "docs/REMAINING_TZ_AUDIT_RU.md",
+    "tools/build_nes_trace.py",
+    "tools/check.sh",
+    "tools/core_probe_check.cjs",
+    "tools/goal_discovery_ui_check.cjs",
+    "tools/make_nes_trace_rom.py",
+    "tools/nes_write_trace_check.cjs",
+    "tools/vendor/jsnes/LICENSE",
+    "tools/vendor/jsnes/README.md",
+    "tools/vendor/jsnes/cpu.js"
+  ],
+  "commands": [
+    {
+      "command": "CHROMIUM_EXECUTABLE=/usr/bin/chromium NODE_PATH=/workspace/.gu-env/ui/node_modules node tools/run_ui_checks.cjs",
+      "exitCode": 0,
+      "passedSuites": 23
+    },
+    {
+      "command": "source /workspace/.gu-env/activate && AGOD_ROM_REPORT=/workspace/.gu-env/agod-pr2-controlled-final.json AGOD_TRACE_REPORT=/workspace/.gu-env/agod-pr2-trace-final.json bash tools/check.sh",
+      "exitCode": 0,
+      "durationSeconds": 209.9223153591156
+    },
+    {
+      "command": "source /workspace/.gu-env/activate && gradle assembleDebug lintDebug assembleRelease lintRelease",
+      "exitCode": 0,
+      "durationSeconds": 37.41831350326538
+    },
+    {
+      "command": "apksigner verify --verbose --print-certs app/build/outputs/apk/debug/app-debug.apk",
+      "exitCode": 0
+    }
+  ],
+  "lint": {
+    "debug": {
+      "Warning": 19
+    },
+    "release": {
+      "Warning": 19
+    }
+  },
+  "localDebugApk": {
+    "bytes": 208164083,
+    "sha256": "b28e2b640ba5ab2b55aa0bed5d6aeb9e99c4a99cd0841e6769e15df8464ff615",
+    "sourceId": "84f7e2d657cfa255c8365a97adabefa8e3261d49f36cd730d25b3d2d0885878c",
+    "independentlyRecomputedSourceId": true,
+    "packagedDexContainsSourceId": true,
+    "matchingTopLevelLabResources": 54,
+    "matchingPackagedSourceManifests": 5
+  },
+  "fullCheckResults": {
+    "ramVariants": 7,
+    "writerEvents": 32,
+    "writerSites": 25,
+    "parityBoundaries": 117,
+    "hostPairedMedianRatio": {
+      "disabled": 1.0054554609109705,
+      "detached": 1.2006952814514338,
+      "active": 1.3862278588554813
+    }
+  },
+  "stageGate": {
+    "PR2": "PASS for host writer-PC/static NROM banks, parity and bounded windows; cycle precision/other banks and performance limitations remain",
+    "S0": "no per-ROM manual addresses/labels in ordinary boot path; pilot uses generic candidates",
+    "S1": "NOT-PASSED: controlled family only; blind real-game generalization pending",
+    "S2": "NOT-PASSED: no causal game semantics/polarity",
+    "S3": "DEVICE-PENDING; post-detach host overhead remains; global default OFF",
+    "S4": "NOT-PASSED: no verified FDB reward or frozen game improvement"
+  },
+  "knownLimitations": [
+    "cycle=null/UNKNOWN; no independently proven absolute bus-cycle timestamp",
+    "Only static mapper0 NROM128/256 bank mapping is known; mapper2 and other mappings explicitly UNKNOWN",
+    "Post-detach timing remains above baseline in descriptive host pairs, despite exact method/descriptor restoration",
+    "No rewards, native reward bridge, causal validator or FDB/Best changes",
+    "Restored Save State discovery remains inhibited pending persistent origin classification",
+    "Timing is host Node controlled workload, not Android/WebView/energy acceptance"
+  ]
+}

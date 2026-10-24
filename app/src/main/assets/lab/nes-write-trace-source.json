@@ -1,0 +1,25 @@
+{
+  "package": "jsnes",
+  "version": "2.1.0",
+  "license": "Apache-2.0",
+  "upstream_archive_url": "https://registry.npmjs.org/jsnes/-/jsnes-2.1.0.tgz",
+  "upstream_archive_sha256": "167081846a907e19bdd7cba75c648d827d49ea50e0fb58c079ad1a6613dee3c1",
+  "upstream_cpu_path": "package/src/cpu.js",
+  "upstream_cpu_sha256": "efbc3071930c51e2c941f26303aee8d4807733709009d605089b71b380c4211f",
+  "upstream_license_sha256": "530136cec696ac1fcdeb792a77472cb273f9f814ad0ed795dccdc95db7423e0a",
+  "ordinary_core_sha256": "84946f0dae4bcf3b2dfebe84ad3bfeb1dbcb413bd9b1a69e1f45910a95fd7b41",
+  "build_script": "tools/build_nes_trace.py",
+  "build_script_sha256": "aea70416e5a691311f9f9936003d860e5f92b849142ca4a8d54f0bf668b9acc6",
+  "generated_bundle_sha256": "1166821f340224fb9e2eca741682ec25c51ecbf889e4d1bc483aacd5cfd569d5",
+  "schema_version": 1,
+  "transforms": {
+    "opcode_fetch_context": 1,
+    "instruction_end_context": 1,
+    "cpu_write_ram_assignment": 1,
+    "stack_push_ram_assignment": 1,
+    "emulate_direct_ram_assignments": 0
+  },
+  "compatibility": "Pinned unmodified JSNES 2.1.0 only; runtime CPU feature-shape guard",
+  "coverage": "Actual core internal-RAM writes from CPU.write and CPU.push; no I/O reads; interrupt/outside-instruction PCs unknown",
+  "bank_mapping": "NROM mapper 0 with 16/32 KiB PRG only; all other mappings UNKNOWN"
+}

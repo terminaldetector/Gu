@@ -1,6 +1,6 @@
 'use strict';
 // Actual JSNES and original seeded cartridges. Oracle stays in this checker.
-const assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
+const assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),crypto=require('node:crypto'),vm=require('node:vm'),{execFileSync}=require('node:child_process');
 const Probe=require('../app/src/main/assets/lab/core-probe.js'),jsnes=require('../app/src/main/assets/lab/jsnes.min.js'),Tools=require('../app/src/main/assets/lab/game-tools.js');
 const directory=fs.mkdtempSync(path.join(os.tmpdir(),'gu-agod-core-')),revision='jsnes-fixture-revision',hash=value=>crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const meta=(frame=1)=>({generation:3,frame,atMs:frame*200,action:{mask:0,humanMask:0,agentMask:0,manualOverride:false},provenance:{runId:'test-run',originId:'test-origin',startId:'test-start',trajectoryId:'test-trajectory',partition:'discovery',independence:'unverified'}});
@@ -12,6 +12,60 @@ const load=seed=>{
  return {core,oracle,descriptor,bytes,probe:Probe.create({platform:'nes',core,identity:{romHash:descriptor.sha256,coreRevision:revision}})};
 };
 const press=(core,mask,frames=3)=>{for(let bit=0;bit<8;bit++)if(mask&(1<<bit))core.buttonDown(1,bit);for(let i=0;i<frames;i++)core.frame();for(let bit=0;bit<8;bit++)core.buttonUp(1,bit);for(let i=0;i<3;i++)core.frame();};
+function checkBoundedTrace(){
+ // Fake low-level sinks exercise adapter boundaries only. Actual CPU writer/parity has its own gate.
+ const source=fs.readFileSync(path.join(__dirname,'../app/src/main/assets/lab/core-probe.js'),'utf8');
+ const fixture=()=>{
+  let now=100,attached=0,detached=0,mode='normal';const timers=new Set(),sessions=[];
+  const core={cpu:{mem:new Uint8Array(65536)},rom:{mapperType:0,subMapper:0,romCount:2},romData:'original cartridge',mmap:{constructor:{mapperName:'NROM'}},ppu:{buffer:new Uint32Array(256*240)},toJSON(){return {cpu:{mem:Array.from(this.cpu.mem)}};}};
+  const sandbox={module:{exports:{}},TextEncoder,Date:{now:()=>now},performance:{now:()=>now},setTimeout(callback){const token={callback,unref(){}};timers.add(token);return token;},clearTimeout:token=>timers.delete(token)};
+  sandbox.FlyNesWriteTrace={supports:()=>{if(mode==='support-fault')throw Error('support fault');return mode!=='unsupported';},attach(core,options){attached++;if(mode==='attach-fault')throw Error('attach fault');if(mode==='invalid-handle')return {};const session={...options,active:true};sessions.push(session);return {detach(){if(session.active){session.active=false;detached++;}}};}};
+  vm.runInNewContext(source,sandbox,{filename:'core-probe.js'});
+  const probe=sandbox.module.exports.create({platform:'nes',core,identity:{romHash:'a'.repeat(64),coreRevision:'fixture'}});
+  return {core,probe,sandbox,timers,sessions,counts:()=>({attached,detached}),mode:value=>{mode=value;},advanceClock:milliseconds=>{now+=milliseconds;},expire:()=>{for(const token of [...timers])token.callback();},emit:value=>sessions.at(-1).onWrite({address:42,logicalAddress:0x82a,oldValue:7,newValue:8,writerPC:0x8123,opcode:0x8d,origin:'cpu',cycle:22,bank:{status:'KNOWN',mapper:0,physicalBank:0,bankOffset:0x123,prgOffset:0x123,bankSize:16384},...value})};
+ };
+ const options={generation:3,frame:10,watchpoints:[42],maxEvents:3,maxFrames:2,maxWallMs:1000},test=fixture(),{probe,core}=test;
+ assert.equal(test.counts().attached,0,'capability discovery does not install a hook');assert.equal(probe.capabilities().cpuWriteTrace,true);assert.equal(probe.capabilities().bankMapping,true);assert.equal(test.counts().attached,0);
+ const before=hash(core.toJSON());assert.equal(probe.beginWriteTrace(options).active,true);assert.equal(test.counts().attached,1);assert.equal(test.timers.size,1);
+ test.emit({address:43,logicalAddress:43});assert.equal(probe.traceReport().eventCount,0,'watchpoint filters run before queue allocation');
+ test.emit();const redacted=probe.traceReport();assert.equal(redacted.eventCount,1);assert.equal(redacted.queuedEvents,1);assert.equal(redacted.redacted,true);for(const field of ['events','oldValue','newValue','writerPC','opcode'])assert.equal(redacted[field],undefined);redacted.context.romHash='changed';assert.equal(probe.traceReport().context.romHash,'a'.repeat(64));
+ assert.equal(probe.advanceTrace({generation:3,frame:11}).active,true);test.emit({writerPC:0x8345,opcode:0xe6});
+ const writes=probe.drainWriteTrace();assert.equal(writes.length,2);assert.equal(writes[0].version,1);assert.equal(writes[0].frame,11);assert.equal(writes[1].frame,12);assert.equal(writes[0].generation,3);assert.equal(writes[0].address,42);assert.equal(writes[0].logicalAddress,0x82a);assert.equal(writes[0].writerPC,0x8123);assert.equal(writes[1].writerPC,0x8345);assert.equal(writes[0].oldValue,7);assert.equal(writes[0].newValue,8);assert.equal(writes[0].bank.status,'KNOWN');assert.equal(writes[0].cycle,null,'unproven CPU bus timing stays unknown');assert.equal(writes[0].cycleStatus,'UNKNOWN');assert.equal(probe.traceReport().queuedEvents,0);assert.equal(probe.traceReport().eventCount,2,'draining cannot reset the hard event cap');
+ writes[0].bank.status='mutated';assert.equal(probe.advanceTrace({generation:3,frame:12}).reason,'frame-limit');assert.equal(probe.traceReport().partialWindow,false);assert.equal(probe.traceReport().endedDuringFrame,false);assert.equal(test.counts().detached,1);assert.equal(test.timers.size,0);assert.equal(hash(core.toJSON()),before,'all tracing calls preserve emulator state');
+ const previous=test.sessions.at(-1);probe.beginWriteTrace({...options,maxEvents:1});previous.onWrite({address:42,oldValue:0,newValue:255});assert.equal(probe.traceReport().eventCount,0,'stale callback cannot cross trace windows');previous.onFault({reason:'core_fault'});assert.equal(probe.traceReport().active,true,'stale faults cannot cancel the next window');
+ test.emit();assert.equal(probe.traceReport().reason,'event-limit');assert.equal(probe.traceReport().overflow,true);assert.equal(probe.traceReport().partialWindow,true);assert.equal(probe.traceReport().endedDuringFrame,true);assert.equal(probe.traceReport().lastFrame,10,'overflow before frame completion never reports the frame complete');assert.equal(probe.traceReport().eventCount,1);assert.equal(probe.traceReport().droppedEvents,0,'hook detaches at cap before any additional queued event');assert.equal(test.timers.size,0);assert.equal(probe.drainWriteTrace().length,1);assert.equal(probe.drainWriteTrace().length,0);
+ for(const bad of [null,{}, {...options,maxEvents:4097},{...options,maxFrames:121},{...options,maxWallMs:5001},{...options,watchpoints:[]},{...options,watchpoints:[2048]},{...options,watchpoints:[0x82a]},{...options,watchpoints:Array(33).fill(42)}]){
+  const installs=test.counts().attached;assert.equal(probe.beginWriteTrace(bad).reason,'invalid-options');assert.equal(probe.traceReport().reason,'invalid-options');assert.equal(test.counts().attached,installs,'invalid options never install a helper');
+ }
+ assert.equal(probe.beginWriteTrace({...options,maxEvents:4096,maxFrames:120,maxWallMs:5000,watchpoints:Array.from({length:32},(_,i)=>i)}).active,true);probe.endWriteTrace();
+ probe.beginWriteTrace(options);test.emit();assert.equal(probe.advanceTrace({generation:4,frame:11}).reason,'generation-change');assert.equal(probe.drainWriteTrace().length,0,'generation changes discard queued private values');
+ probe.beginWriteTrace(options);test.emit();probe.observe({...meta(11),generation:4});assert.equal(probe.traceReport().reason,'generation-change');assert.equal(probe.drainWriteTrace().length,0);
+ for(const key of ['romData','rom','mmap','cpu','mem']){
+  const changed=fixture();changed.probe.beginWriteTrace(options);changed.emit();
+  if(key==='mem')changed.core.cpu.mem=new Uint8Array(65536);else if(key==='romData')changed.core.romData+='changed';else changed.core[key]={...changed.core[key]};
+  assert.equal(changed.probe.traceReport().reason,'context-change',key);assert.equal(changed.counts().detached,1);assert.equal(changed.probe.drainWriteTrace().length,0);
+ }
+ const mapper=fixture();mapper.probe.beginWriteTrace(options);mapper.core.rom.mapperType=4;assert.equal(mapper.probe.advanceTrace({generation:3,frame:11}).reason,'context-change');assert.equal(mapper.counts().detached,1);
+ probe.beginWriteTrace(options);test.emit();probe.endWriteTrace('pause',{discard:true});assert.equal(probe.traceReport().reason,'pause');assert.equal(probe.drainWriteTrace().length,0);probe.endWriteTrace('again');assert.equal(probe.traceReport().reason,'pause','end is idempotent');
+ probe.beginWriteTrace(options);test.emit();probe.endWriteTrace();probe.endWriteTrace('boundary',{discard:true});assert.equal(probe.drainWriteTrace().length,0,'runtime may also discard an already ended window');
+ probe.beginWriteTrace(options);test.emit();const snapshot=probe.snapshot();assert.equal(probe.traceReport().reason,'save-state');assert.equal(probe.drainWriteTrace().length,0);assert.equal(hash(snapshot.state),before,'saving cancels tracing while preserving the emulator state');assert.equal(test.timers.size,0);
+ probe.beginWriteTrace(options);test.sandbox.Date.now=()=>-100000;test.advanceClock(1000);assert.equal(probe.traceReport().reason,'timeout','monotonic clock ends tracing despite wall clock rollback');
+ probe.beginWriteTrace(options);test.advanceClock(1000);assert.equal(probe.traceReport().reason,'timeout');assert.equal(test.timers.size,0);assert.equal(test.counts().attached,test.counts().detached);
+ probe.beginWriteTrace(options);test.expire();assert.equal(probe.traceReport().reason,'timeout');assert.equal(test.timers.size,0,'timer detaches even while emulator is paused');
+ probe.beginWriteTrace(options);assert.doesNotThrow(()=>test.emit({address:0x2000}));assert.equal(probe.traceReport().reason,'helper-fault');assert.equal(test.timers.size,0);
+ probe.beginWriteTrace(options);assert.doesNotThrow(()=>test.sessions.at(-1).onFault({reason:'core_fault'}));assert.equal(probe.traceReport().reason,'core-fault');assert.equal(test.counts().attached,test.counts().detached);
+ const unknown=fixture();unknown.core.rom.mapperType=4;const unknownProbe=unknown.sandbox.module.exports.create({platform:'nes',core:unknown.core,identity:{romHash:'a'.repeat(64),coreRevision:'fixture'}});assert.equal(unknownProbe.capabilities().cpuWriteTrace,true);assert.equal(unknownProbe.capabilities().bankMapping,false);unknownProbe.beginWriteTrace(options);unknown.emit();const unknownEvent=unknownProbe.drainWriteTrace()[0];assert.equal(unknownEvent.bank.status,'UNKNOWN');assert.equal(unknownEvent.bank.prgOffset,null);unknownProbe.endWriteTrace();
+ const baseBank={status:'KNOWN',mapper:0,physicalBank:0,bankOffset:0x123,prgOffset:0x123,bankSize:16384};
+ for(const invalid of [{bank:{...baseBank,mapper:4}},{bank:{...baseBank,bankSize:8192}},{bank:{...baseBank,physicalBank:1}},{bank:{...baseBank,bankOffset:0x124}},{bank:{...baseBank,prgOffset:0x124}},{writerPC:0x4123},{writerPC:null},{writerPC:0xc123,bank:{...baseBank,physicalBank:0}}]){
+  const malformed=fixture();malformed.probe.beginWriteTrace(options);assert.doesNotThrow(()=>malformed.emit(invalid));const event=malformed.probe.drainWriteTrace()[0];assert.equal(event.bank.status,'UNKNOWN','inconsistent bank provenance fails closed');assert.equal(event.bank.prgOffset,null);assert.equal(event.newValue,8,'unknown provenance preserves the observed write');assert.equal(malformed.probe.traceReport().active,true);malformed.probe.endWriteTrace();
+ }
+ const mirrored=fixture();mirrored.core.rom.romCount=1;mirrored.probe.beginWriteTrace(options);mirrored.emit({writerPC:0xc123,bank:baseBank});assert.equal(mirrored.probe.drainWriteTrace()[0].bank.status,'KNOWN','16KiB NROM mirror maps both CPU halves to bank zero');mirrored.probe.endWriteTrace();
+ const upper=fixture();upper.probe.beginWriteTrace(options);upper.emit({writerPC:0xc123,bank:{...baseBank,physicalBank:1,prgOffset:0x4123}});assert.equal(upper.probe.drainWriteTrace()[0].bank.status,'KNOWN','32KiB NROM upper half maps bank one');upper.probe.endWriteTrace();
+ const missing=fixture();delete missing.sandbox.FlyNesWriteTrace;assert.equal(missing.probe.capabilities().cpuWriteTrace,false);assert.equal(missing.probe.beginWriteTrace(options).reason,'unsupported');assert.equal(missing.counts().attached,0);
+ for(const mode of ['unsupported','support-fault','attach-fault','invalid-handle']){const broken=fixture();broken.mode(mode);assert.doesNotThrow(()=>broken.probe.beginWriteTrace(options));assert.equal(broken.probe.traceReport().active,false);assert.equal(broken.timers.size,0);}
+ const unsupported=test.sandbox.module.exports.create({platform:'sega',core:new Proxy({},{get(){throw Error('unsupported core touched');}})});assert.equal(unsupported.beginWriteTrace(options).reason,'unsupported');assert.equal(unsupported.traceReport().active,false);assert.equal(unsupported.drainWriteTrace().length,0);unsupported.endWriteTrace('boundary',{discard:true});
+ console.log('PASS: opt-in bounded local tracing adapter; detached writer data, redacted diagnostics, hard caps, unknown cycle/bank, stale callbacks, generation/ROM/core guards, timeout, faults and boundary cleanup');
+}
 try{
  // Unsupported platforms must not even inspect a WASM core or its RAM shape.
  const unsupported=Probe.create({platform:'sega',core:new Proxy({},{get(){throw Error('unsupported core touched');}})});
@@ -30,6 +84,7 @@ try{
  const interval=meta(20);interval.action.interval={firstFrame:9,lastFrame:20,frames:12,unionMask:192,changes:3,manualOverrideSeen:true,complete:true,coverage:'executed-frames'};assert.deepEqual(probe.observe(interval).action.interval,interval.action.interval,'bounded interval preserves opposite directions used at different times');interval.action.interval.lastFrame=21;assert.throws(()=>probe.observe(interval),/interval/);
  const mapper=core.rom.mapperType;core.rom.mapperType=null;assert.throws(()=>probe.observe(meta()),/mapper context changed/);const unknown=Probe.create({platform:'nes',core,identity:{romHash:descriptor.sha256,coreRevision:revision}});assert.equal(unknown.context().mapper.id,null);assert.equal(unknown.capabilities().mapperKnown,false);assert(unknown.observe(meta()).ram.length===2048,'unknown mapping still permits unverified canonical RAM candidates');assert.equal(unknown.capabilities().bankMapping,false);core.rom.mapperType=mapper;
  const data=core.romData;core.romData=data+'fixture';assert.throws(()=>probe.observe(meta()),/ROM changed/);assert.throws(()=>probe.snapshot(),/ROM changed/);core.romData=data;
+ checkBoundedTrace();
  // Checker-only oracle verifies the cartridges; neither create nor observe receives it.
  const rows=[];
  for(const seed of [0,1,2,7,8,9,47]){

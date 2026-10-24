@@ -386,6 +386,7 @@ function resetSession() {
 }
 window.labLoadRom=async function(data) {
   const sequence=++romLoadSequence;romLoading=true;window.labContinuing=false;let launched=false;
+  try{window.gameObjectiveDiscovery?.boundary('rom-loading');}catch(_){}
   try {
     if(window.labState)await window.labState.prepare();if(sequence!==romLoadSequence)return;
     window.labPause();
@@ -669,21 +670,26 @@ function drawHistory() {
 }
 function advanceFrame(now,forceSample=false) {
   if(!loaded||romLoading)return;
-  let dual=false,observation=null;
+  let dual=false,observation=null,objectiveAction=null,coreElapsedMs=0;
   if(!window.labNeuralSuspended)neuralStep(()=>{
    dual=Boolean(window.dualAgents&&window.dualAgents.active());
    if(!dual&&window.humanTeaching&&connected)observation=window.humanTeaching.beforeFrame();
   });
   // Button routing contains neural/UI callbacks; only the actual core frame belongs to the core boundary.
   neuralStep(()=>updateButtons());
-  try {const started=performance.now();nes.frame();const elapsed=performance.now()-started;measuredCpuMs+=elapsed;measuredFrames++;window.guLogger?.coreFrame?.(elapsed,started+elapsed);if(benchmark){benchmark.frames++;benchmark.emulatorMs+=elapsed;}frame++;}
-  catch(error){playing=false;window.guLogger?.event?.('emulator.frame-error',{message:error.message},'error');window.labError({message:'Ошибка эмулятора: '+error.message});status('Эмуляция остановлена: '+error.message,true);$('play').textContent='Запустить эмулятор';return;}
   try{
    // P1's appliedAgentMask also contains manual buttons in solo mode. Describe
    // actually executed ownership, without the FDB credit window's sticky flag.
    const manual=connected&&!window.labNeuralSuspended&&gmodeMode==='off'&&$('learnMode').value==='train'&&!$('liveHints').checked&&!window.labCurrentPending?(manualMask&~agentAllowedMask()):manualMask;
    const human=!connected?appliedMask:gmodeMode==='off'?(appliedMask&manual):appliedHumanMask;
-   window.gameObjectiveDiscovery?.observeFrame({frame,generation,atMs:performance.now(),action:{mask:appliedMask,humanMask:human,agentMask:connected?(appliedAgentMask&~human):0,manualOverride:Boolean(connected&&human)}});
+   objectiveAction={mask:appliedMask,humanMask:human,agentMask:connected?(appliedAgentMask&~human):0,manualOverride:Boolean(connected&&human)};
+   // Detach a diagnostic trace before an excluded or intervened frame runs.
+   window.gameObjectiveDiscovery?.beforeFrame?.({frame:frame+1,generation,action:objectiveAction});
+  }catch(error){try{window.guLogger?.event?.('goal.discovery-error',{message:String(error.message||error)},'error');}catch(_){}}
+  try {const started=performance.now();nes.frame();const elapsed=performance.now()-started;coreElapsedMs=elapsed;measuredCpuMs+=elapsed;measuredFrames++;window.guLogger?.coreFrame?.(elapsed,started+elapsed);if(benchmark){benchmark.frames++;benchmark.emulatorMs+=elapsed;}frame++;}
+  catch(error){playing=false;try{window.gameObjectiveDiscovery?.boundary('emulator-frame-error');}catch(_){}window.guLogger?.event?.('emulator.frame-error',{message:error.message},'error');window.labError({message:'Ошибка эмулятора: '+error.message});status('Эмуляция остановлена: '+error.message,true);$('play').textContent='Запустить эмулятор';return;}
+  try{
+   window.gameObjectiveDiscovery?.observeFrame({frame,generation,atMs:performance.now(),elapsedMs:coreElapsedMs,action:objectiveAction});
   }catch(error){try{window.guLogger?.event?.('goal.discovery-error',{message:String(error.message||error)},'error');}catch(_){}}
   if(!window.labNeuralSuspended)neuralStep(()=>{
    if(!connected&&!(dual&&window.dualAgents.running()))return;
@@ -739,6 +745,7 @@ setTimeout(emulationPump,0);
 window.labPause=function() {
   // Commit the pause before any backend cleanup: save/load and Android backgrounding must always stop the core.
   playing=false;connected=false;configuring=false;generation++;pendingToken=null;
+  try{window.gameObjectiveDiscovery?.boundary('pause');}catch(_){}
   window.guLogger?.boundary?.('emulator.pause');
   window.startAfterConfig=false;window.startTrainingAfterConfig=false;fdbExperience.length=0;
   manualMask=0;holding.clear();controllerMasks.clear();audioRead=audioWrite;

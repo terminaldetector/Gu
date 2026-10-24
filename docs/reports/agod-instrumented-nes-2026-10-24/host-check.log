@@ -1,0 +1,198 @@
+{
+  "source": "/tmp/tmp.dV20nLJYh1/test.feather",
+  "source_sha256": "f3abdb175ad9abdb9c3ee0f6b9016c981f042bd844903947ccb4b634c95721b8",
+  "neurons": 3,
+  "edges": 2,
+  "subset": false,
+  "isolates_preserved": false,
+  "bytes": 68,
+  "estimated_runtime_bytes": 368,
+  "model": "LIF 0.1 ms; NT weighted argmax; modulatory edges omitted; not Brian2-validated",
+  "first_id": "1"
+}
+PASS: silence, stimulation, cancellation, invalid format, memory cap, converter IDs/signs
+Завершено 1000.0 ms · 0.006 s на CPU · ×180.42
+190 импульсов · 2 активных нейронов
+1: 162
+2: 28
+GraphDelta checks passed
+PASS: structural growth, seeded exploration, caps, reward gate, lesions, frozen state and actual CPU output
+PASS: FDB action-specific eligibility, delayed rewards, negative evidence pruning, CPU removal, bounded internal credit, frozen RNG, interventions, immutable W0 / explicit delta
+PASS: production FDB unknown boundary preserves nonzero baseline/parameters and clears temporal credit; numeric zero is distinct
+PASS: screen-to-spikes-to-buttons, seed, sham, observe, gain, ablation, shuffle, incremental state, cancellation
+PASS: real NROM bootstrap, video, audio samples, controller bus, sprite movement, save/restore, reset
+PASS: production GMode port isolation, release, swapped ports and manual override
+PASS: profile key migration and FDB identity separation
+PASS: production FDB growth validation and terminal checkpoint ordering
+PASS: production neuron/readout control masks, human ownership, both GMode ports, Sega C and SARSA greedy/exploration without weight loss
+PASS: actual NES reset/snapshot with production UI handlers, reconnect without native configure, model weight preservation and no reset on ROM acceptance
+PASS: neural observation/plasticity/inference failure isolation on four platform frontends, real NES continuity, manual fallback, stale results, core error distinction and cleanup diagnostics
+PASS: accessor/route/HUD failure quarantine, correlated native errors, actual pump/RAF continuity, safe pause/manual resume and async cleanup
+PASS: real NES continues manually before durable Current/bind ACK; cached guarded samples, deletion/config invalidation, frozen/eval, missing storage, failed disk, and stale-session completion
+PASS: ROM/core isolation, SHA256 integrity, detached capture, slots, overwrite guards, concurrent writes, quota failures, recovery, validated legacy migration
+PASS: lifecycle without graph, serialized autosaves, ROM identity capture, overlapping loads, ROM switch cancellation, boundary ACK, resume/reconnect/generation guards, preserved learned weights, logged neural boundary failure
+PASS: continuous SARSA without ROM restart, opt-in episodes, solo/swapped boost, native reset guards and actual FDB episode reporting of unknown/known-zero/partial reward, independent terminal results and excluded interventions
+PASS: production pump ×1/×2/×3 exact at 3 ms/core frame independent of RAF; ×1–×10 PAL/GB/NTSC, pending GPU, overload accounting, suspension, and truthful speed label
+PASS: Sega/NES keyboard isolation, 12-bit control ownership, axis deadzone, old readout persistence, SMD/byte swap and header compatibility
+PASS: model-owned holding, opt-in game-time cap, real-time response timeout at ×1–×10, pending execution and legacy learned-key compatibility
+PASS: 64 binary/BCD/endian/scaling score discoveries across platform RAM sizes; aliases, mirrored ambiguity, reset/timer rejection and versioned proof validation
+PASS: eight directions/neutral/outside release, exclusive keyboard remaps/unbind, validated versioned platform/model preferences
+PASS: independent UI preferences, bounded orientation coordinates, corruption recovery, raw button remapping, trigger/direction chords and releases
+PASS: portable Unicode/numeric payload checksums, raw ZIP hashes, correlated successful/failed saves, actual metric scope, partial-tail/corruption/traversal rejection and explicit acceptance limits
+PASS: bounded four-platform ZIP/GZIP, ambiguity rejection and canonical Sega/SNES hash identity
+PASS: deterministic 2P starter prior, spatial direction bias, and protection of trained readout weights
+GPU shader contract checks passed
+{
+  before: -2.664999999999991,
+  after: 11.200000000000015,
+  success: 20,
+  updates: 10698
+}
+PASS: actual NES task improves, frozen evaluation, model validation/persistence, seeded reproducibility
+PASS: conditioned imitation, separate reward/teacher weights, combinations, system access, frozen evaluation, migration and atomic validation
+PASS: sub-frame raw taps, one-frame teaching, pre-action observations, pause flush, ordered provenance and fractional platform timing
+PASS: session reopen/export, action coverage, ordered/idempotent chunks, rejected gaps, quota rollback, old-prefix retention and background bridge FIFO
+PASS: paged full-archive replay, clean imitation candidate, disjoint holdout, exact/time/button metrics, immutable reward/live policy, cancellation and provenance migration
+PASS: captured outcome is an immutable interval snapshot, excluding backend tail
+PASS: eligibility elapsed clock includes real game time between observations, not invented executed frames
+PASS: reward snapshots are detached, deeply immutable and taken at actual action start/end
+PASS: realtime backend-tail reward belongs to neither the already-captured A nor the upcoming B
+PASS: legacy calls retain null reward snapshots without changing their native packet
+PASS: production RAM snapshot and profile context mismatch reject credit instead of sending zero-valid advantage
+PASS: production reward handles configured RAM wrap and manual result without observation-tail double-counting
+PASS: production terminal reward is earned by a new transition during this action, with death priority
+PASS: no executed frames produce no reward packet
+PASS: unknown manual gameplay clears temporal credit without sending a zero reward
+PASS: explicit manual research rating remains reward while manual buttons alone supply none
+PASS: unknown boundary failures remain visible and block further credit
+PASS: repeated unknown native boundaries adopt full cleared-trace state without duplicate frontend disk writes
+PASS: zero automatic updates never trigger a sixteen-update checkpoint on unattributed reward ACKs
+PASS: positive known-update milestones checkpoint once and do not repeat on unchanged feedback
+PASS: a real timeout recovery retries frontend persistence even with zero learned updates
+PASS: executed mask mismatch cannot earn positive credit
+PASS: solo human intervention invalidates credit even when masks coincide
+PASS: co-op human P1 does not invalidate the independent agent P2 interval
+PASS: stale/released agent or interrupted observation invalidates outcome
+PASS: evaluation, human-teaching, off and external controllers create no automatic credit
+PASS: freeze suppresses new trace capture and marks already captured feedback frozen
+PASS: boundary discards an old capture and is serialized after outstanding reward
+PASS: FDB state acknowledgement persists the same full topology and revision metadata
+PASS: context drift prevents stale response from replacing a different ROM/model
+PASS: error plus acknowledged data preserves changed weights and blocks further credit until boundary
+PASS: saveError cannot conceal the actual learned topology or durability error
+PASS: out-of-window result clears native credit before accepting the already-produced next decision
+PASS: bounded queue fails closed, recovery waits for capacity and drain includes recovery acknowledgement
+PASS: timed-out reward loses no topology ack ordering and requires a confirmed boundary
+PASS: failed recovery boundary does not spin or re-enable unsafe credit; explicit boundary retries
+PASS: confirmed recovery clears the checkpoint blocker only after retrying latest topology persistence
+PASS: unresolved local persistence failure remains blocked, without retry spin; explicit recovery can succeed
+PASS: missing bridge is a no-op and no empty outcome is invented
+PASS: Current bind requires acknowledged native context/configuration and a durable success response
+PASS: failed Current binding rejects instead of treating a native no-op as success
+PASS: durable Current bind already covers its counter milestone without an extra feedback save
+PASS: stale bind ACK cannot authorize a new ROM or native configuration
+PASS: browser fallback binds locally only when the native feedback API is absent
+PASS: stale bind errors and timeouts cannot poison a new ROM/configuration or start recovery
+PASS: 40 production FDB observation/credit protocol checks; these tests do not claim neural or gameplay improvement
+PASS: production FDB reward isolates actual action activation from realtime backend tail, profile identity, wrap/sign, win/death, manual and diagnostic criteria
+PASS: production model selector, passport metadata, unsupported bridge, pause/drain/save ordering, both ack orders, error preservation, imported identity and timeout
+PASS synthetic import: save-before-install, failed save, unsupported bridge, duplicate request, error/success
+PASS: shared hierarchy SHA, immutable copies, residual composition, graph/ports/actions/backend isolation, candidates, holdout evidence, quota and portable FDB
+PASS: shared UI save-before-apply, failed-save retention, detached game copies, saved-profile validation, edited action rejection and ROM isolation
+PASS: production dual UI routing/credit, unknown vs observed zero, shared RAM cuts/tail exclusion, CPU/freeze/Eval/team, acknowledged frame rewind, pause/loading/exit durability and per-ROM preferences without auto-start
+PASS: production dual P1/P2 routing, manual priority, isolated intervention credit, one emulator frame, actual masks and legacy single control
+PASS: named checkpoint persistence, independent weights/FDB, compatibility, quota rollback, outcome attribution and native request correlation
+PASS: durable Current before bind ACK, disabled autosave, storage/marker/bind failures, coalescing, context guard, active identity, reload resume, immutable archive ACK/failure and missing-marker recovery
+PASS: ROM sizes/mappers, endian/signed/BCD/wrap RAM, actions, motion/readout updates, policy migration
+PASS: opt-in bounded local tracing adapter; detached writer data, redacted diagnostics, hard caps, unknown cycle/bank, stale callbacks, generation/ROM/core guards, timeout, faults and boundary cleanup
+{"kind":"controlled-original-nes-probe","oracle":"checker only; not passed to production probe","rows":[{"seed":0,"format":"unsigned","width":1,"endian":"little","snapshotBytes":1096267},{"seed":1,"format":"bcd","width":2,"endian":"big","snapshotBytes":1096207},{"seed":2,"format":"signed","width":3,"endian":"little","snapshotBytes":1096253},{"seed":7,"format":"bcd","width":4,"endian":"big","snapshotBytes":1096073},{"seed":8,"format":"signed","width":1,"endian":"little","snapshotBytes":1096274},{"seed":9,"format":"unsigned","width":2,"endian":"big","snapshotBytes":1178259},{"seed":47,"format":"signed","width":4,"endian":"big","snapshotBytes":1096250}]}
+PASS: read-only actual NES canonical RAM/visual observations, detached bounded snapshots, partial fingerprints, unknown mapper and unsupported platform handling, seeded original cartridges with action counters/lives/respawn/menu/reset/timers/noise and isolated test replay; no reward or learning claim
+NES write trace verified: 1166821f340224fb9e2eca741682ec25c51ecbf889e4d1bc483aacd5cfd569d5
+{"type":"gu-nes-write-trace-check","status":"PASS","rom":{"name":"GU original NES writer fixture","sha256":"7f932c7ac710cae20afe4dd2eb3011c536cbf0011d78ec3b31a687c970855586","license":"MIT","prgBanks16KiB":2},"parity":{"instructionCount":58,"frameCount":53,"boundaries":117},"writers":{"orderedEvents":32,"distinctSites":25,"staticPrgBanks":[0,1],"unsupportedMapper":"UNKNOWN"},"bounded":"PASS","benchmarks":[{"mode":"disabled","baselineFrame":{"count":96,"totalMs":337.5759170000001,"p50Ms":3.4601409999995667,"p95Ms":3.8300990000007005,"p99Ms":4.897769999999582,"maxMs":4.897769999999582},"conditionFrame":{"count":96,"totalMs":340.00798499999746,"p50Ms":3.487742999999682,"p95Ms":3.952353000000585,"p99Ms":4.3467979999995805,"maxMs":4.3467979999995805}},{"mode":"detached","baselineFrame":{"count":96,"totalMs":362.7098320000041,"p50Ms":3.4952940000002855,"p95Ms":4.839812000000165,"p99Ms":11.264780999999857,"maxMs":11.264780999999857},"conditionFrame":{"count":96,"totalMs":422.7427069999867,"p50Ms":4.363574000000881,"p95Ms":4.915186000000176,"p99Ms":5.217602000000625,"maxMs":5.217602000000625}},{"mode":"active","baselineFrame":{"count":96,"totalMs":334.2801540000055,"p50Ms":3.430366000000504,"p95Ms":3.8779609999983222,"p99Ms":4.528071999999156,"maxMs":4.528071999999156},"conditionFrame":{"count":96,"totalMs":466.773430999996,"p50Ms":4.751949999999852,"p95Ms":5.305093999999372,"p99Ms":7.625535999999556,"maxMs":7.625535999999556}}],"categories":{"unit":"separate core_probe_check.cjs","hostEmulator":"PASS","controlledRom":"PASS","frozenGeneralization":"NOT-TESTED","physicalAndroid":"DEVICE-PENDING"}}
+PASS: actual NES ordered writer PC/static-bank oracle, mirrors/indexed/indirect/direct stack/RMW writes, external/NMI/mapper UNKNOWN, serialized-state and audio/video parity across disabled/active/detached/save/load/reset, bounded actual-core windows, balanced paired host overhead; Android pending
+PASS: 21 bounded 1–4-byte signed/unsigned/BCD LE/BE hypotheses, carry/wrap/reset and aliases; provisional clock/timer/echo/noise exclusion; immutable canonical observations, context/generation/partition fences, unverified provenance, bounded work/history and no FDB reward calls
+PASS: versioned candidate-only objective profiles, unknown phases/polarity/reward, per-event bounded provenance, no fabricated independence, context/schema/mapper freshness, malformed/VERIFIED rejection, bounded pending/open/read deadlines and compatible cold-start format
+{"type":"gu-agod-controlled-rom-check","status":"PASS","scope":"host emulator / original controlled NES cartridges","rows":[{"seed":0,"romHash":"6b4556c380b50af16986568a3917c5e775adec2fb3acd02da8685ec8a3b7158d","scoreRepresentation":{"format":"unsigned","width":1,"endian":"little"},"counterCandidate":true,"counterCoverage":{"structuralSpanCandidate":true,"exactTypedCandidatePresent":true,"observedValueEquivalentCandidate":true,"fullTypeIdentified":false},"livesCandidate":true,"livesCoverage":{"structuralSpanCandidate":true,"exactTypedCandidatePresent":true,"observedValueEquivalentCandidate":true,"fullTypeIdentified":false},"timerRejected":true,"frameCounterRejected":true,"timerReasons":["periodic-neutral-counter"],"frameCounterReasons":["periodic-neutral-counter"],"frameCounterObservedSpans":[{"address":169,"width":1,"format":"unsigned","endian":"little"}],"frameCounterScope":"aligned low-order component; true full width is not identified","frameCounterEquivalence":"checker verified every retained sample modulo 256^componentWidth","checkerSamples":161,"observations":161,"stats":{"accepted":161,"skipped":0,"rejected":0,"decodeEvaluations":83022,"droppedCandidates":32886,"evictedCandidates":502,"seedAddressesOmitted":0,"budgetExceeded":1,"analysisMs":207.4172899999992,"maxAnalysisMs":4.271813999999949,"segments":1,"boundaries":0,"ramChanges":861,"provenanceGroups":1,"independentConfirmations":0,"coverageComplete":false,"stoppedReason":null,"retainedCandidates":256,"reportedCandidates":64,"retainedRejections":32,"retainedTransitions":64,"typedBufferBytes":18432},"hostCoreFrame":{"count":1920,"totalMs":1866.546909000004,"p50Ms":0.907959000000119,"p95Ms":1.2318280000000073,"p99Ms":1.7730450000001383,"maxMs":3.827895000000126},"hostProbeAndMiner":{"count":160,"totalMs":223.66236200000074,"p50Ms":1.2532810000000154,"p95Ms":2.4892459999998664,"p99Ms":3.7809640000000115,"maxMs":4.408942000000025},"observedSampleCostToCoreExecutionRatio":0.11982681009599007,"reportedStatus":"CANDIDATES","rewardStatus":"UNKNOWN","verifiedRewards":0,"goalPolarity":"unknown","frozenGeneralization":"NOT-TESTED","physicalAndroid":"DEVICE-PENDING"},{"seed":1,"romHash":"1773dd62e526d967c72f03e4bacf923799572678637b67ce51b18165fb6402d6","scoreRepresentation":{"format":"bcd","width":2,"endian":"big"},"counterCandidate":true,"counterCoverage":{"structuralSpanCandidate":true,"exactTypedCandidatePresent":false,"observedValueEquivalentCandidate":false,"fullTypeIdentified":false},"livesCandidate":true,"livesCoverage":{"structuralSpanCandidate":true,"exactTypedCandidatePresent":true,"observedValueEquivalentCandidate":true,"fullTypeIdentified":false},"timerRejected":true,"frameCounterRejected":true,"timerReasons":["periodic-neutral-counter"],"frameCounterReasons":["periodic-neutral-counter"],"frameCounterObservedSpans":[{"address":117,"width":1,"format":"unsigned","endian":"little"}],"frameCounterScope":"aligned low-order component; true full width is not identified","frameCounterEquivalence":"checker verified every retained sample modulo 256^componentWidth","checkerSamples":161,"observations":161,"stats":{"accepted":161,"skipped":0,"rejected":0,"decodeEvaluations":81792,"droppedCandidates":31472,"evictedCandidates":587,"seedAddressesOmitted":0,"budgetExceeded":0,"analysisMs":161.10074799999984,"maxAnalysisMs":2.697610000000168,"segments":1,"boundaries":0,"ramChanges":859,"provenanceGroups":1,"independentConfirmations":0,"coverageComplete":false,"stoppedReason":null,"retainedCandidates":256,"reportedCandidates":64,"retainedRejections":32,"retainedTransitions":64,"typedBufferBytes":18432},"hostCoreFrame":{"count":1920,"totalMs":1813.0696670000011,"p50Ms":0.905996999999843,"p95Ms":1.1277719999998226,"p99Ms":1.2830260000000635,"maxMs":2.9657640000000356},"hostProbeAndMiner":{"count":160,"totalMs":173.91753300000073,"p50Ms":0.9955120000004172,"p95Ms":1.7641810000000078,"p99Ms":2.038626000000022,"maxMs":2.7919319999996333},"observedSampleCostToCoreExecutionRatio":0.09592435203428983,"reportedStatus":"CANDIDATES","rewardStatus":"UNKNOWN","verifiedRewards":0,"goalPolarity":"unknown","frozenGeneralization":"NOT-TESTED","physicalAndroid":"DEVICE-PENDING"},{"seed":2,"romHash":"3c28be48e30b604cc926e9e70e15cd468590f25860f7f0437592ab9e9fec25e7","scoreRepresentation":{"format":"signed","width":3,"endian":"little"},"counterCandidate":true,"counterCoverage":{"structuralSpanCandidate":true,"exactTypedCandidatePresent":false,"observedValueEquivalentCandidate":false,"fullTypeIdentified":false},"livesCandidate":true,"livesCoverage":{"structuralSpanCandidate":true,"exactTypedCandidatePresent":true,"observedValueEquivalentCandidate":true,"fullTypeIdentified":false},"timerRejected":true,"frameCounterRejected":true,"timerReasons":["periodic-neutral-counter"],"frameCounterReasons":["periodic-neutral-counter"],"frameCounterObservedSpans":[{"address":207,"width":1,"format":"unsigned","endian":"little"}],"frameCounterScope":"aligned low-order component; true full width is not identified","frameCounterEquivalence":"checker verified every retained sample modulo 256^componentWidth","checkerSamples":161,"observations":161,"stats":{"accepted":161,"skipped":0,"rejected":0,"decodeEvaluations":82163,"droppedCandidates":32006,"evictedCandidates":460,"seedAddressesOmitted":0,"budgetExceeded":1,"analysisMs":161.5386480000043,"maxAnalysisMs":4.030069999999796,"segments":1,"boundaries":0,"ramChanges":861,"provenanceGroups":1,"independentConfirmations":0,"coverageComplete":false,"stoppedReason":null,"retainedCandidates":256,"reportedCandidates":64,"retainedRejections":32,"retainedTransitions":64,"typedBufferBytes":18432},"hostCoreFrame":{"count":1920,"totalMs":1824.3234759999914,"p50Ms":0.9094920000006823,"p95Ms":1.09169699999984,"p99Ms":1.4029970000001413,"maxMs":4.636574999999539},"hostProbeAndMiner":{"count":160,"totalMs":173.86852799999178,"p50Ms":0.9098430000003646,"p95Ms":1.9301519999999073,"p99Ms":3.24029900000005,"maxMs":4.153024999999616},"observedSampleCostToCoreExecutionRatio":0.09530575596232288,"reportedStatus":"CANDIDATES","rewardStatus":"UNKNOWN","verifiedRewards":0,"goalPolarity":"unknown","frozenGeneralization":"NOT-TESTED","physicalAndroid":"DEVICE-PENDING"},{"seed":7,"romHash":"380424f8e501e6baa28b9f71953a323230c24a46dd589f8a78d040b3f21281b2","scoreRepresentation":{"format":"bcd","width":4,"endian":"big"},"counterCandidate":true,"counterCoverage":{"structuralSpanCandidate":true,"exactTypedCandidatePresent":false,"observedValueEquivalentCandidate":false,"fullTypeIdentified":false},"livesCandidate":true,"livesCoverage":{"structuralSpanCandidate":true,"exactTypedCandidatePresent":true,"observedValueEquivalentCandidate":true,"fullTypeIdentified":false},"timerRejected":true,"frameCounterRejected":true,"timerReasons":["periodic-neutral-counter"],"frameCounterReasons":["periodic-neutral-counter"],"frameCounterObservedSpans":[{"address":104,"width":1,"format":"unsigned","endian":"little"}],"frameCounterScope":"aligned low-order component; true full width is not identified","frameCounterEquivalence":"checker verified every retained sample modulo 256^componentWidth","checkerSamples":161,"observations":161,"stats":{"accepted":161,"skipped":0,"rejected":0,"decodeEvaluations":82103,"droppedCandidates":31795,"evictedCandidates":612,"seedAddressesOmitted":0,"budgetExceeded":0,"analysisMs":152.24004399999285,"maxAnalysisMs":3.002480000000105,"segments":1,"boundaries":0,"ramChanges":861,"provenanceGroups":1,"independentConfirmations":0,"coverageComplete":false,"stoppedReason":null,"retainedCandidates":256,"reportedCandidates":64,"retainedRejections":32,"retainedTransitions":64,"typedBufferBytes":18432},"hostCoreFrame":{"count":1920,"totalMs":1783.5021960000013,"p50Ms":0.8927970000004279,"p95Ms":1.1003199999995559,"p99Ms":1.29186799999934,"maxMs":3.231875999999829},"hostProbeAndMiner":{"count":160,"totalMs":165.32099000000017,"p50Ms":0.9333079999996698,"p95Ms":1.5906400000003487,"p99Ms":2.8131740000007994,"maxMs":3.061848999999711},"observedSampleCostToCoreExecutionRatio":0.09269458168920586,"reportedStatus":"CANDIDATES","rewardStatus":"UNKNOWN","verifiedRewards":0,"goalPolarity":"unknown","frozenGeneralization":"NOT-TESTED","physicalAndroid":"DEVICE-PENDING"},{"seed":8,"romHash":"bc3f9812a2028fbb7fed3eb9135aefbdbfde3d5c8035fe72ee4392f07b1579cf","scoreRepresentation":{"format":"signed","width":1,"endian":"little"},"counterCandidate":true,"counterCoverage":{"structuralSpanCandidate":true,"exactTypedCandidatePresent":false,"observedValueEquivalentCandidate":false,"fullTypeIdentified":false},"livesCandidate":true,"livesCoverage":{"structuralSpanCandidate":true,"exactTypedCandidatePresent":true,"observedValueEquivalentCandidate":true,"fullTypeIdentified":false},"timerRejected":true,"frameCounterRejected":true,"timerReasons":["periodic-neutral-counter"],"frameCounterReasons":["periodic-neutral-counter"],"frameCounterObservedSpans":[{"address":107,"width":1,"format":"unsigned","endian":"little"}],"frameCounterScope":"aligned low-order component; true full width is not identified","frameCounterEquivalence":"checker verified every retained sample modulo 256^componentWidth","checkerSamples":161,"observations":161,"stats":{"accepted":161,"skipped":0,"rejected":0,"decodeEvaluations":76620,"droppedCandidates":27479,"evictedCandidates":552,"seedAddressesOmitted":0,"budgetExceeded":0,"analysisMs":133.80670499999906,"maxAnalysisMs":2.5114290000001347,"segments":1,"boundaries":0,"ramChanges":859,"provenanceGroups":1,"independentConfirmations":0,"coverageComplete":false,"stoppedReason":null,"retainedCandidates":256,"reportedCandidates":64,"retainedRejections":32,"retainedTransitions":64,"typedBufferBytes":18432},"hostCoreFrame":{"count":1920,"totalMs":1763.664675999902,"p50Ms":0.8913039999988541,"p95Ms":1.0665890000000218,"p99Ms":1.1831050000000687,"maxMs":1.7499399999996967},"hostProbeAndMiner":{"count":160,"totalMs":144.49069699999927,"p50Ms":0.7927159999999276,"p95Ms":1.606033000000025,"p99Ms":2.1122770000001765,"maxMs":2.591889999999694},"observedSampleCostToCoreExecutionRatio":0.08192639959638637,"reportedStatus":"CANDIDATES","rewardStatus":"UNKNOWN","verifiedRewards":0,"goalPolarity":"unknown","frozenGeneralization":"NOT-TESTED","physicalAndroid":"DEVICE-PENDING"},{"seed":9,"romHash":"672f103b91fd85e3f36cb25dad8e6eeed15df908d351daed7b8cc7acbf7ab68c","scoreRepresentation":{"format":"unsigned","width":2,"endian":"big"},"counterCandidate":true,"counterCoverage":{"structuralSpanCandidate":true,"exactTypedCandidatePresent":false,"observedValueEquivalentCandidate":true,"fullTypeIdentified":false},"livesCandidate":true,"livesCoverage":{"structuralSpanCandidate":true,"exactTypedCandidatePresent":true,"observedValueEquivalentCandidate":true,"fullTypeIdentified":false},"timerRejected":true,"frameCounterRejected":true,"timerReasons":["periodic-neutral-counter"],"frameCounterReasons":["periodic-neutral-counter"],"frameCounterObservedSpans":[{"address":150,"width":1,"format":"unsigned","endian":"little"}],"frameCounterScope":"aligned low-order component; true full width is not identified","frameCounterEquivalence":"checker verified every retained sample modulo 256^componentWidth","checkerSamples":161,"observations":161,"stats":{"accepted":161,"skipped":0,"rejected":0,"decodeEvaluations":83232,"droppedCandidates":33066,"evictedCandidates":511,"seedAddressesOmitted":0,"budgetExceeded":0,"analysisMs":162.35082900000452,"maxAnalysisMs":2.891222000000198,"segments":1,"boundaries":0,"ramChanges":861,"provenanceGroups":1,"independentConfirmations":0,"coverageComplete":false,"stoppedReason":null,"retainedCandidates":256,"reportedCandidates":64,"retainedRejections":32,"retainedTransitions":64,"typedBufferBytes":18432},"hostCoreFrame":{"count":1920,"totalMs":1884.5656739999922,"p50Ms":0.9471589999993739,"p95Ms":1.1747919999997976,"p99Ms":1.3936830000002374,"maxMs":4.102278999998816},"hostProbeAndMiner":{"count":160,"totalMs":175.92530599999918,"p50Ms":1.0122969999993074,"p95Ms":1.59553699999924,"p99Ms":2.096813000000111,"maxMs":2.954447000000073},"observedSampleCostToCoreExecutionRatio":0.09335058386508631,"reportedStatus":"CANDIDATES","rewardStatus":"UNKNOWN","verifiedRewards":0,"goalPolarity":"unknown","frozenGeneralization":"NOT-TESTED","physicalAndroid":"DEVICE-PENDING"},{"seed":47,"romHash":"76a63ad922d2d97b1875ea740f9ce20b2ff60d98968509564a2508d6e3e790d1","scoreRepresentation":{"format":"signed","width":4,"endian":"big"},"counterCandidate":true,"counterCoverage":{"structuralSpanCandidate":true,"exactTypedCandidatePresent":false,"observedValueEquivalentCandidate":false,"fullTypeIdentified":false},"livesCandidate":true,"livesCoverage":{"structuralSpanCandidate":true,"exactTypedCandidatePresent":true,"observedValueEquivalentCandidate":true,"fullTypeIdentified":false},"timerRejected":true,"frameCounterRejected":true,"timerReasons":["periodic-neutral-counter"],"frameCounterReasons":["periodic-neutral-counter"],"frameCounterObservedSpans":[{"address":173,"width":1,"format":"unsigned","endian":"little"}],"frameCounterScope":"aligned low-order component; true full width is not identified","frameCounterEquivalence":"checker verified every retained sample modulo 256^componentWidth","checkerSamples":161,"observations":161,"stats":{"accepted":161,"skipped":0,"rejected":0,"decodeEvaluations":82715,"droppedCandidates":32680,"evictedCandidates":468,"seedAddressesOmitted":0,"budgetExceeded":0,"analysisMs":153.4184180000084,"maxAnalysisMs":2.209302999999636,"segments":1,"boundaries":0,"ramChanges":862,"provenanceGroups":1,"independentConfirmations":0,"coverageComplete":false,"stoppedReason":null,"retainedCandidates":256,"reportedCandidates":64,"retainedRejections":32,"retainedTransitions":64,"typedBufferBytes":18432},"hostCoreFrame":{"count":1920,"totalMs":1861.3427280000105,"p50Ms":0.9329070000003412,"p95Ms":1.1614129999998113,"p99Ms":1.3924609999994573,"maxMs":2.550457000001188},"hostProbeAndMiner":{"count":160,"totalMs":164.48351100000036,"p50Ms":0.9480400000011286,"p95Ms":1.6343159999996715,"p99Ms":2.1871289999999135,"maxMs":2.2696539999997185},"observedSampleCostToCoreExecutionRatio":0.08836820244100657,"reportedStatus":"CANDIDATES","rewardStatus":"UNKNOWN","verifiedRewards":0,"goalPolarity":"unknown","frozenGeneralization":"NOT-TESTED","physicalAndroid":"DEVICE-PENDING"}]}
+PASS: generic bounded discovery on seven original NES layouts/formats, actual action-counter/lives candidates, explicit timer/frame rejection evidence, no oracle input, UNKNOWN polarity/reward and zero independent confirmations; Android/frozen generalization pending
+PASS: native failures preserve exact request correlation, real error detail and reject malformed identifiers
+Graph identity / SHA cache checks passed
+examples/synthetic/01-simple.json: parser, digest, malformed input, memory budget and dynamics passed
+examples/synthetic/02-medium.json: parser, digest, malformed input, memory budget and dynamics passed
+examples/synthetic/03-complex.json: parser, digest, malformed input, memory budget and dynamics passed
+PASS: production Android input with fixture events: raw/default keys, stable device identity, source/virtual metadata without rejecting virtual controls, analog triggers, chords/releases, disable/disconnect and SNES compatibility
+PASS: programmable actual LIF outputs, seed, silence step, string IDs and cancellation
+PASS: Layer Set legacy migration, SHA256 integrity, durable recovery/reopen, failed writes, corrupt generations, physical storage quota and atomic replacement
+PASS: bounded rotating persistent device journal, separate runs, interrupted tails, uncaught marker, numeric checksums, export manifest, strict no-model attachments, positive bridge summary and explicit storage errors
+PASS: immutable Current/Recovery, no invented Best, idempotence, process reopen, corrupt mutable files/manifests/generations, failed atomic commit, quota, safe pruning, protected deletion and ROM isolation
+PASS: accepted-only ROM library, private copies, reopen, platform/hash isolation, corrupt index recovery, failed atomic commit, quota and explicit deletion
+PASS: durable append-only episode history, process interruption, unknown outcomes, provenance protection, corruption/quota and full-state digest sensitivity
+PASS: durable automatic train/control, shared trajectory and duplicate-state grouping, transitive exclusion, native training prohibition, reopen, ROM isolation, atomic failure and conservative recovery
+PASS: frozen whole-series and between-window state, generation/configuration/manual/frame guards, unknown outcomes, incomplete rejection and immutable idempotent proof archive
+PASS: fixed paired Best admission gate, independent-group sign test, no regression, unknown/mutation/intervention/reused-control/duplicate/context rejection; admission never promotes a file
+PASS: durable FDB Current binding, context/generation fences, pre-mutation rejection, full-state flush, cached inference, failed-write gate and recovery
+PASS: actual CPU/FDB isolated candidate and reference, unchanged live Current/W0, durable preregistration and spent lineage, paired archive verification, atomic proven Best, persistent baseline/retention/Recovery, stale promotion, abort, quota, corruption and untrusted-result rejection (synthetic outcome fixture)
+PASS: FDB v4 exact checkpoint, reproducible resumed training, v1 migration, malformed-state rollback and atomic Layer Set topology / identity
+PASS: FDB graph SHA guard, W0/Wexo class validation, duplicate/self/unknown rejection and lossless 64-bit model IDs
+PASS: strongest-16 expanded projection, exact legacy migration preserving weights, stale credit reset and unknown-projection rejection
+examples/synthetic/01-simple.json ports=8: acquisition, continuation, CPU replay, freeze, immutable W0 PASS; delta=72 Wexo=0
+examples/synthetic/01-simple.json ports=12: acquisition, continuation, CPU replay, freeze, immutable W0 PASS; delta=111 Wexo=0
+examples/synthetic/02-medium.json ports=8: acquisition, continuation, CPU replay, freeze, immutable W0 PASS; delta=48 Wexo=0
+examples/synthetic/02-medium.json ports=12: acquisition, continuation, CPU replay, freeze, immutable W0 PASS; delta=68 Wexo=0
+examples/synthetic/03-complex.json ports=8: acquisition, continuation, CPU replay, freeze, immutable W0 PASS; delta=24 Wexo=0
+examples/synthetic/03-complex.json ports=12: acquisition, continuation, CPU replay, freeze, immutable W0 PASS; delta=37 Wexo=0
+PASS: mixed root paths, unrelated-edge exclusion, trust region, Wexo-only, eval and intervention guards, v4/v2 continuation, inhibitory growth; CPU output 12 -> 16 spikes from learned root weights
+PASS Expanded FDB: five ablations, exact resumed learning, 2048 roots, shared budget, threshold ±5 mV, disabled retention, corrupt-state atomicity, bounded memory and CPU threshold effect 29 > 5
+PASS projection cache: graph/ports/limit isolation, private maps/RNG, 8-entry bound; fixture coldMs=69.661904 warmMs=6.505865 (not phone latency)
+PASS: dual eligibility horizon, delayed credit, lesion/mask/freeze guards, v4/v5 migration, atomic malformed rejection, bounded serialization
+PASS: 60 real FDB frozen windows across three credit profiles; learned weights, Wexo, thresholds, traces, RNG, baseline and counters covered
+PASS: GPU planner contiguous roots 2048 -> 1 upload, sparse gaps, Wexo weight-only no adjacency rebuild, threshold isolation, restore, failure retry, atomic snapshots
+PASS: bounded FDB report, W0/effective delta, string 64-bit identities
+PASS: 120 paired temporal ablations, independent held-out starts, frozen state, reload parity; /tmp/tmp.dV20nLJYh1/fdb-temporal
+PASS: bounded latency percentiles, signed deletion diff and graph/ROM/ports isolation
+PASS: production dual contexts; request serial/frame boundary fencing, shared W0, isolated CPU/FDB/reward/RNG, frozen evaluation, continued checkpoint, strict identity and durable pair rollback; explicit 30-neuron mechanism fixture
+{"fullGraphs":false,"kind":"dual-context-isolation-diagnostics","rows":[{"baseEdges":0,"immutableGraphBytes":364,"p1":{"baseEdges":0,"acquiredEdges":48,"weightsSha":"223e00bf7dcd36fc8b1e88adbbc7401c3b27201fa5d5f8c02b523313ee089ab4","rejected":0,"automatic":11,"rng":2060971847,"neurons":30,"learningSha":"298a5bef05cce335c08fd56ba49a4b170cef0d186fbb3a5aeb07573432f13c10","layerBytesEstimate":79584,"windowMs":5,"model":"mechanism-fixture","id":"p1","graphSha":"13317789c36c4ea45262832829d5b84f8754242e8fbf0f7d976f99ea7a1dea3b"},"pairGraphAndEnginesBytesEstimate":6604,"p2":{"baseEdges":0,"acquiredEdges":48,"weightsSha":"34b293161ea69dadd0e63f7246521759371737bef63f9656500681cd5c2c85e8","rejected":1,"automatic":8,"rng":2413985194,"neurons":30,"learningSha":"552309fe8608b46de036428585b453a7008ebb3c3aac810d76a6a06701561683","layerBytesEstimate":26016,"windowMs":5,"model":"mechanism-fixture","id":"p2","graphSha":"13317789c36c4ea45262832829d5b84f8754242e8fbf0f7d976f99ea7a1dea3b"},"twoEnginesBytesEstimate":6240,"measuredEngineMs":4.818829,"model":"mechanism-fixture","neurons":30,"checkWallMs":198.974626,"graphSha":"13317789c36c4ea45262832829d5b84f8754242e8fbf0f7d976f99ea7a1dea3b"}],"limits":"Controlled technical I/O/rewards, no commercial-game success or biological equivalence. Checkpoint resumes learned topology with reset LIF dynamics."}
+PASS: sega actual observation → production CPU → neural action → hardware/RAM reward → Wexo; frozen evaluation and resumed checkpoint
+Map_LoROMMap
+PASS: snes actual observation → production CPU → neural action → hardware/RAM reward → Wexo; frozen evaluation and resumed checkpoint
+[Gambatte] Rumble environment not supported.
+[Gambatte] Plain ROM loaded.
+[Gambatte] rambanks: 0
+[Gambatte] rombanks: 2
+[Gambatte] Got internal game name: FLY GB TEST    .
+PASS: gb actual observation → production CPU → neural action → hardware/RAM reward → Wexo; frozen evaluation and resumed checkpoint
+FDB comparison saved: fdb-comparison.json
+PASS: sega five plasticity ablations, five seeds, two independent held-out states; full acquired parameter/trace continuation and frozen evaluation
+Map_LoROMMap
+PASS: snes five plasticity ablations, five seeds, two independent held-out states; full acquired parameter/trace continuation and frozen evaluation
+[Gambatte] Rumble environment not supported.
+[Gambatte] Plain ROM loaded.
+[Gambatte] rambanks: 0
+[Gambatte] rombanks: 2
+[Gambatte] Got internal game name: FLY GB TEST    .
+PASS: gb five plasticity ablations, five seeds, two independent held-out states; full acquired parameter/trace continuation and frozen evaluation
+FDB comparison saved: expanded-comparison.json
+PASS: native human sessions, reopen, coverage, idempotence, strict validation, crash-tail recovery, committed streaming export and storage limits
+PASS: real Mega Drive WASM, 68K ROM, RGB frames, PSG audio, pad->RAM, repeatable snapshots and reset
+PASS: SSP=0 cartridge boot, raw/swap/copier/SMD/MDX identities, regions and >8 MiB actual WASM load
+PASS: real API4 WASM and 68K ROM, physical P2 bus, independent ports, simultaneous input, snapshots, release/reset
+PASS: real 68K TH handshake, X/Y/Z/Mode on P1/P2, 3/6 controller types, snapshots and neutral reset
+PASS: actual WASM 256/320 columns, NTSC224/PAL240, complete solid raster, untouched padding/guards, snapshots and RGB ordering
+PASS: actual Genesis RAM-reward learning { before: -0.3, after: 79, updates: 7900 }
+[Gambatte] Rumble environment not supported.
+[Gambatte] Plain ROM loaded.
+[Gambatte] rambanks: 0
+[Gambatte] rombanks: 2
+[Gambatte] Got internal game name: FLY GB TEST    .
+PASS: gb real WASM cartridge, video/audio, hardware ports, RAM, snapshots and reset
+[Gambatte] Rumble environment not supported.
+[Gambatte] Plain ROM loaded.
+[Gambatte] rambanks: 0
+[Gambatte] rombanks: 2
+[Gambatte] Got internal game name: FLY GB TEST    𮀀
+PASS: gbc real WASM cartridge, video/audio, hardware ports, RAM, snapshots and reset
+Map_LoROMMap
+PASS: snes real WASM cartridge, video/audio, hardware ports, RAM, snapshots and reset
+PASS: module ZIP, traversal/native-file/size/API rejection
+PASS: JS Worker -> actual Java inference, seeded results, plots, CommonJS dependencies and error propagation
+PASS: benchmark completion denominator, interruption, measured FPS and Wilson confidence interval
+PASS: strict numbers/booleans, invalid/cancelled state preservation, 256 inputs, concurrent graph cache, fallback notice, SHA identity

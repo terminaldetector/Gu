@@ -1,0 +1,1 @@
+PASS: actual NES/MD portrait-landscape-portrait, deferred profile/graph-change restoration, neutral and virtual device handling, real gamepad auto-selection/input/disconnect, explicit preference preservation and bounded video/controls; native graph/device replies are fixtures

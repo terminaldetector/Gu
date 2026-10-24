@@ -10,9 +10,11 @@ for(const slot of FlySaveStates.slots){const option=document.createElement('opti
 $('saveState').before(slotPicker);
 const slotPreview=document.createElement('img');slotPreview.id='gameStatePreview';slotPreview.alt='Превью выбранного снимка';slotPreview.width=128;slotPreview.height=120;slotPreview.hidden=true;$('saveState').before(slotPreview);
 let gameRevision=null,gameRevisionKey=null,gameWriteQueue=Promise.resolve(),gameLoadJob=null;
+function objectiveBoundary(reason){try{window.gameObjectiveDiscovery?.boundary(reason);}catch(error){try{window.guLogger?.event?.('goal.discovery-error',{message:String(error.message||error)},'error');}catch(_){}}}
 async function gameList(){if(!loaded)return [];const c=gameContext(),core=nes,list=await gameStore.list(c);if(!loaded||nes!==core||romHash!==c.hash)return [];for(const option of slotPicker.options){const entry=list.find(v=>v.slot===option.value),base=option.value==='quick'?'Быстрый снимок':option.value==='auto'?'Автосохранение':'Слот '+option.value.slice(5);option.textContent=base+(entry?.error?' · повреждён':entry?' · '+new Date(entry.savedAt).toLocaleString()+(entry.recovered?' · резерв':''):' · пусто');}const selected=list.find(v=>v.slot===slotPicker.value);slotPreview.hidden=!selected?.preview;if(selected?.preview)slotPreview.src=selected.preview;return list;}
 slotPicker.addEventListener('change',()=>{gameRevision=null;gameRevisionKey=null;gameList().catch(e=>status(e.message,true));});
 function gameSave(slot=slotPicker.value,{automatic=false}={}){
+ objectiveBoundary('save-state');
  // Capture state and preview together, before hashing or storage can yield to a ROM switch.
  let c,snapshot,preview=null;
  try{c=gameContext();snapshot={system:c.system,hash:c.hash,frame,...(window.flyOriginId?{originId:window.flyOriginId}:{}),state:JSON.parse(JSON.stringify(nes.toJSON()))};try{preview=screen.toDataURL('image/jpeg',.35);}catch(_){}}catch(e){return Promise.reject(e);}
@@ -25,6 +27,7 @@ function gameSave(slot=slotPicker.value,{automatic=false}={}){
  });job.then(saved=>trace(null,{slot,revision:saved.revision}),error=>trace(error,{slot}));gameWriteQueue=job;return job;
 }
 function gameLoad(slot=slotPicker.value,{snapshot=null,permit=()=>true}={}){
+ objectiveBoundary('load-state');
  if(gameLoadJob)return Promise.reject(Error('Дождитесь текущей загрузки снимка'));
  const trace=window.guLogger?.operation?.('game.load')||(()=>{});
  gameLoadJob=(async()=>{

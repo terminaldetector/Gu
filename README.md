@@ -1,5 +1,7 @@
 ## Development direction: Autonomous Learning Emulator
 
+Version 2.1.7 adds [AGOD PR2](docs/AGOD_INSTRUMENTED_NES_RU.md): reproducible source-level NES write instrumentation in bounded opt-in windows. Known writer sites and static NROM banks are distinct from unknown mapper/cycle provenance. The global experimental gate remains off by default; traces do not establish game meaning or generate FDB reward.
+
 Version 2.1.6 starts [AGOD PR1](docs/AGOD_FOUNDATION_RU.md): bounded read-only NES observations, unverified RAM hypotheses and a separate objective-profile cache. A single experimental switch lives in the laboratory and defaults off pending Android overhead checks. This stage generates no automatic reward and makes no goal-understanding or learning-improvement claim. The [AGOD v1.2 specification](docs/GU_AUTOMATIC_GAME_OBJECTIVE_DISCOVERY_TZ_v1_2.md) defines the later tracing, causal-validation and verified-reward gates.
 
 Version 2.1.5 fixes repeated REC archive failures blocking later hint pauses, rejects expired background-save requests before they pause a resumed game, and distinguishes unknown game feedback from observed zero. The logger adds archive RPC timings and Android exit process attribution. See the [two-device-log findings, fixes and limits](docs/reports/device-diagnostics-2026-10-23/README.md).

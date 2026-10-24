@@ -50,11 +50,17 @@ jobs:
         env:
           FDB_TEMPORAL_REPORT: fdb-temporal
           AGOD_ROM_REPORT: agod-controlled-rom.json
+          AGOD_TRACE_REPORT: agod-nes-write-trace.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: FlyConsole-agod-controlled-results
           path: agod-controlled-rom.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: FlyConsole-agod-trace-results
+          path: agod-nes-write-trace.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:

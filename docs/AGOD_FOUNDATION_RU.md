@@ -72,8 +72,10 @@ Engine gate экспериментального observer по умолчани�
 
 ## Следующие stop-gates
 
-- **PR2:** writer-PC/bank tracing из воспроизводимого NES source, bounded окна,
-  watchpoints, fast-path parity и измерение overhead.
+- **PR2:** [реализация 2.1.7](AGOD_INSTRUMENTED_NES_RU.md) добавляет writer-PC/
+  статический NROM bank trace из воспроизводимого source, bounded окна и
+  watchpoints. Cycle precision и post-detach overhead остаются ограничениями;
+  Android S3 не закрыт.
 - **PR3:** изолированные action/no-op/alternative прогоны, карта причинности,
   проверка полярности/семантики, независимые discovery/calibration/holdout,
   калибровка false positives и contradiction/invalidated lifecycle.
