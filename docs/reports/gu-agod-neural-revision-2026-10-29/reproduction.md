@@ -32,6 +32,23 @@ node tools/agod_rom_check.cjs
 
 Все пять завершаются кодом 0. Логи: `logs/core_probe_check.log` и далее по именам.
 
+## 2a. Экспериментальные проверки E3 / E4 / AGOD-08
+
+Добавлены этой ревизией. `tools/check.sh` и CI не изменялись, поэтому запускаются
+отдельно, из корня репозитория:
+
+```sh
+AGOD_CAUSAL_REPORT=logs/causal_report.json     node tools/agod_causal_check.cjs
+AGOD_REWARD_REPORT=logs/reward_report.json     node tools/agod_reward_check.cjs
+AGOD_EVIDENCE_REPORT=logs/evidence_report.json node tools/agod_evidence_check.cjs
+```
+
+Каждая завершается кодом 0 и печатает итоговый JSON последней строкой; переменные
+окружения необязательны и только сохраняют машиночитаемый отчёт. Контролируемые
+картриджи генерируются самой проверкой через `tools/make_agod_test_rom.py`
+(нужен `python3`), во временный каталог, который удаляется после прогона;
+коммерческих ROM не требуется и в репозитории их нет.
+
 ## 3. Полная регрессия
 
 ```sh
