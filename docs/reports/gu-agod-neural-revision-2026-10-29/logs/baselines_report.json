@@ -88,6 +88,64 @@
         "cb6961edd89e",
         "78b97dc63cc9"
       ]
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "romHash": "c6ba5d98a4a618aa68ba7baa5d404f3c9d6ba0da506bd025025d2538fcaea2aa",
+      "pipeline": "REFUSED",
+      "pipelineStage": "judge",
+      "verifiedRewardAvailable": false,
+      "costMask": 8,
+      "effectMask": 1,
+      "masks": [
+        0,
+        1,
+        8,
+        2
+      ],
+      "provisionalField": {
+        "address": 156,
+        "mask": 1
+      },
+      "provisionalIsLabelledField": true,
+      "outcomeField": {
+        "name": "treasure",
+        "address": 156
+      },
+      "startHashes": [
+        "952f3352e87e",
+        "a257d9bf6d42"
+      ]
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "romHash": "1abd0033c44fab1d0185a81c2030647f990f443550cdfdb7417922fe4ef7fa90",
+      "pipeline": "REFUSED",
+      "pipelineStage": "judge",
+      "verifiedRewardAvailable": false,
+      "costMask": 64,
+      "effectMask": 1,
+      "masks": [
+        0,
+        1,
+        64,
+        2
+      ],
+      "provisionalField": {
+        "address": 92,
+        "mask": 1
+      },
+      "provisionalIsLabelledField": true,
+      "outcomeField": {
+        "name": "steadyGain",
+        "address": 92
+      },
+      "startHashes": [
+        "6dfa50141288",
+        "33ab13309372"
+      ]
     }
   ],
   "runs": [
@@ -103,7 +161,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "survival",
@@ -117,35 +177,41 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "survival",
       "seed": 0,
       "start": "start-0",
-      "arm": "random",
+      "arm": "uniform-random",
       "target": null,
       "rewardSource": null,
-      "frozenOutcomeGain": -1,
-      "frozenCostRate": 0.25,
+      "frozenOutcomeGain": 0,
+      "frozenCostRate": 0.36666666666666664,
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "survival",
       "seed": 0,
       "start": "start-1",
-      "arm": "random",
+      "arm": "uniform-random",
       "target": null,
       "rewardSource": null,
-      "frozenOutcomeGain": -1,
-      "frozenCostRate": 0.25,
+      "frozenOutcomeGain": 0,
+      "frozenCostRate": 0.36666666666666664,
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "survival",
@@ -159,7 +225,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "survival",
@@ -173,7 +241,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "survival",
@@ -187,7 +257,9 @@
       "updates": 184,
       "storedTransitions": 84,
       "paidClaims": 84,
-      "unknownClaims": 216
+      "unknownClaims": 216,
+      "untrained": false,
+      "hadRewardSignal": true
     },
     {
       "family": "survival",
@@ -201,7 +273,9 @@
       "updates": 184,
       "storedTransitions": 84,
       "paidClaims": 84,
-      "unknownClaims": 216
+      "unknownClaims": 216,
+      "untrained": false,
+      "hadRewardSignal": true
     },
     {
       "family": "survival",
@@ -215,7 +289,9 @@
       "updates": 184,
       "storedTransitions": 84,
       "paidClaims": 84,
-      "unknownClaims": 216
+      "unknownClaims": 216,
+      "untrained": false,
+      "hadRewardSignal": true
     },
     {
       "family": "survival",
@@ -229,7 +305,9 @@
       "updates": 184,
       "storedTransitions": 84,
       "paidClaims": 84,
-      "unknownClaims": 216
+      "unknownClaims": 216,
+      "untrained": false,
+      "hadRewardSignal": true
     },
     {
       "family": "survival",
@@ -238,12 +316,14 @@
       "arm": "vanilla-dqn/oracle",
       "target": "vanilla",
       "rewardSource": "oracle",
-      "frozenOutcomeGain": -2,
-      "frozenCostRate": 1,
+      "frozenOutcomeGain": 0,
+      "frozenCostRate": 0,
       "updates": 184,
       "storedTransitions": 84,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
     },
     {
       "family": "survival",
@@ -252,12 +332,14 @@
       "arm": "vanilla-dqn/oracle",
       "target": "vanilla",
       "rewardSource": "oracle",
-      "frozenOutcomeGain": -2,
-      "frozenCostRate": 1,
+      "frozenOutcomeGain": 0,
+      "frozenCostRate": 0,
       "updates": 184,
       "storedTransitions": 84,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
     },
     {
       "family": "survival",
@@ -266,12 +348,14 @@
       "arm": "double-dqn/oracle",
       "target": "double",
       "rewardSource": "oracle",
-      "frozenOutcomeGain": -2,
-      "frozenCostRate": 1,
+      "frozenOutcomeGain": 0,
+      "frozenCostRate": 0,
       "updates": 184,
       "storedTransitions": 84,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
     },
     {
       "family": "survival",
@@ -280,12 +364,14 @@
       "arm": "double-dqn/oracle",
       "target": "double",
       "rewardSource": "oracle",
-      "frozenOutcomeGain": -2,
-      "frozenCostRate": 1,
+      "frozenOutcomeGain": 0,
+      "frozenCostRate": 0,
       "updates": 184,
       "storedTransitions": 84,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
     },
     {
       "family": "survival",
@@ -299,7 +385,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": true,
+      "hadRewardSignal": false
     },
     {
       "family": "survival",
@@ -313,7 +401,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": true,
+      "hadRewardSignal": false
     },
     {
       "family": "survival",
@@ -327,7 +417,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "survival",
@@ -341,35 +433,41 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "survival",
       "seed": 1,
       "start": "start-0",
-      "arm": "random",
+      "arm": "uniform-random",
       "target": null,
       "rewardSource": null,
       "frozenOutcomeGain": 0,
-      "frozenCostRate": 0.25,
+      "frozenCostRate": 0.36666666666666664,
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "survival",
       "seed": 1,
       "start": "start-1",
-      "arm": "random",
+      "arm": "uniform-random",
       "target": null,
       "rewardSource": null,
       "frozenOutcomeGain": 0,
-      "frozenCostRate": 0.25,
+      "frozenCostRate": 0.36666666666666664,
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "survival",
@@ -383,7 +481,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "survival",
@@ -397,7 +497,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "survival",
@@ -411,7 +513,9 @@
       "updates": 115,
       "storedTransitions": 55,
       "paidClaims": 55,
-      "unknownClaims": 245
+      "unknownClaims": 245,
+      "untrained": false,
+      "hadRewardSignal": true
     },
     {
       "family": "survival",
@@ -425,7 +529,9 @@
       "updates": 115,
       "storedTransitions": 55,
       "paidClaims": 55,
-      "unknownClaims": 245
+      "unknownClaims": 245,
+      "untrained": false,
+      "hadRewardSignal": true
     },
     {
       "family": "survival",
@@ -439,7 +545,9 @@
       "updates": 115,
       "storedTransitions": 55,
       "paidClaims": 55,
-      "unknownClaims": 245
+      "unknownClaims": 245,
+      "untrained": false,
+      "hadRewardSignal": true
     },
     {
       "family": "survival",
@@ -453,7 +561,9 @@
       "updates": 115,
       "storedTransitions": 55,
       "paidClaims": 55,
-      "unknownClaims": 245
+      "unknownClaims": 245,
+      "untrained": false,
+      "hadRewardSignal": true
     },
     {
       "family": "survival",
@@ -462,12 +572,14 @@
       "arm": "vanilla-dqn/oracle",
       "target": "vanilla",
       "rewardSource": "oracle",
-      "frozenOutcomeGain": -2,
-      "frozenCostRate": 1,
+      "frozenOutcomeGain": 0,
+      "frozenCostRate": 0,
       "updates": 115,
       "storedTransitions": 55,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
     },
     {
       "family": "survival",
@@ -476,12 +588,14 @@
       "arm": "vanilla-dqn/oracle",
       "target": "vanilla",
       "rewardSource": "oracle",
-      "frozenOutcomeGain": -2,
-      "frozenCostRate": 1,
+      "frozenOutcomeGain": 0,
+      "frozenCostRate": 0,
       "updates": 115,
       "storedTransitions": 55,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
     },
     {
       "family": "survival",
@@ -490,12 +604,14 @@
       "arm": "double-dqn/oracle",
       "target": "double",
       "rewardSource": "oracle",
-      "frozenOutcomeGain": -2,
-      "frozenCostRate": 1,
+      "frozenOutcomeGain": 0,
+      "frozenCostRate": 0,
       "updates": 115,
       "storedTransitions": 55,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
     },
     {
       "family": "survival",
@@ -504,12 +620,14 @@
       "arm": "double-dqn/oracle",
       "target": "double",
       "rewardSource": "oracle",
-      "frozenOutcomeGain": -2,
-      "frozenCostRate": 1,
+      "frozenOutcomeGain": 0,
+      "frozenCostRate": 0,
       "updates": 115,
       "storedTransitions": 55,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
     },
     {
       "family": "survival",
@@ -523,7 +641,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": true,
+      "hadRewardSignal": false
     },
     {
       "family": "survival",
@@ -537,7 +657,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": true,
+      "hadRewardSignal": false
     },
     {
       "family": "sacrifice",
@@ -551,7 +673,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "sacrifice",
@@ -565,35 +689,41 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "sacrifice",
       "seed": 0,
       "start": "start-0",
-      "arm": "random",
+      "arm": "uniform-random",
       "target": null,
       "rewardSource": null,
-      "frozenOutcomeGain": 1,
-      "frozenCostRate": 0.25,
+      "frozenOutcomeGain": 3,
+      "frozenCostRate": 0.36666666666666664,
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "sacrifice",
       "seed": 0,
       "start": "start-1",
-      "arm": "random",
+      "arm": "uniform-random",
       "target": null,
       "rewardSource": null,
-      "frozenOutcomeGain": 1,
-      "frozenCostRate": 0.25,
+      "frozenOutcomeGain": 3,
+      "frozenCostRate": 0.36666666666666664,
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "sacrifice",
@@ -607,7 +737,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "sacrifice",
@@ -621,7 +753,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     },
     {
       "family": "sacrifice",
@@ -635,7 +769,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 300
+      "unknownClaims": 300,
+      "untrained": true,
+      "hadRewardSignal": false
     },
     {
       "family": "sacrifice",
@@ -649,7 +785,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 300
+      "unknownClaims": 300,
+      "untrained": true,
+      "hadRewardSignal": false
     },
     {
       "family": "sacrifice",
@@ -663,7 +801,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 300
+      "unknownClaims": 300,
+      "untrained": true,
+      "hadRewardSignal": false
     },
     {
       "family": "sacrifice",
@@ -677,7 +817,9 @@
       "updates": 0,
       "storedTransitions": 0,
       "paidClaims": 0,
-      "unknownClaims": 300
+      "unknownClaims": 300,
+      "untrained": true,
+      "hadRewardSignal": false
     },
     {
       "family": "sacrifice",
@@ -691,7 +833,441 @@
       "updates": 176,
       "storedTransitions": 74,
       "paidClaims": 0,
-      "unknownClaims": 0
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
+    },
+    {
+      "family": "sacrifice",
+      "seed": 0,
+      "start": "start-1",
+      "arm": "vanilla-dqn/oracle",
+      "target": "vanilla",
+      "rewardSource": "oracle",
+      "frozenOutcomeGain": 60,
+      "frozenCostRate": 0,
+      "updates": 176,
+      "storedTransitions": 74,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
+    },
+    {
+      "family": "sacrifice",
+      "seed": 0,
+      "start": "start-0",
+      "arm": "double-dqn/oracle",
+      "target": "double",
+      "rewardSource": "oracle",
+      "frozenOutcomeGain": 60,
+      "frozenCostRate": 0,
+      "updates": 176,
+      "storedTransitions": 74,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
+    },
+    {
+      "family": "sacrifice",
+      "seed": 0,
+      "start": "start-1",
+      "arm": "double-dqn/oracle",
+      "target": "double",
+      "rewardSource": "oracle",
+      "frozenOutcomeGain": 60,
+      "frozenCostRate": 0,
+      "updates": 176,
+      "storedTransitions": 74,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
+    },
+    {
+      "family": "sacrifice",
+      "seed": 0,
+      "start": "start-0",
+      "arm": "double-dqn/provisional",
+      "target": "double",
+      "rewardSource": "provisional",
+      "frozenOutcomeGain": 60,
+      "frozenCostRate": 0,
+      "updates": 176,
+      "storedTransitions": 74,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
+    },
+    {
+      "family": "sacrifice",
+      "seed": 0,
+      "start": "start-1",
+      "arm": "double-dqn/provisional",
+      "target": "double",
+      "rewardSource": "provisional",
+      "frozenOutcomeGain": 60,
+      "frozenCostRate": 0,
+      "updates": 176,
+      "storedTransitions": 74,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "start": "start-0",
+      "arm": "no-op",
+      "target": null,
+      "rewardSource": null,
+      "frozenOutcomeGain": 0,
+      "frozenCostRate": 0,
+      "updates": 0,
+      "storedTransitions": 0,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "start": "start-1",
+      "arm": "no-op",
+      "target": null,
+      "rewardSource": null,
+      "frozenOutcomeGain": 0,
+      "frozenCostRate": 0,
+      "updates": 0,
+      "storedTransitions": 0,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "start": "start-0",
+      "arm": "uniform-random",
+      "target": null,
+      "rewardSource": null,
+      "frozenOutcomeGain": 3,
+      "frozenCostRate": 0.36666666666666664,
+      "updates": 0,
+      "storedTransitions": 0,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "start": "start-1",
+      "arm": "uniform-random",
+      "target": null,
+      "rewardSource": null,
+      "frozenOutcomeGain": 3,
+      "frozenCostRate": 0.36666666666666664,
+      "updates": 0,
+      "storedTransitions": 0,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "start": "start-0",
+      "arm": "safety-heuristic",
+      "target": null,
+      "rewardSource": null,
+      "frozenOutcomeGain": 20,
+      "frozenCostRate": 0,
+      "updates": 0,
+      "storedTransitions": 0,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "start": "start-1",
+      "arm": "safety-heuristic",
+      "target": null,
+      "rewardSource": null,
+      "frozenOutcomeGain": 20,
+      "frozenCostRate": 0,
+      "updates": 0,
+      "storedTransitions": 0,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "start": "start-0",
+      "arm": "vanilla-dqn/discovered",
+      "target": "vanilla",
+      "rewardSource": "discovered",
+      "frozenOutcomeGain": 60,
+      "frozenCostRate": 0,
+      "updates": 0,
+      "storedTransitions": 0,
+      "paidClaims": 0,
+      "unknownClaims": 300,
+      "untrained": true,
+      "hadRewardSignal": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "start": "start-1",
+      "arm": "vanilla-dqn/discovered",
+      "target": "vanilla",
+      "rewardSource": "discovered",
+      "frozenOutcomeGain": 60,
+      "frozenCostRate": 0,
+      "updates": 0,
+      "storedTransitions": 0,
+      "paidClaims": 0,
+      "unknownClaims": 300,
+      "untrained": true,
+      "hadRewardSignal": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "start": "start-0",
+      "arm": "double-dqn/discovered",
+      "target": "double",
+      "rewardSource": "discovered",
+      "frozenOutcomeGain": 60,
+      "frozenCostRate": 0,
+      "updates": 0,
+      "storedTransitions": 0,
+      "paidClaims": 0,
+      "unknownClaims": 300,
+      "untrained": true,
+      "hadRewardSignal": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "start": "start-1",
+      "arm": "double-dqn/discovered",
+      "target": "double",
+      "rewardSource": "discovered",
+      "frozenOutcomeGain": 60,
+      "frozenCostRate": 0,
+      "updates": 0,
+      "storedTransitions": 0,
+      "paidClaims": 0,
+      "unknownClaims": 300,
+      "untrained": true,
+      "hadRewardSignal": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "start": "start-0",
+      "arm": "vanilla-dqn/oracle",
+      "target": "vanilla",
+      "rewardSource": "oracle",
+      "frozenOutcomeGain": 60,
+      "frozenCostRate": 0,
+      "updates": 176,
+      "storedTransitions": 74,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "start": "start-1",
+      "arm": "vanilla-dqn/oracle",
+      "target": "vanilla",
+      "rewardSource": "oracle",
+      "frozenOutcomeGain": 60,
+      "frozenCostRate": 0,
+      "updates": 176,
+      "storedTransitions": 74,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "start": "start-0",
+      "arm": "double-dqn/oracle",
+      "target": "double",
+      "rewardSource": "oracle",
+      "frozenOutcomeGain": 60,
+      "frozenCostRate": 0,
+      "updates": 176,
+      "storedTransitions": 74,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "start": "start-1",
+      "arm": "double-dqn/oracle",
+      "target": "double",
+      "rewardSource": "oracle",
+      "frozenOutcomeGain": 60,
+      "frozenCostRate": 0,
+      "updates": 176,
+      "storedTransitions": 74,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "start": "start-0",
+      "arm": "double-dqn/provisional",
+      "target": "double",
+      "rewardSource": "provisional",
+      "frozenOutcomeGain": 60,
+      "frozenCostRate": 0,
+      "updates": 176,
+      "storedTransitions": 74,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "start": "start-1",
+      "arm": "double-dqn/provisional",
+      "target": "double",
+      "rewardSource": "provisional",
+      "frozenOutcomeGain": 60,
+      "frozenCostRate": 0,
+      "updates": 176,
+      "storedTransitions": 74,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": true
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "start": "start-0",
+      "arm": "no-op",
+      "target": null,
+      "rewardSource": null,
+      "frozenOutcomeGain": 0,
+      "frozenCostRate": 0,
+      "updates": 0,
+      "storedTransitions": 0,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "start": "start-1",
+      "arm": "no-op",
+      "target": null,
+      "rewardSource": null,
+      "frozenOutcomeGain": 0,
+      "frozenCostRate": 0,
+      "updates": 0,
+      "storedTransitions": 0,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "start": "start-0",
+      "arm": "uniform-random",
+      "target": null,
+      "rewardSource": null,
+      "frozenOutcomeGain": 2,
+      "frozenCostRate": 0.36666666666666664,
+      "updates": 0,
+      "storedTransitions": 0,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "start": "start-1",
+      "arm": "uniform-random",
+      "target": null,
+      "rewardSource": null,
+      "frozenOutcomeGain": 2,
+      "frozenCostRate": 0.36666666666666664,
+      "updates": 0,
+      "storedTransitions": 0,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "start": "start-0",
+      "arm": "safety-heuristic",
+      "target": null,
+      "rewardSource": null,
+      "frozenOutcomeGain": 20,
+      "frozenCostRate": 0,
+      "updates": 0,
+      "storedTransitions": 0,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "start": "start-1",
+      "arm": "safety-heuristic",
+      "target": null,
+      "rewardSource": null,
+      "frozenOutcomeGain": 20,
+      "frozenCostRate": 0,
+      "updates": 0,
+      "storedTransitions": 0,
+      "paidClaims": 0,
+      "unknownClaims": 0,
+      "untrained": false,
+      "hadRewardSignal": null
     }
   ]
 }

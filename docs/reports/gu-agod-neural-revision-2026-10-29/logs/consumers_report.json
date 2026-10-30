@@ -1,0 +1,10 @@
+{
+  "type": "gu-agod-consumers-check",
+  "version": 1,
+  "scope": "host emulator; three controlled families, 3 cartridges each",
+  "instrument": "a counterfactual on the field itself: write a reachable second value, leave everything else identical, run a fixed schedule and compare RAM outside the field own bytes",
+  "claim": "Whether a cartridge reads a variable is measurable, and it does not follow from the variable accumulating, persisting or being rate-modulated. Where this disagrees with a closed label, the label is the thing that is wrong.",
+  "status": "RUNNING",
+  "fields": [],
+  "modulation": []
+}

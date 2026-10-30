@@ -34,12 +34,16 @@ const SEEDS=[0,1],STARTS=2,HOLD=4,RELEASE=8,SETTLE=30;
 const TRAIN_STEPS=300,EVAL_STEPS=60,AGENT_SEED=11;
 const REV='profile-rev-1',CORE='jsnes-nes';
 const FAMILIES=[
- {name:'survival',generator:'make_agod_test_rom.py',outcome:'lives',direction:-1},
+ /* `direction` multiplies the observed delta to make the reward, and it must be
+    +1 everywhere: a lost life is already a negative delta, so inverting it
+    rewarded the oracle arm for dying - which the first run of this check duly
+    produced (cost rate 0.333, outcome -2.0 on survival). */
+ {name:'survival',generator:'make_agod_test_rom.py',outcome:'lives',direction:1},
  {name:'sacrifice',generator:'make_agod_sacrifice_rom.py',outcome:'treasure',direction:1},
  {name:'rate-trap',generator:'make_agod_rate_trap_rom.py',outcome:'steadyGain',direction:1}];
 const ARMS=[
  {id:'no-op',kind:'fixed'},
- {id:'random',kind:'fixed'},
+ {id:'uniform-random',kind:'fixed'},
  {id:'safety-heuristic',kind:'fixed'},
  {id:'vanilla-dqn/discovered',kind:'learn',target:'vanilla',reward:'discovered'},
  {id:'double-dqn/discovered',kind:'learn',target:'double',reward:'discovered'},
@@ -135,6 +139,9 @@ try{
    for(const arm of ARMS){
     for(const start of starts){
      const broker=Reward.createBroker({profileRevision:REV,contextKey:descriptor.sha256+'/'+CORE});
+     /* The old 'random' arm was step*7%4, a fixed cycle rather than a random
+        policy. Seeded so it still reproduces. */
+     const noise=Dqn.createRng(AGENT_SEED);
      const agent=arm.kind==='learn'?Dqn.createAgent({inputs:6,hidden:24,actions:4,seed:AGENT_SEED,
       warmup:24,batchSize:32,syncEvery:40,gamma:0.95,lr:0.003,targetMode:arm.target}):null;
      let event=0,paid=0,unknown=0,stored=0;
@@ -147,7 +154,7 @@ try{
       for(let step=0;step<steps;step++){
        let action;
        if(arm.id==='no-op')action=0;
-       else if(arm.id==='random')action=step*7%4;
+       else if(arm.id==='uniform-random')action=noise.int(4);
        else if(arm.id==='safety-heuristic'){
         /* Hand-written, no learning: never take the action discovery flagged as
            the cost, cycle over the rest. */
@@ -189,11 +196,16 @@ try{
      };
      if(arm.kind==='learn')episode(TRAIN_STEPS,{epsilon:1,learn:true});
      const frozen=episode(EVAL_STEPS,{epsilon:0,learn:false});
+     const untrained=arm.kind==='learn'&&agent.stats().updates===0;
      runs.push({family:family.name,seed,start:start.id,arm:arm.id,
       target:arm.target||null,rewardSource:arm.reward||null,
       frozenOutcomeGain:frozen.outcomeGain,frozenCostRate:frozen.costRate,
       updates:agent?agent.stats().updates:0,storedTransitions:stored,
-      paidClaims:paid,unknownClaims:unknown});save();
+      paidClaims:paid,unknownClaims:unknown,
+      /* A learning arm that never received a reward did not learn. Its frozen
+         behaviour is where an untrained argmax happened to land, and reporting
+         that as performance would be a fabrication. */
+      untrained,hadRewardSignal:arm.kind!=='learn'?null:!untrained});save();
     }
    }
   }
@@ -203,20 +215,33 @@ try{
  const key=r=>r.family+'/'+r.seed+'/'+r.start;
  const pairs=[...new Set(runs.map(key))];
  const mean=values=>values.length?values.reduce((a,b)=>a+b,0)/values.length:null;
- const ranksByArm={};
+ /* Two rankings. The first is what a naive table would print, including runs
+    where a learning arm had nothing to learn from. The second counts an arm
+    only where it actually had a reward signal, and is the only one that says
+    anything about learning. */
+ const ranksByArm={},ranksTrainedOnly={};
  for(const pair of pairs){
   const rows=runs.filter(r=>key(r)===pair);
   const sorted=[...rows].sort((a,b)=>b.frozenOutcomeGain-a.frozenOutcomeGain);
   sorted.forEach((row,index)=>{(ranksByArm[row.arm]=ranksByArm[row.arm]||[]).push(index+1);});
+  const eligible=rows.filter(r=>!r.untrained);
+  [...eligible].sort((a,b)=>b.frozenOutcomeGain-a.frozenOutcomeGain)
+   .forEach((row,index)=>{(ranksTrainedOnly[row.arm]=ranksTrainedOnly[row.arm]||[]).push(index+1);});
  }
  const perArm=ARMS.map(arm=>{
   const rows=runs.filter(r=>r.arm===arm.id);
   const byFamily={};
   for(const family of FAMILIES)
    byFamily[family.name]=mean(rows.filter(r=>r.family===family.name).map(r=>r.frozenOutcomeGain));
+  const trained=rows.filter(r=>!r.untrained);
+  const byFamilyTrained={};
+  for(const family of FAMILIES)
+   byFamilyTrained[family.name]=mean(trained.filter(r=>r.family===family.name).map(r=>r.frozenOutcomeGain));
   return {arm:arm.id,target:arm.target||null,rewardSource:arm.reward||null,
    meanRank:mean(ranksByArm[arm.id]||[]),
-   outcomeByFamily:byFamily,
+   meanRankWhereItHadASignal:mean(ranksTrainedOnly[arm.id]||[]),
+   untrainedRuns:rows.length-trained.length,runs:rows.length,
+   outcomeByFamily:byFamily,outcomeByFamilyWhereTrained:byFamilyTrained,
    meanCostRate:mean(rows.map(r=>r.frozenCostRate)),
    meanUpdates:mean(rows.map(r=>r.updates)),
    meanStoredTransitions:mean(rows.map(r=>r.storedTransitions))};
@@ -230,12 +255,15 @@ try{
   provisionalProposedAtAll:tasks.filter(t=>t.provisionalField).length,
   discoveryEffect:'compare the discovered arms with the oracle arms at the same target',
   algorithmEffect:'compare vanilla with double at the same reward source',
+  untrainedLearningRuns:runs.filter(r=>r.untrained).length,
+  learningRunsTotal:runs.filter(r=>r.rewardSource).length,
+  rankingCaveat:'meanRank includes runs where a learning arm never received a reward and so never trained; meanRankWhereItHadASignal excludes them and is the only figure that describes learning',
   legacyFdbRun:false};
  save();
 
  assert.equal(arm('double-dqn/discovered').meanStoredTransitions===0,false,
   'the discovered arm must learn on at least one task, or the comparison is empty');
- assert(arm('no-op').meanUpdates===0&&arm('random').meanUpdates===0,'fixed arms must not train');
+ assert(arm('no-op').meanUpdates===0&&arm('uniform-random').meanUpdates===0,'fixed arms must not train');
  result.status='PASS';save();
  console.log(JSON.stringify({type:result.type,status:result.status,totals:result.totals,tasks,runs}));
  console.log('PASS: '+pairs.length+' independent (task, start) pairs across 3 families under one budget. '+

@@ -1,0 +1,348 @@
+{
+  "type": "gu-agod-private-rom-gate",
+  "version": 1,
+  "corpusClass": "private user-supplied real-game validation, NOT an independent blind or homebrew corpus",
+  "publication": "ROM bytes are never included in this artefact; hashes, header metadata and aggregate outcomes only",
+  "scope": "jsnes in Node, no Android, no AGOD in this gate",
+  "status": "COMPLETE",
+  "results": [
+    {
+      "rom": "galaga.nes",
+      "stages": {
+        "header": {
+          "status": "PASS",
+          "format": "NES 2.0",
+          "mapper": 0,
+          "submapper": 0,
+          "prgRomBytes": 32768,
+          "chrRomBytes": 8192,
+          "chrRamBytes": 0,
+          "timingHeader": "NTSC",
+          "sizeConsistent": true
+        },
+        "load": {
+          "status": "PASS",
+          "note": "loaded without throwing, which the handoff correctly says is not proof of correct execution for a NES 2.0 header"
+        },
+        "run180": {
+          "status": "PASS",
+          "framesDelivered": 180,
+          "framesWithVisibleChange": 84
+        },
+        "video": {
+          "status": "PASS",
+          "framesWithVisibleChange": 84,
+          "reason": "the picture changes, so the core is rendering something"
+        },
+        "saveStateParity": {
+          "status": "PASS",
+          "observationIsPure": true,
+          "replayMatches": true,
+          "restoredHash": "457ec030775418c4",
+          "afterPlay": "f9eab219a9d18549",
+          "afterReplay": "f9eab219a9d18549"
+        },
+        "determinism": {
+          "status": "PASS",
+          "identical": true,
+          "hash": "4d3552330acfaf6a"
+        },
+        "controllable": {
+          "status": "PASS",
+          "ramBytesDifferingFromNeutral": 192,
+          "reason": "pressing Start changes RAM relative to neutral play of the same length"
+        },
+        "mapperGating": {
+          "status": "PASS",
+          "mapper": 0,
+          "note": "NROM, no bank switching to verify"
+        },
+        "timing": {
+          "status": "PASS",
+          "timingHeader": "NTSC",
+          "reason": "NTSC header on an NTSC-timed core"
+        }
+      },
+      "sha256": "116ff51eabad94da0c3bf32de9d50cc84becf73814fa2bf5574676b058a0a09a",
+      "fileBytes": 40976,
+      "header": {
+        "magic": true,
+        "format": "NES 2.0",
+        "mapper": 0,
+        "submapper": 0,
+        "prgRomBytes": 32768,
+        "chrRomBytes": 8192,
+        "chrRamBytes": 0,
+        "prgRamBytes": 0,
+        "mirroring": "horizontal",
+        "battery": false,
+        "trainerBytes": 0,
+        "timingHeader": "NTSC"
+      }
+    },
+    {
+      "rom": "contra.nes",
+      "stages": {
+        "header": {
+          "status": "PASS",
+          "format": "NES 2.0",
+          "mapper": 2,
+          "submapper": 2,
+          "prgRomBytes": 131072,
+          "chrRomBytes": 0,
+          "chrRamBytes": 8192,
+          "timingHeader": "NTSC",
+          "sizeConsistent": true
+        },
+        "load": {
+          "status": "PASS",
+          "note": "loaded without throwing, which the handoff correctly says is not proof of correct execution for a NES 2.0 header"
+        },
+        "run180": {
+          "status": "PASS",
+          "framesDelivered": 180,
+          "framesWithVisibleChange": 85
+        },
+        "video": {
+          "status": "PASS",
+          "framesWithVisibleChange": 85,
+          "reason": "the picture changes, so the core is rendering something"
+        },
+        "saveStateParity": {
+          "status": "PASS",
+          "observationIsPure": true,
+          "replayMatches": true,
+          "restoredHash": "452a3c45cd225a91",
+          "afterPlay": "18338581dad57d39",
+          "afterReplay": "18338581dad57d39"
+        },
+        "determinism": {
+          "status": "PASS",
+          "identical": true,
+          "hash": "431da382422434cc"
+        },
+        "controllable": {
+          "status": "PASS",
+          "ramBytesDifferingFromNeutral": 58,
+          "reason": "pressing Start changes RAM relative to neutral play of the same length"
+        },
+        "mapperGating": {
+          "status": "UNKNOWN",
+          "mapper": 2,
+          "submapper": 2,
+          "reason": "UxROM with submapper 2 means bus conflicts on the bank register. This gate does not verify that jsnes models them, and no claim of correct bank switching is made. CPU writer provenance from the NROM path must not be reused here."
+        },
+        "timing": {
+          "status": "PASS",
+          "timingHeader": "NTSC",
+          "reason": "NTSC header on an NTSC-timed core"
+        }
+      },
+      "sha256": "1f4a9b3f04e2f828688512c0b83611a87c3fc1bd4f85ed91da1b19abc5816d73",
+      "fileBytes": 131088,
+      "header": {
+        "magic": true,
+        "format": "NES 2.0",
+        "mapper": 2,
+        "submapper": 2,
+        "prgRomBytes": 131072,
+        "chrRomBytes": 0,
+        "chrRamBytes": 8192,
+        "prgRamBytes": 0,
+        "mirroring": "vertical",
+        "battery": false,
+        "trainerBytes": 0,
+        "timingHeader": "NTSC"
+      }
+    },
+    {
+      "rom": "lifeforce.nes",
+      "stages": {
+        "header": {
+          "status": "PASS",
+          "format": "NES 2.0",
+          "mapper": 2,
+          "submapper": 2,
+          "prgRomBytes": 131072,
+          "chrRomBytes": 0,
+          "chrRamBytes": 8192,
+          "timingHeader": "NTSC",
+          "sizeConsistent": true
+        },
+        "load": {
+          "status": "PASS",
+          "note": "loaded without throwing, which the handoff correctly says is not proof of correct execution for a NES 2.0 header"
+        },
+        "run180": {
+          "status": "PASS",
+          "framesDelivered": 180,
+          "framesWithVisibleChange": 2
+        },
+        "video": {
+          "status": "PASS",
+          "framesWithVisibleChange": 2,
+          "reason": "the picture changes, so the core is rendering something"
+        },
+        "saveStateParity": {
+          "status": "PASS",
+          "observationIsPure": true,
+          "replayMatches": true,
+          "restoredHash": "22c85b70331fc08a",
+          "afterPlay": "f587d8b0bcdcee92",
+          "afterReplay": "f587d8b0bcdcee92"
+        },
+        "determinism": {
+          "status": "PASS",
+          "identical": true,
+          "hash": "61d7e645454ce985"
+        },
+        "controllable": {
+          "status": "PASS",
+          "ramBytesDifferingFromNeutral": 175,
+          "reason": "pressing Start changes RAM relative to neutral play of the same length"
+        },
+        "mapperGating": {
+          "status": "UNKNOWN",
+          "mapper": 2,
+          "submapper": 2,
+          "reason": "UxROM with submapper 2 means bus conflicts on the bank register. This gate does not verify that jsnes models them, and no claim of correct bank switching is made. CPU writer provenance from the NROM path must not be reused here."
+        },
+        "timing": {
+          "status": "PASS",
+          "timingHeader": "NTSC",
+          "reason": "NTSC header on an NTSC-timed core"
+        }
+      },
+      "sha256": "c725a0c6b3eb52f542c10cf40538b69d0b163e5884ced7530dd250dbc02749b4",
+      "fileBytes": 131088,
+      "header": {
+        "magic": true,
+        "format": "NES 2.0",
+        "mapper": 2,
+        "submapper": 2,
+        "prgRomBytes": 131072,
+        "chrRomBytes": 0,
+        "chrRamBytes": 8192,
+        "prgRamBytes": 0,
+        "mirroring": "vertical",
+        "battery": false,
+        "trainerBytes": 0,
+        "timingHeader": "NTSC"
+      }
+    },
+    {
+      "rom": "roadfighter.nes",
+      "stages": {
+        "header": {
+          "status": "PASS",
+          "format": "NES 2.0",
+          "mapper": 0,
+          "submapper": 0,
+          "prgRomBytes": 16384,
+          "chrRomBytes": 8192,
+          "chrRamBytes": 0,
+          "timingHeader": "PAL",
+          "sizeConsistent": true
+        },
+        "load": {
+          "status": "PASS",
+          "note": "loaded without throwing, which the handoff correctly says is not proof of correct execution for a NES 2.0 header"
+        },
+        "run180": {
+          "status": "PASS",
+          "framesDelivered": 180,
+          "framesWithVisibleChange": 2
+        },
+        "video": {
+          "status": "PASS",
+          "framesWithVisibleChange": 2,
+          "reason": "the picture changes, so the core is rendering something"
+        },
+        "saveStateParity": {
+          "status": "PASS",
+          "observationIsPure": true,
+          "replayMatches": true,
+          "restoredHash": "befd5d0e707b7154",
+          "afterPlay": "1936fa9cee2f744b",
+          "afterReplay": "1936fa9cee2f744b"
+        },
+        "determinism": {
+          "status": "PASS",
+          "identical": true,
+          "hash": "12fb5a3c9eb69b52"
+        },
+        "controllable": {
+          "status": "PASS",
+          "ramBytesDifferingFromNeutral": 373,
+          "reason": "pressing Start changes RAM relative to neutral play of the same length"
+        },
+        "mapperGating": {
+          "status": "PASS",
+          "mapper": 0,
+          "note": "NROM, no bank switching to verify"
+        },
+        "timing": {
+          "status": "UNVERIFIED_TIMING",
+          "timingHeader": "PAL",
+          "reason": "the header declares PAL and this core is NTSC-timed: frame-indexed causality and replay comparisons would be shifted, so results here are not comparable"
+        }
+      },
+      "sha256": "21faf868260bbc26a38127d31e98561679a7d0d17bb04ea747d8a549112e4812",
+      "fileBytes": 24592,
+      "header": {
+        "magic": true,
+        "format": "NES 2.0",
+        "mapper": 0,
+        "submapper": 0,
+        "prgRomBytes": 16384,
+        "chrRomBytes": 8192,
+        "chrRamBytes": 0,
+        "prgRamBytes": 0,
+        "mirroring": "horizontal",
+        "battery": false,
+        "trainerBytes": 0,
+        "timingHeader": "PAL"
+      }
+    }
+  ],
+  "totals": {
+    "roms": 4,
+    "byStage": {
+      "header": {
+        "PASS": 4
+      },
+      "load": {
+        "PASS": 4
+      },
+      "run180": {
+        "PASS": 4
+      },
+      "video": {
+        "PASS": 4
+      },
+      "saveStateParity": {
+        "PASS": 4
+      },
+      "determinism": {
+        "PASS": 4
+      },
+      "controllable": {
+        "PASS": 4
+      },
+      "mapperGating": {
+        "PASS": 2,
+        "UNKNOWN": 2
+      },
+      "timing": {
+        "PASS": 3,
+        "UNVERIFIED_TIMING": 1
+      }
+    },
+    "readyForBoundedAgod": [
+      "galaga.nes",
+      "contra.nes",
+      "lifeforce.nes"
+    ],
+    "note": "readiness here means the emulator behaves deterministically and restores exactly; it says nothing about whether emulation is CORRECT, which mapper 2 bus conflicts leave open"
+  }
+}
