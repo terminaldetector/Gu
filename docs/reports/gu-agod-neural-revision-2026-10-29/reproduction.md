@@ -32,7 +32,7 @@ node tools/agod_rom_check.cjs
 
 Все пять завершаются кодом 0. Логи: `logs/core_probe_check.log` и далее по именам.
 
-## 2a. Экспериментальные проверки E2 / E3 / E4 / AGOD-08 / E5
+## 2a. Экспериментальные проверки E2 / E3 / E4 / AGOD-08 / E5 / E6 / E7
 
 Добавлены этой ревизией. `tools/check.sh` и CI не изменялись, поэтому запускаются
 отдельно, из корня репозитория:
@@ -43,6 +43,7 @@ AGOD_CAUSAL_REPORT=logs/causal_report.json     node tools/agod_causal_check.cjs
 AGOD_REWARD_REPORT=logs/reward_report.json     node tools/agod_reward_check.cjs
 AGOD_EVIDENCE_REPORT=logs/evidence_report.json node tools/agod_evidence_check.cjs
 AGOD_DQN_REPORT=logs/dqn_report.json          node tools/agod_dqn_check.cjs
+AGOD_PIPELINE_REPORT=logs/pipeline_report.json node tools/agod_pipeline_check.cjs
 ```
 
 Каждая завершается кодом 0 и печатает итоговый JSON последней строкой; переменные
@@ -60,6 +61,10 @@ AGOD_DQN_REPORT=logs/dqn_report.json          node tools/agod_dqn_check.cjs
 сидов агента × (обучение + замороженная оценка + случайная политика), и для
 каждого картриджа заново проходится вся внутренняя цепочка (причинность →
 типизация → индукция → реестр → брокер).
+
+`agod_pipeline_check.cjs` прогоняет собранный конвейер на 7 картриджах разработки и
+на 7 held-out-семенах (200…206, зафиксированы до первого прогона), плюс агент на
+held-out. Тоже десятки минут. Список семян менять нельзя: это условие оценки.
 
 ## 3. Полная регрессия
 

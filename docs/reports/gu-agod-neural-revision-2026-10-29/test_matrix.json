@@ -720,6 +720,13 @@
       "stage": "E5",
       "status": "PASS",
       "log": "logs/agod_dqn_check.log"
+    },
+    {
+      "command": "node tools/agod_pipeline_check.cjs",
+      "stage": "E6/E7",
+      "status": "PASS",
+      "log": "logs/agod_pipeline_check.log",
+      "note": "includes the held-out group: seeds 200..206, fixed before the first run"
     }
   ],
   "experimentalChecksNote": "New experimental checks added by this revision. They are standalone Node checks; tools/check.sh and CI were not modified."
