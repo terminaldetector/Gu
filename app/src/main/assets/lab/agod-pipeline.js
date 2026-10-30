@@ -22,7 +22,7 @@ const Goals=root.FlyAgodGoals||(require_?require_('./agod-goals.js'):null);
 const Evidence=root.FlyAgodEvidence||(require_?require_('./agod-evidence.js'):null);
 const Reward=root.FlyAgodReward||(require_?require_('./agod-reward.js'):null);
 
-const SCHEMA_VERSION=1,PIPELINE_REVISION='agod-pipeline-e6-1';
+const SCHEMA_VERSION=1,PIPELINE_REVISION='agod-pipeline-s3-2';
 const DEFAULTS=Object.freeze({masks:[1,2,4,8,16,32,64,128],frames:12,shiftTolerance:3,
  starts:2,typeEvents:60,hold:4,release:8,depletePulses:6,depleteSettle:30,
  partitions:[{group:'DISCOVERY',offset:11},{group:'CALIBRATION',offset:53},{group:'HOLDOUT',offset:97}]});
@@ -82,6 +82,7 @@ function run(driver,options){
  driver.restore(pristine);
  const neutralMoved=movedBetween(play(0,config.typeEvents));
  const persistent=new Map();
+ const typedByMask=new Map();
  let decreasing=null,increasing=null;
  for(const [mask,shortAttributed] of attributed){
   if(!shortAttributed.length)continue;
@@ -96,12 +97,61 @@ function run(driver,options){
      endian:outcome.field.endian,encoding:outcome.field.encoding,step:outcome.field.step,
      direction:outcome.field.direction}:null});
    if(outcome.status!=='IDENTIFIED')continue;
+   if(!typedByMask.has(mask))typedByMask.set(mask,[]);
+   typedByMask.get(mask).push(outcome.field);
    if(outcome.field.direction==='decreasing'&&!decreasing)decreasing={mask,field:outcome.field};
    if(outcome.field.direction==='increasing'&&!increasing)increasing={mask,field:outcome.field};
   }
  }
  if(!decreasing)return refuse('type','no action-driven resource decreases, so no cost can be evidenced');
  if(!increasing)return refuse('type','no persisting action-driven effect is available as a play-effect scope');
+
+ /* 2b. Is the loss a cost, or is it the price of something?
+       A depletion coupled to a persisting gain under the SAME action, or a floor
+       that another action undoes while the gain survives, is a sacrifice rather
+       than a cost. Both are decided by observation here, not by assumption. */
+ const coupledGains=(typedByMask.get(decreasing.mask)||[])
+  .filter(field=>field.direction==='increasing')
+  .map(field=>frozen({address:field.address,width:field.width,step:field.step}));
+
+ const readField=field=>Ram.decode(driver.readRam(),{address:field.address,width:field.width,
+  endian:field.endian==='n/a'?'little':field.endian,
+  encoding:field.encodingDetermined?field.encoding:'binary'});
+
+ /* Drive the resource to its floor once, keep that state, and try every other
+    action from it. */
+ driver.restore(pristine);
+ for(let pulse=0;pulse<config.depletePulses+2;pulse++){
+  driver.run(decreasing.mask,config.hold);driver.run(0,config.depleteSettle);
+ }
+ const floor=driver.snapshot();
+ const floorResource=readField(decreasing.field);
+ /* "The gain survives the reversal" has to mean everything the suppressed play
+    had accumulated, not one arbitrary field. Watching a single increasing field
+    is fragile: on the survival family a reset restores the resource and zeroes
+    the score while leaving the level counter standing, so watching the level
+    alone would read a death as a sacrifice. Measured, not assumed - this is
+    what the first run of the S3 check caught. */
+ const playGains=[...typedByMask.entries()]
+  .filter(([mask])=>mask!==decreasing.mask)
+  .flatMap(([,fields])=>fields.filter(field=>field.direction==='increasing'));
+ const floorGains=playGains.map(field=>readField(field));
+ let floorReversible=false,gainRetainedAcrossReversal=false,reversalMask=null;
+ for(const mask of config.masks){
+  if(mask===decreasing.mask)continue;
+  driver.restore(floor);
+  driver.run(mask,config.hold);driver.run(0,config.release);
+  const resource=readField(decreasing.field);
+  if(resource<=floorResource)continue;
+  const after=playGains.map(field=>readField(field));
+  const retained=playGains.length>0&&after.every((value,index)=>value>=floorGains[index]);
+  const lost=playGains.filter((field,index)=>after[index]<floorGains[index]).map(field=>field.address);
+  floorReversible=true;reversalMask=mask;
+  if(retained)gainRetainedAcrossReversal=true;
+  note('reverse',{mask,resource,floorResource,watched:playGains.length,retained,lostGainAddresses:lost});
+  if(retained)break;   /* the strongest case found */
+ }
+ note('judge',{coupledGains:coupledGains.length,playGainsWatched:playGains.length,floorReversible,gainRetainedAcrossReversal,reversalMask});
 
  /* 3. Induce and register, once per partition, each partition an independent
        run of the same procedure. */
@@ -111,6 +161,7 @@ function run(driver,options){
  const readResource=memory=>Ram.decode(memory,{address:decreasing.field.address,width:decreasing.field.width,
   endian:decreasing.field.endian==='n/a'?'little':decreasing.field.endian,
   encoding:decreasing.field.encodingDetermined?decreasing.field.encoding:'binary'});
+ const judgementInputs={coupledGains,floorReversible,gainRetainedAcrossReversal};
  const playScope=persistent.get(increasing.mask)||[];
  let induced=null;
  for(const part of config.partitions){
@@ -128,7 +179,8 @@ function run(driver,options){
   induced=Goals.induceGoal({id:goalId,actionMask:decreasing.mask,address:decreasing.field.address,
    causalConfirmed:costProbe.confirmed.some(entry=>entry.address===decreasing.field.address),
    independentStarts:costProbe.independentStarts,resourceTrack:{values:track},
-   terminal:{confirmedBeforeDepletion:aliveEffects,confirmedAfterDepletion:deadEffects,scope:playScope}});
+   terminal:{confirmedBeforeDepletion:aliveEffects,confirmedAfterDepletion:deadEffects,scope:playScope},
+   ...judgementInputs});
   note('induce',{partition:part.group,polarity:induced.polarity,lifecycle:induced.lifecycle,
    verifiable:induced.verifiable,resourceTrack:track});
   for(const observation of costProbe.perStart){
@@ -139,9 +191,17 @@ function run(driver,options){
     restored:false,atMs:config.nowMs||0});
   }
  }
- if(!induced||induced.polarity!=='NEGATIVE')
+ if(!induced||induced.polarity!=='NEGATIVE'){
+  const judgement=induced?induced.lossJudgement:null;
+  if(judgement&&judgement.fact==='TERMINAL_RESOURCE_DEPLETION'&&judgement.judgement!=='NEGATIVE_GAME_REWARD')
+   /* The fact is reported; only the verdict is withheld, and the reason says
+      which discriminator withheld it. */
+   return refuse('judge','terminal resource depletion was observed but is not evidenced as a cost to the game',
+    {fact:judgement.fact,classification:judgement.classification,blockers:judgement.blockers,
+     coupledGains:judgement.coupledGains,floorReversible,gainRetainedAcrossReversal});
   return refuse('induce','the resource did not produce an evidenced NEGATIVE polarity',
    {polarity:induced?induced.polarity:null,rationale:induced?induced.rationale:null});
+ }
 
  /* 4. Promotion is the registry's call, not the pipeline's. */
  const promotion=registry.promote(goalId,{polarity:induced.polarity,
@@ -156,6 +216,8 @@ function run(driver,options){
   status:'VERIFIED',stage:'complete',reason:null,
   goal,
   resource:frozen({...decreasing.field,mask:decreasing.mask}),
+  judgement:induced.lossJudgement,
+  depletionFact:induced.depletionFact,
   actions:frozen({neutral:0,effect:increasing.mask,cost:decreasing.mask}),
   readResource,
   broker:Reward.createBroker({profileRevision:config.profileRevision,contextKey:config.contextKey}),

@@ -1,0 +1,714 @@
+{
+  "type": "gu-agod-sacrifice-check",
+  "version": 1,
+  "scope": "host emulator; two independent controlled families - survival (make_agod_test_rom.py) and sacrifice (make_agod_sacrifice_rom.py)",
+  "oracle": "checker-only, read after every verdict; the sacrifice oracle carries closed judgement labels that no stage sees",
+  "claim": "Terminal resource depletion is a fact. Treating it as harm is a judgement that needs its own evidence, and on a cartridge where the resource must be spent to progress the old rule gets it wrong.",
+  "status": "PASS",
+  "families": [
+    {
+      "family": "survival",
+      "seed": 0,
+      "romHash": "6b4556c380b50af16986568a3917c5e775adec2fb3acd02da8685ec8a3b7158d",
+      "resourceTrack": [
+        3,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "oldRule": {
+        "polarity": "NEGATIVE",
+        "verifiable": true,
+        "depletionFact": "TERMINAL_RESOURCE_DEPLETION"
+      },
+      "pipeline": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null
+      },
+      "judgeTrace": {
+        "stage": "judge",
+        "coupledGains": 0,
+        "playGainsWatched": 4,
+        "floorReversible": true,
+        "gainRetainedAcrossReversal": false,
+        "reversalMask": 4
+      },
+      "refusalBlockers": null,
+      "closedLabel": true
+    },
+    {
+      "family": "survival",
+      "seed": 1,
+      "romHash": "1773dd62e526d967c72f03e4bacf923799572678637b67ce51b18165fb6402d6",
+      "resourceTrack": [
+        3,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "oldRule": {
+        "polarity": "NEGATIVE",
+        "verifiable": true,
+        "depletionFact": "TERMINAL_RESOURCE_DEPLETION"
+      },
+      "pipeline": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null
+      },
+      "judgeTrace": {
+        "stage": "judge",
+        "coupledGains": 0,
+        "playGainsWatched": 4,
+        "floorReversible": true,
+        "gainRetainedAcrossReversal": false,
+        "reversalMask": 4
+      },
+      "refusalBlockers": null,
+      "closedLabel": true
+    },
+    {
+      "family": "survival",
+      "seed": 2,
+      "romHash": "3c28be48e30b604cc926e9e70e15cd468590f25860f7f0437592ab9e9fec25e7",
+      "resourceTrack": [
+        3,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "oldRule": {
+        "polarity": "NEGATIVE",
+        "verifiable": true,
+        "depletionFact": "TERMINAL_RESOURCE_DEPLETION"
+      },
+      "pipeline": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null
+      },
+      "judgeTrace": {
+        "stage": "judge",
+        "coupledGains": 0,
+        "playGainsWatched": 4,
+        "floorReversible": true,
+        "gainRetainedAcrossReversal": false,
+        "reversalMask": 4
+      },
+      "refusalBlockers": null,
+      "closedLabel": true
+    },
+    {
+      "family": "survival",
+      "seed": 3,
+      "romHash": "994a34a166887a9b66fd6c323d9093980e6cc226cca92147086d842c9d77cbc7",
+      "resourceTrack": [
+        3,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "oldRule": {
+        "polarity": "NEGATIVE",
+        "verifiable": true,
+        "depletionFact": "TERMINAL_RESOURCE_DEPLETION"
+      },
+      "pipeline": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null
+      },
+      "judgeTrace": {
+        "stage": "judge",
+        "coupledGains": 0,
+        "playGainsWatched": 4,
+        "floorReversible": true,
+        "gainRetainedAcrossReversal": false,
+        "reversalMask": 4
+      },
+      "refusalBlockers": null,
+      "closedLabel": true
+    },
+    {
+      "family": "survival",
+      "seed": 4,
+      "romHash": "d6609b8a75ead2a1feeca481e706d9dc30fd47a7e7b58fb641a718f97317ad01",
+      "resourceTrack": [
+        3,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "oldRule": {
+        "polarity": "NEGATIVE",
+        "verifiable": true,
+        "depletionFact": "TERMINAL_RESOURCE_DEPLETION"
+      },
+      "pipeline": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null
+      },
+      "judgeTrace": {
+        "stage": "judge",
+        "coupledGains": 0,
+        "playGainsWatched": 4,
+        "floorReversible": true,
+        "gainRetainedAcrossReversal": false,
+        "reversalMask": 4
+      },
+      "refusalBlockers": null,
+      "closedLabel": true
+    },
+    {
+      "family": "survival",
+      "seed": 5,
+      "romHash": "d681ff8ecb5e253a79ec08a736d3ee98e888e0abd577c1a7687598213d794314",
+      "resourceTrack": [
+        3,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "oldRule": {
+        "polarity": "NEGATIVE",
+        "verifiable": true,
+        "depletionFact": "TERMINAL_RESOURCE_DEPLETION"
+      },
+      "pipeline": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null
+      },
+      "judgeTrace": {
+        "stage": "judge",
+        "coupledGains": 0,
+        "playGainsWatched": 4,
+        "floorReversible": true,
+        "gainRetainedAcrossReversal": false,
+        "reversalMask": 4
+      },
+      "refusalBlockers": null,
+      "closedLabel": true
+    },
+    {
+      "family": "survival",
+      "seed": 6,
+      "romHash": "b151b0269ac5607f7afd18cb8fdd9eda1e89ab1f9a56d46843c807b7d6240d87",
+      "resourceTrack": [
+        3,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "oldRule": {
+        "polarity": "NEGATIVE",
+        "verifiable": true,
+        "depletionFact": "TERMINAL_RESOURCE_DEPLETION"
+      },
+      "pipeline": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null
+      },
+      "judgeTrace": {
+        "stage": "judge",
+        "coupledGains": 0,
+        "playGainsWatched": 4,
+        "floorReversible": true,
+        "gainRetainedAcrossReversal": false,
+        "reversalMask": 4
+      },
+      "refusalBlockers": null,
+      "closedLabel": true
+    },
+    {
+      "family": "sacrifice",
+      "seed": 0,
+      "romHash": "4a3ff911efcc8adf272b74262c8a0283f13b29fe79f2e41c80b95f3e5cbd009d",
+      "resourceTrack": [
+        3,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "oldRule": {
+        "polarity": "NEGATIVE",
+        "verifiable": true,
+        "depletionFact": "TERMINAL_RESOURCE_DEPLETION"
+      },
+      "pipeline": {
+        "status": "REFUSED",
+        "stage": "judge",
+        "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game"
+      },
+      "judgeTrace": {
+        "stage": "judge",
+        "coupledGains": 2,
+        "playGainsWatched": 3,
+        "floorReversible": true,
+        "gainRetainedAcrossReversal": false,
+        "reversalMask": 16
+      },
+      "refusalBlockers": [
+        "the same action also raises 2 persisting field(s): a cost that buys something is not evidence of harm"
+      ],
+      "closedLabel": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 1,
+      "romHash": "c6ba5d98a4a618aa68ba7baa5d404f3c9d6ba0da506bd025025d2538fcaea2aa",
+      "resourceTrack": [
+        3,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "oldRule": {
+        "polarity": "NEGATIVE",
+        "verifiable": true,
+        "depletionFact": "TERMINAL_RESOURCE_DEPLETION"
+      },
+      "pipeline": {
+        "status": "REFUSED",
+        "stage": "judge",
+        "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game"
+      },
+      "judgeTrace": {
+        "stage": "judge",
+        "coupledGains": 2,
+        "playGainsWatched": 3,
+        "floorReversible": true,
+        "gainRetainedAcrossReversal": false,
+        "reversalMask": 16
+      },
+      "refusalBlockers": [
+        "the same action also raises 2 persisting field(s): a cost that buys something is not evidence of harm"
+      ],
+      "closedLabel": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 2,
+      "romHash": "7544aa74cc04d68f7fecb2e8769da00d7641437a8de36c0d54a35b50abd02eea",
+      "resourceTrack": [
+        3,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "oldRule": {
+        "polarity": "NEGATIVE",
+        "verifiable": true,
+        "depletionFact": "TERMINAL_RESOURCE_DEPLETION"
+      },
+      "pipeline": {
+        "status": "REFUSED",
+        "stage": "judge",
+        "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game"
+      },
+      "judgeTrace": {
+        "stage": "judge",
+        "coupledGains": 2,
+        "playGainsWatched": 3,
+        "floorReversible": true,
+        "gainRetainedAcrossReversal": false,
+        "reversalMask": 16
+      },
+      "refusalBlockers": [
+        "the same action also raises 2 persisting field(s): a cost that buys something is not evidence of harm"
+      ],
+      "closedLabel": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 3,
+      "romHash": "76482d08b0791e8197c01537fee56b05ac05dcc2e5f09193a59ca2fae8541b82",
+      "resourceTrack": [
+        3,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "oldRule": {
+        "polarity": "NEGATIVE",
+        "verifiable": true,
+        "depletionFact": "TERMINAL_RESOURCE_DEPLETION"
+      },
+      "pipeline": {
+        "status": "REFUSED",
+        "stage": "judge",
+        "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game"
+      },
+      "judgeTrace": {
+        "stage": "judge",
+        "coupledGains": 2,
+        "playGainsWatched": 3,
+        "floorReversible": true,
+        "gainRetainedAcrossReversal": false,
+        "reversalMask": 16
+      },
+      "refusalBlockers": [
+        "the same action also raises 2 persisting field(s): a cost that buys something is not evidence of harm"
+      ],
+      "closedLabel": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 4,
+      "romHash": "4d540690720b718b9fb9dbbd9e15cdd32c45bd405421509ab111a3bd43d43f35",
+      "resourceTrack": [
+        3,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "oldRule": {
+        "polarity": "NEGATIVE",
+        "verifiable": true,
+        "depletionFact": "TERMINAL_RESOURCE_DEPLETION"
+      },
+      "pipeline": {
+        "status": "REFUSED",
+        "stage": "judge",
+        "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game"
+      },
+      "judgeTrace": {
+        "stage": "judge",
+        "coupledGains": 2,
+        "playGainsWatched": 3,
+        "floorReversible": true,
+        "gainRetainedAcrossReversal": false,
+        "reversalMask": 16
+      },
+      "refusalBlockers": [
+        "the same action also raises 2 persisting field(s): a cost that buys something is not evidence of harm"
+      ],
+      "closedLabel": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 5,
+      "romHash": "21fc2a962313b74ca1b084a8564c6deb60fea009cfa49ffa47122ba5cc64ef7d",
+      "resourceTrack": [
+        3,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "oldRule": {
+        "polarity": "NEGATIVE",
+        "verifiable": true,
+        "depletionFact": "TERMINAL_RESOURCE_DEPLETION"
+      },
+      "pipeline": {
+        "status": "REFUSED",
+        "stage": "judge",
+        "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game"
+      },
+      "judgeTrace": {
+        "stage": "judge",
+        "coupledGains": 2,
+        "playGainsWatched": 3,
+        "floorReversible": true,
+        "gainRetainedAcrossReversal": false,
+        "reversalMask": 16
+      },
+      "refusalBlockers": [
+        "the same action also raises 2 persisting field(s): a cost that buys something is not evidence of harm"
+      ],
+      "closedLabel": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 6,
+      "romHash": "2ffae1a5f2d2d8b3edc3a08f01a273e1f9fff5165991676ca00727ac10881ccd",
+      "resourceTrack": [
+        3,
+        2,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "oldRule": {
+        "polarity": "NEGATIVE",
+        "verifiable": true,
+        "depletionFact": "TERMINAL_RESOURCE_DEPLETION"
+      },
+      "pipeline": {
+        "status": "REFUSED",
+        "stage": "judge",
+        "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game"
+      },
+      "judgeTrace": {
+        "stage": "judge",
+        "coupledGains": 2,
+        "playGainsWatched": 3,
+        "floorReversible": true,
+        "gainRetainedAcrossReversal": false,
+        "reversalMask": 16
+      },
+      "refusalBlockers": [
+        "the same action also raises 2 persisting field(s): a cost that buys something is not evidence of harm"
+      ],
+      "closedLabel": false
+    }
+  ],
+  "behaviour": [
+    {
+      "seed": 0,
+      "agentSeed": 11,
+      "trainedOnMislabel": {
+        "treasure": 60,
+        "spends": 0,
+        "updates": 246
+      },
+      "cyclingPolicy": {
+        "treasure": 15,
+        "spends": 15
+      },
+      "partialSacrifice": {
+        "treasure": 174,
+        "spends": 2
+      },
+      "spendEverything": {
+        "treasure": 0,
+        "spends": 3
+      }
+    },
+    {
+      "seed": 0,
+      "agentSeed": 29,
+      "trainedOnMislabel": {
+        "treasure": 60,
+        "spends": 0,
+        "updates": 266
+      },
+      "cyclingPolicy": {
+        "treasure": 15,
+        "spends": 15
+      },
+      "partialSacrifice": {
+        "treasure": 174,
+        "spends": 2
+      },
+      "spendEverything": {
+        "treasure": 0,
+        "spends": 3
+      }
+    },
+    {
+      "seed": 0,
+      "agentSeed": 37,
+      "trainedOnMislabel": {
+        "treasure": 30,
+        "spends": 0,
+        "updates": 323
+      },
+      "cyclingPolicy": {
+        "treasure": 15,
+        "spends": 15
+      },
+      "partialSacrifice": {
+        "treasure": 174,
+        "spends": 2
+      },
+      "spendEverything": {
+        "treasure": 0,
+        "spends": 3
+      }
+    },
+    {
+      "seed": 1,
+      "agentSeed": 11,
+      "trainedOnMislabel": {
+        "treasure": 60,
+        "spends": 0,
+        "updates": 246
+      },
+      "cyclingPolicy": {
+        "treasure": 15,
+        "spends": 15
+      },
+      "partialSacrifice": {
+        "treasure": 174,
+        "spends": 2
+      },
+      "spendEverything": {
+        "treasure": 0,
+        "spends": 3
+      }
+    },
+    {
+      "seed": 1,
+      "agentSeed": 29,
+      "trainedOnMislabel": {
+        "treasure": 60,
+        "spends": 0,
+        "updates": 266
+      },
+      "cyclingPolicy": {
+        "treasure": 15,
+        "spends": 15
+      },
+      "partialSacrifice": {
+        "treasure": 174,
+        "spends": 2
+      },
+      "spendEverything": {
+        "treasure": 0,
+        "spends": 3
+      }
+    },
+    {
+      "seed": 1,
+      "agentSeed": 37,
+      "trainedOnMislabel": {
+        "treasure": 30,
+        "spends": 0,
+        "updates": 323
+      },
+      "cyclingPolicy": {
+        "treasure": 15,
+        "spends": 15
+      },
+      "partialSacrifice": {
+        "treasure": 174,
+        "spends": 2
+      },
+      "spendEverything": {
+        "treasure": 0,
+        "spends": 3
+      }
+    },
+    {
+      "seed": 2,
+      "agentSeed": 11,
+      "trainedOnMislabel": {
+        "treasure": 60,
+        "spends": 0,
+        "updates": 246
+      },
+      "cyclingPolicy": {
+        "treasure": 15,
+        "spends": 15
+      },
+      "partialSacrifice": {
+        "treasure": 174,
+        "spends": 2
+      },
+      "spendEverything": {
+        "treasure": 0,
+        "spends": 3
+      }
+    },
+    {
+      "seed": 2,
+      "agentSeed": 29,
+      "trainedOnMislabel": {
+        "treasure": 60,
+        "spends": 0,
+        "updates": 266
+      },
+      "cyclingPolicy": {
+        "treasure": 15,
+        "spends": 15
+      },
+      "partialSacrifice": {
+        "treasure": 174,
+        "spends": 2
+      },
+      "spendEverything": {
+        "treasure": 0,
+        "spends": 3
+      }
+    },
+    {
+      "seed": 2,
+      "agentSeed": 37,
+      "trainedOnMislabel": {
+        "treasure": 30,
+        "spends": 0,
+        "updates": 323
+      },
+      "cyclingPolicy": {
+        "treasure": 15,
+        "spends": 15
+      },
+      "partialSacrifice": {
+        "treasure": 174,
+        "spends": 2
+      },
+      "spendEverything": {
+        "treasure": 0,
+        "spends": 3
+      }
+    }
+  ],
+  "totals": {
+    "cartridgesPerFamily": 7,
+    "survival": {
+      "oldRuleNegative": 7,
+      "pipelineVerified": 7
+    },
+    "sacrifice": {
+      "depletionFactObserved": 7,
+      "oldRuleMislabelledAsNegative": 7,
+      "pipelineRefusedAtJudge": 7,
+      "closedLabelSaysNegative": 0
+    },
+    "behaviour": {
+      "runs": 9,
+      "treasureTrainedOnMislabel": 50,
+      "treasureCyclingPolicy": 15,
+      "treasurePartialSacrifice": 174,
+      "treasureSpendEverything": 0,
+      "spendsTrainedOnMislabel": 0,
+      "spendsPartialSacrifice": 2,
+      "costOfBelievingTheMislabel": 124
+    }
+  }
+}

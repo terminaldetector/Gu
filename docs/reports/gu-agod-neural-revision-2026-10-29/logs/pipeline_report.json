@@ -44,7 +44,7 @@
       "resourceIsLives": true,
       "effectMaskIsScoreButton": true,
       "refusals": [],
-      "traceStages": 11
+      "traceStages": 13
     },
     {
       "group": "development",
@@ -83,7 +83,7 @@
       "resourceIsLives": true,
       "effectMaskIsScoreButton": true,
       "refusals": [],
-      "traceStages": 11
+      "traceStages": 13
     },
     {
       "group": "development",
@@ -122,7 +122,7 @@
       "resourceIsLives": true,
       "effectMaskIsScoreButton": false,
       "refusals": [],
-      "traceStages": 11
+      "traceStages": 13
     },
     {
       "group": "development",
@@ -161,7 +161,7 @@
       "resourceIsLives": true,
       "effectMaskIsScoreButton": false,
       "refusals": [],
-      "traceStages": 11
+      "traceStages": 13
     },
     {
       "group": "development",
@@ -200,7 +200,7 @@
       "resourceIsLives": true,
       "effectMaskIsScoreButton": false,
       "refusals": [],
-      "traceStages": 11
+      "traceStages": 13
     },
     {
       "group": "development",
@@ -239,7 +239,7 @@
       "resourceIsLives": true,
       "effectMaskIsScoreButton": true,
       "refusals": [],
-      "traceStages": 11
+      "traceStages": 13
     },
     {
       "group": "development",
@@ -278,7 +278,7 @@
       "resourceIsLives": true,
       "effectMaskIsScoreButton": false,
       "refusals": [],
-      "traceStages": 11
+      "traceStages": 13
     },
     {
       "group": "held-out",
@@ -317,7 +317,7 @@
       "resourceIsLives": true,
       "effectMaskIsScoreButton": false,
       "refusals": [],
-      "traceStages": 11
+      "traceStages": 13
     },
     {
       "group": "held-out",
@@ -356,7 +356,7 @@
       "resourceIsLives": true,
       "effectMaskIsScoreButton": true,
       "refusals": [],
-      "traceStages": 11
+      "traceStages": 13
     },
     {
       "group": "held-out",
@@ -395,7 +395,7 @@
       "resourceIsLives": true,
       "effectMaskIsScoreButton": false,
       "refusals": [],
-      "traceStages": 10
+      "traceStages": 12
     },
     {
       "group": "held-out",
@@ -434,7 +434,7 @@
       "resourceIsLives": true,
       "effectMaskIsScoreButton": false,
       "refusals": [],
-      "traceStages": 11
+      "traceStages": 13
     },
     {
       "group": "held-out",
@@ -473,7 +473,7 @@
       "resourceIsLives": true,
       "effectMaskIsScoreButton": true,
       "refusals": [],
-      "traceStages": 11
+      "traceStages": 13
     },
     {
       "group": "held-out",
@@ -512,7 +512,7 @@
       "resourceIsLives": true,
       "effectMaskIsScoreButton": false,
       "refusals": [],
-      "traceStages": 11
+      "traceStages": 13
     },
     {
       "group": "held-out",
@@ -551,7 +551,7 @@
       "resourceIsLives": true,
       "effectMaskIsScoreButton": false,
       "refusals": [],
-      "traceStages": 11
+      "traceStages": 13
     }
   ],
   "agentRuns": [

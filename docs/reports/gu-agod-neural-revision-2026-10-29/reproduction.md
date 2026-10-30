@@ -44,6 +44,9 @@ AGOD_REWARD_REPORT=logs/reward_report.json     node tools/agod_reward_check.cjs
 AGOD_EVIDENCE_REPORT=logs/evidence_report.json node tools/agod_evidence_check.cjs
 AGOD_DQN_REPORT=logs/dqn_report.json          node tools/agod_dqn_check.cjs
 AGOD_PIPELINE_REPORT=logs/pipeline_report.json node tools/agod_pipeline_check.cjs
+AGOD_REPLAY_REPORT=logs/replay_report.json     node tools/agod_replay_check.cjs
+AGOD_SACRIFICE_REPORT=logs/sacrifice_report.json node tools/agod_sacrifice_check.cjs
+CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium AGOD_BRIDGE_REPORT=logs/bridge_report.json node tools/agod_experimental_bridge_check.cjs
 ```
 
 Каждая завершается кодом 0 и печатает итоговый JSON последней строкой; переменные

@@ -726,7 +726,7 @@
       "stage": "E6/E7",
       "status": "PASS",
       "log": "logs/agod_pipeline_check.log",
-      "note": "includes the held-out group: seeds 200..206, fixed before the first run"
+      "note": "includes the held-out group: seeds 200..206, fixed before the first run Re-run after S3 added the judge stage: results bit-identical."
     },
     {
       "command": "node tools/agod_experimental_bridge_check.cjs",
@@ -739,6 +739,13 @@
       "stage": "S2",
       "status": "PASS",
       "log": "logs/agod_replay_check.log"
+    },
+    {
+      "command": "node tools/agod_sacrifice_check.cjs",
+      "stage": "S3",
+      "status": "PASS",
+      "log": "logs/agod_sacrifice_check.log",
+      "note": "two independent controlled families; the sacrifice oracle carries closed judgement labels"
     }
   ],
   "experimentalChecksNote": "New experimental checks added by this revision. They are standalone Node checks; tools/check.sh and CI were not modified."

@@ -9,7 +9,7 @@
    value, and 1.3 forbids treating it as reward, so an accumulator never rises
    above a candidate here. Not wired into any production screen. */
 (function(root){'use strict';
-const SCHEMA_VERSION=1,DETECTOR_REVISION='agod-goals-e4-1';
+const SCHEMA_VERSION=1,DETECTOR_REVISION='agod-goals-s3-2';
 const PHASES=Object.freeze(['BOOT','MENU','PLAYING','PAUSED','DEATH','RESPAWN','TRANSITION','COMPLETE','UNKNOWN']);
 const POLARITY=Object.freeze(['POSITIVE','NEGATIVE','NEUTRAL','UNKNOWN']);
 const LIFECYCLE=Object.freeze(['CANDIDATE','TESTING','CALIBRATED','VERIFIED','CONTRADICTED','INVALIDATED','EXPIRED','UNKNOWN']);
@@ -90,6 +90,60 @@ function classifyPhase(signals){
    reported as a CANDIDATE with polarity UNKNOWN and an explicit note, because
    nothing observed inside the emulator distinguishes "score" from "a counter
    that happens to rise". Calling it reward is exactly the shortcut 1.3 bans. */
+/* TERMINAL_RESOURCE_DEPLETION is a fact. NEGATIVE_GAME_REWARD is a judgement
+   about that fact, and the two were conflated (Sol mandatory check).
+
+   The chain E4 requires - monotone decrease, a floor, and previously confirmed
+   effects ceasing there - is equally true of a resource that must be SPENT to
+   progress. On such a game the floor is completion rather than death, and
+   calling the spend harmful is simply wrong. So the fact is reported as a fact,
+   and the judgement needs evidence of its own.
+
+   Two discriminators, both observable from inside the emulator:
+
+     coupled gain      the same action also causes a persisting monotone
+                       INCREASE somewhere. A cost that buys something is not
+                       evidence of harm.
+     reversible floor  another action restores the resource AND the gain
+                       survives that reversal. Then the floor is not an ending
+                       and going round again is useful.
+
+   Either one blocks NEGATIVE_GAME_REWARD and leaves the loss provisional. */
+function depletionFact(options){
+ const resource=options.resource||null;
+ const terminal=options.terminal||null;
+ const present=!!(resource&&resource.decreasing&&resource.settledAtFloor&&
+  terminal&&terminal.normalPlaySuppressed);
+ return frozen({fact:present?'TERMINAL_RESOURCE_DEPLETION':'NONE',
+  observed:frozen({decreasing:!!(resource&&resource.decreasing),
+   settledAtFloor:!!(resource&&resource.settledAtFloor),
+   normalPlaySuppressed:!!(terminal&&terminal.normalPlaySuppressed)}),
+  note:'this is what was seen, not what it is worth'});
+}
+
+function judgeResourceLoss(options){
+ const fact=options.fact&&options.fact.fact?options.fact.fact:depletionFact(options).fact;
+ const coupledGains=requireArray(options.coupledGains||[],'coupledGains');
+ const floorReversible=options.floorReversible===true;
+ const gainRetainedAcrossReversal=options.gainRetainedAcrossReversal===true;
+ const blockers=[];
+ if(fact!=='TERMINAL_RESOURCE_DEPLETION')blockers.push('no terminal resource depletion was observed');
+ if(coupledGains.length)
+  blockers.push('the same action also raises '+coupledGains.length+' persisting field(s): a cost that buys something is not evidence of harm');
+ if(floorReversible&&gainRetainedAcrossReversal)
+  blockers.push('another action restores the resource and the gain survives it: the floor is not an ending');
+ const judged=blockers.length===0;
+ return frozen({fact,
+  judgement:judged?'NEGATIVE_GAME_REWARD':'UNKNOWN',
+  /* Named so it can never be read as a measured verdict of harmlessness. */
+  classification:judged?'cost':(fact==='TERMINAL_RESOURCE_DEPLETION'?'PROVISIONAL_SACRIFICE':'NOT-APPLICABLE'),
+  blockers,coupledGains:coupledGains.slice(0,16),
+  floorReversible,gainRetainedAcrossReversal,
+  reason:judged
+   ?'the action depletes a resource to a floor, play stops there, and nothing observable is gained in exchange'
+   :'the depletion is real but its cost to the game is not established; an external source of truth is required'});
+}
+
 function induceGoal(options){
  const id=typeof options.id==='string'&&options.id?options.id:null;
  if(!id)throw new Error('goal hypothesis needs an id');
@@ -103,12 +157,25 @@ function induceGoal(options){
  const evidenceRefs=requireArray(options.evidenceRefs||[],'evidenceRefs');
 
  let polarity='UNKNOWN',lifecycle='CANDIDATE',significance='UNKNOWN',rationale='insufficient evidence';
+ const depletion=depletionFact({resource,terminal});
+ /* The judgement is applied only when the caller supplies the evidence it needs.
+    Without it the original E4 behaviour stands unchanged, so E4's published
+    numbers remain reproducible; the pipeline supplies it. */
+ const lossJudgement=options.coupledGains!==undefined||options.floorReversible!==undefined
+  ?judgeResourceLoss({fact:depletion,coupledGains:options.coupledGains||[],
+    floorReversible:options.floorReversible,gainRetainedAcrossReversal:options.gainRetainedAcrossReversal})
+  :null;
+ const judgementBlocks=!!(lossJudgement&&lossJudgement.judgement!=='NEGATIVE_GAME_REWARD');
  const negativeChain=!!(causalConfirmed&&resource&&resource.decreasing&&resource.settledAtFloor&&
-   terminal&&terminal.normalPlaySuppressed);
+   terminal&&terminal.normalPlaySuppressed)&&!judgementBlocks;
  if(negativeChain){
   polarity='NEGATIVE';significance='PRIMARY';
   lifecycle=independentStarts>=2?'CALIBRATED':'TESTING';
   rationale='an action-caused monotone decrease reached a floor and suppressed every previously confirmed effect';
+ }else if(judgementBlocks&&depletion.fact==='TERMINAL_RESOURCE_DEPLETION'){
+  /* The fact stands; only the verdict is withheld. */
+  polarity='UNKNOWN';lifecycle='CANDIDATE';significance='UNKNOWN';
+  rationale='terminal resource depletion was observed, but it is not evidenced as a cost: '+lossJudgement.blockers.join('; ');
  }else if(causalConfirmed&&resource&&resource.increasing&&!resource.decreasing){
   polarity='UNKNOWN';lifecycle='CANDIDATE';significance='UNKNOWN';
   rationale='an action raises this value, which is not evidence of benefit: an accumulator cannot be shown positive from inside the emulator';
@@ -128,11 +195,13 @@ function induceGoal(options){
   alternatives:alternatives.slice(0,16),
   evidenceRefs:evidenceRefs.slice(0,32),
   confidence:null,calibrationStatus:'uncalibrated',
+  depletionFact:depletion.fact,
+  lossJudgement:lossJudgement,
   verifiable:negativeChain,
   positiveClaimBlocked:!!(resource&&resource.increasing&&!resource.decreasing)});
 }
 
-const api={SCHEMA_VERSION,DETECTOR_REVISION,PHASES,POLARITY,LIFECYCLE,SIGNIFICANCE,
+const api={SCHEMA_VERSION,DETECTOR_REVISION,depletionFact,judgeResourceLoss,PHASES,POLARITY,LIFECYCLE,SIGNIFICANCE,
  analyseResource,terminalEvidence,classifyPhase,induceGoal};
 root.FlyAgodGoals=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window==='undefined'?globalThis:window);
