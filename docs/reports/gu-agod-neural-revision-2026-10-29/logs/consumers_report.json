@@ -4,7 +4,7 @@
   "scope": "host emulator; three controlled families, 3 cartridges each",
   "instrument": "a counterfactual on the field itself: write a reachable second value, leave everything else identical, run a fixed schedule and compare RAM outside the field own bytes",
   "claim": "Whether a cartridge reads a variable is measurable, and it does not follow from the variable accumulating, persisting or being rate-modulated. Where this disagrees with a closed label, the label is the thing that is wrong.",
-  "status": "PASS",
+  "status": "RUNNING",
   "fields": [
     {
       "family": "survival",
@@ -20,7 +20,7 @@
         "base": 112,
         "driven": 224
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -38,7 +38,7 @@
         "base": 250,
         "driven": 10
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -56,7 +56,7 @@
         "base": 112,
         "driven": 224
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -74,7 +74,7 @@
         "base": 1,
         "driven": 17
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -92,7 +92,7 @@
         "base": 3,
         "driven": 0
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -110,7 +110,7 @@
         "base": 112,
         "driven": 224
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -128,7 +128,7 @@
         "base": 9,
         "driven": 25
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -146,7 +146,7 @@
         "base": 112,
         "driven": 224
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -164,7 +164,7 @@
         "base": 1,
         "driven": 17
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -182,7 +182,7 @@
         "base": 3,
         "driven": 0
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -200,7 +200,7 @@
         "base": 1,
         "driven": 17
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -218,7 +218,7 @@
         "base": 112,
         "driven": 224
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -236,7 +236,7 @@
         "base": 16777211,
         "driven": 11
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -254,7 +254,7 @@
         "base": 112,
         "driven": 224
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -272,7 +272,7 @@
         "base": 3,
         "driven": 0
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -290,7 +290,7 @@
         "base": 96,
         "driven": 176
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -308,7 +308,7 @@
         "base": 0,
         "driven": 16
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": true,
       "labelContradictedByConsumerTest": true
     },
@@ -326,7 +326,7 @@
         "base": 96,
         "driven": 176
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -344,7 +344,7 @@
         "base": 0,
         "driven": 1
       },
-      "consumerReason": "poking this field changed what the machine did next, so something in the cartridge reads it",
+      "consumerReason": "poking this field changed what the machine did next, so its value influenced behaviour in this scenario",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -362,7 +362,7 @@
         "base": 0,
         "driven": 3
       },
-      "consumerReason": "poking this field changed what the machine did next, so something in the cartridge reads it",
+      "consumerReason": "poking this field changed what the machine did next, so its value influenced behaviour in this scenario",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -380,7 +380,7 @@
         "base": 3,
         "driven": 0
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -398,7 +398,7 @@
         "base": 96,
         "driven": 176
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -416,7 +416,7 @@
         "base": 0,
         "driven": 16
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": true,
       "labelContradictedByConsumerTest": true
     },
@@ -434,7 +434,7 @@
         "base": 96,
         "driven": 176
       },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
+      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -452,7 +452,7 @@
         "base": 0,
         "driven": 3
       },
-      "consumerReason": "poking this field changed what the machine did next, so something in the cartridge reads it",
+      "consumerReason": "poking this field changed what the machine did next, so its value influenced behaviour in this scenario",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -470,7 +470,7 @@
         "base": 0,
         "driven": 1
       },
-      "consumerReason": "poking this field changed what the machine did next, so something in the cartridge reads it",
+      "consumerReason": "poking this field changed what the machine did next, so its value influenced behaviour in this scenario",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     },
@@ -488,439 +488,7 @@
         "base": 3,
         "driven": 0
       },
-      "consumerReason": "poking this field changed what the machine did next, so something in the cartridge reads it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "sacrifice",
-      "seed": 2,
-      "oracleName": null,
-      "address": 0,
-      "width": 1,
-      "mask": 1,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
-      "consumerValues": {
-        "base": 96,
-        "driven": 176
-      },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "sacrifice",
-      "seed": 2,
-      "oracleName": "treasure",
-      "address": 139,
-      "width": 1,
-      "mask": 1,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
-      "consumerValues": {
-        "base": 0,
-        "driven": 16
-      },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
-      "labelledBeneficial": true,
-      "labelContradictedByConsumerTest": true
-    },
-    {
-      "family": "sacrifice",
-      "seed": 2,
-      "oracleName": null,
-      "address": 515,
-      "width": 1,
-      "mask": 1,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
-      "consumerValues": {
-        "base": 96,
-        "driven": 176
-      },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "sacrifice",
-      "seed": 2,
-      "oracleName": "gate",
-      "address": 69,
-      "width": 1,
-      "mask": 64,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": true,
-      "consumerValues": {
-        "base": 0,
-        "driven": 1
-      },
-      "consumerReason": "poking this field changed what the machine did next, so something in the cartridge reads it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "sacrifice",
-      "seed": 2,
-      "oracleName": "progress",
-      "address": 131,
-      "width": 1,
-      "mask": 64,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": true,
-      "consumerValues": {
-        "base": 0,
-        "driven": 3
-      },
-      "consumerReason": "poking this field changed what the machine did next, so something in the cartridge reads it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "sacrifice",
-      "seed": 2,
-      "oracleName": "charges",
-      "address": 148,
-      "width": 1,
-      "mask": 64,
-      "isDiscoveredResource": true,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
-      "consumerValues": {
-        "base": 3,
-        "driven": 0
-      },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 0,
-      "oracleName": null,
-      "address": 0,
-      "width": 1,
-      "mask": 1,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
-      "consumerValues": {
-        "base": 84,
-        "driven": 132
-      },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 0,
-      "oracleName": "steadyGain",
-      "address": 92,
-      "width": 1,
-      "mask": 1,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": true,
-      "consumerValues": {
-        "base": 0,
-        "driven": 16
-      },
-      "consumerReason": "poking this field changed what the machine did next, so something in the cartridge reads it",
-      "labelledBeneficial": true,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 0,
-      "oracleName": "unlocked",
-      "address": 171,
-      "width": 1,
-      "mask": 1,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": true,
-      "consumerValues": {
-        "base": 0,
-        "driven": 1
-      },
-      "consumerReason": "poking this field changed what the machine did next, so something in the cartridge reads it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 0,
-      "oracleName": null,
-      "address": 515,
-      "width": 1,
-      "mask": 1,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
-      "consumerValues": {
-        "base": 84,
-        "driven": 132
-      },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 0,
-      "oracleName": "fickleDecoy",
-      "address": 146,
-      "width": 1,
-      "mask": 16,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
-      "consumerValues": {
-        "base": 0,
-        "driven": 64
-      },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 0,
-      "oracleName": "fuel",
-      "address": 128,
-      "width": 1,
-      "mask": 64,
-      "isDiscoveredResource": true,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": true,
-      "consumerValues": {
-        "base": 3,
-        "driven": 0
-      },
-      "consumerReason": "poking this field changed what the machine did next, so something in the cartridge reads it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 1,
-      "oracleName": null,
-      "address": 0,
-      "width": 1,
-      "mask": 2,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
-      "consumerValues": {
-        "base": 84,
-        "driven": 132
-      },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 1,
-      "oracleName": "unlocked",
-      "address": 67,
-      "width": 1,
-      "mask": 2,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": true,
-      "consumerValues": {
-        "base": 0,
-        "driven": 1
-      },
-      "consumerReason": "poking this field changed what the machine did next, so something in the cartridge reads it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 1,
-      "oracleName": "steadyGain",
-      "address": 76,
-      "width": 1,
-      "mask": 2,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": true,
-      "consumerValues": {
-        "base": 0,
-        "driven": 16
-      },
-      "consumerReason": "poking this field changed what the machine did next, so something in the cartridge reads it",
-      "labelledBeneficial": true,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 1,
-      "oracleName": null,
-      "address": 515,
-      "width": 1,
-      "mask": 2,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
-      "consumerValues": {
-        "base": 84,
-        "driven": 132
-      },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 1,
-      "oracleName": "fickleDecoy",
-      "address": 126,
-      "width": 1,
-      "mask": 32,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
-      "consumerValues": {
-        "base": 0,
-        "driven": 64
-      },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 1,
-      "oracleName": "fuel",
-      "address": 117,
-      "width": 1,
-      "mask": 128,
-      "isDiscoveredResource": true,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": true,
-      "consumerValues": {
-        "base": 3,
-        "driven": 0
-      },
-      "consumerReason": "poking this field changed what the machine did next, so something in the cartridge reads it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 2,
-      "oracleName": null,
-      "address": 0,
-      "width": 1,
-      "mask": 1,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
-      "consumerValues": {
-        "base": 84,
-        "driven": 132
-      },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 2,
-      "oracleName": "steadyGain",
-      "address": 137,
-      "width": 1,
-      "mask": 1,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": true,
-      "consumerValues": {
-        "base": 0,
-        "driven": 16
-      },
-      "consumerReason": "poking this field changed what the machine did next, so something in the cartridge reads it",
-      "labelledBeneficial": true,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 2,
-      "oracleName": "unlocked",
-      "address": 178,
-      "width": 1,
-      "mask": 1,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": true,
-      "consumerValues": {
-        "base": 0,
-        "driven": 1
-      },
-      "consumerReason": "poking this field changed what the machine did next, so something in the cartridge reads it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 2,
-      "oracleName": null,
-      "address": 515,
-      "width": 1,
-      "mask": 1,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
-      "consumerValues": {
-        "base": 84,
-        "driven": 132
-      },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 2,
-      "oracleName": "fickleDecoy",
-      "address": 70,
-      "width": 1,
-      "mask": 16,
-      "isDiscoveredResource": false,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
-      "consumerValues": {
-        "base": 0,
-        "driven": 64
-      },
-      "consumerReason": "poking this field changed nothing outside its own bytes: no part of the cartridge consumes it",
-      "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 2,
-      "oracleName": "fuel",
-      "address": 128,
-      "width": 1,
-      "mask": 64,
-      "isDiscoveredResource": true,
-      "consumerStatus": "OBSERVED",
-      "hasConsumer": true,
-      "consumerValues": {
-        "base": 3,
-        "driven": 0
-      },
-      "consumerReason": "poking this field changed what the machine did next, so something in the cartridge reads it",
+      "consumerReason": "poking this field changed what the machine did next, so its value influenced behaviour in this scenario",
       "labelledBeneficial": false,
       "labelContradictedByConsumerTest": false
     }
@@ -1211,327 +779,6 @@
       "verdict": "NO-MODULATION",
       "actionMediated": false,
       "fieldMediated": false
-    },
-    {
-      "family": "sacrifice",
-      "seed": 2,
-      "oracleName": null,
-      "address": 0,
-      "modulatorAddress": 148,
-      "baseStep": 5,
-      "stepAfterAction": 5,
-      "stepAfterPokingField": 5,
-      "verdict": "NO-MODULATION",
-      "actionMediated": false,
-      "fieldMediated": false
-    },
-    {
-      "family": "sacrifice",
-      "seed": 2,
-      "oracleName": "treasure",
-      "address": 139,
-      "modulatorAddress": 148,
-      "baseStep": 1,
-      "stepAfterAction": 3,
-      "stepAfterPokingField": 1,
-      "verdict": "ACTION-MEDIATED-ONLY",
-      "actionMediated": true,
-      "fieldMediated": false
-    },
-    {
-      "family": "sacrifice",
-      "seed": 2,
-      "oracleName": null,
-      "address": 515,
-      "modulatorAddress": 148,
-      "baseStep": 5,
-      "stepAfterAction": 5,
-      "stepAfterPokingField": 5,
-      "verdict": "NO-MODULATION",
-      "actionMediated": false,
-      "fieldMediated": false
-    },
-    {
-      "family": "sacrifice",
-      "seed": 2,
-      "oracleName": "gate",
-      "address": 69,
-      "modulatorAddress": 148,
-      "baseStep": 0,
-      "stepAfterAction": 1,
-      "stepAfterPokingField": 1,
-      "verdict": "NO-MODULATION",
-      "actionMediated": false,
-      "fieldMediated": false
-    },
-    {
-      "family": "sacrifice",
-      "seed": 2,
-      "oracleName": "progress",
-      "address": 131,
-      "modulatorAddress": 148,
-      "baseStep": 1,
-      "stepAfterAction": 1,
-      "stepAfterPokingField": 1,
-      "verdict": "NO-MODULATION",
-      "actionMediated": false,
-      "fieldMediated": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 0,
-      "oracleName": null,
-      "address": 0,
-      "modulatorAddress": 128,
-      "baseStep": 3,
-      "stepAfterAction": 3,
-      "stepAfterPokingField": 3,
-      "verdict": "NO-MODULATION",
-      "actionMediated": false,
-      "fieldMediated": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 0,
-      "oracleName": "steadyGain",
-      "address": 92,
-      "modulatorAddress": 128,
-      "baseStep": 1,
-      "stepAfterAction": 1,
-      "stepAfterPokingField": 1,
-      "verdict": "NO-MODULATION",
-      "actionMediated": false,
-      "fieldMediated": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 0,
-      "oracleName": "unlocked",
-      "address": 171,
-      "modulatorAddress": 128,
-      "baseStep": 0,
-      "stepAfterAction": 0,
-      "stepAfterPokingField": 0,
-      "verdict": "NO-MODULATION",
-      "actionMediated": false,
-      "fieldMediated": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 0,
-      "oracleName": null,
-      "address": 515,
-      "modulatorAddress": 128,
-      "baseStep": 3,
-      "stepAfterAction": 3,
-      "stepAfterPokingField": 3,
-      "verdict": "NO-MODULATION",
-      "actionMediated": false,
-      "fieldMediated": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 0,
-      "oracleName": "fickleDecoy",
-      "address": 146,
-      "modulatorAddress": 128,
-      "baseStep": 4,
-      "stepAfterAction": 2,
-      "stepAfterPokingField": 2,
-      "verdict": "FIELD-MEDIATED",
-      "actionMediated": true,
-      "fieldMediated": true
-    },
-    {
-      "family": "rate-trap",
-      "seed": 1,
-      "oracleName": null,
-      "address": 0,
-      "modulatorAddress": 117,
-      "baseStep": 3,
-      "stepAfterAction": 3,
-      "stepAfterPokingField": 3,
-      "verdict": "NO-MODULATION",
-      "actionMediated": false,
-      "fieldMediated": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 1,
-      "oracleName": "unlocked",
-      "address": 67,
-      "modulatorAddress": 117,
-      "baseStep": 0,
-      "stepAfterAction": 0,
-      "stepAfterPokingField": 0,
-      "verdict": "NO-MODULATION",
-      "actionMediated": false,
-      "fieldMediated": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 1,
-      "oracleName": "steadyGain",
-      "address": 76,
-      "modulatorAddress": 117,
-      "baseStep": 1,
-      "stepAfterAction": 1,
-      "stepAfterPokingField": 1,
-      "verdict": "NO-MODULATION",
-      "actionMediated": false,
-      "fieldMediated": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 1,
-      "oracleName": null,
-      "address": 515,
-      "modulatorAddress": 117,
-      "baseStep": 3,
-      "stepAfterAction": 3,
-      "stepAfterPokingField": 3,
-      "verdict": "NO-MODULATION",
-      "actionMediated": false,
-      "fieldMediated": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 1,
-      "oracleName": "fickleDecoy",
-      "address": 126,
-      "modulatorAddress": 117,
-      "baseStep": 4,
-      "stepAfterAction": 2,
-      "stepAfterPokingField": 2,
-      "verdict": "FIELD-MEDIATED",
-      "actionMediated": true,
-      "fieldMediated": true
-    },
-    {
-      "family": "rate-trap",
-      "seed": 2,
-      "oracleName": null,
-      "address": 0,
-      "modulatorAddress": 128,
-      "baseStep": 3,
-      "stepAfterAction": 3,
-      "stepAfterPokingField": 3,
-      "verdict": "NO-MODULATION",
-      "actionMediated": false,
-      "fieldMediated": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 2,
-      "oracleName": "steadyGain",
-      "address": 137,
-      "modulatorAddress": 128,
-      "baseStep": 1,
-      "stepAfterAction": 1,
-      "stepAfterPokingField": 1,
-      "verdict": "NO-MODULATION",
-      "actionMediated": false,
-      "fieldMediated": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 2,
-      "oracleName": "unlocked",
-      "address": 178,
-      "modulatorAddress": 128,
-      "baseStep": 0,
-      "stepAfterAction": 0,
-      "stepAfterPokingField": 0,
-      "verdict": "NO-MODULATION",
-      "actionMediated": false,
-      "fieldMediated": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 2,
-      "oracleName": null,
-      "address": 515,
-      "modulatorAddress": 128,
-      "baseStep": 3,
-      "stepAfterAction": 3,
-      "stepAfterPokingField": 3,
-      "verdict": "NO-MODULATION",
-      "actionMediated": false,
-      "fieldMediated": false
-    },
-    {
-      "family": "rate-trap",
-      "seed": 2,
-      "oracleName": "fickleDecoy",
-      "address": 70,
-      "modulatorAddress": 128,
-      "baseStep": 4,
-      "stepAfterAction": 2,
-      "stepAfterPokingField": 2,
-      "verdict": "FIELD-MEDIATED",
-      "actionMediated": true,
-      "fieldMediated": true
     }
-  ],
-  "totals": {
-    "fieldsProbed": 51,
-    "inconclusive": 0,
-    "withConsumer": 16,
-    "withoutConsumer": 35,
-    "byField": {
-      "score": {
-        "observed": 3,
-        "withConsumer": 0
-      },
-      "lives": {
-        "observed": 3,
-        "withConsumer": 0
-      },
-      "level": {
-        "observed": 3,
-        "withConsumer": 0
-      },
-      "treasure": {
-        "observed": 3,
-        "withConsumer": 0
-      },
-      "charges": {
-        "observed": 3,
-        "withConsumer": 1
-      },
-      "progress": {
-        "observed": 3,
-        "withConsumer": 3
-      },
-      "gate": {
-        "observed": 3,
-        "withConsumer": 3
-      },
-      "steadyGain": {
-        "observed": 3,
-        "withConsumer": 3
-      },
-      "fickleDecoy": {
-        "observed": 3,
-        "withConsumer": 0
-      },
-      "fuel": {
-        "observed": 3,
-        "withConsumer": 3
-      },
-      "unlocked": {
-        "observed": 3,
-        "withConsumer": 3
-      }
-    },
-    "labelledBeneficialProbed": 6,
-    "labelledBeneficialWithConsumer": 3,
-    "labelsContradicted": 3,
-    "modulationVerdicts": {
-      "FIELD-MEDIATED": 3,
-      "ACTION-MEDIATED-ONLY": 3,
-      "NO-MODULATION": 36
-    },
-    "note": "a label contradicted here is a label that was wrong, not a probe that failed"
-  }
+  ]
 }

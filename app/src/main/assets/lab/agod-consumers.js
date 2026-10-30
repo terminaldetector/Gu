@@ -26,7 +26,7 @@
 (function(root){'use strict';
 const require_=typeof require==='function'?require:null;
 const Ram=root.FlyAgodRam||(require_?require_('./agod-ram.js'):null);
-const SCHEMA_VERSION=1,PROBE_REVISION='agod-consumers-s4c-2';
+const SCHEMA_VERSION=1,PROBE_REVISION='agod-consumers-s4c-3';
 const DEFAULT_FRAME_BUDGET=400000;
 const frozen=Object.freeze.bind(Object);
 
@@ -124,9 +124,13 @@ function downstreamConsumer(driver,options){
   status:'OBSERVED',hasConsumer:low!==high,
   values:frozen({base,driven}),signatures:frozen({low,high}),
   excludedBytes:excluded.size,steps,
+  /* A null result is a statement about the trajectories that were run, never
+     about the cartridge. Substituting a value cannot rule out a read that has
+     no visible effect in these trajectories, and the lives field of the
+     survival family is a demonstrated false negative of exactly that kind. */
   reason:low!==high
-   ?'poking this field changed what the machine did next, so something in the cartridge reads it'
-   :'poking this field changed nothing outside its own bytes: no part of the cartridge consumes it'});
+   ?'poking this field changed what the machine did next, so its value influenced behaviour in this scenario'
+   :'downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field'});
 }
 
 /* Is the rate modulation a property of the FIELD or only of the button? */
@@ -170,6 +174,34 @@ function fieldCausality(driver,options){
     :'no rate change either way')});
 }
 
-const api={SCHEMA_VERSION,PROBE_REVISION,downstreamConsumer,fieldCausality,pokeValue};
+/* Three-way verdict from the two instruments together, because they answer
+   different questions and a null in either is not a null in both:
+
+     CONSUMED               the value changed behaviour in some scenario;
+     READ-WITHOUT-EFFECT    the CPU reads the address from code that does not
+                            write it, but no scenario showed a behavioural
+                            difference. This is the case a counterfactual alone
+                            reports as "nothing consumes it", and it is wrong to
+                            do so;
+     NO-OBSERVED-CONSUMER   neither divergence nor a non-writing read in the
+                            scenarios tested, which is still not proof of
+                            absence. */
+function classifyConsumer(evidence){
+ const diverged=evidence.scenariosDiverged>0;
+ const readByNonWriter=(evidence.readsFromNonWritingPc||0)>0;
+ const verdict=diverged?'CONSUMED':(readByNonWriter?'READ-WITHOUT-EFFECT':'NO-OBSERVED-CONSUMER');
+ return frozen({schemaVersion:SCHEMA_VERSION,probeRevision:PROBE_REVISION,verdict,
+  scenariosRun:evidence.scenariosRun,scenariosDiverged:evidence.scenariosDiverged,
+  cpuReads:evidence.cpuReads||0,distinctReadPcs:evidence.distinctReadPcs||0,
+  distinctWritePcs:evidence.distinctWritePcs||0,
+  readsFromNonWritingPc:evidence.readsFromNonWritingPc||0,
+  claim:verdict==='CONSUMED'
+   ?'the value influenced behaviour in at least one tested scenario'
+   :(verdict==='READ-WITHOUT-EFFECT'
+    ?'the CPU reads this address from code that never writes it, but no tested trajectory showed a behavioural difference'
+    :'no downstream effect and no non-writing read were observed in the tested trajectories; absence of evidence, not evidence of absence')});
+}
+
+const api={SCHEMA_VERSION,PROBE_REVISION,downstreamConsumer,fieldCausality,classifyConsumer,pokeValue};
 root.FlyAgodConsumers=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window==='undefined'?globalThis:window);
