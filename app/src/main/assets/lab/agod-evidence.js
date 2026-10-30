@@ -12,11 +12,23 @@
    cached records alone, because "кэш не вправе самостоятельно повышать гипотезу
    до VERIFIED". Not wired into any production screen. */
 (function(root){'use strict';
-const SCHEMA_VERSION=1,REGISTRY_REVISION='agod-evidence-e4-1';
+const SCHEMA_VERSION=1,REGISTRY_REVISION='agod-evidence-s5-2';
 const GROUPS=Object.freeze(['DISCOVERY','CALIBRATION','HOLDOUT','EXCLUDED']);
 const LIFECYCLE=Object.freeze(['CANDIDATE','TESTING','CALIBRATED','VERIFIED','CONTRADICTED','INVALIDATED','EXPIRED','UNKNOWN']);
 const DEFAULT_TTL_MS=48*60*60*1000;
 const frozen=Object.freeze.bind(Object);
+/* An evidence record is an observation, so it has to be immutable all the way
+   down. Freezing only the top level left `restorePath` writable, and because
+   records() hands out the same objects, a push into that array mutated stored
+   evidence. The S5 check caught it. */
+function deepFrozen(value){
+ if(Array.isArray(value))return frozen(value.map(deepFrozen));
+ if(value&&typeof value==='object'){
+  for(const key of Object.keys(value))value[key]=deepFrozen(value[key]);
+  return frozen(value);
+ }
+ return value;
+}
 const text=(value,label)=>{if(typeof value!=='string'||!value)throw new Error(label+' must be a non-empty string');return value;};
 
 /* Cheap, dependency-free digest. Identity here only has to be stable and
@@ -39,12 +51,26 @@ function createRegistry(options){
  const romHash=text(config.romHash,'romHash');
  const coreRevision=text(config.coreRevision,'coreRevision');
  const profileRevision=text(config.profileRevision,'profileRevision');
+ /* Optional so the AGOD-08 call path and its published numbers are unchanged.
+    When supplied it becomes part of the validity context and is enforced. */
+ const detectorRevision=typeof config.detectorRevision==='string'&&config.detectorRevision?config.detectorRevision:null;
  const ttlMs=Number.isInteger(config.ttlMs)?config.ttlMs:DEFAULT_TTL_MS;
+ /* Three different things that were one thing before (Sol decision 5):
+      an evidence record   - an immutable observation with its provenance;
+      a verification       - valid or not, for reasons that have nothing to do
+                             with elapsed time;
+      a cache horizon      - after which a verification must be revalidated,
+                             which is not the same as being wrong.
+    `cacheTtlMs` only forces revalidation. Nothing here lets time alone revoke
+    a verification, and nothing here lets a changed core or detector survive
+    one. */
+ const cacheTtlMs=Number.isInteger(config.cacheTtlMs)?config.cacheTtlMs:DEFAULT_TTL_MS;
  const records=[];                 /* every registered item, including excluded */
  const partition=new Map();        /* startKey -> group: the split is global, not per hypothesis */
  const goalStart=new Map();        /* goalId + startKey -> recordId: reuse of a start by one goal */
  const contradictions=new Map();   /* goalId -> reason */
  const verified=new Map();         /* goalId -> verification record */
+ const revocations=new Map();      /* goalId -> why a verification was revoked */
  const pairKey=(goalId,startKey)=>goalId+'\u0000'+startKey;
 
  /* A start is identified by what produced it, not by its name. */
@@ -106,11 +132,16 @@ function createRegistry(options){
   }
 
   if(record.outcome==='contradicted'&&record.group!=='EXCLUDED'){
-   contradictions.set(record.goalId,'contradicted by evidence '+record.id);
-   if(verified.has(record.goalId))verified.delete(record.goalId); /* revoke */
+   const reason='contradicted by evidence '+record.id;
+   contradictions.set(record.goalId,reason);
+   if(verified.has(record.goalId)){
+    verified.delete(record.goalId); /* revoke */
+    revocations.set(record.goalId,{by:'contradiction',reasons:[reason]});
+   }
   }
-  records.push(frozen(record));
-  return frozen(record);
+  deepFrozen(record);
+  records.push(record);
+  return record;
  }
 
  const live=goalId=>records.filter(r=>r.goalId===goalId&&r.group!=='EXCLUDED');
@@ -185,6 +216,10 @@ function createRegistry(options){
    return frozen({goalId,lifecycle:state.lifecycle,verified:false,blockers,evidence:state});
   const record=frozen({goalId,lifecycle:'VERIFIED',verified:true,blockers:[],
    polarity:req.polarity,romHash,coreRevision,profileRevision,
+   /* What this verification was issued against. Checked, not assumed, by
+      verificationStatus(). */
+   validityContext:frozen({romHash,coreRevision,detectorRevision,profileRevision}),
+   issuedAtMs:Number.isInteger(req.nowMs)?req.nowMs:null,
    discoveryStarts:state.discoveryStarts,calibrationStarts:state.calibrationStarts,
    holdoutStarts:state.holdoutStarts,evidence:state,
    evidenceRefs:live(goalId).filter(r=>r.outcome==='confirmed').map(r=>r.id).slice(0,32)});
@@ -192,9 +227,72 @@ function createRegistry(options){
   return record;
  }
 
+ /* Is a verification still good, and if not, why? Time is the one reason that
+    does NOT make it wrong: a stale verification needs revalidating, an
+    incompatible one is revoked outright. */
+ function verificationStatus(goalId,context){
+  const ctx=context||{};
+  const record=verified.get(goalId);
+  const reasons=[];
+  if(contradictions.has(goalId))
+   return frozen({goalId,state:'REVOKED',requiresRevalidation:false,
+    reasons:[contradictions.get(goalId)],revokedBy:'contradiction',verification:null});
+  if(!record){
+   /* A revoked verification stays revoked, with its cause. Degrading to NONE
+      would lose the one fact a caller most needs. */
+   const revoked=revocations.get(goalId);
+   if(revoked)
+    return frozen({goalId,state:'REVOKED',requiresRevalidation:false,
+     reasons:revoked.reasons.slice(),revokedBy:revoked.by,verification:null});
+   return frozen({goalId,state:'NONE',requiresRevalidation:false,
+    reasons:['no verification has been granted'],verification:null});
+  }
+  const against=record.validityContext;
+  if(ctx.romHash!==undefined&&ctx.romHash!==against.romHash)
+   reasons.push('verified against another ROM: '+against.romHash+' != '+ctx.romHash);
+  if(ctx.coreRevision!==undefined&&ctx.coreRevision!==against.coreRevision)
+   reasons.push('core revision changed: verified against '+against.coreRevision+', now '+ctx.coreRevision);
+  if(ctx.detectorRevision!==undefined&&against.detectorRevision!==null&&
+     ctx.detectorRevision!==against.detectorRevision)
+   reasons.push('detector revision changed: verified against '+against.detectorRevision+', now '+ctx.detectorRevision);
+  if(ctx.profileRevision!==undefined&&ctx.profileRevision!==against.profileRevision)
+   reasons.push('profile revision changed: verified against '+against.profileRevision+', now '+ctx.profileRevision);
+  if(reasons.length){
+   /* Revoked regardless of how recently it was issued. */
+   verified.delete(goalId);
+   revocations.set(goalId,{by:'incompatible-context',reasons:reasons.slice()});
+   return frozen({goalId,state:'REVOKED',requiresRevalidation:false,reasons,
+    revokedBy:'incompatible-context',verification:record});
+  }
+  const ageMs=Number.isInteger(ctx.nowMs)&&Number.isInteger(record.issuedAtMs)
+   ?ctx.nowMs-record.issuedAtMs:null;
+  if(cacheTtlMs>0&&ageMs!==null&&ageMs>cacheTtlMs)
+   return frozen({goalId,state:'STALE',requiresRevalidation:true,
+    reasons:['older than the cache horizon of '+cacheTtlMs+' ms (age '+ageMs+' ms): revalidate, '+
+     'which is not the same as being wrong'],
+    ageMs,cacheTtlMs,verification:record});
+  return frozen({goalId,state:'VALID',requiresRevalidation:false,reasons:[],ageMs,cacheTtlMs,verification:record});
+ }
+
+ /* Revalidation moves the cache horizon only. It cannot repair a revoked
+    verification, and it cannot invent one. */
+ function revalidate(goalId,context){
+  const ctx=context||{};
+  const status=verificationStatus(goalId,ctx);
+  if(status.state!=='STALE')
+   return frozen({goalId,revalidated:false,state:status.state,
+    reason:status.state==='VALID'?'nothing to revalidate':'a '+status.state+' verification cannot be revalidated'});
+  const refreshed=frozen({...status.verification,
+   issuedAtMs:Number.isInteger(ctx.nowMs)?ctx.nowMs:status.verification.issuedAtMs,
+   revalidations:(status.verification.revalidations||0)+1});
+  verified.set(goalId,refreshed);
+  return frozen({goalId,revalidated:true,state:'VALID',revalidations:refreshed.revalidations});
+ }
+
  function contradict(goalId,reason){
   contradictions.set(text(goalId,'goalId'),text(reason,'reason'));
   const revoked=verified.delete(goalId);
+  if(revoked)revocations.set(goalId,{by:'contradiction',reasons:[reason]});
   return frozen({goalId,lifecycle:'CONTRADICTED',reason,revokedPriorVerification:revoked});
  }
 
@@ -203,14 +301,14 @@ function createRegistry(options){
  function exportState(){
   return frozen({schemaVersion:SCHEMA_VERSION,registryRevision:REGISTRY_REVISION,
    romHash,coreRevision,profileRevision,ttlMs,
-   records:records.map(r=>frozen({...r,restored:true})),
+   records:records.map(r=>deepFrozen({...r,restorePath:r.restorePath.slice(),restored:true})),
    contradictions:[...contradictions.entries()].map(([goalId,reason])=>frozen({goalId,reason}))});
  }
  function importState(state){
   if(!state||state.schemaVersion!==SCHEMA_VERSION)throw new Error('unsupported registry state');
   if(state.romHash!==romHash||state.coreRevision!==coreRevision)throw new Error('registry state belongs to a different ROM or core');
   for(const r of state.records||[]){
-   records.push(frozen({...r,restored:true}));
+   records.push(deepFrozen({...r,restorePath:Array.isArray(r.restorePath)?r.restorePath.slice():[],restored:true}));
    if(r.group!=='EXCLUDED'){
     if(!partition.has(r.startKey))partition.set(r.startKey,r.group);
     const pair=pairKey(r.goalId,r.startKey);
@@ -222,6 +320,9 @@ function createRegistry(options){
  }
 
  return frozen({register,assess,promote,contradict,exportState,importState,
+  verificationStatus,revalidate,
+  validityContext(){return frozen({romHash,coreRevision,detectorRevision,profileRevision,cacheTtlMs});},
+  revocationLedger(){return [...revocations.entries()].map(([goalId,entry])=>frozen({goalId,by:entry.by,reasons:entry.reasons.slice()}));},
   groups(){return GROUPS.slice();},
   size(){return records.length;},
   records(){return records.slice();},

@@ -48,6 +48,7 @@ AGOD_REPLAY_REPORT=logs/replay_report.json     node tools/agod_replay_check.cjs
 AGOD_SACRIFICE_REPORT=logs/sacrifice_report.json node tools/agod_sacrifice_check.cjs
 AGOD_POSITIVE_REPORT=logs/positive_report.json node tools/agod_positive_check.cjs
 AGOD_S4B_REPORT=logs/positive_s4b_report.json node tools/agod_positive_s4b_check.cjs
+AGOD_VALIDITY_REPORT=logs/validity_report.json node tools/agod_validity_check.cjs
 CHROMIUM_EXECUTABLE=/opt/pw-browsers/chromium AGOD_BRIDGE_REPORT=logs/bridge_report.json node tools/agod_experimental_bridge_check.cjs
 ```
 

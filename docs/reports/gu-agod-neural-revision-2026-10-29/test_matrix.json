@@ -759,6 +759,12 @@
       "status": "PASS",
       "log": "logs/agod_positive_s4b_check.log",
       "note": "three families; supersedes the two-family measurement of S4, whose artefact is kept"
+    },
+    {
+      "command": "node tools/agod_validity_check.cjs",
+      "stage": "S5",
+      "status": "PASS",
+      "log": "logs/agod_validity_check.log"
     }
   ],
   "experimentalChecksNote": "New experimental checks added by this revision. They are standalone Node checks; tools/check.sh and CI were not modified."
