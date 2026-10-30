@@ -1,0 +1,2146 @@
+{
+  "type": "gu-agod-causal-check",
+  "version": 1,
+  "scope": "host emulator / original controlled NES cartridges",
+  "oracle": "checker-only; never passed into the causal module",
+  "engine": "actual JSNES 2.1.0",
+  "method": "per start: restore snapshot, replay neutral twice (sham/determinism control), replay the probed mask, replay an alternative mask; an address is attributed only when the action arm differs from the neutral arm replayed from the same snapshot",
+  "meaning": "attribution is action->RAM causal evidence under replay. It is NOT polarity, reward, goal or game meaning, and it is measured on a synthetic generator family, not on real games",
+  "status": "PASS",
+  "rows": [
+    {
+      "seed": 0,
+      "romHash": "6b4556c380b50af16986568a3917c5e775adec2fb3acd02da8685ec8a3b7158d",
+      "oracleMasks": {
+        "positive": 1,
+        "negative": 2,
+        "menu": 8,
+        "reset": 4
+      },
+      "recovered": {
+        "scoreFromPositiveAction": true,
+        "livesFromNegativeAction": true,
+        "menuFromMenuAction": true
+      },
+      "decoyLeaks": [],
+      "naiveDecoyLeaks": [
+        {
+          "mask": 1,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 1,
+          "field": "timer"
+        },
+        {
+          "mask": 1,
+          "field": "noise"
+        },
+        {
+          "mask": 2,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 2,
+          "field": "timer"
+        },
+        {
+          "mask": 2,
+          "field": "noise"
+        },
+        {
+          "mask": 4,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 4,
+          "field": "timer"
+        },
+        {
+          "mask": 4,
+          "field": "noise"
+        },
+        {
+          "mask": 8,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 8,
+          "field": "timer"
+        },
+        {
+          "mask": 8,
+          "field": "noise"
+        },
+        {
+          "mask": 64,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 64,
+          "field": "timer"
+        },
+        {
+          "mask": 64,
+          "field": "noise"
+        }
+      ],
+      "shiftTolerance": 3,
+      "effectfulMasks": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32,
+        64,
+        128
+      ],
+      "effectsBeyondEcho": {
+        "1": [
+          0,
+          159,
+          515
+        ],
+        "2": [
+          94,
+          178
+        ],
+        "4": [
+          159
+        ],
+        "8": [
+          176
+        ],
+        "16": [],
+        "32": [],
+        "64": [
+          137
+        ],
+        "128": []
+      },
+      "unwiredWithRealEffect": [],
+      "ownEchoRecovered": true,
+      "levelMask": 64,
+      "perMask": {
+        "1": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            0,
+            16,
+            32,
+            159,
+            515
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            0,
+            16,
+            32,
+            70,
+            145,
+            159,
+            169,
+            515
+          ],
+          "rawAttributedTotal": 29,
+          "shiftExplainedTotal": 9,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "2": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            17,
+            33,
+            94,
+            178
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            17,
+            33,
+            70,
+            94,
+            145,
+            169,
+            178
+          ],
+          "rawAttributedTotal": 22,
+          "shiftExplainedTotal": 6,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "4": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            18,
+            34,
+            159
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            18,
+            34,
+            70,
+            145,
+            159,
+            169
+          ],
+          "rawAttributedTotal": 21,
+          "shiftExplainedTotal": 9,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "8": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            19,
+            35,
+            176
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            19,
+            35,
+            70,
+            145,
+            169,
+            176
+          ],
+          "rawAttributedTotal": 15,
+          "shiftExplainedTotal": 3,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "16": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            20,
+            36
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            20,
+            36
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "32": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            21,
+            37
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            21,
+            37
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "64": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            22,
+            38,
+            137
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            22,
+            38,
+            70,
+            137,
+            145,
+            169
+          ],
+          "rawAttributedTotal": 21,
+          "shiftExplainedTotal": 9,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "128": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            23,
+            39
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            23,
+            39
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        }
+      },
+      "frames": 12,
+      "startsPerProbe": 4,
+      "note": "single-button masks only; held for the whole window; one cartridge family"
+    },
+    {
+      "seed": 1,
+      "romHash": "1773dd62e526d967c72f03e4bacf923799572678637b67ce51b18165fb6402d6",
+      "oracleMasks": {
+        "positive": 16,
+        "negative": 2,
+        "menu": 8,
+        "reset": 4
+      },
+      "recovered": {
+        "scoreFromPositiveAction": true,
+        "livesFromNegativeAction": true,
+        "menuFromMenuAction": true
+      },
+      "decoyLeaks": [],
+      "naiveDecoyLeaks": [
+        {
+          "mask": 2,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 2,
+          "field": "timer"
+        },
+        {
+          "mask": 2,
+          "field": "noise"
+        },
+        {
+          "mask": 4,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 4,
+          "field": "timer"
+        },
+        {
+          "mask": 4,
+          "field": "noise"
+        },
+        {
+          "mask": 8,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 8,
+          "field": "timer"
+        },
+        {
+          "mask": 8,
+          "field": "noise"
+        },
+        {
+          "mask": 8,
+          "field": "highScoreDecoy"
+        },
+        {
+          "mask": 16,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 16,
+          "field": "timer"
+        },
+        {
+          "mask": 16,
+          "field": "noise"
+        },
+        {
+          "mask": 16,
+          "field": "highScoreDecoy"
+        },
+        {
+          "mask": 64,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 64,
+          "field": "timer"
+        },
+        {
+          "mask": 64,
+          "field": "noise"
+        }
+      ],
+      "shiftTolerance": 3,
+      "effectfulMasks": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32,
+        64,
+        128
+      ],
+      "effectsBeyondEcho": {
+        "1": [],
+        "2": [
+          116,
+          203
+        ],
+        "4": [
+          216
+        ],
+        "8": [
+          95
+        ],
+        "16": [
+          0,
+          216,
+          515
+        ],
+        "32": [],
+        "64": [
+          129
+        ],
+        "128": []
+      },
+      "unwiredWithRealEffect": [],
+      "ownEchoRecovered": true,
+      "levelMask": 64,
+      "perMask": {
+        "1": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            16,
+            32
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            16,
+            32
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "2": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            17,
+            33,
+            116,
+            203
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            17,
+            33,
+            116,
+            117,
+            140,
+            199,
+            203
+          ],
+          "rawAttributedTotal": 19,
+          "shiftExplainedTotal": 3,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "4": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            18,
+            34,
+            216
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            18,
+            34,
+            117,
+            140,
+            199,
+            216
+          ],
+          "rawAttributedTotal": 21,
+          "shiftExplainedTotal": 9,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "8": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            19,
+            35,
+            95
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            19,
+            35,
+            95,
+            109,
+            117,
+            140,
+            199
+          ],
+          "rawAttributedTotal": 23,
+          "shiftExplainedTotal": 11,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "16": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            0,
+            20,
+            36,
+            216,
+            515
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            0,
+            20,
+            36,
+            109,
+            117,
+            140,
+            199,
+            216,
+            515
+          ],
+          "rawAttributedTotal": 31,
+          "shiftExplainedTotal": 11,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "32": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            21,
+            37
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            21,
+            37
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "64": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            22,
+            38,
+            129
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            22,
+            38,
+            117,
+            129,
+            140,
+            199
+          ],
+          "rawAttributedTotal": 21,
+          "shiftExplainedTotal": 9,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "128": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            23,
+            39
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            23,
+            39
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        }
+      },
+      "frames": 12,
+      "startsPerProbe": 4,
+      "note": "single-button masks only; held for the whole window; one cartridge family"
+    },
+    {
+      "seed": 2,
+      "romHash": "3c28be48e30b604cc926e9e70e15cd468590f25860f7f0437592ab9e9fec25e7",
+      "oracleMasks": {
+        "positive": 128,
+        "negative": 2,
+        "menu": 8,
+        "reset": 4
+      },
+      "recovered": {
+        "scoreFromPositiveAction": true,
+        "livesFromNegativeAction": true,
+        "menuFromMenuAction": true
+      },
+      "decoyLeaks": [],
+      "naiveDecoyLeaks": [
+        {
+          "mask": 2,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 2,
+          "field": "timer"
+        },
+        {
+          "mask": 2,
+          "field": "noise"
+        },
+        {
+          "mask": 4,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 4,
+          "field": "timer"
+        },
+        {
+          "mask": 4,
+          "field": "noise"
+        },
+        {
+          "mask": 64,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 64,
+          "field": "timer"
+        },
+        {
+          "mask": 64,
+          "field": "noise"
+        },
+        {
+          "mask": 128,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 128,
+          "field": "timer"
+        },
+        {
+          "mask": 128,
+          "field": "noise"
+        }
+      ],
+      "shiftTolerance": 3,
+      "effectfulMasks": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32,
+        64,
+        128
+      ],
+      "effectsBeyondEcho": {
+        "1": [],
+        "2": [
+          109,
+          130
+        ],
+        "4": [
+          163,
+          164,
+          165
+        ],
+        "8": [
+          73
+        ],
+        "16": [],
+        "32": [],
+        "64": [
+          135
+        ],
+        "128": [
+          0,
+          163,
+          515
+        ]
+      },
+      "unwiredWithRealEffect": [],
+      "ownEchoRecovered": true,
+      "levelMask": 64,
+      "perMask": {
+        "1": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            16,
+            32
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            16,
+            32
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "2": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            17,
+            33,
+            109,
+            130
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            17,
+            33,
+            69,
+            109,
+            130,
+            166,
+            207
+          ],
+          "rawAttributedTotal": 25,
+          "shiftExplainedTotal": 9,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "4": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            18,
+            34,
+            163,
+            164,
+            165
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            18,
+            34,
+            69,
+            163,
+            164,
+            165,
+            166,
+            207
+          ],
+          "rawAttributedTotal": 32,
+          "shiftExplainedTotal": 12,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "8": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            19,
+            35,
+            73
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            19,
+            35,
+            73
+          ],
+          "rawAttributedTotal": 12,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "16": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            20,
+            36
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            20,
+            36
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "32": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            21,
+            37
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            21,
+            37
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "64": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            22,
+            38,
+            135
+          ],
+          "contradicted": [
+            69,
+            166,
+            207
+          ],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            22,
+            38,
+            69,
+            135,
+            166,
+            207
+          ],
+          "rawAttributedTotal": 24,
+          "shiftExplainedTotal": 9,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "128": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            0,
+            23,
+            39,
+            163,
+            515
+          ],
+          "contradicted": [
+            69,
+            166,
+            207
+          ],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            0,
+            23,
+            39,
+            69,
+            163,
+            166,
+            207,
+            515
+          ],
+          "rawAttributedTotal": 32,
+          "shiftExplainedTotal": 9,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        }
+      },
+      "frames": 12,
+      "startsPerProbe": 4,
+      "note": "single-button masks only; held for the whole window; one cartridge family"
+    },
+    {
+      "seed": 7,
+      "romHash": "380424f8e501e6baa28b9f71953a323230c24a46dd589f8a78d040b3f21281b2",
+      "oracleMasks": {
+        "positive": 16,
+        "negative": 64,
+        "menu": 8,
+        "reset": 4
+      },
+      "recovered": {
+        "scoreFromPositiveAction": true,
+        "livesFromNegativeAction": true,
+        "menuFromMenuAction": true
+      },
+      "decoyLeaks": [],
+      "naiveDecoyLeaks": [
+        {
+          "mask": 2,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 2,
+          "field": "timer"
+        },
+        {
+          "mask": 2,
+          "field": "noise"
+        },
+        {
+          "mask": 4,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 4,
+          "field": "timer"
+        },
+        {
+          "mask": 4,
+          "field": "noise"
+        },
+        {
+          "mask": 16,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 16,
+          "field": "timer"
+        },
+        {
+          "mask": 16,
+          "field": "noise"
+        },
+        {
+          "mask": 64,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 64,
+          "field": "timer"
+        },
+        {
+          "mask": 64,
+          "field": "noise"
+        }
+      ],
+      "shiftTolerance": 3,
+      "effectfulMasks": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32,
+        64,
+        128
+      ],
+      "effectsBeyondEcho": {
+        "1": [],
+        "2": [
+          136
+        ],
+        "4": [
+          83
+        ],
+        "8": [
+          65
+        ],
+        "16": [
+          0,
+          83,
+          515
+        ],
+        "32": [],
+        "64": [
+          121,
+          178
+        ],
+        "128": []
+      },
+      "unwiredWithRealEffect": [],
+      "ownEchoRecovered": true,
+      "levelMask": 2,
+      "perMask": {
+        "1": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            16,
+            32
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            16,
+            32
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "2": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            17,
+            33,
+            136
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            17,
+            33,
+            104,
+            120,
+            136,
+            194
+          ],
+          "rawAttributedTotal": 21,
+          "shiftExplainedTotal": 9,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "4": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            18,
+            34,
+            83
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            18,
+            34,
+            83,
+            104,
+            120,
+            194
+          ],
+          "rawAttributedTotal": 15,
+          "shiftExplainedTotal": 3,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "8": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            19,
+            35,
+            65
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            19,
+            35,
+            65
+          ],
+          "rawAttributedTotal": 12,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "16": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            0,
+            20,
+            36,
+            83,
+            515
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            0,
+            20,
+            36,
+            83,
+            104,
+            120,
+            194,
+            515
+          ],
+          "rawAttributedTotal": 26,
+          "shiftExplainedTotal": 6,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "32": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            21,
+            37
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            21,
+            37
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "64": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            22,
+            38,
+            121,
+            178
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            22,
+            38,
+            104,
+            120,
+            121,
+            178,
+            194
+          ],
+          "rawAttributedTotal": 19,
+          "shiftExplainedTotal": 3,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "128": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            23,
+            39
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            23,
+            39
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        }
+      },
+      "frames": 12,
+      "startsPerProbe": 4,
+      "note": "single-button masks only; held for the whole window; one cartridge family"
+    },
+    {
+      "seed": 8,
+      "romHash": "bc3f9812a2028fbb7fed3eb9135aefbdbfde3d5c8035fe72ee4392f07b1579cf",
+      "oracleMasks": {
+        "positive": 128,
+        "negative": 64,
+        "menu": 8,
+        "reset": 4
+      },
+      "recovered": {
+        "scoreFromPositiveAction": true,
+        "livesFromNegativeAction": true,
+        "menuFromMenuAction": true
+      },
+      "decoyLeaks": [],
+      "naiveDecoyLeaks": [
+        {
+          "mask": 2,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 2,
+          "field": "timer"
+        },
+        {
+          "mask": 2,
+          "field": "noise"
+        },
+        {
+          "mask": 4,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 4,
+          "field": "timer"
+        },
+        {
+          "mask": 4,
+          "field": "noise"
+        },
+        {
+          "mask": 8,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 8,
+          "field": "timer"
+        },
+        {
+          "mask": 8,
+          "field": "noise"
+        },
+        {
+          "mask": 64,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 64,
+          "field": "timer"
+        },
+        {
+          "mask": 64,
+          "field": "noise"
+        },
+        {
+          "mask": 128,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 128,
+          "field": "timer"
+        },
+        {
+          "mask": 128,
+          "field": "noise"
+        }
+      ],
+      "shiftTolerance": 3,
+      "effectfulMasks": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32,
+        64,
+        128
+      ],
+      "effectsBeyondEcho": {
+        "1": [],
+        "2": [
+          195
+        ],
+        "4": [
+          70
+        ],
+        "8": [
+          115
+        ],
+        "16": [],
+        "32": [],
+        "64": [
+          133,
+          152
+        ],
+        "128": [
+          0,
+          70,
+          515
+        ]
+      },
+      "unwiredWithRealEffect": [],
+      "ownEchoRecovered": true,
+      "levelMask": 2,
+      "perMask": {
+        "1": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            16,
+            32
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            16,
+            32
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "2": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            17,
+            33,
+            195
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            17,
+            33,
+            107,
+            172,
+            173,
+            195
+          ],
+          "rawAttributedTotal": 24,
+          "shiftExplainedTotal": 12,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "4": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            18,
+            34,
+            70
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            18,
+            34,
+            70,
+            107,
+            172,
+            173
+          ],
+          "rawAttributedTotal": 24,
+          "shiftExplainedTotal": 12,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "8": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            19,
+            35,
+            115
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            19,
+            35,
+            107,
+            115,
+            172,
+            173
+          ],
+          "rawAttributedTotal": 15,
+          "shiftExplainedTotal": 3,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "16": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            20,
+            36
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            20,
+            36
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "32": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            21,
+            37
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            21,
+            37
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "64": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            22,
+            38,
+            133,
+            152
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            22,
+            38,
+            107,
+            133,
+            152,
+            172,
+            173
+          ],
+          "rawAttributedTotal": 22,
+          "shiftExplainedTotal": 6,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "128": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            0,
+            23,
+            39,
+            70,
+            515
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            0,
+            23,
+            39,
+            70,
+            107,
+            172,
+            173,
+            515
+          ],
+          "rawAttributedTotal": 29,
+          "shiftExplainedTotal": 9,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        }
+      },
+      "frames": 12,
+      "startsPerProbe": 4,
+      "note": "single-button masks only; held for the whole window; one cartridge family"
+    },
+    {
+      "seed": 9,
+      "romHash": "672f103b91fd85e3f36cb25dad8e6eeed15df908d351daed7b8cc7acbf7ab68c",
+      "oracleMasks": {
+        "positive": 1,
+        "negative": 2,
+        "menu": 8,
+        "reset": 4
+      },
+      "recovered": {
+        "scoreFromPositiveAction": true,
+        "livesFromNegativeAction": true,
+        "menuFromMenuAction": true
+      },
+      "decoyLeaks": [],
+      "naiveDecoyLeaks": [
+        {
+          "mask": 1,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 1,
+          "field": "timer"
+        },
+        {
+          "mask": 1,
+          "field": "noise"
+        },
+        {
+          "mask": 1,
+          "field": "highScoreDecoy"
+        },
+        {
+          "mask": 2,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 2,
+          "field": "timer"
+        },
+        {
+          "mask": 2,
+          "field": "noise"
+        },
+        {
+          "mask": 4,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 4,
+          "field": "timer"
+        },
+        {
+          "mask": 4,
+          "field": "noise"
+        },
+        {
+          "mask": 4,
+          "field": "highScoreDecoy"
+        },
+        {
+          "mask": 8,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 8,
+          "field": "timer"
+        },
+        {
+          "mask": 8,
+          "field": "noise"
+        },
+        {
+          "mask": 64,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 64,
+          "field": "timer"
+        },
+        {
+          "mask": 64,
+          "field": "noise"
+        },
+        {
+          "mask": 64,
+          "field": "highScoreDecoy"
+        }
+      ],
+      "shiftTolerance": 3,
+      "effectfulMasks": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32,
+        64,
+        128
+      ],
+      "effectsBeyondEcho": {
+        "1": [
+          0,
+          120,
+          515
+        ],
+        "2": [
+          115,
+          184
+        ],
+        "4": [
+          120
+        ],
+        "8": [
+          216
+        ],
+        "16": [],
+        "32": [],
+        "64": [
+          157
+        ],
+        "128": []
+      },
+      "unwiredWithRealEffect": [],
+      "ownEchoRecovered": true,
+      "levelMask": 64,
+      "perMask": {
+        "1": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            0,
+            16,
+            32,
+            120,
+            515
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            0,
+            16,
+            32,
+            107,
+            120,
+            150,
+            168,
+            212,
+            515
+          ],
+          "rawAttributedTotal": 30,
+          "shiftExplainedTotal": 10,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "2": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            17,
+            33,
+            115,
+            184
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            17,
+            33,
+            107,
+            115,
+            150,
+            184,
+            212
+          ],
+          "rawAttributedTotal": 22,
+          "shiftExplainedTotal": 6,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "4": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            18,
+            34,
+            120
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            18,
+            34,
+            107,
+            120,
+            150,
+            168,
+            212
+          ],
+          "rawAttributedTotal": 23,
+          "shiftExplainedTotal": 11,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "8": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            19,
+            35,
+            216
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            19,
+            35,
+            107,
+            150,
+            212,
+            216
+          ],
+          "rawAttributedTotal": 15,
+          "shiftExplainedTotal": 3,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "16": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            20,
+            36
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            20,
+            36
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "32": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            21,
+            37
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            21,
+            37
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "64": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            22,
+            38,
+            157
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            22,
+            38,
+            107,
+            150,
+            157,
+            168,
+            212
+          ],
+          "rawAttributedTotal": 23,
+          "shiftExplainedTotal": 11,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "128": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            23,
+            39
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            23,
+            39
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        }
+      },
+      "frames": 12,
+      "startsPerProbe": 4,
+      "note": "single-button masks only; held for the whole window; one cartridge family"
+    },
+    {
+      "seed": 47,
+      "romHash": "76a63ad922d2d97b1875ea740f9ce20b2ff60d98968509564a2508d6e3e790d1",
+      "oracleMasks": {
+        "positive": 128,
+        "negative": 2,
+        "menu": 8,
+        "reset": 4
+      },
+      "recovered": {
+        "scoreFromPositiveAction": true,
+        "livesFromNegativeAction": true,
+        "menuFromMenuAction": true
+      },
+      "decoyLeaks": [],
+      "naiveDecoyLeaks": [
+        {
+          "mask": 2,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 2,
+          "field": "timer"
+        },
+        {
+          "mask": 2,
+          "field": "noise"
+        },
+        {
+          "mask": 4,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 4,
+          "field": "timer"
+        },
+        {
+          "mask": 4,
+          "field": "noise"
+        },
+        {
+          "mask": 64,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 64,
+          "field": "timer"
+        },
+        {
+          "mask": 64,
+          "field": "noise"
+        },
+        {
+          "mask": 128,
+          "field": "frameCounter"
+        },
+        {
+          "mask": 128,
+          "field": "timer"
+        },
+        {
+          "mask": 128,
+          "field": "noise"
+        }
+      ],
+      "shiftTolerance": 3,
+      "effectfulMasks": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32,
+        64,
+        128
+      ],
+      "effectsBeyondEcho": {
+        "1": [],
+        "2": [
+          65,
+          104
+        ],
+        "4": [
+          214,
+          215,
+          216,
+          217
+        ],
+        "8": [
+          94
+        ],
+        "16": [],
+        "32": [],
+        "64": [
+          129
+        ],
+        "128": [
+          0,
+          217,
+          515
+        ]
+      },
+      "unwiredWithRealEffect": [],
+      "ownEchoRecovered": true,
+      "levelMask": 64,
+      "perMask": {
+        "1": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            16,
+            32
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            16,
+            32
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "2": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            17,
+            33,
+            65,
+            104
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            17,
+            33,
+            65,
+            104,
+            115,
+            173,
+            195
+          ],
+          "rawAttributedTotal": 22,
+          "shiftExplainedTotal": 6,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "4": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            18,
+            34,
+            214,
+            215,
+            216,
+            217
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            18,
+            34,
+            115,
+            173,
+            195,
+            214,
+            215,
+            216,
+            217
+          ],
+          "rawAttributedTotal": 33,
+          "shiftExplainedTotal": 9,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "8": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            19,
+            35,
+            94
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            19,
+            35,
+            94
+          ],
+          "rawAttributedTotal": 12,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "16": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            20,
+            36
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            20,
+            36
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "32": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            21,
+            37
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            21,
+            37
+          ],
+          "rawAttributedTotal": 8,
+          "shiftExplainedTotal": 0,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "64": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            22,
+            38,
+            129
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            22,
+            38,
+            115,
+            129,
+            173,
+            195
+          ],
+          "rawAttributedTotal": 21,
+          "shiftExplainedTotal": 9,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        },
+        "128": {
+          "causalStatus": "CAUSAL-EVIDENCE",
+          "confirmed": [
+            0,
+            23,
+            39,
+            217,
+            515
+          ],
+          "contradicted": [],
+          "usableStarts": 4,
+          "excludedStarts": 0,
+          "independentStarts": 4,
+          "naiveAttributedAddresses": [
+            0,
+            23,
+            39,
+            115,
+            173,
+            195,
+            217,
+            515
+          ],
+          "rawAttributedTotal": 29,
+          "shiftExplainedTotal": 9,
+          "polarity": "unknown",
+          "rewardStatus": "UNKNOWN"
+        }
+      },
+      "frames": 12,
+      "startsPerProbe": 4,
+      "note": "single-button masks only; held for the whole window; one cartridge family"
+    }
+  ],
+  "totals": {
+    "seeds": 7,
+    "scoreRecovered": 7,
+    "livesRecovered": 7,
+    "menuRecovered": 7,
+    "decoyLeaks": 0,
+    "naiveDecoyLeaksAvoided": 101,
+    "allOwnEchoesRecovered": true,
+    "unwiredButtonsWithRealEffect": 0
+  }
+}

@@ -12,8 +12,8 @@
 |---|---|---|
 | E0 — Baseline и воспроизводимость | **PARTIAL PASS** | 105/108 шагов регрессии PASS, 3 BLOCKED (нет emscripten). База ТЗ подтверждена. См. `01_GU_BASELINE_AUDIT_RU.md` |
 | E1 — Source-level audit | **PARTIAL PASS** | 4 проекта с SHA из ТЗ проверены, прочитаны, решения зафиксированы (`02_EXTERNAL_SOURCE_AUDIT_RU.md`). Не сделано: differential tests против upstream; 3 проекта без SHA не аудировались |
-| E2 — RAM / HUD discovery | NOT STARTED | |
-| E3 — Causal validation | NOT STARTED | |
+| E2 — RAM / HUD discovery | NOT STARTED | не продвигался: miner и визуальный HUD не трогались |
+| E3 — Causal validation | **MECHANISM BUILT, MEASURED** | `agod-causal.js` + `agod_causal_check.cjs`: 7/7 картриджей, 0 ложных привязок декоев против 101 у наивного метода. См. `04_CAUSAL_VALIDATION_RU.md`. Реальных игр и Android нет |
 | E4 — Goal induction и reward | NOT STARTED | |
 | E5 — Neural RL baseline | NOT STARTED | |
 | E6 — Интеграция AGOD и RL | NOT STARTED | |
@@ -26,7 +26,7 @@
 |---|---|---|
 | G0 — Source | **PARTIAL** | SHA проверены, лицензии (все MIT) и решения зафиксированы; остаются differential tests против upstream и 3 проекта без SHA |
 | G1 — Observation | PARTIAL | Паритет и bounded trace на хосте PASS; Android не проверен |
-| G2 — Causality | **OPEN** | Причинного механизма в базе нет: independent confirmations = 0 |
+| G2 — Causality | **PARTIAL** | Механизм есть и воспроизводим на контролируемом семействе; для закрытия нужен не подбиравшийся корпус §11.1, которого нет |
 | G3 — Reward | **OPEN** | Подтверждённой награды нет: verifiedRewards = 0, rewardStatus = UNKNOWN. Контракт UNKNOWN при этом соблюдается |
 | G4 — Neural | **OPEN** | Нейросетевого обучения в базе нет |
 | G5 — Behavior | **OPEN** | Нет ни blind-корпуса, ни oracle, ни frozen-сравнения |
@@ -46,6 +46,8 @@
 9. **SB3 `DQN.train` — ванильный DQN, не Double DQN**, которого требует NN-01: цель Double DQN придётся писать самим.
 10. Награда в Stable-Retro задаётся рукописным сценарием на каждую игру → для пути обнаружения не годится, но годится в независимые оракулы §11.2.
 11. ADOPT NOW: ноль механизмов. Три PROTOTYPE, один REJECT для пути обнаружения.
+12. **Наивное сравнение «действие против нейтрали» систематически ложно**: нажатие кнопки сдвигает фазу времязависимых счётчиков (reset на 12 кадрах = нейтраль на 11). На 7 картриджах это дало бы 101 ложную причинную привязку.
+13. С контролем сдвига причинный движок восстанавливает истинные связи действие→эффект: 7/7 по счёту, жизням и меню, все 8 кнопок по эху ввода, 0 привязок декоев, 0 эффектов у непривязанных кнопок.
 
 ## Запрещено заявлять на текущем этапе
 
