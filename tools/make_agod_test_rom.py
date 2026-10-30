@@ -317,7 +317,19 @@ def generate(seed=1):
     chr_data[16:24] = bytes([0xFF, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0xFF])
     chr_data[32:40] = bytes([0x18, 0x3C, 0x7E, 0xDB, 0xFF, 0x7E, 0x24, 0x42])
     rom = b'NES\x1A' + bytes([1, 1, 0, 0]) + bytes(8) + prg + chr_data
+    # Closed evaluation labels for S4. Metadata only: the ROM bytes and every
+    # SHA256 published for this family are unchanged by this addition.
+    positive_label = {
+        'anyFieldDemonstrablyBeneficial': False,
+        'why': 'this family has no win condition and no persisted result: the counter is an '
+               'accumulator, a reset zeroes it, and nothing in the cartridge makes a larger '
+               'value better. Any POSITIVE proposal here is a false positive.',
+        'accumulator': 'score',
+        'resource': 'lives',
+        'notPositive': ['score', 'level', 'timer', 'frameCounter', 'highScoreDecoy', 'noise', 'menu', 'respawn'],
+    }
     oracle = {'type': 'agod-test-oracle', 'version': 1, 'seed': seed, 'fields': fields, 'initialScore': initial_score,
+              'positiveLabel': positive_label,
               'positiveMask': 1 << positive, 'negativeMask': 1 << negative,
               'menuMask': 8, 'resetMask': 4, 'echoAddresses': list(range(0x10, 0x18)),
               'writerSites': {name: [{'pc': 0x8000 + asm.labels[label], 'bank': 0,

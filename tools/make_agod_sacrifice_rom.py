@@ -356,6 +356,17 @@ def generate(seed=1):
             'coupledGainField': 'progress',
             'requiredForProgress': 'spendMask',
         },
+        # Closed evaluation labels for S4.
+        'positiveLabel': {
+            'anyFieldDemonstrablyBeneficial': True,
+            'field': 'treasure',
+            'why': 'treasure is the only field the cartridge makes worth having: it is produced by '
+                   'play, it survives the restart that refills the charges, and the gain rate rises '
+                   'with progress, so more of it is strictly better',
+            'instrumental': ['progress'],
+            'resource': 'charges',
+            'notPositive': ['charges', 'progress', 'gate', 'timer', 'frameCounter', 'ledgerDecoy', 'noise'],
+        },
         'writerSites': {name: [{'pc': 0x8000 + asm.labels[label], 'bank': 0,
                                 'prgOffset': asm.labels[label]} for label in sites]
                         for name, sites in writers.items()},

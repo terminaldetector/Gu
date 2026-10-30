@@ -115,6 +115,35 @@ function createBroker(options){
 /* Internal exploration signals must never travel on the game-reward channel
    (6.2). They are returned under a different key so they cannot be summed with
    a game reward by accident. */
+/* The three mechanisms kept apart (Sol decision 1).
+
+   VerifiedExtrinsicReward  claim(): the only path that can produce `value`.
+   ProvisionalGoal          provisionalSignal(): a causally confirmed event with
+                            presumed usefulness and no right to be a reward.
+   IntrinsicExploration     intrinsicSignal(): novelty and the like.
+
+   Only the first carries a `value` key, so nothing can add the other two into a
+   game reward by accident - which is the whole requirement of 6.2. */
+function provisionalSignal(name,value,meta){
+ if(typeof name!=='string'||!name)throw new Error('a provisional signal needs a name');
+ return frozen({schemaVersion:SCHEMA_VERSION,brokerRevision:BROKER_REVISION,
+  channel:'provisional',status:'PROVISIONAL',name,
+  /* Deliberately not `value`. */
+  provisionalValue:Number.isFinite(value)?value:null,
+  source:meta&&meta.source?String(meta.source):'agod-positive',
+  notAReward:'a provisional goal cannot be claimed: claim() requires a VERIFIED lifecycle'});
+}
+
+function channels(){
+ return frozen([
+  frozen({mechanism:'VerifiedExtrinsicReward',entry:'claim',carriesValueKey:true,
+   requires:'a VERIFIED goal, an allowed source, a complete executed interval and a live context'}),
+  frozen({mechanism:'ProvisionalGoal',entry:'provisionalSignal',carriesValueKey:false,
+   requires:'causal confirmation only; it is a hypothesis about game meaning'}),
+  frozen({mechanism:'IntrinsicExploration',entry:'intrinsicSignal',carriesValueKey:false,
+   requires:'nothing about the game; it is the agent\'s own curiosity'})]);
+}
+
 function intrinsicSignal(name,value){
  if(typeof name!=='string'||!name)throw new Error('intrinsic signal needs a name');
  if(!Number.isFinite(value))throw new Error('intrinsic signal must be finite');
@@ -122,6 +151,6 @@ function intrinsicSignal(name,value){
   note:'exploration signal, not game reward; never add this to a verified reward value'});
 }
 
-const api={SCHEMA_VERSION,BROKER_REVISION,STATUS,createBroker,intrinsicSignal};
+const api={SCHEMA_VERSION,BROKER_REVISION,provisionalSignal,channels,STATUS,createBroker,intrinsicSignal};
 root.FlyAgodReward=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof window==='undefined'?globalThis:window);

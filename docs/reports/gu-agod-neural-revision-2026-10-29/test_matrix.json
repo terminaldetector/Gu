@@ -746,6 +746,12 @@
       "status": "PASS",
       "log": "logs/agod_sacrifice_check.log",
       "note": "two independent controlled families; the sacrifice oracle carries closed judgement labels"
+    },
+    {
+      "command": "node tools/agod_positive_check.cjs",
+      "stage": "S4",
+      "status": "PASS",
+      "log": "logs/agod_positive_check.log"
     }
   ],
   "experimentalChecksNote": "New experimental checks added by this revision. They are standalone Node checks; tools/check.sh and CI were not modified."
