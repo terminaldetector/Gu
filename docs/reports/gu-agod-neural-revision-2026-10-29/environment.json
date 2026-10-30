@@ -1,0 +1,33 @@
+{
+  "capturedUtc": "2026-10-30T08:18:04Z",
+  "repo": "https://github.com/terminaldetector/Gu",
+  "baseBranch": "feature/agod-instrumented-nes",
+  "baseCommit": "775aa68053c7b99bf699f16c1418b997ce507250",
+  "baseCommitMatchesTz": true,
+  "workBranch": "research/agod-neural-e0-e1",
+  "worktreeCleanAtBaseline": true,
+  "host": {
+    "kernel": "6.18.44-fc-v185",
+    "arch": "x86_64",
+    "cpuCount": 4,
+    "note": "ephemeral cloud container, not a physical Android device"
+  },
+  "toolchain": {
+    "java": "openjdk version \"21.0.12.1\" 2026-08-18",
+    "javac": "javac 21.0.12.1",
+    "node": "v22.22.0",
+    "python": "Python 3.13.16",
+    "gradle": "Gradle 8.14.3",
+    "emscripten": "absent"
+  },
+  "pythonPackages": {
+    "numpy": "2.5.3",
+    "pandas": "2.3.3",
+    "pyarrow": "21.0.0"
+  },
+  "limits": [
+    "emscripten absent: SNES/GB retro cores cannot be built, so fdb_game_check.cjs, expanded_game_check.cjs and retro_check.cjs cannot run here",
+    "no physical Android device: every G6 item stays DEVICE-PENDING",
+    "Maven Central returned HTTP 429 on the first check.sh attempt; transient, succeeded on retry"
+  ]
+}

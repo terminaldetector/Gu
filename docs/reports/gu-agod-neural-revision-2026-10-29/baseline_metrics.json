@@ -1,0 +1,159 @@
+{
+  "agodControlledRom": {
+    "source": "tools/agod_rom_check.cjs (standalone run)",
+    "seeds": [
+      0,
+      1,
+      2,
+      7,
+      8,
+      9,
+      47
+    ],
+    "romVariants": 7,
+    "counter": {
+      "structuralSpanCandidate": "7/7",
+      "exactTypedCandidatePresent": "1/7",
+      "observedValueEquivalentCandidate": "2/7",
+      "fullTypeIdentified": "0/7"
+    },
+    "lives": {
+      "structuralSpanCandidate": "7/7",
+      "exactTypedCandidatePresent": "7/7",
+      "fullTypeIdentified": "0/7"
+    },
+    "confounderRejection": {
+      "timerRejected": "7/7",
+      "frameCounterRejected": "7/7"
+    },
+    "causalityAndReward": {
+      "verifiedRewardsTotal": 0,
+      "independentConfirmationsTotal": 0,
+      "rewardStatusValues": [
+        "UNKNOWN"
+      ],
+      "goalPolarityValues": [
+        "unknown"
+      ]
+    },
+    "hostCost": {
+      "probeToCoreRatioMin": 0.0704,
+      "probeToCoreRatioMax": 0.1043,
+      "note": "host ratio of probe+miner time to core execution time; NOT an Android p95 frame-time measurement"
+    },
+    "tzClaimCheck": {
+      "tz_2_1_structural_7_of_7": true,
+      "tz_2_1_exact_counter_1_of_7": true
+    }
+  },
+  "nesWriteTrace": {
+    "runs": [
+      {
+        "run": "standalone nes_write_trace_check.cjs",
+        "parity": {
+          "instructionCount": 58,
+          "frameCount": 53,
+          "boundaries": 117
+        },
+        "writers": {
+          "orderedEvents": 32,
+          "distinctSites": 25,
+          "staticPrgBanks": [
+            0,
+            1
+          ],
+          "unsupportedMapper": "UNKNOWN"
+        },
+        "modes": {
+          "disabled": {
+            "p50BaselineMs": 5.222,
+            "p50ConditionMs": 5.15,
+            "p50Ratio": 0.986,
+            "p95BaselineMs": 7.996,
+            "p95ConditionMs": 7.556,
+            "p95Ratio": 0.945
+          },
+          "detached": {
+            "p50BaselineMs": 5.137,
+            "p50ConditionMs": 7.833,
+            "p50Ratio": 1.525,
+            "p95BaselineMs": 8.091,
+            "p95ConditionMs": 10.134,
+            "p95Ratio": 1.253
+          },
+          "active": {
+            "p50BaselineMs": 6.523,
+            "p50ConditionMs": 9.957,
+            "p50Ratio": 1.526,
+            "p95BaselineMs": 8.682,
+            "p95ConditionMs": 12.807,
+            "p95Ratio": 1.475
+          }
+        },
+        "categories": {
+          "unit": "separate core_probe_check.cjs",
+          "hostEmulator": "PASS",
+          "controlledRom": "PASS",
+          "frozenGeneralization": "NOT-TESTED",
+          "physicalAndroid": "DEVICE-PENDING"
+        }
+      },
+      {
+        "run": "inside check.sh run 2",
+        "parity": {
+          "instructionCount": 58,
+          "frameCount": 53,
+          "boundaries": 117
+        },
+        "writers": {
+          "orderedEvents": 32,
+          "distinctSites": 25,
+          "staticPrgBanks": [
+            0,
+            1
+          ],
+          "unsupportedMapper": "UNKNOWN"
+        },
+        "modes": {
+          "disabled": {
+            "p50BaselineMs": 5.394,
+            "p50ConditionMs": 5.43,
+            "p50Ratio": 1.007,
+            "p95BaselineMs": 8.202,
+            "p95ConditionMs": 8.526,
+            "p95Ratio": 1.04
+          },
+          "detached": {
+            "p50BaselineMs": 5.253,
+            "p50ConditionMs": 6.035,
+            "p50Ratio": 1.149,
+            "p95BaselineMs": 7.76,
+            "p95ConditionMs": 9.869,
+            "p95Ratio": 1.272
+          },
+          "active": {
+            "p50BaselineMs": 5.145,
+            "p50ConditionMs": 7.432,
+            "p50Ratio": 1.445,
+            "p95BaselineMs": 8.612,
+            "p95ConditionMs": 11.994,
+            "p95Ratio": 1.393
+          }
+        },
+        "categories": {
+          "unit": "separate core_probe_check.cjs",
+          "hostEmulator": "PASS",
+          "controlledRom": "PASS",
+          "frozenGeneralization": "NOT-TESTED",
+          "physicalAndroid": "DEVICE-PENDING"
+        }
+      }
+    ],
+    "tzClaimCheck": {
+      "tz_2_2_orderedEvents_32": true,
+      "tz_2_2_distinctSites_25": true,
+      "tz_2_2_boundaries_117": true,
+      "tz_2_2_overheadReproduced": "NO - host overhead ratios vary materially between runs; see modes[].p50Ratio"
+    }
+  }
+}

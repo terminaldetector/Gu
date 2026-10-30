@@ -1,0 +1,1 @@
+PASS: SSP=0 cartridge boot, raw/swap/copier/SMD/MDX identities, regions and >8 MiB actual WASM load

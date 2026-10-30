@@ -1,0 +1,8 @@
+experiment,metric,run,condition,p50_baseline_ms,p50_condition_ms,p50_ratio,p95_baseline_ms,p95_condition_ms,p95_ratio,environment,device
+E0,nes_write_trace_frame_time,standalone nes_write_trace_check.cjs,disabled,5.222,5.15,0.986,7.996,7.556,0.945,host container,none
+E0,nes_write_trace_frame_time,standalone nes_write_trace_check.cjs,detached,5.137,7.833,1.525,8.091,10.134,1.253,host container,none
+E0,nes_write_trace_frame_time,standalone nes_write_trace_check.cjs,active,6.523,9.957,1.526,8.682,12.807,1.475,host container,none
+E0,nes_write_trace_frame_time,inside check.sh run 2,disabled,5.394,5.43,1.007,8.202,8.526,1.04,host container,none
+E0,nes_write_trace_frame_time,inside check.sh run 2,detached,5.253,6.035,1.149,7.76,9.869,1.272,host container,none
+E0,nes_write_trace_frame_time,inside check.sh run 2,active,5.145,7.432,1.445,8.612,11.994,1.393,host container,none
+E0,agod_probe_to_core_cost_ratio,agod_rom_check.cjs,7 controlled ROMs,,,,,,min=0.0704 max=0.1043,host container,none

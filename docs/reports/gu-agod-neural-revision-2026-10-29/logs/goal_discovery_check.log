@@ -1,0 +1,1 @@
+PASS: 21 bounded 1–4-byte signed/unsigned/BCD LE/BE hypotheses, carry/wrap/reset and aliases; provisional clock/timer/echo/noise exclusion; immutable canonical observations, context/generation/partition fences, unverified provenance, bounded work/history and no FDB reward calls
