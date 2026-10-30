@@ -1,0 +1,122 @@
+{
+  "type": "gu-agod-real-game-check",
+  "version": 1,
+  "corpusClass": "private user-supplied real-game ROM, local evaluation only; no ROM bytes in this artefact",
+  "oracle": "none exists for a real cartridge: discovery here is unlabelled by construction, and no judgement is recorded as a label",
+  "provenance": {
+    "commit": "6c029b117f49d87124ccbc6fd4dc9c0ac09afcd4",
+    "workingTreeDirty": false,
+    "node": "v22.22.0",
+    "pipelineRevision": "agod-pipeline-s4b-3",
+    "causalRevision": "agod-causal-e3-2",
+    "ramRevision": "agod-ram-e2-1"
+  },
+  "status": "COMPLETE",
+  "arms": [
+    {
+      "arm": "pure-boot",
+      "declaredIntervention": null,
+      "initialStateHash": "f9eab219a9d185495692e1a38a0a2ce7",
+      "phaseEvidence": {
+        "motionWithoutInput": 0.283,
+        "framesSampled": 120,
+        "inputDivergenceBytes": 0,
+        "persistentBytesAfterRelease": 167,
+        "transientBytesWhileHeld": 198,
+        "activeSpriteSlots": 64,
+        "phaseEstimate": "ANIMATED-NON-INTERACTIVE",
+        "caveat": "an estimate from four measurements, not a label: RAM divergence alone does not establish gameplay"
+      },
+      "pipeline": {
+        "status": "REFUSED",
+        "stage": "induce",
+        "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+        "discovered": {
+          "resource": {
+            "address": 20,
+            "width": 1,
+            "step": -40,
+            "mask": 8
+          },
+          "increasingFieldCount": 13,
+          "neutralMovedAddressCount": 130
+        },
+        "refusals": [
+          {
+            "stage": "induce",
+            "reason": "the resource did not produce an evidenced NEGATIVE polarity"
+          }
+        ]
+      },
+      "elapsedMs": 23873
+    },
+    {
+      "arm": "start-preamble",
+      "declaredIntervention": "press Start 6 times, a declared human prior about how cartridges begin, not a RAM hint and not a reward choice",
+      "initialStateHash": "a9f1466e5b17489d66b7a9a8fae96a0a",
+      "phaseEvidence": {
+        "motionWithoutInput": 0,
+        "framesSampled": 120,
+        "inputDivergenceBytes": 0,
+        "persistentBytesAfterRelease": 0,
+        "transientBytesWhileHeld": 162,
+        "activeSpriteSlots": 64,
+        "phaseEstimate": "STATIC-OR-UNRESPONSIVE",
+        "caveat": "an estimate from four measurements, not a label: RAM divergence alone does not establish gameplay"
+      },
+      "pipeline": {
+        "status": "REFUSED",
+        "stage": "induce",
+        "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+        "discovered": {
+          "resource": {
+            "address": 438,
+            "width": 1,
+            "step": -33,
+            "mask": 1
+          },
+          "increasingFieldCount": 21,
+          "neutralMovedAddressCount": 537
+        },
+        "refusals": [
+          {
+            "stage": "induce",
+            "reason": "the resource did not produce an evidenced NEGATIVE polarity"
+          }
+        ]
+      },
+      "elapsedMs": 25315
+    }
+  ],
+  "rom": {
+    "name": "galaga.nes",
+    "sha256": "116ff51eabad94da0c3bf32de9d50cc84becf73814fa2bf5574676b058a0a09a",
+    "fileBytes": 40976,
+    "format": "NES 2.0",
+    "mapper": 0,
+    "submapper": 0,
+    "prgRomBytes": 32768,
+    "chrRomBytes": 8192,
+    "timingHeader": "NTSC"
+  },
+  "coreIdentity": "jsnes (bundled in assets/lab/jsnes.min.js)",
+  "frameParameters": {
+    "hold": 4,
+    "release": 8,
+    "bootFrames": 240
+  },
+  "totals": {
+    "arms": 2,
+    "phaseEstimates": {
+      "pure-boot": "ANIMATED-NON-INTERACTIVE",
+      "start-preamble": "STATIC-OR-UNRESPONSIVE"
+    },
+    "pipelineOutcomes": {
+      "pure-boot": "REFUSED/induce",
+      "start-preamble": "REFUSED/induce"
+    },
+    "verifiedGoalInEitherArm": false,
+    "preambleChangedThePhaseEstimate": true,
+    "note": "no oracle exists for this cartridge. Nothing here is scored against a label, and no judgement about game value is recorded."
+  }
+}

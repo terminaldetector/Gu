@@ -791,6 +791,13 @@
       "stage": "S4c smoke",
       "status": "PASS",
       "log": "(stdout)"
+    },
+    {
+      "command": "AGOD_PRIVATE_ROMS=<dir> AGOD_TARGET_ROM=galaga.nes node tools/agod_real_game_check.cjs",
+      "stage": "real-game (private corpus)",
+      "status": "REFUSED-CORRECTLY",
+      "log": "logs/galaga_report.json",
+      "note": "both arms refuse at induce; galaga is BLOCKED on reaching gameplay in this core"
     }
   ],
   "experimentalChecksNote": "New experimental checks added by this revision. They are standalone Node checks; tools/check.sh and CI were not modified."
