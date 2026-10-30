@@ -32,12 +32,13 @@ node tools/agod_rom_check.cjs
 
 Все пять завершаются кодом 0. Логи: `logs/core_probe_check.log` и далее по именам.
 
-## 2a. Экспериментальные проверки E3 / E4 / AGOD-08
+## 2a. Экспериментальные проверки E2 / E3 / E4 / AGOD-08
 
 Добавлены этой ревизией. `tools/check.sh` и CI не изменялись, поэтому запускаются
 отдельно, из корня репозитория:
 
 ```sh
+AGOD_RAM_REPORT=logs/ram_type_report.json      node tools/agod_ram_check.cjs
 AGOD_CAUSAL_REPORT=logs/causal_report.json     node tools/agod_causal_check.cjs
 AGOD_REWARD_REPORT=logs/reward_report.json     node tools/agod_reward_check.cjs
 AGOD_EVIDENCE_REPORT=logs/evidence_report.json node tools/agod_evidence_check.cjs
@@ -48,6 +49,11 @@ AGOD_EVIDENCE_REPORT=logs/evidence_report.json node tools/agod_evidence_check.cj
 картриджи генерируются самой проверкой через `tools/make_agod_test_rom.py`
 (нужен `python3`), во временный каталог, который удаляется после прогона;
 коммерческих ROM не требуется и в репозитории их нет.
+
+`agod_ram_check.cjs` дополнительно читает `logs/agod_rom_check.log` из этого же
+каталога отчёта: числа базы, с которыми он сравнивается, берутся из закоммиченного
+прогона E0, а не из текста отчёта. Прогон занимает несколько минут: 150 событий на
+каждую из 8 масок плюс нейтральный контроль той же длины на каждый картридж.
 
 ## 3. Полная регрессия
 

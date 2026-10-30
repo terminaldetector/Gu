@@ -708,6 +708,12 @@
       "stage": "AGOD-08/09",
       "status": "PASS",
       "log": "logs/agod_evidence_check.log"
+    },
+    {
+      "command": "node tools/agod_ram_check.cjs",
+      "stage": "E2",
+      "status": "PASS",
+      "log": "logs/agod_ram_check.log"
     }
   ],
   "experimentalChecksNote": "New experimental checks added by this revision. They are standalone Node checks; tools/check.sh and CI were not modified."

@@ -1,0 +1,710 @@
+{
+  "type": "gu-agod-ram-type-check",
+  "version": 1,
+  "scope": "host emulator / original controlled NES cartridges",
+  "oracle": "checker-only: read after every type is committed, never passed into attribution or identification",
+  "claim": "A causally attributed span can be typed: address, observed-active width, byte order and encoding are committed to, and signedness is reported UNKNOWN because nothing in RAM settles it.",
+  "status": "PASS",
+  "rows": [
+    {
+      "seed": 0,
+      "romHash": "6b4556c380b50af16986568a3917c5e775adec2fb3acd02da8685ec8a3b7158d",
+      "oracleScore": {
+        "address": 159,
+        "width": 1,
+        "format": "unsigned",
+        "endian": "little"
+      },
+      "score": {
+        "address": 159,
+        "width": 1,
+        "endian": "n/a",
+        "encoding": "binary",
+        "encodingDetermined": true,
+        "signedness": "UNKNOWN",
+        "step": 1,
+        "direction": "increasing"
+      },
+      "scoreTypeCorrectOnActiveSpan": true,
+      "scoreFullWidthIdentified": true,
+      "scoreActiveWidth": 1,
+      "scoreDeclaredWidth": 1,
+      "scoreFullWidthReachable": "a byte that never carried cannot be shown to belong to the span",
+      "lives": {
+        "address": 178,
+        "width": 1,
+        "encoding": "undetermined",
+        "encodingDetermined": false,
+        "step": -1,
+        "direction": "decreasing"
+      },
+      "livesTypeCorrect": true,
+      "attributedOnlyByLongHorizon": 0,
+      "attributedOnlyByShortProbe": 17,
+      "identifiedFields": 5,
+      "unresolvedSpans": 2,
+      "decoysTyped": 0,
+      "naiveDecoysTyped": 8,
+      "naiveDecoyFields": [
+        {
+          "mask": 1,
+          "address": 170,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 2,
+          "address": 170,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 4,
+          "address": 170,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 8,
+          "address": 170,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 16,
+          "address": 170,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 32,
+          "address": 170,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 64,
+          "address": 170,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 128,
+          "address": 170,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "seed": 1,
+      "romHash": "1773dd62e526d967c72f03e4bacf923799572678637b67ce51b18165fb6402d6",
+      "oracleScore": {
+        "address": 215,
+        "width": 2,
+        "format": "bcd",
+        "endian": "big"
+      },
+      "score": {
+        "address": 215,
+        "width": 2,
+        "endian": "big",
+        "encoding": "bcd",
+        "encodingDetermined": true,
+        "signedness": "UNKNOWN",
+        "step": 1,
+        "direction": "increasing"
+      },
+      "scoreTypeCorrectOnActiveSpan": true,
+      "scoreFullWidthIdentified": true,
+      "scoreActiveWidth": 2,
+      "scoreDeclaredWidth": 2,
+      "scoreFullWidthReachable": "a byte that never carried cannot be shown to belong to the span",
+      "lives": {
+        "address": 116,
+        "width": 1,
+        "encoding": "undetermined",
+        "encodingDetermined": false,
+        "step": -1,
+        "direction": "decreasing"
+      },
+      "livesTypeCorrect": true,
+      "attributedOnlyByLongHorizon": 1,
+      "attributedOnlyByShortProbe": 17,
+      "identifiedFields": 5,
+      "unresolvedSpans": 2,
+      "decoysTyped": 0,
+      "naiveDecoysTyped": 7,
+      "naiveDecoyFields": [
+        {
+          "mask": 1,
+          "address": 118,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 4,
+          "address": 118,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 8,
+          "address": 118,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 16,
+          "address": 118,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 32,
+          "address": 118,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 64,
+          "address": 118,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 128,
+          "address": 118,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "seed": 2,
+      "romHash": "3c28be48e30b604cc926e9e70e15cd468590f25860f7f0437592ab9e9fec25e7",
+      "oracleScore": {
+        "address": 163,
+        "width": 3,
+        "format": "signed",
+        "endian": "little"
+      },
+      "score": {
+        "address": 163,
+        "width": 3,
+        "endian": "little",
+        "encoding": "binary",
+        "encodingDetermined": true,
+        "signedness": "UNKNOWN",
+        "step": 1,
+        "direction": "increasing"
+      },
+      "scoreTypeCorrectOnActiveSpan": true,
+      "scoreFullWidthIdentified": true,
+      "scoreActiveWidth": 3,
+      "scoreDeclaredWidth": 3,
+      "scoreFullWidthReachable": "a byte that never carried cannot be shown to belong to the span",
+      "lives": {
+        "address": 109,
+        "width": 1,
+        "encoding": "undetermined",
+        "encodingDetermined": false,
+        "step": -1,
+        "direction": "decreasing"
+      },
+      "livesTypeCorrect": true,
+      "attributedOnlyByLongHorizon": 2,
+      "attributedOnlyByShortProbe": 19,
+      "identifiedFields": 5,
+      "unresolvedSpans": 2,
+      "decoysTyped": 0,
+      "naiveDecoysTyped": 8,
+      "naiveDecoyFields": [
+        {
+          "mask": 1,
+          "address": 208,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 2,
+          "address": 208,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 4,
+          "address": 208,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 8,
+          "address": 208,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 16,
+          "address": 208,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 32,
+          "address": 208,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 64,
+          "address": 208,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 128,
+          "address": 208,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "seed": 7,
+      "romHash": "380424f8e501e6baa28b9f71953a323230c24a46dd589f8a78d040b3f21281b2",
+      "oracleScore": {
+        "address": 80,
+        "width": 4,
+        "format": "bcd",
+        "endian": "big"
+      },
+      "score": {
+        "address": 82,
+        "width": 2,
+        "endian": "big",
+        "encoding": "bcd",
+        "encodingDetermined": true,
+        "signedness": "UNKNOWN",
+        "step": 1,
+        "direction": "increasing"
+      },
+      "scoreTypeCorrectOnActiveSpan": true,
+      "scoreFullWidthIdentified": false,
+      "scoreActiveWidth": 2,
+      "scoreDeclaredWidth": 4,
+      "scoreFullWidthReachable": "a byte that never carried cannot be shown to belong to the span",
+      "lives": {
+        "address": 121,
+        "width": 1,
+        "encoding": "undetermined",
+        "encodingDetermined": false,
+        "step": -1,
+        "direction": "decreasing"
+      },
+      "livesTypeCorrect": true,
+      "attributedOnlyByLongHorizon": 1,
+      "attributedOnlyByShortProbe": 17,
+      "identifiedFields": 5,
+      "unresolvedSpans": 2,
+      "decoysTyped": 0,
+      "naiveDecoysTyped": 8,
+      "naiveDecoyFields": [
+        {
+          "mask": 1,
+          "address": 105,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 2,
+          "address": 105,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 4,
+          "address": 105,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 8,
+          "address": 105,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 16,
+          "address": 105,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 32,
+          "address": 105,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 64,
+          "address": 105,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 128,
+          "address": 105,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "seed": 8,
+      "romHash": "bc3f9812a2028fbb7fed3eb9135aefbdbfde3d5c8035fe72ee4392f07b1579cf",
+      "oracleScore": {
+        "address": 70,
+        "width": 1,
+        "format": "signed",
+        "endian": "little"
+      },
+      "score": {
+        "address": 70,
+        "width": 1,
+        "endian": "n/a",
+        "encoding": "binary",
+        "encodingDetermined": true,
+        "signedness": "UNKNOWN",
+        "step": 1,
+        "direction": "increasing"
+      },
+      "scoreTypeCorrectOnActiveSpan": true,
+      "scoreFullWidthIdentified": true,
+      "scoreActiveWidth": 1,
+      "scoreDeclaredWidth": 1,
+      "scoreFullWidthReachable": "a byte that never carried cannot be shown to belong to the span",
+      "lives": {
+        "address": 133,
+        "width": 1,
+        "encoding": "undetermined",
+        "encodingDetermined": false,
+        "step": -1,
+        "direction": "decreasing"
+      },
+      "livesTypeCorrect": true,
+      "attributedOnlyByLongHorizon": 0,
+      "attributedOnlyByShortProbe": 17,
+      "identifiedFields": 5,
+      "unresolvedSpans": 2,
+      "decoysTyped": 0,
+      "naiveDecoysTyped": 8,
+      "naiveDecoyFields": [
+        {
+          "mask": 1,
+          "address": 108,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 2,
+          "address": 108,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 4,
+          "address": 108,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 8,
+          "address": 108,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 16,
+          "address": 108,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 32,
+          "address": 108,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 64,
+          "address": 108,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 128,
+          "address": 108,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "seed": 9,
+      "romHash": "672f103b91fd85e3f36cb25dad8e6eeed15df908d351daed7b8cc7acbf7ab68c",
+      "oracleScore": {
+        "address": 119,
+        "width": 2,
+        "format": "unsigned",
+        "endian": "big"
+      },
+      "score": {
+        "address": 119,
+        "width": 2,
+        "endian": "big",
+        "encoding": "binary",
+        "encodingDetermined": true,
+        "signedness": "UNKNOWN",
+        "step": 1,
+        "direction": "increasing"
+      },
+      "scoreTypeCorrectOnActiveSpan": true,
+      "scoreFullWidthIdentified": true,
+      "scoreActiveWidth": 2,
+      "scoreDeclaredWidth": 2,
+      "scoreFullWidthReachable": "a byte that never carried cannot be shown to belong to the span",
+      "lives": {
+        "address": 184,
+        "width": 1,
+        "encoding": "undetermined",
+        "encodingDetermined": false,
+        "step": -1,
+        "direction": "decreasing"
+      },
+      "livesTypeCorrect": true,
+      "attributedOnlyByLongHorizon": 1,
+      "attributedOnlyByShortProbe": 17,
+      "identifiedFields": 5,
+      "unresolvedSpans": 2,
+      "decoysTyped": 0,
+      "naiveDecoysTyped": 8,
+      "naiveDecoyFields": [
+        {
+          "mask": 1,
+          "address": 151,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 2,
+          "address": 151,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 4,
+          "address": 151,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 8,
+          "address": 151,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 16,
+          "address": 151,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 32,
+          "address": 151,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 64,
+          "address": 151,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 128,
+          "address": 151,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        }
+      ]
+    },
+    {
+      "seed": 47,
+      "romHash": "76a63ad922d2d97b1875ea740f9ce20b2ff60d98968509564a2508d6e3e790d1",
+      "oracleScore": {
+        "address": 214,
+        "width": 4,
+        "format": "signed",
+        "endian": "big"
+      },
+      "score": {
+        "address": 214,
+        "width": 4,
+        "endian": "big",
+        "encoding": "binary",
+        "encodingDetermined": true,
+        "signedness": "UNKNOWN",
+        "step": 1,
+        "direction": "increasing"
+      },
+      "scoreTypeCorrectOnActiveSpan": true,
+      "scoreFullWidthIdentified": true,
+      "scoreActiveWidth": 4,
+      "scoreDeclaredWidth": 4,
+      "scoreFullWidthReachable": "a byte that never carried cannot be shown to belong to the span",
+      "lives": {
+        "address": 65,
+        "width": 1,
+        "encoding": "undetermined",
+        "encodingDetermined": false,
+        "step": -1,
+        "direction": "decreasing"
+      },
+      "livesTypeCorrect": true,
+      "attributedOnlyByLongHorizon": 3,
+      "attributedOnlyByShortProbe": 20,
+      "identifiedFields": 5,
+      "unresolvedSpans": 2,
+      "decoysTyped": 0,
+      "naiveDecoysTyped": 8,
+      "naiveDecoyFields": [
+        {
+          "mask": 1,
+          "address": 174,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 2,
+          "address": 174,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 4,
+          "address": 174,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 8,
+          "address": 174,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 16,
+          "address": 174,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 32,
+          "address": 174,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 64,
+          "address": 174,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        },
+        {
+          "mask": 128,
+          "address": 174,
+          "width": 1,
+          "encoding": "undetermined",
+          "step": 1
+        }
+      ]
+    }
+  ],
+  "baseline": {
+    "seeds": 7,
+    "counterExactTypedCandidatePresent": 1,
+    "livesExactTypedCandidatePresent": 7,
+    "fullTypeIdentified": 0,
+    "note": "from logs/agod_rom_check.log: the baseline miner reports a candidate list; fullTypeIdentified is a constant false in that harness"
+  },
+  "totals": {
+    "seeds": 7,
+    "scoreTypeCorrectOnActiveSpan": 7,
+    "scoreFullWidthIdentified": 6,
+    "livesTypeCorrect": 7,
+    "scoreEncodingDetermined": 7,
+    "livesEncodingDetermined": 0,
+    "encodingClaimedAndWrong": 0,
+    "decoysTyped": 0,
+    "naiveDecoysTypedWithoutNeutralControl": 55,
+    "signednessClaimed": 0,
+    "baselineCounterExactTypedCandidatePresent": 1,
+    "baselineFullTypeIdentified": 0
+  }
+}
