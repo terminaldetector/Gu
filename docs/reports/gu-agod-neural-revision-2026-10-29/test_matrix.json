@@ -727,6 +727,12 @@
       "status": "PASS",
       "log": "logs/agod_pipeline_check.log",
       "note": "includes the held-out group: seeds 200..206, fixed before the first run"
+    },
+    {
+      "command": "node tools/agod_experimental_bridge_check.cjs",
+      "stage": "S1",
+      "status": "PASS",
+      "log": "logs/agod_experimental_bridge_check.log"
     }
   ],
   "experimentalChecksNote": "New experimental checks added by this revision. They are standalone Node checks; tools/check.sh and CI were not modified."
