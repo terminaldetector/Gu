@@ -215,19 +215,48 @@ try{
  const key=r=>r.family+'/'+r.seed+'/'+r.start;
  const pairs=[...new Set(runs.map(key))];
  const mean=values=>values.length?values.reduce((a,b)=>a+b,0)/values.length:null;
- /* Two rankings. The first is what a naive table would print, including runs
-    where a learning arm had nothing to learn from. The second counts an arm
-    only where it actually had a reward signal, and is the only one that says
-    anything about learning. */
+ /* MIDRANKS. Sorting equal outcomes and taking index+1 hands out different
+    ranks to identical results, so with a saturated metric the ordering is just
+    the order of the ARMS array wearing a number. Tied rows now share the mean
+    of the positions they span, which is the standard treatment and leaves a
+    fully tied pair genuinely tied. */
+ const assign=(rows,into)=>{
+  const sorted=[...rows].sort((a,b)=>b.frozenOutcomeGain-a.frozenOutcomeGain);
+  let i=0;
+  while(i<sorted.length){
+   let j=i;
+   while(j+1<sorted.length&&sorted[j+1].frozenOutcomeGain===sorted[i].frozenOutcomeGain)j++;
+   const midrank=(i+1+j+1)/2;
+   for(let k=i;k<=j;k++)(into[sorted[k].arm]=into[sorted[k].arm]||[]).push(midrank);
+   i=j+1;
+  }
+ };
  const ranksByArm={},ranksTrainedOnly={};
  for(const pair of pairs){
   const rows=runs.filter(r=>key(r)===pair);
-  const sorted=[...rows].sort((a,b)=>b.frozenOutcomeGain-a.frozenOutcomeGain);
-  sorted.forEach((row,index)=>{(ranksByArm[row.arm]=ranksByArm[row.arm]||[]).push(index+1);});
-  const eligible=rows.filter(r=>!r.untrained);
-  [...eligible].sort((a,b)=>b.frozenOutcomeGain-a.frozenOutcomeGain)
-   .forEach((row,index)=>{(ranksTrainedOnly[row.arm]=ranksTrainedOnly[row.arm]||[]).push(index+1);});
+  assign(rows,ranksByArm);
+  assign(rows.filter(r=>!r.untrained),ranksTrainedOnly);
  }
+
+ /* Paired differences on matched tasks, which do not depend on ranking at all.
+    Only pairs where BOTH arms had a reward signal are compared. */
+ const pairedDifference=(left,right)=>{
+  const differences=[];
+  for(const pair of pairs){
+   const a=runs.find(r=>key(r)===pair&&r.arm===left),b=runs.find(r=>key(r)===pair&&r.arm===right);
+   if(!a||!b||a.untrained||b.untrained)continue;
+   differences.push(a.frozenOutcomeGain-b.frozenOutcomeGain);
+  }
+  if(!differences.length)return {comparablePairs:0,meanDifference:null,
+   verdict:'NOT-COMPARABLE: no task where both arms had a reward signal'};
+  const mean=differences.reduce((x,y)=>x+y,0)/differences.length;
+  const nonZero=differences.filter(d=>d!==0).length;
+  return {comparablePairs:differences.length,meanDifference:mean,
+   pairsWhereTheyDiffer:nonZero,differences:differences.slice(0,12),
+   verdict:nonZero===0
+    ?'NOT IDENTIFIED: every matched pair is a tie, so no advantage either way can be distinguished from none'
+    :(mean>0?'left ahead by '+mean.toFixed(2):'right ahead by '+(-mean).toFixed(2))};
+ };
  const perArm=ARMS.map(arm=>{
   const rows=runs.filter(r=>r.arm===arm.id);
   const byFamily={};
@@ -257,7 +286,13 @@ try{
   algorithmEffect:'compare vanilla with double at the same reward source',
   untrainedLearningRuns:runs.filter(r=>r.untrained).length,
   learningRunsTotal:runs.filter(r=>r.rewardSource).length,
-  rankingCaveat:'meanRank includes runs where a learning arm never received a reward and so never trained; meanRankWhereItHadASignal excludes them and is the only figure that describes learning',
+  /* The algorithm question, asked the way it should be: matched tasks, both
+     arms trained, differences rather than ranks. */
+  doubleVersusVanilla:{
+   onOracleReward:pairedDifference('double-dqn/oracle','vanilla-dqn/oracle'),
+   onDiscoveredReward:pairedDifference('double-dqn/discovered','vanilla-dqn/discovered')},
+  rankingMethod:'midranks: tied outcomes share the mean of the positions they span, so a saturated metric produces ties rather than an ordering taken from array order',
+  rankingCaveat:'meanRank includes runs where a learning arm never received a reward and so never trained; meanRankWhereItHadASignal excludes them and is the only figure that describes learning. Where outcomes tie, midranks are equal by construction and no ordering should be read into them.',
   legacyFdbRun:false};
  save();
 

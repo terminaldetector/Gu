@@ -26,7 +26,8 @@
 (function(root){'use strict';
 const require_=typeof require==='function'?require:null;
 const Ram=root.FlyAgodRam||(require_?require_('./agod-ram.js'):null);
-const SCHEMA_VERSION=1,PROBE_REVISION='agod-consumers-s4c-1';
+const SCHEMA_VERSION=1,PROBE_REVISION='agod-consumers-s4c-2';
+const DEFAULT_FRAME_BUDGET=400000;
 const frozen=Object.freeze.bind(Object);
 
 const decode=(memory,field)=>Ram.decode(memory,{address:field.address,width:field.width,
@@ -45,6 +46,24 @@ function pokeValue(driver,field,value){
 function requirePoke(driver){
  if(!driver||typeof driver.poke!=='function')
   throw new Error('these probes need driver.poke(address, value): a counterfactual on a field cannot be done by playing');
+}
+
+/* A probe that does not terminate must fail, not hang. The first version of
+   this module wrote `i<options.driveTimes||16`, which parses as
+   `(i<options.driveTimes)||16` and is truthy on every iteration whatever the
+   value - an infinite loop that simply stopped the run with no error. This
+   wrapper makes any such mistake surface as a thrown budget error instead. */
+function metered(driver,budget){
+ let frames=0;
+ const limit=Number.isInteger(budget)?budget:DEFAULT_FRAME_BUDGET;
+ return {...driver,
+  run(mask,count){
+   frames+=count;
+   if(frames>limit)throw new Error('frame budget exceeded after '+frames+
+    ' emulated frames: the probe is not terminating');
+   return driver.run(mask,count);
+  },
+  framesUsed(){return frames;}};
 }
 
 /* A signature of everything EXCEPT the field itself, so the field's own
@@ -70,11 +89,14 @@ function downstreamConsumer(driver,options){
  const steps=options.steps===undefined?24:options.steps;
  const excluded=new Set(spanOf(field));
  for(const address of options.alsoExcluded||[])excluded.add(address);
+ /* Hoisted and ?? rather than inline ||, which is what broke before. */
+ const driveTimes=Number.isInteger(options.driveTimes)?options.driveTimes:16;
+ driver=metered(driver,options.frameBudget);
 
  /* A second value the field actually reaches, rather than an invented one. */
  driver.restore(pristine);
  const base=decode(driver.readRam(),field);
- for(let i=0;i<options.driveTimes||16;i++){driver.run(options.fieldMask,hold);driver.run(0,release);}
+ for(let i=0;i<driveTimes;i++){driver.run(options.fieldMask,hold);driver.run(0,release);}
  const driven=decode(driver.readRam(),field);
  if(driven===base)
   return frozen({schemaVersion:SCHEMA_VERSION,probeRevision:PROBE_REVISION,
@@ -111,6 +133,8 @@ function downstreamConsumer(driver,options){
 function fieldCausality(driver,options){
  requirePoke(driver);
  const candidate=options.candidate,modulator=options.modulator,pristine=options.pristine;
+ driver=metered(driver,options.frameBudget);
+ const modulatorPulses=Number.isInteger(options.modulatorPulses)?options.modulatorPulses:2;
  const hold=options.hold===undefined?4:options.hold;
  const release=options.release===undefined?8:options.release;
  const settle=options.settle===undefined?30:options.settle;
@@ -124,11 +148,11 @@ function fieldCausality(driver,options){
  };
  const baseStep=stepOf(null);
  /* Reached by pressing the modulator's button: everything it touches moves. */
- const byAction=stepOf(()=>{for(let i=0;i<(options.modulatorPulses||2);i++){
+ const byAction=stepOf(()=>{for(let i=0;i<modulatorPulses;i++){
   driver.run(options.modulatorMask,hold);driver.run(0,settle);}});
  /* Reached by writing only the modulator field, with a value the action reaches. */
  driver.restore(pristine);
- for(let i=0;i<(options.modulatorPulses||2);i++){driver.run(options.modulatorMask,hold);driver.run(0,settle);}
+ for(let i=0;i<modulatorPulses;i++){driver.run(options.modulatorMask,hold);driver.run(0,settle);}
  const reachedValue=read(modulator);
  const byField=stepOf(()=>pokeValue(driver,modulator,reachedValue));
  const actionChanged=baseStep>0&&byAction!==baseStep;
