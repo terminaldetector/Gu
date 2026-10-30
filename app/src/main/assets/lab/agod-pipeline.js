@@ -22,7 +22,7 @@ const Goals=root.FlyAgodGoals||(require_?require_('./agod-goals.js'):null);
 const Evidence=root.FlyAgodEvidence||(require_?require_('./agod-evidence.js'):null);
 const Reward=root.FlyAgodReward||(require_?require_('./agod-reward.js'):null);
 
-const SCHEMA_VERSION=1,PIPELINE_REVISION='agod-pipeline-s3-2';
+const SCHEMA_VERSION=1,PIPELINE_REVISION='agod-pipeline-s4b-3';
 const DEFAULTS=Object.freeze({masks:[1,2,4,8,16,32,64,128],frames:12,shiftTolerance:3,
  starts:2,typeEvents:60,hold:4,release:8,depletePulses:6,depleteSettle:30,
  partitions:[{group:'DISCOVERY',offset:11},{group:'CALIBRATION',offset:53},{group:'HOLDOUT',offset:97}]});
@@ -38,10 +38,15 @@ function movedBetween(samples){
 function run(driver,options){
  const config={...DEFAULTS,...(options||{})};
  const trace=[],refusals=[];
+ /* What the pipeline discovered is reported even when it refuses. Otherwise a
+    caller that needs the resource has to ask the oracle for it, which is how
+    the first version of the POSITIVE proposer acquired an oracle dependency. */
+ let discovered=null;
  const refuse=(stage,reason,detail)=>{
   refusals.push({stage,reason,...(detail||{})});
   return frozen({schemaVersion:SCHEMA_VERSION,pipelineRevision:PIPELINE_REVISION,
-   status:'REFUSED',stage,reason,goal:null,actions:null,trace,refusals});
+   status:'REFUSED',stage,reason,goal:null,actions:null,
+   discovered:discovered?frozen(discovered):null,trace,refusals});
  };
  const note=(stage,detail)=>{trace.push({stage,...detail});};
 
@@ -105,6 +110,15 @@ function run(driver,options){
  }
  if(!decreasing)return refuse('type','no action-driven resource decreases, so no cost can be evidenced');
  if(!increasing)return refuse('type','no persisting action-driven effect is available as a play-effect scope');
+ discovered={
+  resource:frozen({...decreasing.field,mask:decreasing.mask}),
+  effect:frozen({...increasing.field,mask:increasing.mask}),
+  /* Every increasing field the typing stage committed to, with its action, so a
+     caller can enumerate candidates without the oracle. */
+  increasingFields:[...typedByMask.entries()].flatMap(([mask,fields])=>
+   fields.filter(field=>field.direction==='increasing').map(field=>frozen({...field,mask}))),
+  persistingByMask:[...persistent.entries()].map(([mask,addresses])=>frozen({mask,addresses:addresses.slice(0,64)})),
+  neutralMovedAddresses:[...neutralMoved].sort((a,b)=>a-b)};
 
  /* 2b. Is the loss a cost, or is it the price of something?
        A depletion coupled to a persisting gain under the SAME action, or a floor
@@ -216,6 +230,7 @@ function run(driver,options){
   status:'VERIFIED',stage:'complete',reason:null,
   goal,
   resource:frozen({...decreasing.field,mask:decreasing.mask}),
+  discovered:frozen(discovered),
   judgement:induced.lossJudgement,
   depletionFact:induced.depletionFact,
   actions:frozen({neutral:0,effect:increasing.mask,cost:decreasing.mask}),
