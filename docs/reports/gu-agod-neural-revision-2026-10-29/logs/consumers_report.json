@@ -4,7 +4,17 @@
   "scope": "host emulator; three controlled families, 3 cartridges each",
   "instrument": "a counterfactual on the field itself: write a reachable second value, leave everything else identical, run a fixed schedule and compare RAM outside the field own bytes",
   "claim": "Whether a cartridge reads a variable is measurable, and it does not follow from the variable accumulating, persisting or being rate-modulated. Where this disagrees with a closed label, the label is the thing that is wrong.",
-  "status": "RUNNING",
+  "provenance": {
+    "commit": "dc9b9bd6e8609e5b06bca9ea5fe15e32a35949e3",
+    "workingTreeDirty": true,
+    "node": "v22.22.0",
+    "checkerSha256": "f4efc77a5c5c8d95",
+    "moduleSha256": "4e293133ee05a751",
+    "probeRevision": "agod-consumers-s4c-3",
+    "pipelineRevision": "agod-pipeline-s4b-3",
+    "scenariosConfigured": 4
+  },
+  "status": "PASS",
   "fields": [
     {
       "family": "survival",
@@ -15,14 +25,59 @@
       "mask": 1,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 2,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        }
+      ],
+      "cpuReads": 401,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 401,
       "consumerValues": {
         "base": 112,
         "driven": 224
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "survival",
@@ -33,14 +88,59 @@
       "mask": 1,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "NO-OBSERVED-CONSUMER",
       "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 250,
+            "driven": 10
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 250,
+            "driven": 10
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 250,
+            "driven": 10
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 250,
+            "driven": 10
+          }
+        }
+      ],
+      "cpuReads": 1,
+      "distinctReadPcs": 1,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 0,
       "consumerValues": {
         "base": 250,
         "driven": 10
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "no downstream effect and no non-writing read were observed in the tested trajectories; absence of evidence, not evidence of absence",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "survival",
@@ -51,14 +151,59 @@
       "mask": 1,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "NO-OBSERVED-CONSUMER",
       "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        }
+      ],
+      "cpuReads": 0,
+      "distinctReadPcs": 0,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 0,
       "consumerValues": {
         "base": 112,
         "driven": 224
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "no downstream effect and no non-writing read were observed in the tested trajectories; absence of evidence, not evidence of absence",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "survival",
@@ -69,14 +214,59 @@
       "mask": 64,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "NO-OBSERVED-CONSUMER",
       "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 1,
+            "driven": 17
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 1,
+            "driven": 17
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 1,
+            "driven": 17
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 1,
+            "driven": 17
+          }
+        }
+      ],
+      "cpuReads": 0,
+      "distinctReadPcs": 0,
+      "distinctWritePcs": 0,
+      "readsFromNonWritingPc": 0,
       "consumerValues": {
         "base": 1,
         "driven": 17
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "no downstream effect and no non-writing read were observed in the tested trajectories; absence of evidence, not evidence of absence",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "survival",
@@ -87,14 +277,59 @@
       "mask": 2,
       "isDiscoveredResource": true,
       "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 1,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        }
+      ],
+      "cpuReads": 80,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 79,
       "consumerValues": {
         "base": 3,
         "driven": 0
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "survival",
@@ -105,14 +340,59 @@
       "mask": 16,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 2,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        }
+      ],
+      "cpuReads": 392,
+      "distinctReadPcs": 1,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 392,
       "consumerValues": {
         "base": 112,
         "driven": 224
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "survival",
@@ -123,14 +403,59 @@
       "mask": 16,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "NO-OBSERVED-CONSUMER",
       "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 9,
+            "driven": 25
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 9,
+            "driven": 25
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 9,
+            "driven": 25
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 9,
+            "driven": 25
+          }
+        }
+      ],
+      "cpuReads": 0,
+      "distinctReadPcs": 0,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 0,
       "consumerValues": {
         "base": 9,
         "driven": 25
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "no downstream effect and no non-writing read were observed in the tested trajectories; absence of evidence, not evidence of absence",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "survival",
@@ -141,14 +466,59 @@
       "mask": 16,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "NO-OBSERVED-CONSUMER",
       "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        }
+      ],
+      "cpuReads": 0,
+      "distinctReadPcs": 0,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 0,
       "consumerValues": {
         "base": 112,
         "driven": 224
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "no downstream effect and no non-writing read were observed in the tested trajectories; absence of evidence, not evidence of absence",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "survival",
@@ -159,14 +529,59 @@
       "mask": 64,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "NO-OBSERVED-CONSUMER",
       "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 1,
+            "driven": 17
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 1,
+            "driven": 17
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 1,
+            "driven": 17
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 1,
+            "driven": 17
+          }
+        }
+      ],
+      "cpuReads": 0,
+      "distinctReadPcs": 0,
+      "distinctWritePcs": 0,
+      "readsFromNonWritingPc": 0,
       "consumerValues": {
         "base": 1,
         "driven": 17
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "no downstream effect and no non-writing read were observed in the tested trajectories; absence of evidence, not evidence of absence",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "survival",
@@ -177,14 +592,59 @@
       "mask": 2,
       "isDiscoveredResource": true,
       "consumerStatus": "OBSERVED",
+      "verdict": "READ-WITHOUT-EFFECT",
       "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        }
+      ],
+      "cpuReads": 80,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 79,
       "consumerValues": {
         "base": 3,
         "driven": 0
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "the CPU reads this address from code that never writes it, but no tested trajectory showed a behavioural difference",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "survival",
@@ -195,14 +655,59 @@
       "mask": 64,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "NO-OBSERVED-CONSUMER",
       "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 1,
+            "driven": 17
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 1,
+            "driven": 17
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 1,
+            "driven": 17
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 1,
+            "driven": 17
+          }
+        }
+      ],
+      "cpuReads": 0,
+      "distinctReadPcs": 0,
+      "distinctWritePcs": 0,
+      "readsFromNonWritingPc": 0,
       "consumerValues": {
         "base": 1,
         "driven": 17
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "no downstream effect and no non-writing read were observed in the tested trajectories; absence of evidence, not evidence of absence",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "survival",
@@ -213,14 +718,59 @@
       "mask": 128,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 2,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        }
+      ],
+      "cpuReads": 400,
+      "distinctReadPcs": 1,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 400,
       "consumerValues": {
         "base": 112,
         "driven": 224
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "survival",
@@ -231,14 +781,59 @@
       "mask": 128,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "NO-OBSERVED-CONSUMER",
       "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 16777211,
+            "driven": 11
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 16777211,
+            "driven": 11
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 16777211,
+            "driven": 11
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 16777211,
+            "driven": 11
+          }
+        }
+      ],
+      "cpuReads": 0,
+      "distinctReadPcs": 0,
+      "distinctWritePcs": 3,
+      "readsFromNonWritingPc": 0,
       "consumerValues": {
         "base": 16777211,
         "driven": 11
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "no downstream effect and no non-writing read were observed in the tested trajectories; absence of evidence, not evidence of absence",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "survival",
@@ -249,14 +844,59 @@
       "mask": 128,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "NO-OBSERVED-CONSUMER",
       "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 112,
+            "driven": 224
+          }
+        }
+      ],
+      "cpuReads": 0,
+      "distinctReadPcs": 0,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 0,
       "consumerValues": {
         "base": 112,
         "driven": 224
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "no downstream effect and no non-writing read were observed in the tested trajectories; absence of evidence, not evidence of absence",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "survival",
@@ -267,14 +907,59 @@
       "mask": 2,
       "isDiscoveredResource": true,
       "consumerStatus": "OBSERVED",
+      "verdict": "READ-WITHOUT-EFFECT",
       "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        }
+      ],
+      "cpuReads": 82,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 81,
       "consumerValues": {
         "base": 3,
         "driven": 0
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "the CPU reads this address from code that never writes it, but no tested trajectory showed a behavioural difference",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "sacrifice",
@@ -285,14 +970,59 @@
       "mask": 1,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 1,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        }
+      ],
+      "cpuReads": 403,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 3,
+      "readsFromNonWritingPc": 403,
       "consumerValues": {
         "base": 96,
         "driven": 176
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "sacrifice",
@@ -303,14 +1033,59 @@
       "mask": 1,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "READ-WITHOUT-EFFECT",
       "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        }
+      ],
+      "cpuReads": 5,
+      "distinctReadPcs": 1,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 5,
       "consumerValues": {
         "base": 0,
         "driven": 16
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "the CPU reads this address from code that never writes it, but no tested trajectory showed a behavioural difference",
       "labelledBeneficial": true,
-      "labelContradictedByConsumerTest": true
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "sacrifice",
@@ -321,14 +1096,59 @@
       "mask": 1,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "NO-OBSERVED-CONSUMER",
       "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        }
+      ],
+      "cpuReads": 0,
+      "distinctReadPcs": 0,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 0,
       "consumerValues": {
         "base": 96,
         "driven": 176
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "no downstream effect and no non-writing read were observed in the tested trajectories; absence of evidence, not evidence of absence",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "sacrifice",
@@ -339,14 +1159,59 @@
       "mask": 4,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
       "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 3,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        }
+      ],
+      "cpuReads": 403,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 403,
       "consumerValues": {
         "base": 0,
         "driven": 1
       },
-      "consumerReason": "poking this field changed what the machine did next, so its value influenced behaviour in this scenario",
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "sacrifice",
@@ -357,14 +1222,59 @@
       "mask": 4,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
       "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 3,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 3
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 3
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 3
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 3
+          }
+        }
+      ],
+      "cpuReads": 10,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 5,
       "consumerValues": {
         "base": 0,
         "driven": 3
       },
-      "consumerReason": "poking this field changed what the machine did next, so its value influenced behaviour in this scenario",
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "sacrifice",
@@ -375,14 +1285,59 @@
       "mask": 4,
       "isDiscoveredResource": true,
       "consumerStatus": "OBSERVED",
+      "verdict": "READ-WITHOUT-EFFECT",
       "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        }
+      ],
+      "cpuReads": 15,
+      "distinctReadPcs": 3,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 10,
       "consumerValues": {
         "base": 3,
         "driven": 0
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "the CPU reads this address from code that never writes it, but no tested trajectory showed a behavioural difference",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "sacrifice",
@@ -393,14 +1348,59 @@
       "mask": 1,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
-      "hasConsumer": false,
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 1,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        }
+      ],
+      "cpuReads": 405,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 3,
+      "readsFromNonWritingPc": 405,
       "consumerValues": {
         "base": 96,
         "driven": 176
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "sacrifice",
@@ -411,14 +1411,59 @@
       "mask": 1,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "READ-WITHOUT-EFFECT",
       "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        }
+      ],
+      "cpuReads": 5,
+      "distinctReadPcs": 1,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 5,
       "consumerValues": {
         "base": 0,
         "driven": 16
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "the CPU reads this address from code that never writes it, but no tested trajectory showed a behavioural difference",
       "labelledBeneficial": true,
-      "labelContradictedByConsumerTest": true
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "sacrifice",
@@ -429,14 +1474,59 @@
       "mask": 1,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "NO-OBSERVED-CONSUMER",
       "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        }
+      ],
+      "cpuReads": 0,
+      "distinctReadPcs": 0,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 0,
       "consumerValues": {
         "base": 96,
         "driven": 176
       },
-      "consumerReason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field",
+      "consumerReason": "no downstream effect and no non-writing read were observed in the tested trajectories; absence of evidence, not evidence of absence",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "sacrifice",
@@ -447,14 +1537,59 @@
       "mask": 8,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
       "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 3,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 3
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 3
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 3
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 3
+          }
+        }
+      ],
+      "cpuReads": 10,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 5,
       "consumerValues": {
         "base": 0,
         "driven": 3
       },
-      "consumerReason": "poking this field changed what the machine did next, so its value influenced behaviour in this scenario",
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "sacrifice",
@@ -465,14 +1600,59 @@
       "mask": 8,
       "isDiscoveredResource": false,
       "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
       "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 3,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        }
+      ],
+      "cpuReads": 405,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 405,
       "consumerValues": {
         "base": 0,
         "driven": 1
       },
-      "consumerReason": "poking this field changed what the machine did next, so its value influenced behaviour in this scenario",
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
     },
     {
       "family": "sacrifice",
@@ -483,14 +1663,1571 @@
       "mask": 8,
       "isDiscoveredResource": true,
       "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
       "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 2,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        }
+      ],
+      "cpuReads": 15,
+      "distinctReadPcs": 3,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 10,
       "consumerValues": {
         "base": 3,
         "driven": 0
       },
-      "consumerReason": "poking this field changed what the machine did next, so its value influenced behaviour in this scenario",
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
       "labelledBeneficial": false,
-      "labelContradictedByConsumerTest": false
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 2,
+      "oracleName": null,
+      "address": 0,
+      "width": 1,
+      "mask": 1,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 1,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        }
+      ],
+      "cpuReads": 398,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 3,
+      "readsFromNonWritingPc": 398,
+      "consumerValues": {
+        "base": 96,
+        "driven": 176
+      },
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 2,
+      "oracleName": "treasure",
+      "address": 139,
+      "width": 1,
+      "mask": 1,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "READ-WITHOUT-EFFECT",
+      "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        }
+      ],
+      "cpuReads": 5,
+      "distinctReadPcs": 1,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 5,
+      "consumerValues": {
+        "base": 0,
+        "driven": 16
+      },
+      "consumerReason": "the CPU reads this address from code that never writes it, but no tested trajectory showed a behavioural difference",
+      "labelledBeneficial": true,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 2,
+      "oracleName": null,
+      "address": 515,
+      "width": 1,
+      "mask": 1,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "NO-OBSERVED-CONSUMER",
+      "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 96,
+            "driven": 176
+          }
+        }
+      ],
+      "cpuReads": 0,
+      "distinctReadPcs": 0,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 0,
+      "consumerValues": {
+        "base": 96,
+        "driven": 176
+      },
+      "consumerReason": "no downstream effect and no non-writing read were observed in the tested trajectories; absence of evidence, not evidence of absence",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 2,
+      "oracleName": "gate",
+      "address": 69,
+      "width": 1,
+      "mask": 64,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 3,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        }
+      ],
+      "cpuReads": 398,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 398,
+      "consumerValues": {
+        "base": 0,
+        "driven": 1
+      },
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 2,
+      "oracleName": "progress",
+      "address": 131,
+      "width": 1,
+      "mask": 64,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 3,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 3
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 3
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 3
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 3
+          }
+        }
+      ],
+      "cpuReads": 9,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 5,
+      "consumerValues": {
+        "base": 0,
+        "driven": 3
+      },
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 2,
+      "oracleName": "charges",
+      "address": 148,
+      "width": 1,
+      "mask": 64,
+      "isDiscoveredResource": true,
+      "consumerStatus": "OBSERVED",
+      "verdict": "READ-WITHOUT-EFFECT",
+      "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        }
+      ],
+      "cpuReads": 12,
+      "distinctReadPcs": 3,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 8,
+      "consumerValues": {
+        "base": 3,
+        "driven": 0
+      },
+      "consumerReason": "the CPU reads this address from code that never writes it, but no tested trajectory showed a behavioural difference",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "oracleName": null,
+      "address": 0,
+      "width": 1,
+      "mask": 1,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 1,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        }
+      ],
+      "cpuReads": 428,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 428,
+      "consumerValues": {
+        "base": 84,
+        "driven": 132
+      },
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "oracleName": "steadyGain",
+      "address": 92,
+      "width": 1,
+      "mask": 1,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 2,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        }
+      ],
+      "cpuReads": 10,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 5,
+      "consumerValues": {
+        "base": 0,
+        "driven": 16
+      },
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
+      "labelledBeneficial": true,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "oracleName": "unlocked",
+      "address": 171,
+      "width": 1,
+      "mask": 1,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 3,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        }
+      ],
+      "cpuReads": 428,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 0,
+      "readsFromNonWritingPc": 428,
+      "consumerValues": {
+        "base": 0,
+        "driven": 1
+      },
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "oracleName": null,
+      "address": 515,
+      "width": 1,
+      "mask": 1,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "NO-OBSERVED-CONSUMER",
+      "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        }
+      ],
+      "cpuReads": 0,
+      "distinctReadPcs": 0,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 0,
+      "consumerValues": {
+        "base": 84,
+        "driven": 132
+      },
+      "consumerReason": "no downstream effect and no non-writing read were observed in the tested trajectories; absence of evidence, not evidence of absence",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "oracleName": "fickleDecoy",
+      "address": 146,
+      "width": 1,
+      "mask": 16,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "READ-WITHOUT-EFFECT",
+      "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 64
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 64
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 64
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 64
+          }
+        }
+      ],
+      "cpuReads": 4,
+      "distinctReadPcs": 1,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 4,
+      "consumerValues": {
+        "base": 0,
+        "driven": 64
+      },
+      "consumerReason": "the CPU reads this address from code that never writes it, but no tested trajectory showed a behavioural difference",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "oracleName": "fuel",
+      "address": 128,
+      "width": 1,
+      "mask": 64,
+      "isDiscoveredResource": true,
+      "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 3,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        }
+      ],
+      "cpuReads": 17,
+      "distinctReadPcs": 4,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 13,
+      "consumerValues": {
+        "base": 3,
+        "driven": 0
+      },
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 1,
+      "oracleName": null,
+      "address": 0,
+      "width": 1,
+      "mask": 2,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 1,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        }
+      ],
+      "cpuReads": 428,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 428,
+      "consumerValues": {
+        "base": 84,
+        "driven": 132
+      },
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 1,
+      "oracleName": "unlocked",
+      "address": 67,
+      "width": 1,
+      "mask": 2,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 3,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        }
+      ],
+      "cpuReads": 428,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 0,
+      "readsFromNonWritingPc": 428,
+      "consumerValues": {
+        "base": 0,
+        "driven": 1
+      },
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 1,
+      "oracleName": "steadyGain",
+      "address": 76,
+      "width": 1,
+      "mask": 2,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 2,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        }
+      ],
+      "cpuReads": 10,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 5,
+      "consumerValues": {
+        "base": 0,
+        "driven": 16
+      },
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
+      "labelledBeneficial": true,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 1,
+      "oracleName": null,
+      "address": 515,
+      "width": 1,
+      "mask": 2,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "NO-OBSERVED-CONSUMER",
+      "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        }
+      ],
+      "cpuReads": 0,
+      "distinctReadPcs": 0,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 0,
+      "consumerValues": {
+        "base": 84,
+        "driven": 132
+      },
+      "consumerReason": "no downstream effect and no non-writing read were observed in the tested trajectories; absence of evidence, not evidence of absence",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 1,
+      "oracleName": "fickleDecoy",
+      "address": 126,
+      "width": 1,
+      "mask": 32,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "READ-WITHOUT-EFFECT",
+      "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 64
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 64
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 64
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 64
+          }
+        }
+      ],
+      "cpuReads": 4,
+      "distinctReadPcs": 1,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 4,
+      "consumerValues": {
+        "base": 0,
+        "driven": 64
+      },
+      "consumerReason": "the CPU reads this address from code that never writes it, but no tested trajectory showed a behavioural difference",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 1,
+      "oracleName": "fuel",
+      "address": 117,
+      "width": 1,
+      "mask": 128,
+      "isDiscoveredResource": true,
+      "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 3,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        }
+      ],
+      "cpuReads": 17,
+      "distinctReadPcs": 4,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 13,
+      "consumerValues": {
+        "base": 3,
+        "driven": 0
+      },
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 2,
+      "oracleName": null,
+      "address": 0,
+      "width": 1,
+      "mask": 1,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 1,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        }
+      ],
+      "cpuReads": 426,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 426,
+      "consumerValues": {
+        "base": 84,
+        "driven": 132
+      },
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 2,
+      "oracleName": "steadyGain",
+      "address": 137,
+      "width": 1,
+      "mask": 1,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 2,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 16
+          }
+        }
+      ],
+      "cpuReads": 10,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 5,
+      "consumerValues": {
+        "base": 0,
+        "driven": 16
+      },
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
+      "labelledBeneficial": true,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 2,
+      "oracleName": "unlocked",
+      "address": 178,
+      "width": 1,
+      "mask": 1,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 3,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 0,
+            "driven": 1
+          }
+        }
+      ],
+      "cpuReads": 426,
+      "distinctReadPcs": 2,
+      "distinctWritePcs": 0,
+      "readsFromNonWritingPc": 426,
+      "consumerValues": {
+        "base": 0,
+        "driven": 1
+      },
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 2,
+      "oracleName": null,
+      "address": 515,
+      "width": 1,
+      "mask": 1,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "NO-OBSERVED-CONSUMER",
+      "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 84,
+            "driven": 132
+          }
+        }
+      ],
+      "cpuReads": 0,
+      "distinctReadPcs": 0,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 0,
+      "consumerValues": {
+        "base": 84,
+        "driven": 132
+      },
+      "consumerReason": "no downstream effect and no non-writing read were observed in the tested trajectories; absence of evidence, not evidence of absence",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 2,
+      "oracleName": "fickleDecoy",
+      "address": 70,
+      "width": 1,
+      "mask": 16,
+      "isDiscoveredResource": false,
+      "consumerStatus": "OBSERVED",
+      "verdict": "READ-WITHOUT-EFFECT",
+      "hasConsumer": false,
+      "scenariosRun": 4,
+      "scenariosDiverged": 0,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 64
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 64
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 64
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 0,
+            "driven": 64
+          }
+        }
+      ],
+      "cpuReads": 4,
+      "distinctReadPcs": 1,
+      "distinctWritePcs": 1,
+      "readsFromNonWritingPc": 4,
+      "consumerValues": {
+        "base": 0,
+        "driven": 64
+      },
+      "consumerReason": "the CPU reads this address from code that never writes it, but no tested trajectory showed a behavioural difference",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 2,
+      "oracleName": "fuel",
+      "address": 128,
+      "width": 1,
+      "mask": 64,
+      "isDiscoveredResource": true,
+      "consumerStatus": "OBSERVED",
+      "verdict": "CONSUMED",
+      "hasConsumer": true,
+      "scenariosRun": 4,
+      "scenariosDiverged": 3,
+      "perScenario": [
+        {
+          "scenario": "all-masks",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "without-field-and-cost-actions",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "neutral-only",
+          "status": "OBSERVED",
+          "hasConsumer": false,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        },
+        {
+          "scenario": "short-mixed",
+          "status": "OBSERVED",
+          "hasConsumer": true,
+          "values": {
+            "base": 3,
+            "driven": 0
+          }
+        }
+      ],
+      "cpuReads": 17,
+      "distinctReadPcs": 4,
+      "distinctWritePcs": 2,
+      "readsFromNonWritingPc": 13,
+      "consumerValues": {
+        "base": 3,
+        "driven": 0
+      },
+      "consumerReason": "the value influenced behaviour in at least one tested scenario",
+      "labelledBeneficial": false,
+      "labelUnsupportedByConsumerEvidence": false
     }
   ],
   "modulation": [
@@ -779,6 +3516,553 @@
       "verdict": "NO-MODULATION",
       "actionMediated": false,
       "fieldMediated": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 2,
+      "oracleName": null,
+      "address": 0,
+      "modulatorAddress": 148,
+      "baseStep": 5,
+      "stepAfterAction": 5,
+      "stepAfterPokingField": 5,
+      "verdict": "NO-MODULATION",
+      "actionMediated": false,
+      "fieldMediated": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 2,
+      "oracleName": "treasure",
+      "address": 139,
+      "modulatorAddress": 148,
+      "baseStep": 1,
+      "stepAfterAction": 3,
+      "stepAfterPokingField": 1,
+      "verdict": "ACTION-MEDIATED-ONLY",
+      "actionMediated": true,
+      "fieldMediated": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 2,
+      "oracleName": null,
+      "address": 515,
+      "modulatorAddress": 148,
+      "baseStep": 5,
+      "stepAfterAction": 5,
+      "stepAfterPokingField": 5,
+      "verdict": "NO-MODULATION",
+      "actionMediated": false,
+      "fieldMediated": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 2,
+      "oracleName": "gate",
+      "address": 69,
+      "modulatorAddress": 148,
+      "baseStep": 0,
+      "stepAfterAction": 1,
+      "stepAfterPokingField": 1,
+      "verdict": "NO-MODULATION",
+      "actionMediated": false,
+      "fieldMediated": false
+    },
+    {
+      "family": "sacrifice",
+      "seed": 2,
+      "oracleName": "progress",
+      "address": 131,
+      "modulatorAddress": 148,
+      "baseStep": 1,
+      "stepAfterAction": 1,
+      "stepAfterPokingField": 1,
+      "verdict": "NO-MODULATION",
+      "actionMediated": false,
+      "fieldMediated": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "oracleName": null,
+      "address": 0,
+      "modulatorAddress": 128,
+      "baseStep": 3,
+      "stepAfterAction": 3,
+      "stepAfterPokingField": 3,
+      "verdict": "NO-MODULATION",
+      "actionMediated": false,
+      "fieldMediated": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "oracleName": "steadyGain",
+      "address": 92,
+      "modulatorAddress": 128,
+      "baseStep": 1,
+      "stepAfterAction": 1,
+      "stepAfterPokingField": 1,
+      "verdict": "NO-MODULATION",
+      "actionMediated": false,
+      "fieldMediated": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "oracleName": "unlocked",
+      "address": 171,
+      "modulatorAddress": 128,
+      "baseStep": 0,
+      "stepAfterAction": 0,
+      "stepAfterPokingField": 0,
+      "verdict": "NO-MODULATION",
+      "actionMediated": false,
+      "fieldMediated": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "oracleName": null,
+      "address": 515,
+      "modulatorAddress": 128,
+      "baseStep": 3,
+      "stepAfterAction": 3,
+      "stepAfterPokingField": 3,
+      "verdict": "NO-MODULATION",
+      "actionMediated": false,
+      "fieldMediated": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 0,
+      "oracleName": "fickleDecoy",
+      "address": 146,
+      "modulatorAddress": 128,
+      "baseStep": 4,
+      "stepAfterAction": 2,
+      "stepAfterPokingField": 2,
+      "verdict": "FIELD-MEDIATED",
+      "actionMediated": true,
+      "fieldMediated": true
+    },
+    {
+      "family": "rate-trap",
+      "seed": 1,
+      "oracleName": null,
+      "address": 0,
+      "modulatorAddress": 117,
+      "baseStep": 3,
+      "stepAfterAction": 3,
+      "stepAfterPokingField": 3,
+      "verdict": "NO-MODULATION",
+      "actionMediated": false,
+      "fieldMediated": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 1,
+      "oracleName": "unlocked",
+      "address": 67,
+      "modulatorAddress": 117,
+      "baseStep": 0,
+      "stepAfterAction": 0,
+      "stepAfterPokingField": 0,
+      "verdict": "NO-MODULATION",
+      "actionMediated": false,
+      "fieldMediated": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 1,
+      "oracleName": "steadyGain",
+      "address": 76,
+      "modulatorAddress": 117,
+      "baseStep": 1,
+      "stepAfterAction": 1,
+      "stepAfterPokingField": 1,
+      "verdict": "NO-MODULATION",
+      "actionMediated": false,
+      "fieldMediated": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 1,
+      "oracleName": null,
+      "address": 515,
+      "modulatorAddress": 117,
+      "baseStep": 3,
+      "stepAfterAction": 3,
+      "stepAfterPokingField": 3,
+      "verdict": "NO-MODULATION",
+      "actionMediated": false,
+      "fieldMediated": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 1,
+      "oracleName": "fickleDecoy",
+      "address": 126,
+      "modulatorAddress": 117,
+      "baseStep": 4,
+      "stepAfterAction": 2,
+      "stepAfterPokingField": 2,
+      "verdict": "FIELD-MEDIATED",
+      "actionMediated": true,
+      "fieldMediated": true
+    },
+    {
+      "family": "rate-trap",
+      "seed": 2,
+      "oracleName": null,
+      "address": 0,
+      "modulatorAddress": 128,
+      "baseStep": 3,
+      "stepAfterAction": 3,
+      "stepAfterPokingField": 3,
+      "verdict": "NO-MODULATION",
+      "actionMediated": false,
+      "fieldMediated": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 2,
+      "oracleName": "steadyGain",
+      "address": 137,
+      "modulatorAddress": 128,
+      "baseStep": 1,
+      "stepAfterAction": 1,
+      "stepAfterPokingField": 1,
+      "verdict": "NO-MODULATION",
+      "actionMediated": false,
+      "fieldMediated": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 2,
+      "oracleName": "unlocked",
+      "address": 178,
+      "modulatorAddress": 128,
+      "baseStep": 0,
+      "stepAfterAction": 0,
+      "stepAfterPokingField": 0,
+      "verdict": "NO-MODULATION",
+      "actionMediated": false,
+      "fieldMediated": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 2,
+      "oracleName": null,
+      "address": 515,
+      "modulatorAddress": 128,
+      "baseStep": 3,
+      "stepAfterAction": 3,
+      "stepAfterPokingField": 3,
+      "verdict": "NO-MODULATION",
+      "actionMediated": false,
+      "fieldMediated": false
+    },
+    {
+      "family": "rate-trap",
+      "seed": 2,
+      "oracleName": "fickleDecoy",
+      "address": 70,
+      "modulatorAddress": 128,
+      "baseStep": 4,
+      "stepAfterAction": 2,
+      "stepAfterPokingField": 2,
+      "verdict": "FIELD-MEDIATED",
+      "actionMediated": true,
+      "fieldMediated": true
     }
-  ]
+  ],
+  "totals": {
+    "fieldsProbed": 51,
+    "inconclusive": 0,
+    "verdicts": {
+      "CONSUMED": 26,
+      "READ-WITHOUT-EFFECT": 10,
+      "NO-OBSERVED-CONSUMER": 15
+    },
+    "fieldsReadByNonWritingCode": 36,
+    "fieldsNeverReadByCpu": 14,
+    "byField": {
+      "score": {
+        "observed": 3,
+        "CONSUMED": 0,
+        "READ_WITHOUT_EFFECT": 0,
+        "NO_OBSERVED_CONSUMER": 3,
+        "meanCpuReads": 0,
+        "meanReadsFromNonWritingPc": 0
+      },
+      "lives": {
+        "observed": 3,
+        "CONSUMED": 1,
+        "READ_WITHOUT_EFFECT": 2,
+        "NO_OBSERVED_CONSUMER": 0,
+        "meanCpuReads": 81,
+        "meanReadsFromNonWritingPc": 80
+      },
+      "level": {
+        "observed": 3,
+        "CONSUMED": 0,
+        "READ_WITHOUT_EFFECT": 0,
+        "NO_OBSERVED_CONSUMER": 3,
+        "meanCpuReads": 0,
+        "meanReadsFromNonWritingPc": 0
+      },
+      "treasure": {
+        "observed": 3,
+        "CONSUMED": 0,
+        "READ_WITHOUT_EFFECT": 3,
+        "NO_OBSERVED_CONSUMER": 0,
+        "meanCpuReads": 5,
+        "meanReadsFromNonWritingPc": 5
+      },
+      "charges": {
+        "observed": 3,
+        "CONSUMED": 1,
+        "READ_WITHOUT_EFFECT": 2,
+        "NO_OBSERVED_CONSUMER": 0,
+        "meanCpuReads": 14,
+        "meanReadsFromNonWritingPc": 9
+      },
+      "progress": {
+        "observed": 3,
+        "CONSUMED": 3,
+        "READ_WITHOUT_EFFECT": 0,
+        "NO_OBSERVED_CONSUMER": 0,
+        "meanCpuReads": 10,
+        "meanReadsFromNonWritingPc": 5
+      },
+      "gate": {
+        "observed": 3,
+        "CONSUMED": 3,
+        "READ_WITHOUT_EFFECT": 0,
+        "NO_OBSERVED_CONSUMER": 0,
+        "meanCpuReads": 402,
+        "meanReadsFromNonWritingPc": 402
+      },
+      "steadyGain": {
+        "observed": 3,
+        "CONSUMED": 3,
+        "READ_WITHOUT_EFFECT": 0,
+        "NO_OBSERVED_CONSUMER": 0,
+        "meanCpuReads": 10,
+        "meanReadsFromNonWritingPc": 5
+      },
+      "fickleDecoy": {
+        "observed": 3,
+        "CONSUMED": 0,
+        "READ_WITHOUT_EFFECT": 3,
+        "NO_OBSERVED_CONSUMER": 0,
+        "meanCpuReads": 4,
+        "meanReadsFromNonWritingPc": 4
+      },
+      "fuel": {
+        "observed": 3,
+        "CONSUMED": 3,
+        "READ_WITHOUT_EFFECT": 0,
+        "NO_OBSERVED_CONSUMER": 0,
+        "meanCpuReads": 17,
+        "meanReadsFromNonWritingPc": 13
+      },
+      "unlocked": {
+        "observed": 3,
+        "CONSUMED": 3,
+        "READ_WITHOUT_EFFECT": 0,
+        "NO_OBSERVED_CONSUMER": 0,
+        "meanCpuReads": 427,
+        "meanReadsFromNonWritingPc": 427
+      }
+    },
+    "labelledBeneficialProbed": 6,
+    "labelledBeneficialWithConsumer": 3,
+    "labelsUnsupported": 0,
+    "modulationVerdicts": {
+      "FIELD-MEDIATED": 3,
+      "ACTION-MEDIATED-ONLY": 3,
+      "NO-MODULATION": 36
+    },
+    "executionEvidence": {
+      "scenarioRunsTotal": 204,
+      "fieldsWithFourScenarios": 51,
+      "cpuReadsTotal": 6591,
+      "fieldsWithAnyCpuRead": 37,
+      "fieldsWithVerdict": 51
+    },
+    "focusFields": {
+      "lives": [
+        {
+          "family": "survival",
+          "seed": 0,
+          "verdict": "CONSUMED",
+          "scenariosDiverged": 1,
+          "scenariosRun": 4,
+          "perScenario": [
+            "all-masks=false",
+            "without-field-and-cost-actions=true",
+            "neutral-only=false",
+            "short-mixed=false"
+          ],
+          "cpuReads": 80,
+          "readsFromNonWritingPc": 79,
+          "distinctReadPcs": 2,
+          "distinctWritePcs": 2,
+          "labelledBeneficial": false
+        },
+        {
+          "family": "survival",
+          "seed": 1,
+          "verdict": "READ-WITHOUT-EFFECT",
+          "scenariosDiverged": 0,
+          "scenariosRun": 4,
+          "perScenario": [
+            "all-masks=false",
+            "without-field-and-cost-actions=false",
+            "neutral-only=false",
+            "short-mixed=false"
+          ],
+          "cpuReads": 80,
+          "readsFromNonWritingPc": 79,
+          "distinctReadPcs": 2,
+          "distinctWritePcs": 2,
+          "labelledBeneficial": false
+        },
+        {
+          "family": "survival",
+          "seed": 2,
+          "verdict": "READ-WITHOUT-EFFECT",
+          "scenariosDiverged": 0,
+          "scenariosRun": 4,
+          "perScenario": [
+            "all-masks=false",
+            "without-field-and-cost-actions=false",
+            "neutral-only=false",
+            "short-mixed=false"
+          ],
+          "cpuReads": 82,
+          "readsFromNonWritingPc": 81,
+          "distinctReadPcs": 2,
+          "distinctWritePcs": 2,
+          "labelledBeneficial": false
+        }
+      ],
+      "treasure": [
+        {
+          "family": "sacrifice",
+          "seed": 0,
+          "verdict": "READ-WITHOUT-EFFECT",
+          "scenariosDiverged": 0,
+          "scenariosRun": 4,
+          "perScenario": [
+            "all-masks=false",
+            "without-field-and-cost-actions=false",
+            "neutral-only=false",
+            "short-mixed=false"
+          ],
+          "cpuReads": 5,
+          "readsFromNonWritingPc": 5,
+          "distinctReadPcs": 1,
+          "distinctWritePcs": 1,
+          "labelledBeneficial": true
+        },
+        {
+          "family": "sacrifice",
+          "seed": 1,
+          "verdict": "READ-WITHOUT-EFFECT",
+          "scenariosDiverged": 0,
+          "scenariosRun": 4,
+          "perScenario": [
+            "all-masks=false",
+            "without-field-and-cost-actions=false",
+            "neutral-only=false",
+            "short-mixed=false"
+          ],
+          "cpuReads": 5,
+          "readsFromNonWritingPc": 5,
+          "distinctReadPcs": 1,
+          "distinctWritePcs": 1,
+          "labelledBeneficial": true
+        },
+        {
+          "family": "sacrifice",
+          "seed": 2,
+          "verdict": "READ-WITHOUT-EFFECT",
+          "scenariosDiverged": 0,
+          "scenariosRun": 4,
+          "perScenario": [
+            "all-masks=false",
+            "without-field-and-cost-actions=false",
+            "neutral-only=false",
+            "short-mixed=false"
+          ],
+          "cpuReads": 5,
+          "readsFromNonWritingPc": 5,
+          "distinctReadPcs": 1,
+          "distinctWritePcs": 1,
+          "labelledBeneficial": true
+        }
+      ],
+      "fickleDecoy": [
+        {
+          "family": "rate-trap",
+          "seed": 0,
+          "verdict": "READ-WITHOUT-EFFECT",
+          "scenariosDiverged": 0,
+          "scenariosRun": 4,
+          "perScenario": [
+            "all-masks=false",
+            "without-field-and-cost-actions=false",
+            "neutral-only=false",
+            "short-mixed=false"
+          ],
+          "cpuReads": 4,
+          "readsFromNonWritingPc": 4,
+          "distinctReadPcs": 1,
+          "distinctWritePcs": 1,
+          "labelledBeneficial": false
+        },
+        {
+          "family": "rate-trap",
+          "seed": 1,
+          "verdict": "READ-WITHOUT-EFFECT",
+          "scenariosDiverged": 0,
+          "scenariosRun": 4,
+          "perScenario": [
+            "all-masks=false",
+            "without-field-and-cost-actions=false",
+            "neutral-only=false",
+            "short-mixed=false"
+          ],
+          "cpuReads": 4,
+          "readsFromNonWritingPc": 4,
+          "distinctReadPcs": 1,
+          "distinctWritePcs": 1,
+          "labelledBeneficial": false
+        },
+        {
+          "family": "rate-trap",
+          "seed": 2,
+          "verdict": "READ-WITHOUT-EFFECT",
+          "scenariosDiverged": 0,
+          "scenariosRun": 4,
+          "perScenario": [
+            "all-masks=false",
+            "without-field-and-cost-actions=false",
+            "neutral-only=false",
+            "short-mixed=false"
+          ],
+          "cpuReads": 4,
+          "readsFromNonWritingPc": 4,
+          "distinctReadPcs": 1,
+          "distinctWritePcs": 1,
+          "labelledBeneficial": false
+        }
+      ]
+    },
+    "note": "a null result is about the trajectories tested. The survival lives field is a known false negative of the single-scenario counterfactual: it gates every edge handler in that cartridge, yet an all-masks schedule drives it to its floor in both arms and the contrast disappears. That is why several scenarios and CPU read tracing are used, and why no verdict here claims that nothing reads a field."
+  }
 }

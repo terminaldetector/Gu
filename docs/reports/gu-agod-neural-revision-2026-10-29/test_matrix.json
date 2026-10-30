@@ -778,6 +778,19 @@
       "status": "COMPLETE",
       "log": "logs/private_rom_gate_report.json",
       "note": "private user-supplied commercial ROMs; local only, never committed"
+    },
+    {
+      "command": "node tools/agod_consumers_check.cjs",
+      "stage": "S4c",
+      "status": "PASS",
+      "log": "logs/agod_consumers_check.log",
+      "note": "provenance and execution evidence recorded in the report; read counts are a lower bound"
+    },
+    {
+      "command": "node tools/agod_consumers_smoke.cjs",
+      "stage": "S4c smoke",
+      "status": "PASS",
+      "log": "(stdout)"
     }
   ],
   "experimentalChecksNote": "New experimental checks added by this revision. They are standalone Node checks; tools/check.sh and CI were not modified."
