@@ -1,0 +1,177 @@
+{
+  "type": "gu-agod-external-corpus-manifest",
+  "version": 1,
+  "generatedUtc": "2026-10-30T20:58:37Z",
+  "stage": "1 of 2: discovery, licence review and manifest. Nothing has been built and nothing has been moved into the repository.",
+  "isolatedResearchDirectory": "/tmp/claude-0/-home-user/f6e72801-3e11-53f6-ae0c-ac8abd48d6c7/scratchpad/corpus",
+  "repositoryPolicy": "no third-party ROM binary and no third-party source has been committed to GU; this manifest is the only artefact proposed for the repository, and it contains metadata written by me, not third-party code",
+  "independence": "none of these candidates is derived from the three in-house generators (make_agod_test_rom.py, make_agod_sacrifice_rom.py, make_agod_rate_trap_rom.py): different authors, real games, no shared code or layout rules",
+  "frozen": false,
+  "freezeRule": "the selected list is frozen before any benchmarking run; this manifest is a proposal and is not frozen yet",
+  "oracleDiscipline": "these cartridges have no oracle. No closed label exists for them, so objective discovery on them is unlabelled by construction and scoring will require a separately recorded judgement, made after discovery, never before",
+  "toolchain": {
+    "required": "cc65 (ca65/ld65)",
+    "presentInContainer": false,
+    "aptPackageAvailable": false,
+    "sourceAvailable": "https://github.com/cc65/cc65 is reachable and buildable from source with gcc and make",
+    "status": "NOT BUILT: the permission classifier denied running make on externally downloaded code (reason: Code from External). Stage 2 needs either that permission or another route."
+  },
+  "blockers": [
+    "building any candidate is blocked: cc65 is absent, apt has no cc65 package, and executing an external build (including building cc65 itself from source) was denied by the permission classifier",
+    "no candidate ships a prebuilt .nes in its tree, so there is no build-free path to a ROM from this set",
+    "www.nesdev.org is denied by the environment network policy, so the usual homebrew directories could not be browsed; discovery went through web search and GitHub only"
+  ],
+  "candidates": [
+    {
+      "name": "openNES-Snake",
+      "owner": "sebastiandine",
+      "url": "https://github.com/sebastiandine/openNES-Snake",
+      "sourceRevision": "66cc333b9df91c2b27965083c48dd0e6e48cb044",
+      "sourceTreeSha256": "42a85717e462e516aa77c74a5317f035b869801b624d6e04c22686c2051fa182",
+      "license": "Zlib",
+      "licenseFile": "LICENSE",
+      "licenseVerified": "read from the cloned tree at the pinned revision",
+      "copyright": "Copyright (c) 2016-2017 Sebastian Dine",
+      "redistribution": "permitted; zlib requires the notice be kept and altered versions marked",
+      "researchUse": "permitted without restriction",
+      "assetLicenseDiffers": false,
+      "restrictions": [],
+      "buildsFromSource": true,
+      "buildRequirements": [
+        "cc65",
+        "Shiru NESLib (vendored in-tree)",
+        "sh build/build.sh"
+      ],
+      "prebuiltRomInTree": false,
+      "status": "ELIGIBLE",
+      "proposedForInclusion": true,
+      "reason": "cleanest terms of the set: permissive, no asset carve-out, builds from source with cc65 alone"
+    },
+    {
+      "name": "star-gatherer",
+      "owner": "gemisis",
+      "url": "https://github.com/gemisis/star-gatherer",
+      "sourceRevision": "b99c9f7e2542872bafcedb1d7fa71c836f316214",
+      "sourceTreeSha256": "301d1aa2db91ac09654c0d0d5ceefcd4e988f7fe108633f36091740187fad3ee",
+      "license": "GPL-3.0",
+      "licenseFile": "LICENSE",
+      "licenseVerified": "read from the cloned tree at the pinned revision",
+      "redistribution": "permitted under GPL-3.0; distributing a built ROM obliges offering the corresponding source",
+      "researchUse": "permitted",
+      "assetLicenseDiffers": false,
+      "restrictions": [
+        "if a built ROM is ever redistributed, the corresponding source must be offered"
+      ],
+      "buildsFromSource": true,
+      "buildRequirements": [
+        "cc65",
+        "make"
+      ],
+      "prebuiltRomInTree": false,
+      "status": "ELIGIBLE",
+      "proposedForInclusion": true,
+      "reason": "small, single make target, no asset carve-out found"
+    },
+    {
+      "name": "annalog",
+      "owner": "mdsteele",
+      "url": "https://github.com/mdsteele/annalog",
+      "sourceRevision": "dc2b5c9a650e1f4c9a1a247c657e5f3bbcb6306f",
+      "sourceTreeSha256": "f85b4eedae2c851c6c1977fc4402174d751926bf1fb9cf900746983e4028130e",
+      "license": "GPL-3.0",
+      "licenseFile": "LICENSE",
+      "licenseVerified": "read from the cloned tree at the pinned revision",
+      "redistribution": "permitted under GPL-3.0; distributing a built ROM obliges offering the corresponding source",
+      "researchUse": "permitted",
+      "assetLicenseDiffers": false,
+      "restrictions": [
+        "if a built ROM is ever redistributed, the corresponding source must be offered"
+      ],
+      "buildsFromSource": true,
+      "buildRequirements": [
+        "cc65",
+        "make"
+      ],
+      "prebuiltRomInTree": false,
+      "status": "ELIGIBLE",
+      "proposedForInclusion": true,
+      "reason": "a substantial metroidvania: the most behaviourally interesting candidate, with resources, mode changes and progression, which is what the POSITIVE rule needs testing against"
+    },
+    {
+      "name": "NovaTheSquirrel",
+      "owner": "NovaSquirrel",
+      "url": "https://github.com/NovaSquirrel/NovaTheSquirrel",
+      "sourceRevision": "e9e79ae59b188348bd6a87117a2d5c86a34ba433",
+      "sourceTreeSha256": "64952d91c7b101cb782711de656898473f97e46a5b73e5ec5eb3daf178850f0a",
+      "license": "GPL-3.0 (code); CC-BY-NC-SA-4.0 (assets)",
+      "licenseFile": "LICENSE.txt",
+      "licenseVerified": "code licence read from LICENSE.txt; asset terms read from README.md at the pinned revision",
+      "redistribution": "restricted: a built ROM contains CC-BY-NC-SA assets, so it may not be sold, and the author states the Nova character and design may not be used elsewhere",
+      "researchUse": "permitted for non-commercial research as far as the stated terms go",
+      "assetLicenseDiffers": true,
+      "restrictions": [
+        "assets are NonCommercial-ShareAlike",
+        "character and design use not granted",
+        "most dialogue characters are cameos of real people the author asks not be reused"
+      ],
+      "buildsFromSource": true,
+      "buildRequirements": [
+        "cc65",
+        "Python 3"
+      ],
+      "prebuiltRomInTree": false,
+      "status": "ELIGIBLE-LOCAL-ONLY",
+      "proposedForInclusion": false,
+      "reason": "usable as a local research input, but NOT proposed for the repository: the NonCommercial asset terms and the explicit character restriction make committing a built ROM the wrong default to take on the user's behalf"
+    },
+    {
+      "name": "nesgame",
+      "owner": "crocidb",
+      "url": "https://github.com/crocidb/nesgame",
+      "sourceRevision": "9fe760977aecab9ef47c374bc0d4a2f7008f56f2",
+      "sourceTreeSha256": "15f7775bc037d009a113bfb8cac6c745de4d48436ecdfd05d7933c9c94710042",
+      "license": null,
+      "licenseFile": null,
+      "licenseVerified": "no licence, copying or copyright file at the pinned revision",
+      "redistribution": "cannot be established",
+      "researchUse": "cannot be established",
+      "assetLicenseDiffers": null,
+      "restrictions": [
+        "no licence granted at all"
+      ],
+      "buildsFromSource": true,
+      "buildRequirements": [
+        "cc65"
+      ],
+      "prebuiltRomInTree": false,
+      "status": "REJECTED",
+      "proposedForInclusion": false,
+      "reason": "no licence file: condition 4 rejects anything whose redistribution or research use cannot be established. Absence of a licence is not permission."
+    },
+    {
+      "name": "dungeon-game-nes",
+      "owner": "zeta0134",
+      "url": "https://github.com/zeta0134/dungeon-game-nes",
+      "sourceRevision": "52133f4c46dc2d63a1bd8b5f3f4a1f6bdd2c19fc",
+      "sourceTreeSha256": "5acd62e9748e2fd4a9745da9f43f3dabf9df1de3a65e56d2e835d392685052d4",
+      "license": null,
+      "licenseFile": null,
+      "licenseVerified": "no licence, copying or copyright file at the pinned revision",
+      "redistribution": "cannot be established",
+      "researchUse": "cannot be established",
+      "assetLicenseDiffers": null,
+      "restrictions": [
+        "no licence granted at all"
+      ],
+      "buildsFromSource": true,
+      "buildRequirements": [
+        "cc65",
+        "make"
+      ],
+      "prebuiltRomInTree": false,
+      "status": "REJECTED",
+      "proposedForInclusion": false,
+      "reason": "no licence file; same rule as nesgame. Also a work in progress, which makes its behaviour a poor evaluation target."
+    }
+  ]
+}
