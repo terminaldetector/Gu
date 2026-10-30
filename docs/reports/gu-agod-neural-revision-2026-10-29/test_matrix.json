@@ -765,6 +765,19 @@
       "stage": "S5",
       "status": "PASS",
       "log": "logs/agod_validity_check.log"
+    },
+    {
+      "command": "node tools/agod_baselines_check.cjs",
+      "stage": "S6",
+      "status": "PASS",
+      "log": "logs/agod_baselines_check.log"
+    },
+    {
+      "command": "AGOD_PRIVATE_ROMS=<dir> node tools/agod_private_rom_gate.cjs",
+      "stage": "private-corpus gate",
+      "status": "COMPLETE",
+      "log": "logs/private_rom_gate_report.json",
+      "note": "private user-supplied commercial ROMs; local only, never committed"
     }
   ],
   "experimentalChecksNote": "New experimental checks added by this revision. They are standalone Node checks; tools/check.sh and CI were not modified."
