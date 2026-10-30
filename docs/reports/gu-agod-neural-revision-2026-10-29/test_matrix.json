@@ -714,6 +714,12 @@
       "stage": "E2",
       "status": "PASS",
       "log": "logs/agod_ram_check.log"
+    },
+    {
+      "command": "node tools/agod_dqn_check.cjs",
+      "stage": "E5",
+      "status": "PASS",
+      "log": "logs/agod_dqn_check.log"
     }
   ],
   "experimentalChecksNote": "New experimental checks added by this revision. They are standalone Node checks; tools/check.sh and CI were not modified."

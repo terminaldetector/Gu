@@ -32,7 +32,7 @@ node tools/agod_rom_check.cjs
 
 Все пять завершаются кодом 0. Логи: `logs/core_probe_check.log` и далее по именам.
 
-## 2a. Экспериментальные проверки E2 / E3 / E4 / AGOD-08
+## 2a. Экспериментальные проверки E2 / E3 / E4 / AGOD-08 / E5
 
 Добавлены этой ревизией. `tools/check.sh` и CI не изменялись, поэтому запускаются
 отдельно, из корня репозитория:
@@ -42,6 +42,7 @@ AGOD_RAM_REPORT=logs/ram_type_report.json      node tools/agod_ram_check.cjs
 AGOD_CAUSAL_REPORT=logs/causal_report.json     node tools/agod_causal_check.cjs
 AGOD_REWARD_REPORT=logs/reward_report.json     node tools/agod_reward_check.cjs
 AGOD_EVIDENCE_REPORT=logs/evidence_report.json node tools/agod_evidence_check.cjs
+AGOD_DQN_REPORT=logs/dqn_report.json          node tools/agod_dqn_check.cjs
 ```
 
 Каждая завершается кодом 0 и печатает итоговый JSON последней строкой; переменные
@@ -54,6 +55,11 @@ AGOD_EVIDENCE_REPORT=logs/evidence_report.json node tools/agod_evidence_check.cj
 каталога отчёта: числа базы, с которыми он сравнивается, берутся из закоммиченного
 прогона E0, а не из текста отчёта. Прогон занимает несколько минут: 150 событий на
 каждую из 8 масок плюс нейтральный контроль той же длины на каждый картридж.
+
+`agod_dqn_check.cjs` — самая долгая проверка (десятки минут): 7 картриджей × 6
+сидов агента × (обучение + замороженная оценка + случайная политика), и для
+каждого картриджа заново проходится вся внутренняя цепочка (причинность →
+типизация → индукция → реестр → брокер).
 
 ## 3. Полная регрессия
 
