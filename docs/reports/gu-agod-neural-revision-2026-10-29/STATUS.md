@@ -11,7 +11,7 @@
 | Этап | Статус | Комментарий |
 |---|---|---|
 | E0 — Baseline и воспроизводимость | **PARTIAL PASS** | 105/108 шагов регрессии PASS, 3 BLOCKED (нет emscripten). База ТЗ подтверждена. См. `01_GU_BASELINE_AUDIT_RU.md` |
-| E1 — Source-level audit | **IN PROGRESS** | Внешние SHA подлежат фактической проверке перед любым переносом |
+| E1 — Source-level audit | **PARTIAL PASS** | 4 проекта с SHA из ТЗ проверены, прочитаны, решения зафиксированы (`02_EXTERNAL_SOURCE_AUDIT_RU.md`). Не сделано: differential tests против upstream; 3 проекта без SHA не аудировались |
 | E2 — RAM / HUD discovery | NOT STARTED | |
 | E3 — Causal validation | NOT STARTED | |
 | E4 — Goal induction и reward | NOT STARTED | |
@@ -24,7 +24,7 @@
 
 | Гейт | Статус | Чего не хватает |
 |---|---|---|
-| G0 — Source | **OPEN** | E1 не завершён: SHA, лицензии и решения по переносу не зафиксированы |
+| G0 — Source | **PARTIAL** | SHA проверены, лицензии (все MIT) и решения зафиксированы; остаются differential tests против upstream и 3 проекта без SHA |
 | G1 — Observation | PARTIAL | Паритет и bounded trace на хосте PASS; Android не проверен |
 | G2 — Causality | **OPEN** | Причинного механизма в базе нет: independent confirmations = 0 |
 | G3 — Reward | **OPEN** | Подтверждённой награды нет: verifiedRewards = 0, rewardStatus = UNKNOWN. Контракт UNKNOWN при этом соблюдается |
@@ -41,6 +41,11 @@
 4. ТЗ §2.1 воспроизведён точно (7/7 структурных, 1/7 точный типизированный счётчик).
 5. ТЗ §2.2 воспроизведён по паритету (32 / 25 / 117), **но не по overhead** — разброс между прогонами 1.285×–1.526×.
 6. Разрыв §2.4 подтверждён данными: 0 verified rewards, 0 independent confirmations, polarity unknown на всех 7 ROM.
+7. Все 4 внешних SHA из ТЗ существуют, но **2 из 4 путей, подразумеваемых ТЗ, на этих коммитах не существуют** (rcheevos: `src/runtime/rc_*.c`; stable-retro: пакет переименован в `stable_retro/`).
+8. Все 4 проекта под MIT — лицензионных препятствий нет.
+9. **SB3 `DQN.train` — ванильный DQN, не Double DQN**, которого требует NN-01: цель Double DQN придётся писать самим.
+10. Награда в Stable-Retro задаётся рукописным сценарием на каждую игру → для пути обнаружения не годится, но годится в независимые оракулы §11.2.
+11. ADOPT NOW: ноль механизмов. Три PROTOTYPE, один REJECT для пути обнаружения.
 
 ## Запрещено заявлять на текущем этапе
 

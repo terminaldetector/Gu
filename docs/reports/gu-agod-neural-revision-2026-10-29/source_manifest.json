@@ -1,0 +1,144 @@
+{
+  "generatedUtc": "2026-10-30T08:28:50Z",
+  "stage": "E1",
+  "guCommit": "775aa68053c7b99bf699f16c1418b997ce507250",
+  "method": "Each SHA was resolved against the live remote before anything was read. Files were fetched at the pinned SHA (blobless shallow fetch or raw), then read. No upstream code was copied into GU.",
+  "licenseSummary": "All four audited projects are MIT, so none of them is license-incompatible with GU (MIT). No copying was performed, so no attribution obligation has been incurred yet.",
+  "entries": [
+    {
+      "project": "OCAtari",
+      "repositoryUrl": "https://github.com/k4ntz/OC_Atari",
+      "commitShaFromTz": "99c874675df6b76a33a80b57776c123fbcd051af",
+      "shaVerifiedExists": true,
+      "mechanismFromTz": "find_causative_ram",
+      "pathAssumedByTz": null,
+      "pathActual": "scripts/find_causative_ram_full.py",
+      "pathMatchedAssumption": "n/a (TZ gave no path)",
+      "localFile": "find_causative_ram_full.py",
+      "license": "MIT",
+      "spdx": "MIT",
+      "targetGuModule": "agod-causal (E3), partially agod-visual (E2)",
+      "whatItActuallyDoes": "For every RAM address: reset the emulator with a fixed seed, WRITE a chosen value into that address via ale.setRAM(i,v), step one frame, and count changed pixel blocks against a baseline frame. Addresses whose write produces a small-but-nonzero visual change (2..59 changed blocks) are kept as candidates.",
+      "integrationType": "algorithm only, no code reuse",
+      "algorithmChanges": "GU must intervene inside an isolated replay sandbox, never a live session; GU's AGOD-05 intervenes on ACTIONS, this intervenes on RAM WRITES, which is a different and stronger probe; the hardcoded setRAM(123,60) is a game-specific hack and must not be carried over",
+      "blockers": [
+        "requires ale.setRAM: arbitrary RAM write into the core, which GU's own 13.2 isolation rules forbid for live play",
+        "depends on gymnasium + ALE + matplotlib + tqdm; none available on Android/WebView",
+        "it is an exploratory script in scripts/, not library code; its own docstring says 'rough idea'",
+        "finds RAM->visual influence only; it establishes no game goal, no polarity and no reward"
+      ],
+      "tests": "none in upstream for this script",
+      "benchmark": "none upstream",
+      "decision": "PROTOTYPE",
+      "decisionRationale": "The method is the closest external match to GU's missing causal step and is worth prototyping in an isolated sandbox, but the code is not portable and RAM-write intervention needs its own safety contract before it can touch anything a user plays.",
+      "fileSha256": "4aa69e8b0547a2de1fd086e4514acafe87cb70373bc06590c019bd5b1f28e1d2",
+      "fileLines": 102
+    },
+    {
+      "project": "rcheevos",
+      "repositoryUrl": "https://github.com/RetroAchievements/rcheevos",
+      "commitShaFromTz": "bbc79b58a5a2a0b98dfbf2be6ca9e42c764661ce",
+      "shaVerifiedExists": true,
+      "mechanismFromTz": "Conditions, memrefs, triggers, leaderboards",
+      "pathAssumedByTz": "src/rcheevos/*.c (implied by the TZ's naming)",
+      "pathActual": "src/runtime/rc_condition.c, rc_memref.c, rc_trigger.c, rc_lboard.c",
+      "pathMatchedAssumption": false,
+      "localFile": "rc_condition.c",
+      "license": "MIT",
+      "spdx": "MIT",
+      "targetGuModule": "agod-goals (AGOD-07 predicates), agod-evidence (AGOD-09 lifecycle)",
+      "whatItActuallyDoes": "A typed predicate/trigger engine over emulator memory: memrefs with size/format and previous-value deltas, conditions with comparison operators, ADD_SOURCE/SUB_SOURCE/ADD_ADDRESS pointer chains, REMEMBER, MEASURED, hit counts, and trigger/leaderboard state machines.",
+      "integrationType": "candidate for real code reuse (pure C, MIT, no external deps)",
+      "algorithmChanges": "GU would use it as the evaluator for GoalHypothesis.predicate; GU must supply the predicates from AGOD discovery, since upstream predicates are authored by humans",
+      "blockers": [
+        "the engine evaluates predicates, it does not discover them: all RetroAchievements content is hand-authored per game, which is the manual annotation 1.3 forbids as a product mechanism",
+        "C integration on Android needs JNI or a WASM build; neither exists in GU today"
+      ],
+      "tests": "upstream has test/runtime/test_rc_condition.c and siblings",
+      "benchmark": "none fetched",
+      "decision": "PROTOTYPE",
+      "decisionRationale": "Strong, portable, well-tested predicate engine whose data model matches AGOD-07 closely. It solves expression and evaluation, not discovery, so it can only be adopted together with a GU-side generator of predicates; integration cost (JNI/WASM) must be measured before ADOPT.",
+      "fileSha256": "0a63b7ab9a6e179f44ccced31284e9c2f890cc30a06b3f27019296d992a9a309",
+      "fileLines": 822
+    },
+    {
+      "project": "Stable-Retro",
+      "repositoryUrl": "https://github.com/Farama-Foundation/stable-retro",
+      "commitShaFromTz": "015beaf30ff3733663b04c1a93c660674a022c6d",
+      "shaVerifiedExists": true,
+      "mechanismFromTz": "RetroEnv.compute_step, GameData reward/done",
+      "pathAssumedByTz": "retro/retro_env.py (implied)",
+      "pathActual": "stable_retro/retro_env.py (compute_step at line 381), src/data.cpp (loadReward/done)",
+      "pathMatchedAssumption": false,
+      "localFile": "sr_retro_env.py",
+      "license": "MIT",
+      "spdx": "MIT",
+      "targetGuModule": "agent-evaluation / independent oracle (11.2), NOT agod-reward",
+      "whatItActuallyDoes": "compute_step is a 7-line delegation returning (reward, done, info) from GameData. The substance is in C++: reward and done are loaded from a per-game scenario manifest declaring reward.variables with coefficients, reward.time, an optional Lua script, and done.variables.",
+      "integrationType": "reference / harness pattern",
+      "algorithmChanges": "none proposed for the discovery path",
+      "blockers": [
+        "reward and done semantics come from hand-written per-game scenario.json, which is exactly the per-ROM manual annotation forbidden by 1.3 as a product mechanism",
+        "the integration-worthy part is the declarative schema, not the computation"
+      ],
+      "tests": "upstream python tests exist, not fetched",
+      "benchmark": "none",
+      "decision": "REJECT for the discovery path / ADOPT-AS-ORACLE candidate",
+      "decisionRationale": "It cannot supply automatic goal discovery because its rewards are authored by hand. That same property makes it a legitimate candidate for the independent oracle of 11.2, where manual annotation is explicitly allowed; its scenario schema is a good model for GU's own verified-reward declaration format.",
+      "fileSha256": "1199ab56988052bf37ad7f901db7429874692c5aab463071b4c1f5856491e0e2",
+      "fileLines": 409
+    },
+    {
+      "project": "Stable-Baselines3",
+      "repositoryUrl": "https://github.com/DLR-RM/stable-baselines3",
+      "commitShaFromTz": "0cdcd200deef06b9ad0af72f6ddfb07c06c6df39",
+      "shaVerifiedExists": true,
+      "mechanismFromTz": "DQN.train, ReplayBuffer",
+      "pathAssumedByTz": "stable_baselines3/dqn/dqn.py, stable_baselines3/common/buffers.py",
+      "pathActual": "same",
+      "pathMatchedAssumption": true,
+      "localFile": "dqn.py",
+      "license": "MIT",
+      "spdx": "MIT",
+      "targetGuModule": "neural-agent-train (E5)",
+      "whatItActuallyDoes": "train(): sample replay batch; under no_grad compute target from the TARGET net's max over actions; 1-step TD target r + (1-done)*gamma*maxQ'; gather current Q for taken actions; Huber (smooth_l1) loss; zero_grad, backward, clip_grad_norm, optimizer step; periodic polyak target sync.",
+      "integrationType": "algorithmic reference only",
+      "algorithmChanges": "GU's NN-01 requires DOUBLE DQN; this must be changed, not copied",
+      "blockers": [
+        "this implementation is VANILLA DQN, not Double DQN: the target takes max over the target network instead of evaluating the online network's argmax. The word 'double' does not appear in dqn.py at this SHA",
+        "PyTorch-based; cannot run inside GU's Android/WebView runtime as-is, so it informs 8.2 but does not answer it"
+      ],
+      "tests": "upstream test suite exists, not fetched",
+      "benchmark": "upstream RL Zoo, not reproduced here",
+      "decision": "PROTOTYPE",
+      "decisionRationale": "Its training-step structure is the right skeleton for NN-04's checklist and should be mirrored. But it must not be described as a Double DQN port: the Double DQN target has to be written by GU, and the runtime question is untouched by this source.",
+      "fileSha256": "c9a3f43a2deb74bd0cacb5a19bd9e7cc9c7d7771f107b1d4eb3a89b4de1130ae",
+      "fileLines": 290
+    }
+  ],
+  "notAudited": [
+    {
+      "project": "TorchRL",
+      "commitShaFromTz": "not specified in the TZ ('SHA определить')",
+      "status": "NOT AUDITED IN THIS PASS",
+      "reason": "the TZ gives no SHA; pinning and auditing them was not attempted in this pass and no claim is made about them"
+    },
+    {
+      "project": "DreamerV3",
+      "commitShaFromTz": "not specified in the TZ ('SHA определить')",
+      "status": "NOT AUDITED IN THIS PASS",
+      "reason": "the TZ gives no SHA; pinning and auditing them was not attempted in this pass and no claim is made about them"
+    },
+    {
+      "project": "Dopamine",
+      "commitShaFromTz": "not specified in the TZ ('SHA определить')",
+      "status": "NOT AUDITED IN THIS PASS",
+      "reason": "the TZ gives no SHA; pinning and auditing them was not attempted in this pass and no claim is made about them"
+    }
+  ],
+  "decisionCounts": {
+    "ADOPT NOW": 0,
+    "PROTOTYPE": 3,
+    "REJECT/DEFER (discovery path)": 1
+  }
+}
