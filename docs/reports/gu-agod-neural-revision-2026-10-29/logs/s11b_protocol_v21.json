@@ -1,0 +1,54 @@
+{
+  "type": "gu-agod-s11b-protocol",
+  "version": "2.1",
+  "amends": [
+    { "document": "26_S11B_PREREGISTRATION_RU.md", "commit": "6b4daef" },
+    { "document": "27_S11B_PREREGISTRATION_V2_RU.md", "commit": "29ba895" }
+  ],
+  "rewritesHistory": false,
+  "declaredBefore": "the first experimental run of S11B",
+  "unchanged": ["horizons", "weights", "budget", "NEGATIVE criteria"],
+  "T1_truncationSemantics": {
+    "T1_1": {
+      "rule": "presence of the target address in the RAW DIFF while attributed is truncated does NOT mean causal attribution is complete",
+      "why": "a raw diff only shows the byte differed between arms; it passed no phase control, no alternative-mask comparison and no cross-start agreement",
+      "fields": {
+        "rawDiffMembership": "recorded separately and NEVER promoted to causal evidence",
+        "attributedMembership": "the detector's own verdict",
+        "reportTruncated": "any reported list length equals the limit"
+      },
+      "outcome": "reportTruncated && !attributedMembership -> ADDRESS_COVERAGE_UNKNOWN, with rawDiffMembership stored as its own field and no effect on the status"
+    },
+    "T1_2": {
+      "rule": "absence of a final difference does not exclude an intermediate transition",
+      "outcomes": {
+        "FINAL_STATE_UNCHANGED": "endpoints matched and intermediate samples were not taken, or showed no change at the points checked",
+        "NO_EVENT_IN_HORIZON": "endpoints matched AND no intermediate sample across the whole horizon showed a change - assertable only with intermediate sampling throughout",
+        "TRANSIENT_WITHIN_WINDOW": "an intermediate sample showed a change absent at the end"
+      },
+      "intermediateSampling": "continuous-hold arms sample RAM every 12 frames of the horizon; like the S11C pre-snapshot this runs NO frames and does not alter the action structure"
+    }
+  },
+  "T2_adapterEquivalence": {
+    "purpose": "RECOVERED_BY_CADENCE compares a pulse train against a continuous control that, at 144/360/720, runs in the experimental adapter rather than the standard detector. If the adapter behaves differently the comparison would be between two instruments.",
+    "horizons": [12, 48],
+    "compared": ["action arm RAM hash", "neutral control RAM hash", "alternative mask RAM hash",
+      "phase tolerance and trajectory arm count", "attributed address sets",
+      "cross-start contradictions", "causal confirmation for the target address"],
+    "onDivergence": [
+      "keep BOTH results, adapter and standard",
+      "localise the cause before using RECOVERED_BY_CADENCE",
+      "until localised, mark the case ADAPTER_DIVERGENCE_UNRESOLVED and do not assign RECOVERED_BY_CADENCE"
+    ],
+    "gate": "equivalence is checked BEFORE the synthetic trials and is a precondition for starting them"
+  },
+  "diagnosticOutcomesV21": [
+    "RECOVERED_BY_DURATION", "RECOVERED_BY_CADENCE", "CADENCE_UNDECIDABLE",
+    "TIME_EXPLAINED", "NOT_REPRODUCIBLE_ACROSS_STARTS", "TRANSIENT_WITHIN_WINDOW",
+    "FINAL_STATE_UNCHANGED", "NO_EVENT_IN_HORIZON",
+    "ADDRESS_COVERAGE_UNKNOWN", "ADAPTER_DIVERGENCE_UNRESOLVED",
+    "NOT_OBSERVED", "NOT_COMPARABLE", "BUDGET_EXCEEDED"
+  ],
+  "instrumentRule": "a limit of the observing instrument must never be presented as the absence of a game event",
+  "headlineQuestions": { "A": "duration", "B": "cadence", "C": "remaining uncertainty" }
+}
