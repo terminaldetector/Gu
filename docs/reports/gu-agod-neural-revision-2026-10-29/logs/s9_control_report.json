@@ -1,0 +1,1815 @@
+{
+  "type": "gu-agod-s9-control-check",
+  "version": 1,
+  "question": "does ranking candidates by declared evidence quality change what the pipeline selects, without breaking the cases that already work?",
+  "heldConstant": "ROMs, core, boot, masks, frame parameters and budgets. The only difference between arms is config.resourceSelection.",
+  "oracleDiscipline": "read only after both arms committed for that cartridge; never an input to either arm; nothing tuned on it",
+  "rankingSpec": {
+    "specRevision": "s9-ranking-1",
+    "declaredBefore": "committed in the commit that introduces this module, before any HOLDOUT seed or real cartridge was evaluated under ranked selection",
+    "totalWeight": 19,
+    "criteria": [
+      {
+        "id": "causality",
+        "weight": 5,
+        "question": "was this address shown to change because of the action, against a frame-matched neutral control?",
+        "measured": "the fraction of independent starts where the causal probe confirmed this address for its mask",
+        "whyThisWeight": "a field that is not causally attributed cannot carry evidence about an action at all, so this is the prerequisite for every other criterion"
+      },
+      {
+        "id": "crossStartReproducibility",
+        "weight": 4,
+        "question": "does it move the same way from several independent starting states?",
+        "measured": "the fraction of independent starts where the field moved, and whether the per-start step agreed",
+        "whyThisWeight": "one trajectory is an anecdote; agreement across starts is the cheapest strong evidence available here"
+      },
+      {
+        "id": "informativeValues",
+        "weight": 3,
+        "question": "does it reach values that can carry information - more than one distinct value, a non-zero value, and a floor it settles at?",
+        "measured": "distinct values observed, whether a non-zero value was reached, whether a floor was reached and held",
+        "whyThisWeight": "a field pinned at one value cannot be measured against anything; this is what defeated every Life Force candidate in S8"
+      },
+      {
+        "id": "separability",
+        "weight": 3,
+        "question": "is it distinguishable from a timer, from RNG, and from plain input echo?",
+        "measured": "moved under the neutral control, how many different masks move it, whether its step is constant across starts",
+        "whyThisWeight": "these three confounds are the documented failure modes of this pipeline (101 false attributions without shift control, 55 false typings without a neutral run), so they are weighted equal to reachability"
+      },
+      {
+        "id": "observedFunctionalEffect",
+        "weight": 2,
+        "question": "did substituting the value change what the machine did next?",
+        "measured": "the S4c downstream counterfactual, when a poke-capable driver and budget are available",
+        "whyThisWeight": "deliberately below the four above: a null here is uninformative (read-modify-write and reads without visible effect both produce it), so it may raise a candidate but must not be able to sink one"
+      },
+      {
+        "id": "phaseAndRestoreRobustness",
+        "weight": 2,
+        "question": "does the behaviour survive a savestate restore, and does it still hold after a Start pulse?",
+        "measured": "identical series after restore, and whether it still moves after a Start pulse",
+        "whyThisWeight": "the game phase is itself an inference, so this guards against a candidate that exists only in one transient screen, but cannot outrank directly measurable evidence"
+      }
+    ],
+    "scoring": "each criterion yields a score in [0,1] from its own measurement, is multiplied by its weight, and the weighted sum is divided by totalWeight. No criterion can veto another.",
+    "tieBreak": [
+      "higher causality score",
+      "higher crossStartReproducibility score",
+      "more distinct values observed",
+      "wider span",
+      "lower address"
+    ],
+    "selectionRuleWhenSeveralPass": "the highest-ranked candidate by this spec that passed, with ties broken by tieBreak. NEVER the one whose outcome looks best, and never re-ranked after seeing outcomes.",
+    "forbidden": [
+      "no address from an external source or a game document",
+      "no oracle label as an input to scoring",
+      "a downstream read is not proof of usefulness; its absence is not proof of no consumer",
+      "HOLDOUT must not be used to tune weights or to re-pick candidates after a failure"
+    ]
+  },
+  "provenance": {
+    "commit": "82e16c684ac22ed1f12f5af25b2c77ff80ff72c9",
+    "workingTreeDirty": false,
+    "node": "v22.22.0",
+    "pipelineRevision": "agod-pipeline-s9-4",
+    "candidatesRevision": "agod-candidates-s9-1",
+    "rankingSpecRevision": "s9-ranking-1"
+  },
+  "status": "COMPLETE",
+  "rows": [
+    {
+      "family": "test",
+      "group": "development",
+      "seed": 0,
+      "romHash": "6b4556c380b50af1",
+      "rightAnswer": "VERIFIED with the resource equal to lives",
+      "oracleResource": {
+        "field": "lives",
+        "address": 178,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 178,
+        "resourceWidth": 1,
+        "resourceMask": 2,
+        "refusalStages": [],
+        "elapsedMs": 15972
+      },
+      "RANKED_V2": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 178,
+        "resourceWidth": 1,
+        "resourceMask": 2,
+        "refusalStages": [],
+        "elapsedMs": 18736
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "VERIFIED",
+        "resourceAddress": 178
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 178,
+            "mask": 2,
+            "score": 0.853,
+            "groupAddresses": [
+              178
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 178,
+          "outcome": "VERIFIED",
+          "stage": "complete",
+          "reason": null
+        }
+      ],
+      "verdict": {
+        "v1Correct": true,
+        "v2Correct": true,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": false,
+        "v2Refused": false,
+        "missedByV1": false,
+        "expectsVerified": true,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "test",
+      "group": "development",
+      "seed": 1,
+      "romHash": "1773dd62e526d967",
+      "rightAnswer": "VERIFIED with the resource equal to lives",
+      "oracleResource": {
+        "field": "lives",
+        "address": 116,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 116,
+        "resourceWidth": 1,
+        "resourceMask": 2,
+        "refusalStages": [],
+        "elapsedMs": 15713
+      },
+      "RANKED_V2": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 116,
+        "resourceWidth": 1,
+        "resourceMask": 2,
+        "refusalStages": [],
+        "elapsedMs": 19558
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "VERIFIED",
+        "resourceAddress": 116
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 116,
+            "mask": 2,
+            "score": 0.853,
+            "groupAddresses": [
+              116
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 116,
+          "outcome": "VERIFIED",
+          "stage": "complete",
+          "reason": null
+        }
+      ],
+      "verdict": {
+        "v1Correct": true,
+        "v2Correct": true,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": false,
+        "v2Refused": false,
+        "missedByV1": false,
+        "expectsVerified": true,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "test",
+      "group": "development",
+      "seed": 2,
+      "romHash": "3c28be48e30b604c",
+      "rightAnswer": "VERIFIED with the resource equal to lives",
+      "oracleResource": {
+        "field": "lives",
+        "address": 109,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 109,
+        "resourceWidth": 1,
+        "resourceMask": 2,
+        "refusalStages": [],
+        "elapsedMs": 17432
+      },
+      "RANKED_V2": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 109,
+        "resourceWidth": 1,
+        "resourceMask": 2,
+        "refusalStages": [],
+        "elapsedMs": 19417
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "VERIFIED",
+        "resourceAddress": 109
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 109,
+            "mask": 2,
+            "score": 0.853,
+            "groupAddresses": [
+              109
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 109,
+          "outcome": "VERIFIED",
+          "stage": "complete",
+          "reason": null
+        }
+      ],
+      "verdict": {
+        "v1Correct": true,
+        "v2Correct": true,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": false,
+        "v2Refused": false,
+        "missedByV1": false,
+        "expectsVerified": true,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "test",
+      "group": "development",
+      "seed": 7,
+      "romHash": "380424f8e501e6ba",
+      "rightAnswer": "VERIFIED with the resource equal to lives",
+      "oracleResource": {
+        "field": "lives",
+        "address": 121,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 121,
+        "resourceWidth": 1,
+        "resourceMask": 64,
+        "refusalStages": [],
+        "elapsedMs": 15479
+      },
+      "RANKED_V2": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 121,
+        "resourceWidth": 1,
+        "resourceMask": 64,
+        "refusalStages": [],
+        "elapsedMs": 19953
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "VERIFIED",
+        "resourceAddress": 121
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 121,
+            "mask": 64,
+            "score": 0.958,
+            "groupAddresses": [
+              121
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 121,
+          "outcome": "VERIFIED",
+          "stage": "complete",
+          "reason": null
+        }
+      ],
+      "verdict": {
+        "v1Correct": true,
+        "v2Correct": true,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": false,
+        "v2Refused": false,
+        "missedByV1": false,
+        "expectsVerified": true,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "test",
+      "group": "development",
+      "seed": 8,
+      "romHash": "bc3f9812a2028fbb",
+      "rightAnswer": "VERIFIED with the resource equal to lives",
+      "oracleResource": {
+        "field": "lives",
+        "address": 133,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 133,
+        "resourceWidth": 1,
+        "resourceMask": 64,
+        "refusalStages": [],
+        "elapsedMs": 17253
+      },
+      "RANKED_V2": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 133,
+        "resourceWidth": 1,
+        "resourceMask": 64,
+        "refusalStages": [],
+        "elapsedMs": 20370
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "VERIFIED",
+        "resourceAddress": 133
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 133,
+            "mask": 64,
+            "score": 0.958,
+            "groupAddresses": [
+              133
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 133,
+          "outcome": "VERIFIED",
+          "stage": "complete",
+          "reason": null
+        }
+      ],
+      "verdict": {
+        "v1Correct": true,
+        "v2Correct": true,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": false,
+        "v2Refused": false,
+        "missedByV1": false,
+        "expectsVerified": true,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "test",
+      "group": "development",
+      "seed": 9,
+      "romHash": "672f103b91fd85e3",
+      "rightAnswer": "VERIFIED with the resource equal to lives",
+      "oracleResource": {
+        "field": "lives",
+        "address": 184,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 184,
+        "resourceWidth": 1,
+        "resourceMask": 2,
+        "refusalStages": [],
+        "elapsedMs": 17022
+      },
+      "RANKED_V2": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 184,
+        "resourceWidth": 1,
+        "resourceMask": 2,
+        "refusalStages": [],
+        "elapsedMs": 20669
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "VERIFIED",
+        "resourceAddress": 184
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 184,
+            "mask": 2,
+            "score": 0.958,
+            "groupAddresses": [
+              184
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 184,
+          "outcome": "VERIFIED",
+          "stage": "complete",
+          "reason": null
+        }
+      ],
+      "verdict": {
+        "v1Correct": true,
+        "v2Correct": true,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": false,
+        "v2Refused": false,
+        "missedByV1": false,
+        "expectsVerified": true,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "test",
+      "group": "development",
+      "seed": 47,
+      "romHash": "76a63ad922d2d97b",
+      "rightAnswer": "VERIFIED with the resource equal to lives",
+      "oracleResource": {
+        "field": "lives",
+        "address": 65,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 65,
+        "resourceWidth": 1,
+        "resourceMask": 2,
+        "refusalStages": [],
+        "elapsedMs": 16111
+      },
+      "RANKED_V2": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 65,
+        "resourceWidth": 1,
+        "resourceMask": 2,
+        "refusalStages": [],
+        "elapsedMs": 19772
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "VERIFIED",
+        "resourceAddress": 65
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 65,
+            "mask": 2,
+            "score": 0.958,
+            "groupAddresses": [
+              65
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 65,
+          "outcome": "VERIFIED",
+          "stage": "complete",
+          "reason": null
+        }
+      ],
+      "verdict": {
+        "v1Correct": true,
+        "v2Correct": true,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": false,
+        "v2Refused": false,
+        "missedByV1": false,
+        "expectsVerified": true,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "test",
+      "group": "heldOut",
+      "seed": 200,
+      "romHash": "8ab2b316b845aa03",
+      "rightAnswer": "VERIFIED with the resource equal to lives",
+      "oracleResource": {
+        "field": "lives",
+        "address": 100,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 100,
+        "resourceWidth": 1,
+        "resourceMask": 2,
+        "refusalStages": [],
+        "elapsedMs": 16759
+      },
+      "RANKED_V2": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 100,
+        "resourceWidth": 1,
+        "resourceMask": 2,
+        "refusalStages": [],
+        "elapsedMs": 19855
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "VERIFIED",
+        "resourceAddress": 100
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 100,
+            "mask": 2,
+            "score": 0.958,
+            "groupAddresses": [
+              100
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 100,
+          "outcome": "VERIFIED",
+          "stage": "complete",
+          "reason": null
+        }
+      ],
+      "verdict": {
+        "v1Correct": true,
+        "v2Correct": true,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": false,
+        "v2Refused": false,
+        "missedByV1": false,
+        "expectsVerified": true,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "test",
+      "group": "heldOut",
+      "seed": 201,
+      "romHash": "79168fb1e5ed1656",
+      "rightAnswer": "VERIFIED with the resource equal to lives",
+      "oracleResource": {
+        "field": "lives",
+        "address": 127,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 127,
+        "resourceWidth": 1,
+        "resourceMask": 32,
+        "refusalStages": [],
+        "elapsedMs": 16629
+      },
+      "RANKED_V2": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 127,
+        "resourceWidth": 1,
+        "resourceMask": 32,
+        "refusalStages": [],
+        "elapsedMs": 19415
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "VERIFIED",
+        "resourceAddress": 127
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 127,
+            "mask": 32,
+            "score": 0.958,
+            "groupAddresses": [
+              127
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 127,
+          "outcome": "VERIFIED",
+          "stage": "complete",
+          "reason": null
+        }
+      ],
+      "verdict": {
+        "v1Correct": true,
+        "v2Correct": true,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": false,
+        "v2Refused": false,
+        "missedByV1": false,
+        "expectsVerified": true,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "test",
+      "group": "heldOut",
+      "seed": 202,
+      "romHash": "250deb219dc88e97",
+      "rightAnswer": "VERIFIED with the resource equal to lives",
+      "oracleResource": {
+        "field": "lives",
+        "address": 99,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 99,
+        "resourceWidth": 1,
+        "resourceMask": 32,
+        "refusalStages": [],
+        "elapsedMs": 18456
+      },
+      "RANKED_V2": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 99,
+        "resourceWidth": 1,
+        "resourceMask": 32,
+        "refusalStages": [],
+        "elapsedMs": 19078
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "VERIFIED",
+        "resourceAddress": 99
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 99,
+            "mask": 32,
+            "score": 0.958,
+            "groupAddresses": [
+              99
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 99,
+          "outcome": "VERIFIED",
+          "stage": "complete",
+          "reason": null
+        }
+      ],
+      "verdict": {
+        "v1Correct": true,
+        "v2Correct": true,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": false,
+        "v2Refused": false,
+        "missedByV1": false,
+        "expectsVerified": true,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "test",
+      "group": "heldOut",
+      "seed": 203,
+      "romHash": "2ce78914e2a6df80",
+      "rightAnswer": "VERIFIED with the resource equal to lives",
+      "oracleResource": {
+        "field": "lives",
+        "address": 111,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 111,
+        "resourceWidth": 1,
+        "resourceMask": 32,
+        "refusalStages": [],
+        "elapsedMs": 16006
+      },
+      "RANKED_V2": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 111,
+        "resourceWidth": 1,
+        "resourceMask": 32,
+        "refusalStages": [],
+        "elapsedMs": 20171
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "VERIFIED",
+        "resourceAddress": 111
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 111,
+            "mask": 32,
+            "score": 0.958,
+            "groupAddresses": [
+              111
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 111,
+          "outcome": "VERIFIED",
+          "stage": "complete",
+          "reason": null
+        }
+      ],
+      "verdict": {
+        "v1Correct": true,
+        "v2Correct": true,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": false,
+        "v2Refused": false,
+        "missedByV1": false,
+        "expectsVerified": true,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "test",
+      "group": "heldOut",
+      "seed": 204,
+      "romHash": "fbfd6f1168f61800",
+      "rightAnswer": "VERIFIED with the resource equal to lives",
+      "oracleResource": {
+        "field": "lives",
+        "address": 64,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 64,
+        "resourceWidth": 1,
+        "resourceMask": 64,
+        "refusalStages": [],
+        "elapsedMs": 16734
+      },
+      "RANKED_V2": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 64,
+        "resourceWidth": 1,
+        "resourceMask": 64,
+        "refusalStages": [],
+        "elapsedMs": 18851
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "VERIFIED",
+        "resourceAddress": 64
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 64,
+            "mask": 64,
+            "score": 0.958,
+            "groupAddresses": [
+              64
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 64,
+          "outcome": "VERIFIED",
+          "stage": "complete",
+          "reason": null
+        }
+      ],
+      "verdict": {
+        "v1Correct": true,
+        "v2Correct": true,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": false,
+        "v2Refused": false,
+        "missedByV1": false,
+        "expectsVerified": true,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "test",
+      "group": "heldOut",
+      "seed": 205,
+      "romHash": "ed52f70d251e4a85",
+      "rightAnswer": "VERIFIED with the resource equal to lives",
+      "oracleResource": {
+        "field": "lives",
+        "address": 183,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 183,
+        "resourceWidth": 1,
+        "resourceMask": 64,
+        "refusalStages": [],
+        "elapsedMs": 16359
+      },
+      "RANKED_V2": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 183,
+        "resourceWidth": 1,
+        "resourceMask": 64,
+        "refusalStages": [],
+        "elapsedMs": 18042
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "VERIFIED",
+        "resourceAddress": 183
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 183,
+            "mask": 64,
+            "score": 0.958,
+            "groupAddresses": [
+              183
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 183,
+          "outcome": "VERIFIED",
+          "stage": "complete",
+          "reason": null
+        }
+      ],
+      "verdict": {
+        "v1Correct": true,
+        "v2Correct": true,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": false,
+        "v2Refused": false,
+        "missedByV1": false,
+        "expectsVerified": true,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "test",
+      "group": "heldOut",
+      "seed": 206,
+      "romHash": "67a1f64ed9edfc77",
+      "rightAnswer": "VERIFIED with the resource equal to lives",
+      "oracleResource": {
+        "field": "lives",
+        "address": 122,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 122,
+        "resourceWidth": 1,
+        "resourceMask": 64,
+        "refusalStages": [],
+        "elapsedMs": 16261
+      },
+      "RANKED_V2": {
+        "status": "VERIFIED",
+        "stage": "complete",
+        "reason": null,
+        "resourceAddress": 122,
+        "resourceWidth": 1,
+        "resourceMask": 64,
+        "refusalStages": [],
+        "elapsedMs": 19854
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "VERIFIED",
+        "resourceAddress": 122
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 122,
+            "mask": 64,
+            "score": 0.958,
+            "groupAddresses": [
+              122
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 122,
+          "outcome": "VERIFIED",
+          "stage": "complete",
+          "reason": null
+        }
+      ],
+      "verdict": {
+        "v1Correct": true,
+        "v2Correct": true,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": false,
+        "v2Refused": false,
+        "missedByV1": false,
+        "expectsVerified": true,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "sacrifice",
+      "group": "sacrifice",
+      "seed": 3,
+      "romHash": "76482d08b0791e81",
+      "rightAnswer": "a REFUSAL: the depletion is the price of progress, not harm",
+      "oracleResource": {
+        "field": "charges",
+        "address": 205,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "REFUSED",
+        "stage": "judge",
+        "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game",
+        "resourceAddress": 205,
+        "resourceWidth": null,
+        "resourceMask": null,
+        "refusalStages": [
+          "judge"
+        ],
+        "elapsedMs": 17127
+      },
+      "RANKED_V2": {
+        "status": "REFUSED",
+        "stage": "ranked-selection",
+        "reason": "every candidate inside the declared budget refused",
+        "resourceAddress": 205,
+        "resourceWidth": null,
+        "resourceMask": null,
+        "refusalStages": [
+          "judge",
+          "ranked-selection"
+        ],
+        "elapsedMs": 18735
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "REFUSED",
+        "resourceAddress": 205
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 205,
+            "mask": 4,
+            "score": 0.895,
+            "groupAddresses": [
+              205
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 205,
+          "outcome": "REFUSED",
+          "stage": "judge",
+          "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game"
+        }
+      ],
+      "verdict": {
+        "v1Correct": false,
+        "v2Correct": false,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": true,
+        "v2Refused": true,
+        "missedByV1": false,
+        "expectsVerified": false,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "sacrifice",
+      "group": "sacrifice",
+      "seed": 4,
+      "romHash": "4d540690720b718b",
+      "rightAnswer": "a REFUSAL: the depletion is the price of progress, not harm",
+      "oracleResource": {
+        "field": "charges",
+        "address": 153,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "REFUSED",
+        "stage": "judge",
+        "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game",
+        "resourceAddress": 153,
+        "resourceWidth": null,
+        "resourceMask": null,
+        "refusalStages": [
+          "judge"
+        ],
+        "elapsedMs": 16701
+      },
+      "RANKED_V2": {
+        "status": "REFUSED",
+        "stage": "ranked-selection",
+        "reason": "every candidate inside the declared budget refused",
+        "resourceAddress": 153,
+        "resourceWidth": null,
+        "resourceMask": null,
+        "refusalStages": [
+          "judge",
+          "ranked-selection"
+        ],
+        "elapsedMs": 20846
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "REFUSED",
+        "resourceAddress": 153
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 153,
+            "mask": 8,
+            "score": 0.895,
+            "groupAddresses": [
+              153
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 153,
+          "outcome": "REFUSED",
+          "stage": "judge",
+          "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game"
+        }
+      ],
+      "verdict": {
+        "v1Correct": false,
+        "v2Correct": false,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": true,
+        "v2Refused": true,
+        "missedByV1": false,
+        "expectsVerified": false,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "sacrifice",
+      "group": "sacrifice",
+      "seed": 5,
+      "romHash": "21fc2a962313b74c",
+      "rightAnswer": "a REFUSAL: the depletion is the price of progress, not harm",
+      "oracleResource": {
+        "field": "charges",
+        "address": 169,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "REFUSED",
+        "stage": "judge",
+        "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game",
+        "resourceAddress": 169,
+        "resourceWidth": null,
+        "resourceMask": null,
+        "refusalStages": [
+          "judge"
+        ],
+        "elapsedMs": 16873
+      },
+      "RANKED_V2": {
+        "status": "REFUSED",
+        "stage": "ranked-selection",
+        "reason": "every candidate inside the declared budget refused",
+        "resourceAddress": 169,
+        "resourceWidth": null,
+        "resourceMask": null,
+        "refusalStages": [
+          "judge",
+          "ranked-selection"
+        ],
+        "elapsedMs": 19601
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "REFUSED",
+        "resourceAddress": 169
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 169,
+            "mask": 64,
+            "score": 0.895,
+            "groupAddresses": [
+              169
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 169,
+          "outcome": "REFUSED",
+          "stage": "judge",
+          "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game"
+        }
+      ],
+      "verdict": {
+        "v1Correct": false,
+        "v2Correct": false,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": true,
+        "v2Refused": true,
+        "missedByV1": false,
+        "expectsVerified": false,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "rate-trap",
+      "group": "rateTrap",
+      "seed": 5,
+      "romHash": "7a259f63a084e94a",
+      "rightAnswer": "no decoy accepted as a cost",
+      "oracleResource": {
+        "field": "fuel",
+        "address": 97,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "REFUSED",
+        "stage": "judge",
+        "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game",
+        "resourceAddress": 97,
+        "resourceWidth": null,
+        "resourceMask": null,
+        "refusalStages": [
+          "judge"
+        ],
+        "elapsedMs": 16573
+      },
+      "RANKED_V2": {
+        "status": "REFUSED",
+        "stage": "ranked-selection",
+        "reason": "every candidate inside the declared budget refused",
+        "resourceAddress": 97,
+        "resourceWidth": null,
+        "resourceMask": null,
+        "refusalStages": [
+          "judge",
+          "ranked-selection"
+        ],
+        "elapsedMs": 19744
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "REFUSED",
+        "resourceAddress": 97
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 97,
+            "mask": 128,
+            "score": 1,
+            "groupAddresses": [
+              97
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 97,
+          "outcome": "REFUSED",
+          "stage": "judge",
+          "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game"
+        }
+      ],
+      "verdict": {
+        "v1Correct": false,
+        "v2Correct": false,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": true,
+        "v2Refused": true,
+        "missedByV1": false,
+        "expectsVerified": false,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "rate-trap",
+      "group": "rateTrap",
+      "seed": 6,
+      "romHash": "5dcf1996226d0733",
+      "rightAnswer": "no decoy accepted as a cost",
+      "oracleResource": {
+        "field": "fuel",
+        "address": 135,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "REFUSED",
+        "stage": "judge",
+        "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game",
+        "resourceAddress": 135,
+        "resourceWidth": null,
+        "resourceMask": null,
+        "refusalStages": [
+          "judge"
+        ],
+        "elapsedMs": 15945
+      },
+      "RANKED_V2": {
+        "status": "REFUSED",
+        "stage": "ranked-selection",
+        "reason": "every candidate inside the declared budget refused",
+        "resourceAddress": 135,
+        "resourceWidth": null,
+        "resourceMask": null,
+        "refusalStages": [
+          "judge",
+          "ranked-selection"
+        ],
+        "elapsedMs": 18673
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "REFUSED",
+        "resourceAddress": 135
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 135,
+            "mask": 64,
+            "score": 1,
+            "groupAddresses": [
+              135
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 135,
+          "outcome": "REFUSED",
+          "stage": "judge",
+          "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game"
+        }
+      ],
+      "verdict": {
+        "v1Correct": false,
+        "v2Correct": false,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": true,
+        "v2Refused": true,
+        "missedByV1": false,
+        "expectsVerified": false,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    },
+    {
+      "family": "rate-trap",
+      "group": "rateTrap",
+      "seed": 7,
+      "romHash": "b485aae929f13daf",
+      "rightAnswer": "no decoy accepted as a cost",
+      "oracleResource": {
+        "field": "fuel",
+        "address": 125,
+        "width": 1
+      },
+      "FIRST_V1": {
+        "status": "REFUSED",
+        "stage": "judge",
+        "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game",
+        "resourceAddress": 125,
+        "resourceWidth": null,
+        "resourceMask": null,
+        "refusalStages": [
+          "judge"
+        ],
+        "elapsedMs": 14468
+      },
+      "RANKED_V2": {
+        "status": "REFUSED",
+        "stage": "ranked-selection",
+        "reason": "every candidate inside the declared budget refused",
+        "resourceAddress": 125,
+        "resourceWidth": null,
+        "resourceMask": null,
+        "refusalStages": [
+          "judge",
+          "ranked-selection"
+        ],
+        "elapsedMs": 19263
+      },
+      "rankedReproducible": true,
+      "rankedSecondRun": {
+        "status": "REFUSED",
+        "resourceAddress": 125
+      },
+      "inventory": {
+        "candidatesTyped": 1,
+        "groups": 1,
+        "maxCandidates": 6,
+        "budgetNote": "every group fits inside the declared candidate budget",
+        "groupingLinks": 0,
+        "groupedOnAdjacencyAlone": 0,
+        "order": [
+          {
+            "rank": 1,
+            "address": 125,
+            "mask": 128,
+            "score": 1,
+            "groupAddresses": [
+              125
+            ]
+          }
+        ]
+      },
+      "trueResourceInInventory": true,
+      "trueResourceRank": 1,
+      "attempts": [
+        {
+          "rank": 1,
+          "address": 125,
+          "outcome": "REFUSED",
+          "stage": "judge",
+          "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game"
+        }
+      ],
+      "verdict": {
+        "v1Correct": false,
+        "v2Correct": false,
+        "v1FalseGoal": false,
+        "v2FalseGoal": false,
+        "v1Refused": true,
+        "v2Refused": true,
+        "missedByV1": false,
+        "expectsVerified": false,
+        "rightAnswerGiven": true,
+        "rightAnswerGivenByRanking": true,
+        "v2ChangedTheAnswer": false
+      }
+    }
+  ],
+  "totals": {
+    "cartridges": 20,
+    "perGroup": {
+      "development": {
+        "cartridges": 7,
+        "v1Verified": 7,
+        "v2Verified": 7,
+        "v1CorrectResource": 7,
+        "v2CorrectResource": 7,
+        "v1FalseGoals": 0,
+        "v2FalseGoals": 0,
+        "v1Refused": 0,
+        "v2Refused": 0,
+        "trueResourceInInventory": 7,
+        "trueResourceRankedFirst": 7,
+        "missedByV1ButInInventory": 0,
+        "missedByV1Applicable": 7,
+        "v1GaveTheRightAnswer": 7,
+        "v2GaveTheRightAnswer": 7,
+        "answerChangedByRanking": 0,
+        "rankedReproducible": 7,
+        "groupedOnAdjacencyAlone": 0,
+        "medianV1Ms": 16111,
+        "medianV2Ms": 19772
+      },
+      "heldOut": {
+        "cartridges": 7,
+        "v1Verified": 7,
+        "v2Verified": 7,
+        "v1CorrectResource": 7,
+        "v2CorrectResource": 7,
+        "v1FalseGoals": 0,
+        "v2FalseGoals": 0,
+        "v1Refused": 0,
+        "v2Refused": 0,
+        "trueResourceInInventory": 7,
+        "trueResourceRankedFirst": 7,
+        "missedByV1ButInInventory": 0,
+        "missedByV1Applicable": 7,
+        "v1GaveTheRightAnswer": 7,
+        "v2GaveTheRightAnswer": 7,
+        "answerChangedByRanking": 0,
+        "rankedReproducible": 7,
+        "groupedOnAdjacencyAlone": 0,
+        "medianV1Ms": 16629,
+        "medianV2Ms": 19415
+      },
+      "sacrifice": {
+        "cartridges": 3,
+        "v1Verified": 0,
+        "v2Verified": 0,
+        "v1CorrectResource": 0,
+        "v2CorrectResource": 0,
+        "v1FalseGoals": 0,
+        "v2FalseGoals": 0,
+        "v1Refused": 3,
+        "v2Refused": 3,
+        "trueResourceInInventory": 3,
+        "trueResourceRankedFirst": 3,
+        "missedByV1ButInInventory": 0,
+        "missedByV1Applicable": 0,
+        "v1GaveTheRightAnswer": 3,
+        "v2GaveTheRightAnswer": 3,
+        "answerChangedByRanking": 0,
+        "rankedReproducible": 3,
+        "groupedOnAdjacencyAlone": 0,
+        "medianV1Ms": 16873,
+        "medianV2Ms": 19601
+      },
+      "rateTrap": {
+        "cartridges": 3,
+        "v1Verified": 0,
+        "v2Verified": 0,
+        "v1CorrectResource": 0,
+        "v2CorrectResource": 0,
+        "v1FalseGoals": 0,
+        "v2FalseGoals": 0,
+        "v1Refused": 3,
+        "v2Refused": 3,
+        "trueResourceInInventory": 3,
+        "trueResourceRankedFirst": 3,
+        "missedByV1ButInInventory": 0,
+        "missedByV1Applicable": 0,
+        "v1GaveTheRightAnswer": 3,
+        "v2GaveTheRightAnswer": 3,
+        "answerChangedByRanking": 0,
+        "rankedReproducible": 3,
+        "groupedOnAdjacencyAlone": 0,
+        "medianV1Ms": 15945,
+        "medianV2Ms": 19263
+      }
+    },
+    "computeCost": {
+      "totalV1Ms": 329873,
+      "totalV2Ms": 390603
+    },
+    "invariants": {
+      "neverGroupedOnAdjacencyAlone": true,
+      "rankedAlwaysReproducible": true,
+      "noNewFalseGoals": true
+    },
+    "note": "a VERIFIED on the sacrifice family is a FALSE GOAL for either arm, not a success; the right answer there is a refusal"
+  }
+}

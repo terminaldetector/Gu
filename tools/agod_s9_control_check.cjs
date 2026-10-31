@@ -136,7 +136,15 @@ try{
     groupingLinks:selection.grouping.links.length,
     groupedOnAdjacencyAlone:selection.grouping.links.filter(l=>l.reason===null).length,
     order:selection.ranked.map(entry=>({rank:entry.rank,address:entry.address,
-     mask:entry.mask,score:entry.score.total,groupAddresses:entry.groupAddresses}))}:null,
+     mask:entry.mask,score:entry.score.total,breakdown:entry.score.breakdown,
+     groupAddresses:entry.groupAddresses,
+     /* criterion 5's own verdict, so a score of 0 there can be read as
+        "measured and nothing seen", "inconclusive" or "cannot be asked on this
+        platform" rather than guessed at from the total */
+     downstream:entry.record&&entry.record.downstream?{
+      status:entry.record.downstream.status,
+      hasConsumer:entry.record.downstream.hasConsumer,
+      reason:entry.record.downstream.reason}:null}))}:null,
    trueResourceInInventory:trueInInventory,trueResourceRank:trueRank,
    attempts:attempts?attempts.map(a=>({rank:a.rank,address:a.address,outcome:a.outcome,
     stage:a.stage,reason:a.reason})):null,
@@ -181,6 +189,12 @@ try{
     answerChangedByRanking:count(list,r=>r.verdict.v2ChangedTheAnswer),
     rankedReproducible:count(list,r=>r.rankedReproducible),
     groupedOnAdjacencyAlone:list.reduce((sum,r)=>sum+((r.inventory&&r.inventory.groupedOnAdjacencyAlone)||0),0),
+    criterion5:(()=>{const tally={};
+     for(const r of list)for(const entry of (r.inventory&&r.inventory.order)||[]){
+      const d=entry.downstream;
+      const key=d?(d.status+(d.hasConsumer===null?'':'/hasConsumer='+d.hasConsumer)):'not-recorded';
+      tally[key]=(tally[key]||0)+1;}
+     return tally;})(),
     medianV1Ms:median(list.map(r=>r.FIRST_V1.elapsedMs)),
     medianV2Ms:median(list.map(r=>r.RANKED_V2.elapsedMs))}];})),
   computeCost:{
