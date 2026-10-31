@@ -127,3 +127,53 @@ python tools/build_retro.py          # требует emscripten (emmake/emcc)
 `logs/nes_write_trace_check.log` (и из `logs/check_sh_run2.log` для второго прогона
 трассировки). Генерирующие скрипты не коммитятся: это одноразовые парсеры логов,
 все исходные строки сохранены в `logs/`, и любой парсер даст те же числа.
+
+## 7. Приватный корпус реальных ROM (S8): фаза, AGOD, процедуры входа
+
+ROM-файлы в репозитории отсутствуют и не должны в него попадать. Путь к каталогу
+передаётся через `AGOD_PRIVATE_ROMS`; ни один инструмент не ищет ROM внутри дерева.
+
+```sh
+export AGOD_PRIVATE_ROMS=/path/to/private/roms      # вне репозитория
+
+# 1. шлюз пригодности: четыре независимых статуса
+#    процедура входа теперь параметр и пишется в каждую строку
+AGOD_TARGETS=lifeforce.nes,contra.nes \
+ AGOD_ELIGIBILITY_REPORT=/tmp/eligibility.json \
+ node tools/agod_rom_eligibility_gate.cjs
+#    Contra при процедуре, доходящей до игры:
+AGOD_TARGETS=contra.nes AGOD_ENTRY_PULSES=6 AGOD_ENTRY_GAP=24 AGOD_ENTRY_SETTLE=300 \
+ AGOD_ELIGIBILITY_REPORT=/tmp/eligibility_contra.json \
+ node tools/agod_rom_eligibility_gate.cjs
+
+# 2. bounded AGOD, два объявленных плеча
+AGOD_TARGET_ROM=lifeforce.nes AGOD_REAL_GAME_REPORT=/tmp/lifeforce.json \
+ node tools/agod_real_game_check.cjs
+#    другая процедура входа (ничего кроме неё не меняется):
+AGOD_TARGET_ROM=contra.nes AGOD_PREAMBLE_PULSES=6 AGOD_PREAMBLE_GAP=24 \
+ AGOD_PREAMBLE_SETTLE=300 AGOD_REAL_GAME_REPORT=/tmp/contra.json \
+ node tools/agod_real_game_check.cjs
+
+# 3. изменил ли новый фазовый прибор хоть один вердикт
+AGOD_TARGETS=lifeforce.nes,contra.nes,galaga.nes \
+ AGOD_PHASE_REGRESSION_REPORT=/tmp/phase_regression.json \
+ node tools/agod_phase_detector_regression.cjs
+
+# 4. развёртка 12 родовых процедур входа на картридж
+AGOD_TARGETS=lifeforce.nes,contra.nes,galaga.nes \
+ AGOD_ENTRY_SWEEP_REPORT=/tmp/entry_sweep.json \
+ node tools/agod_entry_procedure_sweep.cjs
+
+# 5. защита от попадания бинарников в индекс (локальная, CI не настроен)
+bash tools/check_no_private_binaries_test.sh     # 5 случаев, включая TOCTOU
+```
+
+Параметры процедуры входа: `bootFrames` (240), `startPulses`, `holdFrames` (4),
+`gapFramesBetweenPresses`, `settleFrames`. Значения по умолчанию у каждого
+инструмента оставлены прежними, поэтому опубликованные прогоны воспроизводятся без
+переменных окружения; `gapFramesBetweenPresses` по умолчанию 8 в шлюзе и 24 в чекере и
+развёртке — это историческое расхождение, из-за которого «одна и та же процедура»
+означала разное (отчёт 19 §7.2), и теперь оно записано, а не скрыто.
+
+Результаты зависят от процедуры входа. Любой статус фазы читается только вместе с
+процедурой, при которой он получен.

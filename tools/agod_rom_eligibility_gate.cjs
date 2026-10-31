@@ -17,20 +17,37 @@
 // report carries hashes, header fields and outcomes.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {execFileSync}=require('node:child_process');
-const jsnes=require('../app/src/main/assets/lab/jsnes.min.js');
+const jsnes=require('../app/src/main/assets/lab/jsnes.min.js'),
+      Phase=require('./agod_phase_evidence.cjs');
 
 const ROMS=process.env.AGOD_PRIVATE_ROMS;
 if(!ROMS){console.error('set AGOD_PRIVATE_ROMS; this gate never looks inside the repository');process.exit(2);}
 const TARGETS=(process.env.AGOD_TARGETS||'lifeforce.nes,contra.nes').split(',');
 const HOLD=4,RELEASE=8,BOOT=240;
+/* Entry procedure as a PARAMETER. Defaults are exactly what the published
+   run used, so that run reproduces unchanged; the sweep showed a cartridge
+   can read NOT-REACHED only because it settled too briefly. */
+const num=(name,fallback)=>{const raw=process.env[name];if(raw===undefined||raw==='')return fallback;
+ const value=Number(raw);if(!Number.isInteger(value)||value<0)throw new Error(name+' must be a non-negative integer, got: '+raw);return value;};
+const ENTRY_PULSES=num('AGOD_ENTRY_PULSES',1),ENTRY_SETTLE=num('AGOD_ENTRY_SETTLE',180),
+/* The GAP between Start presses is a third parameter and it matters. This
+   gate used RELEASE (8) and never recorded it, while the sweep and the
+   bounded-AGOD checker use 24; the two then disagreed about contra at what
+   both reported as 'the same' procedure. The default stays 8 so the
+   published run reproduces, but it is now named and written into the row. */
+      ENTRY_GAP=num('AGOD_ENTRY_GAP',RELEASE);
 const results=[];
 const provenance=(()=>{let head='unknown',dirty=null;
  try{head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
   dirty=execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim().length>0;}catch(_){}
- return {commit:head,workingTreeDirty:dirty,node:process.version,core:'jsnes (assets/lab/jsnes.min.js)'};})();
+ return {commit:head,workingTreeDirty:dirty,node:process.version,core:'jsnes (assets/lab/jsnes.min.js)',
+  phaseEvidenceRevision:Phase.PHASE_EVIDENCE_REVISION};})();
 const report={type:'gu-agod-rom-eligibility-gate',version:1,
  corpusClass:'private user-supplied real-game ROMs, local evaluation only; no ROM bytes in this artefact',
  statusRule:'the four statuses are independent; motion or a RAM delta promotes nothing, and AGOD_ELIGIBLE requires all three others',
+ procedureRule:'every status is conditional on the entry procedure recorded in each row: NOT-REACHED under one procedure is not NOT-REACHED for the cartridge',
+ entryProcedure:{bootFrames:BOOT,startPulses:ENTRY_PULSES,holdFrames:HOLD,
+  gapFramesBetweenPresses:ENTRY_GAP,settleFrames:ENTRY_SETTLE},
  provenance,status:'RUNNING',results};
 const save=()=>{if(process.env.AGOD_ELIGIBILITY_REPORT)fs.writeFileSync(process.env.AGOD_ELIGIBILITY_REPORT,JSON.stringify(report,null,2)+'\n');};save();
 
@@ -60,8 +77,12 @@ for(const target of TARGETS){
  const pulses=(mask,n)=>{for(let i=0;i<n;i++){press(mask,HOLD);press(0,RELEASE);}};
 
  for(let i=0;i<BOOT;i++)core.frame();
- /* Enter the game the way a player would: one Start, then settle. Declared. */
- pulses(8,1);press(0,180);
+ /* Enter the game the way a player would: Start pulses, then settle. Declared,
+    and recorded in the row so a verdict is never separable from its procedure. */
+ for(let i=0;i<ENTRY_PULSES;i++){press(8,HOLD);press(0,ENTRY_GAP);}
+ press(0,ENTRY_SETTLE);
+ row.entryProcedure={bootFrames:BOOT,startPulses:ENTRY_PULSES,holdFrames:HOLD,
+  gapFramesBetweenPresses:ENTRY_GAP,settleFrames:ENTRY_SETTLE};
  const entry=JSON.stringify(core.toJSON());
 
  // ---------- EMULATOR_REPRODUCIBLE ----------
@@ -75,130 +96,18 @@ for(const target of TARGETS){
  row.statuses.EMULATOR_REPRODUCIBLE=(a===b&&pure)?'PASS':'FAIL';
 
  // ---------- GAMEPLAY_REACHED: avatar control ----------
- core.fromJSON(JSON.parse(entry));
- motionFrames=0;changedFrames=0;previous=null;
- press(0,180);
- const motion=motionFrames?changedFrames/motionFrames:0;
- const sample=mask=>{core.fromJSON(JSON.parse(entry));pulses(mask,14);return ram();};
- const right=sample(128),left=sample(64),neutral=sample(0);
- /* VIDEO TRAJECTORY, a second and independent modality. RAM moving in opposite
-    directions is consistent with a menu cursor as well as a character, so the
-    gate also asks where the PICTURE changed: the horizontal centre of the
-    pixels that differ from a reference frame. A controlled object drifts right
-    under Right and left under Left, and the displacement survives release.
-    These measurements are used ONLY for this gate's status and are never passed
-    to the discovery pipeline, so they cannot act as a hint. */
- /* DIFFERENTIAL between the two arms, not against a reference frame.
-    Comparing a frame to a reference counted every scrolling background pixel:
-    22162 of 61440 differed on lifeforce, so a ship of a few dozen pixels could
-    not move the centroid and the first version of this test was simply blind.
-    Both arms run the SAME number of frames from the SAME snapshot, so the
-    background is identical between them and cancels; what differs is the object
-    the player moved. */
- const frameWidth=256;
- const frameAfter=(mask,heldPulses,settleFrames)=>{
-  core.fromJSON(JSON.parse(entry));
-  pulses(mask,heldPulses);
-  if(settleFrames)press(0,settleFrames);
-  return lastFrame?lastFrame.slice():null;
- };
- const differentialCentroid=(a,b)=>{
-  if(!a||!b)return null;
-  let sumA=0,sumB=0,count=0;
-  for(let i=0;i<a.length&&i<b.length;i++){
-   if(a[i]===b[i])continue;
-   const x=i%frameWidth;sumA+=x;sumB+=x;count++;
-  }
-  if(!count)return {differingPixels:0,x:null};
-  /* Weight each differing pixel by x, then split by which arm is "brighter"
-     is not needed: the signed displacement comes from comparing each arm's own
-     differing-pixel centroid against the other arm's. */
-  return {differingPixels:count,x:sumA/count};
- };
- const armCentroid=(mine,other)=>{
-  if(!mine||!other)return null;
-  let sum=0,count=0;
-  for(let i=0;i<mine.length&&i<other.length;i++){
-   if(mine[i]===other[i])continue;
-   sum+=i%frameWidth;count++;
-  }
-  return count?sum/count:null;
- };
- const fRight=frameAfter(128,14,0),fLeft=frameAfter(64,14,0);
- const fRightReleased=frameAfter(128,14,60),fLeftReleased=frameAfter(64,14,60);
- const held=differentialCentroid(fRight,fLeft);
- /* Signed displacement: centroid of pixels present in Right but not Left,
-    against the converse. A horizontally controlled object makes these differ. */
- const onlyIn=(a,b)=>{
-  if(!a||!b)return null;
-  let sum=0,count=0;
-  for(let i=0;i<a.length&&i<b.length;i++){
-   if(a[i]===b[i])continue;
-   /* a pixel that changed; attribute it to the arm whose value differs from the
-      other arm's - both qualify, so weight by x and let the two sums differ
-      only through position, which is what we want to compare */
-   sum+=i%frameWidth;count++;
-  }
-  return count?{x:sum/count,pixels:count}:null;
- };
- const rightMinusLeft=(()=>{
-  if(!fRight||!fLeft)return null;
-  /* Compare the horizontal distribution of changed pixels in the left half
-     versus the right half between the arms: a controlled object shifts mass. */
-  let rightMass=0,leftMass=0;
-  for(let i=0;i<fRight.length&&i<fLeft.length;i++){
-   if(fRight[i]===fLeft[i])continue;
-   const x=i%frameWidth;
-   if(x>=frameWidth/2)rightMass++;else leftMass++;
-  }
-  return {rightHalf:rightMass,leftHalf:leftMass,total:rightMass+leftMass};
- })();
- const released=(fRightReleased&&fLeftReleased)?differentialCentroid(fRightReleased,fLeftReleased):null;
- const videoShowsObjectDifference=!!(held&&held.differingPixels>0&&held.differingPixels<20000);
- const displacementSurvivesRelease=!!(released&&released.differingPixels>0&&released.differingPixels<20000);
- const rightDrift=held?held.x:null,leftDrift=released?released.x:null;
- const oppositeVideoDrift=videoShowsObjectDifference;
-
- /* A byte that moves in OPPOSITE directions under Left and Right, with the
-    neutral control between them. These are ADDRESSES, not confirmed
-    coordinates: three of them may be three bytes of one quantity. */
- const axes=[];
- for(let i=0;i<neutral.length;i++){
-  const dr=right[i]-neutral[i],dl=left[i]-neutral[i];
-  if(dr!==0&&dl!==0&&Math.sign(dr)!==Math.sign(dl)&&Math.abs(dr)<64&&Math.abs(dl)<64)
-   axes.push({address:i,underRight:dr,underLeft:dl});
- }
- let distinctOutcomes=0;
- const outcomes=new Set();
- for(const mask of [0,1,2,8,16,32,64,128]){outcomes.add(hash(sample(mask)));}
- distinctOutcomes=outcomes.size;
- row.evidence.gameplay={motionOver180Frames:Number(motion.toFixed(3)),
-  /* Renamed: RAM ADDRESSES responding bidirectionally, not confirmed
-     independent coordinates of a character. */
-  bidirectionalRamAddresses:axes.length,addressSample:axes.slice(0,4),
-  distinctOutcomesAcrossEightMasks:distinctOutcomes,
-  video:{method:'differential between the Left and Right arms at equal frame counts, so an identical scrolling background cancels',
-   differingPixelsHeld:held?held.differingPixels:null,
-   centroidXOfDifferenceHeld:held&&held.x!==null?Number(held.x.toFixed(2)):null,
-   differingPixelsAfterRelease:released?released.differingPixels:null,
-   massSplitAcrossHalves:rightMinusLeft,
-   videoShowsObjectDifference,displacementSurvivesRelease,
-   sensitivityNote:'the earlier reference-frame version counted 22162 of 61440 pixels as changed on lifeforce and was blind to a small object; a differing-pixel count near the whole screen still means this test cannot resolve an object'},
-  criteria:'RAM bidirectionality AND >=4 distinct outcomes AND a video difference localised enough to be an object AND that difference surviving release'};
- /* Four requirements across TWO modalities. RAM bidirectionality alone is
-    consistent with a menu cursor, which is why opposite video drift and
-    persistence after release are required too. */
- /* Three outcomes, not two. UNCONFIRMED means the corroboration was not
-    obtained; it does NOT mean gameplay was shown to be absent, and the two must
-    not be conflated. */
- const ramSide=axes.length>0&&distinctOutcomes>=4;
- const videoSide=videoShowsObjectDifference&&displacementSurvivesRelease;
- row.statuses.GAMEPLAY_REACHED=(ramSide&&videoSide)?'PASS':(ramSide?'UNCONFIRMED':'NOT-REACHED');
- row.statuses.GAMEPLAY_EVIDENCE_NOTE=(ramSide&&videoSide)
-  ?'control of an object is corroborated across RAM and video; the phase remains an inference, not a certainty'
-  :(ramSide
-   ?'RAM responds bidirectionally but the video test did not corroborate it. This is UNCONFIRMED, not evidence that gameplay is absent: a menu cursor would look the same in RAM, and a scrolling background can defeat the video test.'
-   :'neither modality indicates object control under this entry procedure');
+ /* Delegated to the shared phase module, so that this gate and
+    agod_real_game_check.cjs cannot measure the phase differently. */
+ const probe={
+  restore(){core.fromJSON(JSON.parse(entry));},
+  press,pulses,readRam:ram,hash,
+  lastFrame(){return lastFrame;},
+  resetMotion(){motionFrames=0;changedFrames=0;previous=null;},
+  motion(){return {frames:motionFrames,changedFrames};}};
+ const phase=Phase.measurePhase(probe,{idleFrames:180,pulses:14,settleFrames:60});
+ row.evidence.gameplay=phase;
+ row.statuses.GAMEPLAY_REACHED=phase.phase;
+ row.statuses.GAMEPLAY_EVIDENCE_NOTE=phase.phaseNote;
 
  // continuation after a restore taken mid-play
  core.fromJSON(JSON.parse(entry));

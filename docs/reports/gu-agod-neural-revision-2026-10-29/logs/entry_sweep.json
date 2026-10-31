@@ -1,0 +1,872 @@
+{
+  "type": "gu-agod-entry-procedure-sweep",
+  "version": 1,
+  "question": "does any of a declared grid of generic entry procedures reach a gameplay phase on this cartridge?",
+  "grid": {
+    "bootFrames": 240,
+    "startPulses": [
+      0,
+      1,
+      2,
+      3,
+      6,
+      12
+    ],
+    "settleFrames": [
+      60,
+      300
+    ],
+    "note": "generic only: Start pulses and settling time. No address, menu layout or game-specific sequence is used."
+  },
+  "positiveControl": "lifeforce.nes, where one procedure is already known to reach gameplay; a sweep finding nothing anywhere would be indistinguishable from a broken sweep",
+  "corpusClass": "private user-supplied real-game ROMs, local evaluation only; no ROM bytes in this artefact",
+  "provenance": {
+    "commit": "ace0d9f8cdfefa55737aa784789d138f586b490c",
+    "workingTreeDirty": true,
+    "node": "v22.22.0",
+    "core": "jsnes (assets/lab/jsnes.min.js)",
+    "phaseEvidenceRevision": "agod-phase-evidence-1"
+  },
+  "status": "COMPLETE",
+  "rows": [
+    {
+      "rom": "lifeforce.nes",
+      "sha256": "c725a0c6b3eb52f5",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 0,
+        "settleFrames": 60
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0.678,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 3,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 4707
+    },
+    {
+      "rom": "lifeforce.nes",
+      "sha256": "c725a0c6b3eb52f5",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 0,
+        "settleFrames": 300
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0.889,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 3,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 4895
+    },
+    {
+      "rom": "lifeforce.nes",
+      "sha256": "c725a0c6b3eb52f5",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 1,
+        "settleFrames": 60
+      },
+      "phase": "PASS",
+      "modalities": {
+        "ram": true,
+        "video": true
+      },
+      "idleMotion": 0.372,
+      "bidirectionalRamAddresses": 8,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "differingPixelsHeld": 170,
+      "localisedEnoughToBeAnObject": true,
+      "differenceSurvivesRelease": true,
+      "elapsedMs": 4433
+    },
+    {
+      "rom": "lifeforce.nes",
+      "sha256": "c725a0c6b3eb52f5",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 1,
+        "settleFrames": 300
+      },
+      "phase": "PASS",
+      "modalities": {
+        "ram": true,
+        "video": true
+      },
+      "idleMotion": 0.733,
+      "bidirectionalRamAddresses": 2,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "differingPixelsHeld": 190,
+      "localisedEnoughToBeAnObject": true,
+      "differenceSurvivesRelease": true,
+      "elapsedMs": 5150
+    },
+    {
+      "rom": "lifeforce.nes",
+      "sha256": "c725a0c6b3eb52f5",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 2,
+        "settleFrames": 60
+      },
+      "phase": "PASS",
+      "modalities": {
+        "ram": true,
+        "video": true
+      },
+      "idleMotion": 0.45,
+      "bidirectionalRamAddresses": 12,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "differingPixelsHeld": 173,
+      "localisedEnoughToBeAnObject": true,
+      "differenceSurvivesRelease": true,
+      "elapsedMs": 4562
+    },
+    {
+      "rom": "lifeforce.nes",
+      "sha256": "c725a0c6b3eb52f5",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 2,
+        "settleFrames": 300
+      },
+      "phase": "PASS",
+      "modalities": {
+        "ram": true,
+        "video": true
+      },
+      "idleMotion": 0.789,
+      "bidirectionalRamAddresses": 3,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "differingPixelsHeld": 188,
+      "localisedEnoughToBeAnObject": true,
+      "differenceSurvivesRelease": true,
+      "elapsedMs": 5652
+    },
+    {
+      "rom": "lifeforce.nes",
+      "sha256": "c725a0c6b3eb52f5",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 3,
+        "settleFrames": 60
+      },
+      "phase": "PASS",
+      "modalities": {
+        "ram": true,
+        "video": true
+      },
+      "idleMotion": 0.528,
+      "bidirectionalRamAddresses": 7,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "differingPixelsHeld": 169,
+      "localisedEnoughToBeAnObject": true,
+      "differenceSurvivesRelease": true,
+      "elapsedMs": 5176
+    },
+    {
+      "rom": "lifeforce.nes",
+      "sha256": "c725a0c6b3eb52f5",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 3,
+        "settleFrames": 300
+      },
+      "phase": "PASS",
+      "modalities": {
+        "ram": true,
+        "video": true
+      },
+      "idleMotion": 0.85,
+      "bidirectionalRamAddresses": 3,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "differingPixelsHeld": 190,
+      "localisedEnoughToBeAnObject": true,
+      "differenceSurvivesRelease": true,
+      "elapsedMs": 5201
+    },
+    {
+      "rom": "lifeforce.nes",
+      "sha256": "c725a0c6b3eb52f5",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 6,
+        "settleFrames": 60
+      },
+      "phase": "PASS",
+      "modalities": {
+        "ram": true,
+        "video": true
+      },
+      "idleMotion": 0.539,
+      "bidirectionalRamAddresses": 2,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "differingPixelsHeld": 188,
+      "localisedEnoughToBeAnObject": true,
+      "differenceSurvivesRelease": true,
+      "elapsedMs": 4995
+    },
+    {
+      "rom": "lifeforce.nes",
+      "sha256": "c725a0c6b3eb52f5",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 6,
+        "settleFrames": 300
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0.822,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "differingPixelsHeld": 23668,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 5410
+    },
+    {
+      "rom": "lifeforce.nes",
+      "sha256": "c725a0c6b3eb52f5",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 12,
+        "settleFrames": 60
+      },
+      "phase": "PASS",
+      "modalities": {
+        "ram": true,
+        "video": true
+      },
+      "idleMotion": 0.7,
+      "bidirectionalRamAddresses": 2,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "differingPixelsHeld": 192,
+      "localisedEnoughToBeAnObject": true,
+      "differenceSurvivesRelease": true,
+      "elapsedMs": 5121
+    },
+    {
+      "rom": "lifeforce.nes",
+      "sha256": "c725a0c6b3eb52f5",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 12,
+        "settleFrames": 300
+      },
+      "phase": "UNCONFIRMED",
+      "modalities": {
+        "ram": true,
+        "video": false
+      },
+      "idleMotion": 0.789,
+      "bidirectionalRamAddresses": 4,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "differingPixelsHeld": 23670,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 5248
+    },
+    {
+      "rom": "contra.nes",
+      "sha256": "1f4a9b3f04e2f828",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 0,
+        "settleFrames": 60
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 4,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 5698
+    },
+    {
+      "rom": "contra.nes",
+      "sha256": "1f4a9b3f04e2f828",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 0,
+        "settleFrames": 300
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0.2,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 4990
+    },
+    {
+      "rom": "contra.nes",
+      "sha256": "1f4a9b3f04e2f828",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 1,
+        "settleFrames": 60
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 4,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 4965
+    },
+    {
+      "rom": "contra.nes",
+      "sha256": "1f4a9b3f04e2f828",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 1,
+        "settleFrames": 300
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0.633,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 3,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 4957
+    },
+    {
+      "rom": "contra.nes",
+      "sha256": "1f4a9b3f04e2f828",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 2,
+        "settleFrames": 60
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 1,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 5090
+    },
+    {
+      "rom": "contra.nes",
+      "sha256": "1f4a9b3f04e2f828",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 2,
+        "settleFrames": 300
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 1,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 4537
+    },
+    {
+      "rom": "contra.nes",
+      "sha256": "1f4a9b3f04e2f828",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 3,
+        "settleFrames": 60
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 1,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 5296
+    },
+    {
+      "rom": "contra.nes",
+      "sha256": "1f4a9b3f04e2f828",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 3,
+        "settleFrames": 300
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0.15,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 1,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 3983
+    },
+    {
+      "rom": "contra.nes",
+      "sha256": "1f4a9b3f04e2f828",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 6,
+        "settleFrames": 60
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0.006,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 1,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 4377
+    },
+    {
+      "rom": "contra.nes",
+      "sha256": "1f4a9b3f04e2f828",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 6,
+        "settleFrames": 300
+      },
+      "phase": "PASS",
+      "modalities": {
+        "ram": true,
+        "video": true
+      },
+      "idleMotion": 0.228,
+      "bidirectionalRamAddresses": 27,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "differingPixelsHeld": 598,
+      "localisedEnoughToBeAnObject": true,
+      "differenceSurvivesRelease": true,
+      "elapsedMs": 4533
+    },
+    {
+      "rom": "contra.nes",
+      "sha256": "1f4a9b3f04e2f828",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 12,
+        "settleFrames": 60
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0.156,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 1,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 3938
+    },
+    {
+      "rom": "contra.nes",
+      "sha256": "1f4a9b3f04e2f828",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 12,
+        "settleFrames": 300
+      },
+      "phase": "PASS",
+      "modalities": {
+        "ram": true,
+        "video": true
+      },
+      "idleMotion": 0.128,
+      "bidirectionalRamAddresses": 27,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "differingPixelsHeld": 365,
+      "localisedEnoughToBeAnObject": true,
+      "differenceSurvivesRelease": true,
+      "elapsedMs": 5711
+    },
+    {
+      "rom": "galaga.nes",
+      "sha256": "116ff51eabad94da",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 0,
+        "settleFrames": 60
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0.289,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 2,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 4972
+    },
+    {
+      "rom": "galaga.nes",
+      "sha256": "116ff51eabad94da",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 0,
+        "settleFrames": 300
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0.078,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 2,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 5067
+    },
+    {
+      "rom": "galaga.nes",
+      "sha256": "116ff51eabad94da",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 1,
+        "settleFrames": 60
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 1,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 5468
+    },
+    {
+      "rom": "galaga.nes",
+      "sha256": "116ff51eabad94da",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 1,
+        "settleFrames": 300
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 1,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 4901
+    },
+    {
+      "rom": "galaga.nes",
+      "sha256": "116ff51eabad94da",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 2,
+        "settleFrames": 60
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 1,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 5486
+    },
+    {
+      "rom": "galaga.nes",
+      "sha256": "116ff51eabad94da",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 2,
+        "settleFrames": 300
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 1,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 4919
+    },
+    {
+      "rom": "galaga.nes",
+      "sha256": "116ff51eabad94da",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 3,
+        "settleFrames": 60
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 1,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 5025
+    },
+    {
+      "rom": "galaga.nes",
+      "sha256": "116ff51eabad94da",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 3,
+        "settleFrames": 300
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 1,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 4780
+    },
+    {
+      "rom": "galaga.nes",
+      "sha256": "116ff51eabad94da",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 6,
+        "settleFrames": 60
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 1,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 5027
+    },
+    {
+      "rom": "galaga.nes",
+      "sha256": "116ff51eabad94da",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 6,
+        "settleFrames": 300
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0.028,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 1,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 4698
+    },
+    {
+      "rom": "galaga.nes",
+      "sha256": "116ff51eabad94da",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 12,
+        "settleFrames": 60
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": false
+      },
+      "idleMotion": 0,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 1,
+      "differingPixelsHeld": 0,
+      "localisedEnoughToBeAnObject": false,
+      "differenceSurvivesRelease": false,
+      "elapsedMs": 4623
+    },
+    {
+      "rom": "galaga.nes",
+      "sha256": "116ff51eabad94da",
+      "procedure": {
+        "bootFrames": 240,
+        "startPulses": 12,
+        "settleFrames": 300
+      },
+      "phase": "NOT-REACHED",
+      "modalities": {
+        "ram": false,
+        "video": true
+      },
+      "idleMotion": 0.389,
+      "bidirectionalRamAddresses": 0,
+      "distinctOutcomesAcrossEightButtons": 5,
+      "differingPixelsHeld": 224,
+      "localisedEnoughToBeAnObject": true,
+      "differenceSurvivesRelease": true,
+      "elapsedMs": 5096
+    }
+  ],
+  "totals": {
+    "proceduresPerRom": 12,
+    "perRom": {
+      "lifeforce.nes": {
+        "procedures": 12,
+        "pass": 8,
+        "unconfirmed": 1,
+        "notReached": 3,
+        "bestDistinctOutcomes": 8,
+        "passingProcedures": [
+          {
+            "bootFrames": 240,
+            "startPulses": 1,
+            "settleFrames": 60
+          },
+          {
+            "bootFrames": 240,
+            "startPulses": 1,
+            "settleFrames": 300
+          },
+          {
+            "bootFrames": 240,
+            "startPulses": 2,
+            "settleFrames": 60
+          },
+          {
+            "bootFrames": 240,
+            "startPulses": 2,
+            "settleFrames": 300
+          },
+          {
+            "bootFrames": 240,
+            "startPulses": 3,
+            "settleFrames": 60
+          },
+          {
+            "bootFrames": 240,
+            "startPulses": 3,
+            "settleFrames": 300
+          },
+          {
+            "bootFrames": 240,
+            "startPulses": 6,
+            "settleFrames": 60
+          },
+          {
+            "bootFrames": 240,
+            "startPulses": 12,
+            "settleFrames": 60
+          }
+        ]
+      },
+      "contra.nes": {
+        "procedures": 12,
+        "pass": 2,
+        "unconfirmed": 0,
+        "notReached": 10,
+        "bestDistinctOutcomes": 8,
+        "passingProcedures": [
+          {
+            "bootFrames": 240,
+            "startPulses": 6,
+            "settleFrames": 300
+          },
+          {
+            "bootFrames": 240,
+            "startPulses": 12,
+            "settleFrames": 300
+          }
+        ]
+      },
+      "galaga.nes": {
+        "procedures": 12,
+        "pass": 0,
+        "unconfirmed": 0,
+        "notReached": 12,
+        "bestDistinctOutcomes": 5,
+        "passingProcedures": []
+      }
+    },
+    "positiveControlReachedGameplay": true,
+    "note": "a cartridge where no procedure reaches gameplay is recorded as GAMEPLAY_NOT_REACHED under this grid. That is an absence of evidence across a bounded set of generic procedures, not proof that the cartridge cannot be played, and the cause remains unknown without an independent emulator reference."
+  }
+}

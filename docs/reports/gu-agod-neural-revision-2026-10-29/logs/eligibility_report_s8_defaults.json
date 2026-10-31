@@ -1,0 +1,355 @@
+{
+  "type": "gu-agod-rom-eligibility-gate",
+  "version": 1,
+  "corpusClass": "private user-supplied real-game ROMs, local evaluation only; no ROM bytes in this artefact",
+  "statusRule": "the four statuses are independent; motion or a RAM delta promotes nothing, and AGOD_ELIGIBLE requires all three others",
+  "provenance": {
+    "commit": "ace0d9f8cdfefa55737aa784789d138f586b490c",
+    "workingTreeDirty": true,
+    "node": "v22.22.0",
+    "core": "jsnes (assets/lab/jsnes.min.js)",
+    "phaseEvidenceRevision": "agod-phase-evidence-1"
+  },
+  "status": "COMPLETE",
+  "results": [
+    {
+      "rom": "lifeforce.nes",
+      "statuses": {
+        "EMULATOR_REPRODUCIBLE": "PASS",
+        "GAMEPLAY_REACHED": "PASS",
+        "GAMEPLAY_EVIDENCE_NOTE": "control of an object is corroborated across RAM and video; the phase remains an inference, not a certainty",
+        "CONTROL_CONTINUES_AFTER_RESTORE": "PASS",
+        "MAPPER_VERIFIED": "PASS-WITH-DEVIATION",
+        "AGOD_ELIGIBLE": "YES",
+        "AGOD_ELIGIBLE_SCOPE": "core-local: admission to a limited experiment on this jsnes build, with bus conflicts not modelled and the game phase inferred rather than certain. Results must not be transferred to original hardware.",
+        "AGOD_ELIGIBLE_REASON": "all prerequisites hold"
+      },
+      "evidence": {
+        "reproducible": {
+          "identicalReplays": true,
+          "restoreIsExact": true,
+          "hash": "dc748b828a8a1b6e"
+        },
+        "gameplay": {
+          "revision": "agod-phase-evidence-1",
+          "parameters": {
+            "idleFrames": 180,
+            "pulses": 14,
+            "settleFrames": 60,
+            "minDistinctOutcomes": 4,
+            "buttonMasks": [
+              1,
+              2,
+              4,
+              8,
+              16,
+              32,
+              64,
+              128
+            ],
+            "saturationPixels": 20000
+          },
+          "idle": {
+            "framesSampled": 180,
+            "pictureMotionWithoutInput": 0.522,
+            "note": "context only: an attract screen moves as much as play does, so this promotes nothing"
+          },
+          "ram": {
+            "bidirectionalRamAddresses": 3,
+            "addressSample": [
+              {
+                "address": 319,
+                "underRight": 48,
+                "underLeft": -45
+              },
+              {
+                "address": 321,
+                "underRight": 47,
+                "underLeft": -48
+              },
+              {
+                "address": 510,
+                "underRight": 3,
+                "underLeft": -2
+              }
+            ],
+            "distinctOutcomesAcrossEightButtons": 8,
+            "buttonsTested": 8,
+            "neutralControlDiffersFromSomeButton": true,
+            "note": "ADDRESSES responding bidirectionally, not confirmed coordinates; a menu cursor has the same signature"
+          },
+          "video": {
+            "method": "differential between the Left and Right arms at equal frame counts from one snapshot, so an identical scrolling background cancels",
+            "differingPixelsHeld": 190,
+            "meanXOfDifferingPixelsHeld": 94.61,
+            "massSplitAcrossHalvesHeld": {
+              "leftHalf": 95,
+              "rightHalf": 95,
+              "total": 190
+            },
+            "differingPixelsAfterRelease": 190,
+            "meanXOfDifferingPixelsAfterRelease": 94.6,
+            "localisedEnoughToBeAnObject": true,
+            "differenceSurvivesRelease": true,
+            "directionEstablished": false,
+            "directionNote": "the differing pixels of the two arms are one set, so this yields one mean x and cannot say which way an object moved",
+            "sensitivityNote": "a differing-pixel count near the whole screen means the test cannot resolve an object, and is reported as not localised rather than as an object"
+          },
+          "criteria": "RAM bidirectionality AND >=4 distinct outcomes across eight buttons AND a localised video difference AND that difference surviving release",
+          "modalities": {
+            "ram": true,
+            "video": true
+          },
+          "phase": "PASS",
+          "phaseNote": "control of an object is corroborated across RAM and video; the phase remains an inference, not a certainty"
+        },
+        "continuation": {
+          "deterministicAfterMidPlayRestore": true,
+          "bytesDifferingBetweenLeftAndRightAfterRestore": 125
+        },
+        "mapper": {
+          "prgBanks": 8,
+          "banksTested": 8,
+          "bankCoverage": "8 of 8",
+          "bankSwitchProbes": [
+            {
+              "bank": 0,
+              "matchesBank": true
+            },
+            {
+              "bank": 1,
+              "matchesBank": true
+            },
+            {
+              "bank": 2,
+              "matchesBank": true
+            },
+            {
+              "bank": 3,
+              "matchesBank": true
+            },
+            {
+              "bank": 4,
+              "matchesBank": true
+            },
+            {
+              "bank": 5,
+              "matchesBank": true
+            },
+            {
+              "bank": 6,
+              "matchesBank": true
+            },
+            {
+              "bank": 7,
+              "matchesBank": true
+            }
+          ],
+          "prgBankSwitching": "observed working on 8 of 8 banks tested",
+          "busConflicts": "NOT-MODELLED",
+          "hardwareFidelity": "NOT VERIFIED",
+          "fidelityNote": "PASS-WITH-DEVIATION describes this local experimental core only and must not be read as NES hardware conformance",
+          "busConflictDetail": {
+            "candidatesFound": 65,
+            "probesTried": 1,
+            "probes": [
+              {
+                "address": "0xc077",
+                "romByte": 200,
+                "wrote": 1,
+                "andedWouldBe": 0,
+                "bankLooksAsWritten": true,
+                "bankLooksAsAnded": false
+              }
+            ],
+            "reason": null
+          }
+        }
+      },
+      "sha256": "c725a0c6b3eb52f542c10cf40538b69d0b163e5884ced7530dd250dbc02749b4",
+      "header": {
+        "format": "NES 2.0",
+        "mapper": 2,
+        "submapper": 2,
+        "prgRomBytes": 131072,
+        "chrRomBytes": 0,
+        "timing": "NTSC"
+      }
+    },
+    {
+      "rom": "contra.nes",
+      "statuses": {
+        "EMULATOR_REPRODUCIBLE": "PASS",
+        "GAMEPLAY_REACHED": "NOT-REACHED",
+        "GAMEPLAY_EVIDENCE_NOTE": "neither modality indicates object control under this entry procedure; this is an absence of evidence under one procedure, not proof that the cartridge cannot be played",
+        "CONTROL_CONTINUES_AFTER_RESTORE": "FAIL",
+        "MAPPER_VERIFIED": "PASS-WITH-DEVIATION",
+        "AGOD_ELIGIBLE": "NO",
+        "AGOD_ELIGIBLE_SCOPE": "core-local: admission to a limited experiment on this jsnes build, with bus conflicts not modelled and the game phase inferred rather than certain. Results must not be transferred to original hardware.",
+        "AGOD_ELIGIBLE_REASON": "blocked by: GAMEPLAY_REACHED=NOT-REACHED, GAMEPLAY_EVIDENCE_NOTE=neither modality indicates object control under this entry procedure; this is an absence of evidence under one procedure, not proof that the cartridge cannot be played, CONTROL_CONTINUES_AFTER_RESTORE=FAIL, AGOD_ELIGIBLE_SCOPE=core-local: admission to a limited experiment on this jsnes build, with bus conflicts not modelled and the game phase inferred rather than certain. Results must not be transferred to original hardware."
+      },
+      "evidence": {
+        "reproducible": {
+          "identicalReplays": true,
+          "restoreIsExact": true,
+          "hash": "c2cc5e31164bcc7c"
+        },
+        "gameplay": {
+          "revision": "agod-phase-evidence-1",
+          "parameters": {
+            "idleFrames": 180,
+            "pulses": 14,
+            "settleFrames": 60,
+            "minDistinctOutcomes": 4,
+            "buttonMasks": [
+              1,
+              2,
+              4,
+              8,
+              16,
+              32,
+              64,
+              128
+            ],
+            "saturationPixels": 20000
+          },
+          "idle": {
+            "framesSampled": 180,
+            "pictureMotionWithoutInput": 0.161,
+            "note": "context only: an attract screen moves as much as play does, so this promotes nothing"
+          },
+          "ram": {
+            "bidirectionalRamAddresses": 0,
+            "addressSample": [],
+            "distinctOutcomesAcrossEightButtons": 3,
+            "buttonsTested": 8,
+            "neutralControlDiffersFromSomeButton": true,
+            "note": "ADDRESSES responding bidirectionally, not confirmed coordinates; a menu cursor has the same signature"
+          },
+          "video": {
+            "method": "differential between the Left and Right arms at equal frame counts from one snapshot, so an identical scrolling background cancels",
+            "differingPixelsHeld": 0,
+            "meanXOfDifferingPixelsHeld": null,
+            "massSplitAcrossHalvesHeld": {
+              "leftHalf": 0,
+              "rightHalf": 0,
+              "total": 0
+            },
+            "differingPixelsAfterRelease": 0,
+            "meanXOfDifferingPixelsAfterRelease": null,
+            "localisedEnoughToBeAnObject": false,
+            "differenceSurvivesRelease": false,
+            "directionEstablished": false,
+            "directionNote": "the differing pixels of the two arms are one set, so this yields one mean x and cannot say which way an object moved",
+            "sensitivityNote": "a differing-pixel count near the whole screen means the test cannot resolve an object, and is reported as not localised rather than as an object"
+          },
+          "criteria": "RAM bidirectionality AND >=4 distinct outcomes across eight buttons AND a localised video difference AND that difference surviving release",
+          "modalities": {
+            "ram": false,
+            "video": false
+          },
+          "phase": "NOT-REACHED",
+          "phaseNote": "neither modality indicates object control under this entry procedure; this is an absence of evidence under one procedure, not proof that the cartridge cannot be played"
+        },
+        "continuation": {
+          "deterministicAfterMidPlayRestore": true,
+          "bytesDifferingBetweenLeftAndRightAfterRestore": 0
+        },
+        "mapper": {
+          "prgBanks": 8,
+          "banksTested": 8,
+          "bankCoverage": "8 of 8",
+          "bankSwitchProbes": [
+            {
+              "bank": 0,
+              "matchesBank": true
+            },
+            {
+              "bank": 1,
+              "matchesBank": true
+            },
+            {
+              "bank": 2,
+              "matchesBank": true
+            },
+            {
+              "bank": 3,
+              "matchesBank": true
+            },
+            {
+              "bank": 4,
+              "matchesBank": true
+            },
+            {
+              "bank": 5,
+              "matchesBank": true
+            },
+            {
+              "bank": 6,
+              "matchesBank": true
+            },
+            {
+              "bank": 7,
+              "matchesBank": true
+            }
+          ],
+          "prgBankSwitching": "observed working on 8 of 8 banks tested",
+          "busConflicts": "NOT-MODELLED",
+          "hardwareFidelity": "NOT VERIFIED",
+          "fidelityNote": "PASS-WITH-DEVIATION describes this local experimental core only and must not be read as NES hardware conformance",
+          "busConflictDetail": {
+            "candidatesFound": 66,
+            "probesTried": 1,
+            "probes": [
+              {
+                "address": "0xc040",
+                "romByte": 200,
+                "wrote": 1,
+                "andedWouldBe": 0,
+                "bankLooksAsWritten": true,
+                "bankLooksAsAnded": false
+              }
+            ],
+            "reason": null
+          }
+        }
+      },
+      "sha256": "1f4a9b3f04e2f828688512c0b83611a87c3fc1bd4f85ed91da1b19abc5816d73",
+      "header": {
+        "format": "NES 2.0",
+        "mapper": 2,
+        "submapper": 2,
+        "prgRomBytes": 131072,
+        "chrRomBytes": 0,
+        "timing": "NTSC"
+      }
+    }
+  ],
+  "totals": {
+    "roms": 2,
+    "byStatus": {
+      "EMULATOR_REPRODUCIBLE": {
+        "PASS": 2
+      },
+      "GAMEPLAY_REACHED": {
+        "PASS": 1,
+        "NOT-REACHED": 1
+      },
+      "CONTROL_CONTINUES_AFTER_RESTORE": {
+        "PASS": 1,
+        "FAIL": 1
+      },
+      "MAPPER_VERIFIED": {
+        "PASS-WITH-DEVIATION": 2
+      },
+      "AGOD_ELIGIBLE": {
+        "YES": 1,
+        "NO": 1
+      }
+    },
+    "eligible": [
+      "lifeforce.nes"
+    ],
+    "note": "picture motion and RAM deltas are recorded as evidence and promote nothing on their own"
+  }
+}
