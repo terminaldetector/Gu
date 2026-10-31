@@ -48,10 +48,10 @@ for(const target of TARGETS){
   chrRomBytes:bytes[5]*8192,timing:nes20?['NTSC','PAL','multi','Dendy'][bytes[12]&3]:'unspecified'};
  const prg=bytes.subarray(16,16+prgBanks*16384);
 
- let motionFrames=0,changedFrames=0,previous=null;
+ let motionFrames=0,changedFrames=0,previous=null,lastFrame=null;
  const core=new jsnes.NES({onFrame(b){motionFrames++;
    if(previous){let d=0;for(let i=0;i<b.length;i+=499)if(b[i]!==previous[i])d++;if(d)changedFrames++;}
-   previous=b.slice();},onAudioSample(){}});
+   previous=b.slice();lastFrame=b;},onAudioSample(){}});
  core.loadROM(bytes);
  const ram=()=>core.cpu.mem.slice(0,0x800);
  const hash=b=>crypto.createHash('sha256').update(Buffer.from(b)).digest('hex');
@@ -81,8 +81,87 @@ for(const target of TARGETS){
  const motion=motionFrames?changedFrames/motionFrames:0;
  const sample=mask=>{core.fromJSON(JSON.parse(entry));pulses(mask,14);return ram();};
  const right=sample(128),left=sample(64),neutral=sample(0);
- /* A byte that moves in OPPOSITE directions under Left and Right, while the
-    neutral control sits between them, is an axis the player controls. */
+ /* VIDEO TRAJECTORY, a second and independent modality. RAM moving in opposite
+    directions is consistent with a menu cursor as well as a character, so the
+    gate also asks where the PICTURE changed: the horizontal centre of the
+    pixels that differ from a reference frame. A controlled object drifts right
+    under Right and left under Left, and the displacement survives release.
+    These measurements are used ONLY for this gate's status and are never passed
+    to the discovery pipeline, so they cannot act as a hint. */
+ /* DIFFERENTIAL between the two arms, not against a reference frame.
+    Comparing a frame to a reference counted every scrolling background pixel:
+    22162 of 61440 differed on lifeforce, so a ship of a few dozen pixels could
+    not move the centroid and the first version of this test was simply blind.
+    Both arms run the SAME number of frames from the SAME snapshot, so the
+    background is identical between them and cancels; what differs is the object
+    the player moved. */
+ const frameWidth=256;
+ const frameAfter=(mask,heldPulses,settleFrames)=>{
+  core.fromJSON(JSON.parse(entry));
+  pulses(mask,heldPulses);
+  if(settleFrames)press(0,settleFrames);
+  return lastFrame?lastFrame.slice():null;
+ };
+ const differentialCentroid=(a,b)=>{
+  if(!a||!b)return null;
+  let sumA=0,sumB=0,count=0;
+  for(let i=0;i<a.length&&i<b.length;i++){
+   if(a[i]===b[i])continue;
+   const x=i%frameWidth;sumA+=x;sumB+=x;count++;
+  }
+  if(!count)return {differingPixels:0,x:null};
+  /* Weight each differing pixel by x, then split by which arm is "brighter"
+     is not needed: the signed displacement comes from comparing each arm's own
+     differing-pixel centroid against the other arm's. */
+  return {differingPixels:count,x:sumA/count};
+ };
+ const armCentroid=(mine,other)=>{
+  if(!mine||!other)return null;
+  let sum=0,count=0;
+  for(let i=0;i<mine.length&&i<other.length;i++){
+   if(mine[i]===other[i])continue;
+   sum+=i%frameWidth;count++;
+  }
+  return count?sum/count:null;
+ };
+ const fRight=frameAfter(128,14,0),fLeft=frameAfter(64,14,0);
+ const fRightReleased=frameAfter(128,14,60),fLeftReleased=frameAfter(64,14,60);
+ const held=differentialCentroid(fRight,fLeft);
+ /* Signed displacement: centroid of pixels present in Right but not Left,
+    against the converse. A horizontally controlled object makes these differ. */
+ const onlyIn=(a,b)=>{
+  if(!a||!b)return null;
+  let sum=0,count=0;
+  for(let i=0;i<a.length&&i<b.length;i++){
+   if(a[i]===b[i])continue;
+   /* a pixel that changed; attribute it to the arm whose value differs from the
+      other arm's - both qualify, so weight by x and let the two sums differ
+      only through position, which is what we want to compare */
+   sum+=i%frameWidth;count++;
+  }
+  return count?{x:sum/count,pixels:count}:null;
+ };
+ const rightMinusLeft=(()=>{
+  if(!fRight||!fLeft)return null;
+  /* Compare the horizontal distribution of changed pixels in the left half
+     versus the right half between the arms: a controlled object shifts mass. */
+  let rightMass=0,leftMass=0;
+  for(let i=0;i<fRight.length&&i<fLeft.length;i++){
+   if(fRight[i]===fLeft[i])continue;
+   const x=i%frameWidth;
+   if(x>=frameWidth/2)rightMass++;else leftMass++;
+  }
+  return {rightHalf:rightMass,leftHalf:leftMass,total:rightMass+leftMass};
+ })();
+ const released=(fRightReleased&&fLeftReleased)?differentialCentroid(fRightReleased,fLeftReleased):null;
+ const videoShowsObjectDifference=!!(held&&held.differingPixels>0&&held.differingPixels<20000);
+ const displacementSurvivesRelease=!!(released&&released.differingPixels>0&&released.differingPixels<20000);
+ const rightDrift=held?held.x:null,leftDrift=released?released.x:null;
+ const oppositeVideoDrift=videoShowsObjectDifference;
+
+ /* A byte that moves in OPPOSITE directions under Left and Right, with the
+    neutral control between them. These are ADDRESSES, not confirmed
+    coordinates: three of them may be three bytes of one quantity. */
  const axes=[];
  for(let i=0;i<neutral.length;i++){
   const dr=right[i]-neutral[i],dl=left[i]-neutral[i];
@@ -94,10 +173,32 @@ for(const target of TARGETS){
  for(const mask of [0,1,2,8,16,32,64,128]){outcomes.add(hash(sample(mask)));}
  distinctOutcomes=outcomes.size;
  row.evidence.gameplay={motionOver180Frames:Number(motion.toFixed(3)),
-  bidirectionalAxes:axes.length,axesSample:axes.slice(0,4),
-  distinctOutcomesAcrossEightMasks:distinctOutcomes};
- /* Two independent requirements, because either alone is weak. */
- row.statuses.GAMEPLAY_REACHED=(axes.length>0&&distinctOutcomes>=4)?'PASS':'NOT-REACHED';
+  /* Renamed: RAM ADDRESSES responding bidirectionally, not confirmed
+     independent coordinates of a character. */
+  bidirectionalRamAddresses:axes.length,addressSample:axes.slice(0,4),
+  distinctOutcomesAcrossEightMasks:distinctOutcomes,
+  video:{method:'differential between the Left and Right arms at equal frame counts, so an identical scrolling background cancels',
+   differingPixelsHeld:held?held.differingPixels:null,
+   centroidXOfDifferenceHeld:held&&held.x!==null?Number(held.x.toFixed(2)):null,
+   differingPixelsAfterRelease:released?released.differingPixels:null,
+   massSplitAcrossHalves:rightMinusLeft,
+   videoShowsObjectDifference,displacementSurvivesRelease,
+   sensitivityNote:'the earlier reference-frame version counted 22162 of 61440 pixels as changed on lifeforce and was blind to a small object; a differing-pixel count near the whole screen still means this test cannot resolve an object'},
+  criteria:'RAM bidirectionality AND >=4 distinct outcomes AND a video difference localised enough to be an object AND that difference surviving release'};
+ /* Four requirements across TWO modalities. RAM bidirectionality alone is
+    consistent with a menu cursor, which is why opposite video drift and
+    persistence after release are required too. */
+ /* Three outcomes, not two. UNCONFIRMED means the corroboration was not
+    obtained; it does NOT mean gameplay was shown to be absent, and the two must
+    not be conflated. */
+ const ramSide=axes.length>0&&distinctOutcomes>=4;
+ const videoSide=videoShowsObjectDifference&&displacementSurvivesRelease;
+ row.statuses.GAMEPLAY_REACHED=(ramSide&&videoSide)?'PASS':(ramSide?'UNCONFIRMED':'NOT-REACHED');
+ row.statuses.GAMEPLAY_EVIDENCE_NOTE=(ramSide&&videoSide)
+  ?'control of an object is corroborated across RAM and video; the phase remains an inference, not a certainty'
+  :(ramSide
+   ?'RAM responds bidirectionally but the video test did not corroborate it. This is UNCONFIRMED, not evidence that gameplay is absent: a menu cursor would look the same in RAM, and a scrolling background can defeat the video test.'
+   :'neither modality indicates object control under this entry procedure');
 
  // continuation after a restore taken mid-play
  core.fromJSON(JSON.parse(entry));
@@ -112,7 +213,9 @@ for(const target of TARGETS){
  let midAxes=0;
  for(let i=0;i<midRight.length;i++){const d=midRight[i]-midLeft[i];if(d!==0&&Math.abs(d)<64)midAxes++;}
  row.evidence.continuation={deterministicAfterMidPlayRestore:afterA===afterB,
-  axesStillPresentAfterRestore:midAxes};
+  /* Renamed: a count of BYTES differing between the Left and Right arms after a
+     mid-play restore, not a count of confirmed axes. */
+  bytesDifferingBetweenLeftAndRightAfterRestore:midAxes};
  row.statuses.CONTROL_CONTINUES_AFTER_RESTORE=(afterA===afterB&&midAxes>0)?'PASS':'FAIL';
 
  // ---------- MAPPER_VERIFIED (mapper 2 / submapper 2) ----------
@@ -124,8 +227,7 @@ for(const target of TARGETS){
   const windowAt=()=>{const out=[];for(let k=0;k<8;k++)out.push(core.cpu.load(0x8000+0x100+k));return out;};
   const expected=bank=>{const out=[];for(let k=0;k<8;k++)out.push(prg[bank*16384+0x100+k]);return out;};
   const switches=[];
-  for(const bank of [0,1,2,3]){
-   if(bank>=prgBanks)continue;
+  for(let bank=0;bank<prgBanks;bank++){
    core.cpu.write(0x8000,bank);
    const seen=windowAt(),want=expected(bank);
    switches.push({bank,matchesBank:JSON.stringify(seen)===JSON.stringify(want)});
@@ -165,7 +267,15 @@ for(const target of TARGETS){
   if(busConflict==='UNKNOWN'&&tried.length)busConflict='INDETERMINATE';
   detail={candidatesFound:candidates.length,probesTried:tried.length,probes:tried.slice(0,4),
    reason:candidates.length?null:'no address and value pair found where V & romByte differs from V and both are valid banks'};
-  row.evidence.mapper={prgBanks,bankSwitchProbes:switches,switchingWorks,busConflict,busConflictDetail:detail};
+  row.evidence.mapper={prgBanks,
+   banksTested:switches.length,bankCoverage:switches.length+' of '+prgBanks,
+   bankSwitchProbes:switches,
+   /* Three separate facts rather than one verdict. */
+   prgBankSwitching:switchingWorks?('observed working on '+switches.length+' of '+prgBanks+' banks tested'):'NOT CONFIRMED',
+   busConflicts:busConflict,
+   hardwareFidelity:'NOT VERIFIED',
+   fidelityNote:'PASS-WITH-DEVIATION describes this local experimental core only and must not be read as NES hardware conformance',
+   busConflictDetail:detail};
   /* Verified only if switching is demonstrable AND the bus-conflict question is
      answered. "Not modelled" is an answer; "unknown" is not. */
   row.statuses.MAPPER_VERIFIED=(switchingWorks&&busConflict!=='UNKNOWN'&&busConflict!=='INDETERMINATE')
@@ -178,6 +288,7 @@ for(const target of TARGETS){
  const ok=v=>v==='PASS'||v==='PASS-WITH-DEVIATION'||v==='NOT-APPLICABLE';
  s.AGOD_ELIGIBLE=(ok(s.EMULATOR_REPRODUCIBLE)&&s.GAMEPLAY_REACHED==='PASS'&&
   ok(s.CONTROL_CONTINUES_AFTER_RESTORE)&&ok(s.MAPPER_VERIFIED))?'YES':'NO';
+ s.AGOD_ELIGIBLE_SCOPE='core-local: admission to a limited experiment on this jsnes build, with bus conflicts not modelled and the game phase inferred rather than certain. Results must not be transferred to original hardware.';
  s.AGOD_ELIGIBLE_REASON=s.AGOD_ELIGIBLE==='YES'?'all prerequisites hold'
   :'blocked by: '+Object.entries(s).filter(([k,v])=>k!=='AGOD_ELIGIBLE'&&k!=='AGOD_ELIGIBLE_REASON'&&!ok(v)&&v!=='PASS')
    .map(([k,v])=>k+'='+v).join(', ');

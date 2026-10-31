@@ -4,7 +4,7 @@
   "corpusClass": "private user-supplied real-game ROMs, local evaluation only; no ROM bytes in this artefact",
   "statusRule": "the four statuses are independent; motion or a RAM delta promotes nothing, and AGOD_ELIGIBLE requires all three others",
   "provenance": {
-    "commit": "07ff41f881377ae509794cb8679acf059461d476",
+    "commit": "01e7b1f2f3e239016db984d293a7d80edab9b1c1",
     "workingTreeDirty": true,
     "node": "v22.22.0",
     "core": "jsnes (assets/lab/jsnes.min.js)"
@@ -16,9 +16,11 @@
       "statuses": {
         "EMULATOR_REPRODUCIBLE": "PASS",
         "GAMEPLAY_REACHED": "PASS",
+        "GAMEPLAY_EVIDENCE_NOTE": "control of an object is corroborated across RAM and video; the phase remains an inference, not a certainty",
         "CONTROL_CONTINUES_AFTER_RESTORE": "PASS",
         "MAPPER_VERIFIED": "PASS-WITH-DEVIATION",
         "AGOD_ELIGIBLE": "YES",
+        "AGOD_ELIGIBLE_SCOPE": "core-local: admission to a limited experiment on this jsnes build, with bus conflicts not modelled and the game phase inferred rather than certain. Results must not be transferred to original hardware.",
         "AGOD_ELIGIBLE_REASON": "all prerequisites hold"
       },
       "evidence": {
@@ -29,8 +31,8 @@
         },
         "gameplay": {
           "motionOver180Frames": 0.522,
-          "bidirectionalAxes": 3,
-          "axesSample": [
+          "bidirectionalRamAddresses": 3,
+          "addressSample": [
             {
               "address": 319,
               "underRight": 48,
@@ -47,14 +49,31 @@
               "underLeft": -2
             }
           ],
-          "distinctOutcomesAcrossEightMasks": 8
+          "distinctOutcomesAcrossEightMasks": 8,
+          "video": {
+            "method": "differential between the Left and Right arms at equal frame counts, so an identical scrolling background cancels",
+            "differingPixelsHeld": 190,
+            "centroidXOfDifferenceHeld": 94.61,
+            "differingPixelsAfterRelease": 190,
+            "massSplitAcrossHalves": {
+              "rightHalf": 95,
+              "leftHalf": 95,
+              "total": 190
+            },
+            "videoShowsObjectDifference": true,
+            "displacementSurvivesRelease": true,
+            "sensitivityNote": "the earlier reference-frame version counted 22162 of 61440 pixels as changed on lifeforce and was blind to a small object; a differing-pixel count near the whole screen still means this test cannot resolve an object"
+          },
+          "criteria": "RAM bidirectionality AND >=4 distinct outcomes AND a video difference localised enough to be an object AND that difference surviving release"
         },
         "continuation": {
           "deterministicAfterMidPlayRestore": true,
-          "axesStillPresentAfterRestore": 125
+          "bytesDifferingBetweenLeftAndRightAfterRestore": 125
         },
         "mapper": {
           "prgBanks": 8,
+          "banksTested": 8,
+          "bankCoverage": "8 of 8",
           "bankSwitchProbes": [
             {
               "bank": 0,
@@ -71,10 +90,28 @@
             {
               "bank": 3,
               "matchesBank": true
+            },
+            {
+              "bank": 4,
+              "matchesBank": true
+            },
+            {
+              "bank": 5,
+              "matchesBank": true
+            },
+            {
+              "bank": 6,
+              "matchesBank": true
+            },
+            {
+              "bank": 7,
+              "matchesBank": true
             }
           ],
-          "switchingWorks": true,
-          "busConflict": "NOT-MODELLED",
+          "prgBankSwitching": "observed working on 8 of 8 banks tested",
+          "busConflicts": "NOT-MODELLED",
+          "hardwareFidelity": "NOT VERIFIED",
+          "fidelityNote": "PASS-WITH-DEVIATION describes this local experimental core only and must not be read as NES hardware conformance",
           "busConflictDetail": {
             "candidatesFound": 65,
             "probesTried": 1,
@@ -107,10 +144,12 @@
       "statuses": {
         "EMULATOR_REPRODUCIBLE": "PASS",
         "GAMEPLAY_REACHED": "NOT-REACHED",
+        "GAMEPLAY_EVIDENCE_NOTE": "neither modality indicates object control under this entry procedure",
         "CONTROL_CONTINUES_AFTER_RESTORE": "FAIL",
         "MAPPER_VERIFIED": "PASS-WITH-DEVIATION",
         "AGOD_ELIGIBLE": "NO",
-        "AGOD_ELIGIBLE_REASON": "blocked by: GAMEPLAY_REACHED=NOT-REACHED, CONTROL_CONTINUES_AFTER_RESTORE=FAIL"
+        "AGOD_ELIGIBLE_SCOPE": "core-local: admission to a limited experiment on this jsnes build, with bus conflicts not modelled and the game phase inferred rather than certain. Results must not be transferred to original hardware.",
+        "AGOD_ELIGIBLE_REASON": "blocked by: GAMEPLAY_REACHED=NOT-REACHED, GAMEPLAY_EVIDENCE_NOTE=neither modality indicates object control under this entry procedure, CONTROL_CONTINUES_AFTER_RESTORE=FAIL, AGOD_ELIGIBLE_SCOPE=core-local: admission to a limited experiment on this jsnes build, with bus conflicts not modelled and the game phase inferred rather than certain. Results must not be transferred to original hardware."
       },
       "evidence": {
         "reproducible": {
@@ -120,16 +159,33 @@
         },
         "gameplay": {
           "motionOver180Frames": 0.161,
-          "bidirectionalAxes": 0,
-          "axesSample": [],
-          "distinctOutcomesAcrossEightMasks": 3
+          "bidirectionalRamAddresses": 0,
+          "addressSample": [],
+          "distinctOutcomesAcrossEightMasks": 3,
+          "video": {
+            "method": "differential between the Left and Right arms at equal frame counts, so an identical scrolling background cancels",
+            "differingPixelsHeld": 0,
+            "centroidXOfDifferenceHeld": null,
+            "differingPixelsAfterRelease": 0,
+            "massSplitAcrossHalves": {
+              "rightHalf": 0,
+              "leftHalf": 0,
+              "total": 0
+            },
+            "videoShowsObjectDifference": false,
+            "displacementSurvivesRelease": false,
+            "sensitivityNote": "the earlier reference-frame version counted 22162 of 61440 pixels as changed on lifeforce and was blind to a small object; a differing-pixel count near the whole screen still means this test cannot resolve an object"
+          },
+          "criteria": "RAM bidirectionality AND >=4 distinct outcomes AND a video difference localised enough to be an object AND that difference surviving release"
         },
         "continuation": {
           "deterministicAfterMidPlayRestore": true,
-          "axesStillPresentAfterRestore": 0
+          "bytesDifferingBetweenLeftAndRightAfterRestore": 0
         },
         "mapper": {
           "prgBanks": 8,
+          "banksTested": 8,
+          "bankCoverage": "8 of 8",
           "bankSwitchProbes": [
             {
               "bank": 0,
@@ -146,10 +202,28 @@
             {
               "bank": 3,
               "matchesBank": true
+            },
+            {
+              "bank": 4,
+              "matchesBank": true
+            },
+            {
+              "bank": 5,
+              "matchesBank": true
+            },
+            {
+              "bank": 6,
+              "matchesBank": true
+            },
+            {
+              "bank": 7,
+              "matchesBank": true
             }
           ],
-          "switchingWorks": true,
-          "busConflict": "NOT-MODELLED",
+          "prgBankSwitching": "observed working on 8 of 8 banks tested",
+          "busConflicts": "NOT-MODELLED",
+          "hardwareFidelity": "NOT VERIFIED",
+          "fidelityNote": "PASS-WITH-DEVIATION describes this local experimental core only and must not be read as NES hardware conformance",
           "busConflictDetail": {
             "candidatesFound": 66,
             "probesTried": 1,
