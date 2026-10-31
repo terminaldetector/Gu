@@ -1,0 +1,1966 @@
+{
+  "type": "gu-agod-s11c-first-event-recovery",
+  "version": 1,
+  "question": "how much of the single-transition population does POST_ONLY sampling never observe, and what does observing it cost?",
+  "modes": {
+    "POST_ONLY": "a snapshot after each event, the existing schedule",
+    "PRE_AND_POST": "one snapshot immediately before the first event, then the same post-event sequence"
+  },
+  "invariants": [
+    "the extra snapshot runs NO frames: both modes emulate the same frames",
+    "masks, HOLD, RELEASE, event count, neutral control, encodings, step rules and causal checks unchanged",
+    "the two-transition filter from S11A is OFF, so the sampling change is not mixed with it"
+  ],
+  "vocabulary": {
+    "NUMERIC_FIELD_IDENTIFIED": "a numeric structure was recognised",
+    "RESOURCE_CANDIDATE": "considered as a possible resource",
+    "GAME_COST_EVIDENCED": "the consequences of its decrease are causally shown",
+    "VERIFIED_GOAL": "all independent verification has passed",
+    "rule": "one numeric transition does not make a field useful, and a shortage of repeated transitions does not make it useless"
+  },
+  "timing": "each transition is located to an observation interval, never to a frame; intervalStartFrame, intervalEndFrame and the snapshot source are recorded",
+  "provenance": {
+    "commit": "c55d70c83c0aefa07eef7506b32113d56cbe8a0f",
+    "workingTreeDirty": false,
+    "node": "v22.22.0",
+    "ramRevision": "agod-ram-e2-1",
+    "causalRevision": "agod-causal-e3-2"
+  },
+  "status": "COMPLETE",
+  "rows": [
+    {
+      "label": "single-transition seed 1 arm=1 (fires on the first press)",
+      "corpus": "synthetic",
+      "family": "single-transition",
+      "seed": 1,
+      "armPresses": 1,
+      "POST_ONLY": {
+        "typed": 3,
+        "resourceCandidates": 0,
+        "unresolved": 0,
+        "attributedAddresses": 4,
+        "samplesPerMask": 60,
+        "framesRun": 6480
+      },
+      "PRE_AND_POST": {
+        "typed": 5,
+        "resourceCandidates": 2,
+        "unresolved": 0,
+        "attributedAddresses": 6,
+        "samplesPerMask": 61,
+        "framesRun": 6480
+      },
+      "framesIdentical": true,
+      "extraSnapshotsPerMask": 1,
+      "gainedFields": 2,
+      "keptFields": 3,
+      "lostFields": 0,
+      "gainsWhoseFirstChangeIsTheFirstInterval": 2,
+      "scored": {
+        "recoveredResources": 1,
+        "newNonResourceDecreasing": 1,
+        "gainedUnlabelled": 0,
+        "gainedIncreasing": 0
+      },
+      "gainedDetail": [
+        {
+          "mask": 2,
+          "address": 167,
+          "direction": "decreasing",
+          "step": -71,
+          "observedTransitions": 1,
+          "firstChangeInterval": {
+            "sampleIndex": 1,
+            "intervalStartFrame": 0,
+            "intervalEndFrame": 12,
+            "snapshotSource": "between the pre-event snapshot and the snapshot after event 1",
+            "exactFrameKnown": false
+          },
+          "classification": "NUMERIC_FIELD_IDENTIFIED",
+          "resourceCandidate": true,
+          "label": "oneShotSwitch",
+          "isResource": false,
+          "gameRole": "labelled non-resource"
+        },
+        {
+          "mask": 4,
+          "address": 110,
+          "direction": "decreasing",
+          "step": -1,
+          "observedTransitions": 1,
+          "firstChangeInterval": {
+            "sampleIndex": 1,
+            "intervalStartFrame": 0,
+            "intervalEndFrame": 12,
+            "snapshotSource": "between the pre-event snapshot and the snapshot after event 1",
+            "exactFrameKnown": false
+          },
+          "classification": "NUMERIC_FIELD_IDENTIFIED",
+          "resourceCandidate": true,
+          "label": "singleUnit",
+          "isResource": true,
+          "gameRole": "labelled resource"
+        }
+      ],
+      "lostDetail": [],
+      "fieldChangesAcrossModes": [
+        {
+          "mask": 2,
+          "address": 97,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 4,
+          "address": 97,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 16,
+          "address": 105,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        }
+      ],
+      "unresolvedPost": [],
+      "unresolvedPre": []
+    },
+    {
+      "label": "single-transition seed 2 arm=1 (fires on the first press)",
+      "corpus": "synthetic",
+      "family": "single-transition",
+      "seed": 2,
+      "armPresses": 1,
+      "POST_ONLY": {
+        "typed": 3,
+        "resourceCandidates": 0,
+        "unresolved": 0,
+        "attributedAddresses": 4,
+        "samplesPerMask": 60,
+        "framesRun": 6480
+      },
+      "PRE_AND_POST": {
+        "typed": 5,
+        "resourceCandidates": 2,
+        "unresolved": 0,
+        "attributedAddresses": 6,
+        "samplesPerMask": 61,
+        "framesRun": 6480
+      },
+      "framesIdentical": true,
+      "extraSnapshotsPerMask": 1,
+      "gainedFields": 2,
+      "keptFields": 3,
+      "lostFields": 0,
+      "gainsWhoseFirstChangeIsTheFirstInterval": 2,
+      "scored": {
+        "recoveredResources": 1,
+        "newNonResourceDecreasing": 1,
+        "gainedUnlabelled": 0,
+        "gainedIncreasing": 0
+      },
+      "gainedDetail": [
+        {
+          "mask": 4,
+          "address": 187,
+          "direction": "decreasing",
+          "step": -1,
+          "observedTransitions": 1,
+          "firstChangeInterval": {
+            "sampleIndex": 1,
+            "intervalStartFrame": 0,
+            "intervalEndFrame": 12,
+            "snapshotSource": "between the pre-event snapshot and the snapshot after event 1",
+            "exactFrameKnown": false
+          },
+          "classification": "NUMERIC_FIELD_IDENTIFIED",
+          "resourceCandidate": true,
+          "label": "singleUnit",
+          "isResource": true,
+          "gameRole": "labelled resource"
+        },
+        {
+          "mask": 128,
+          "address": 124,
+          "direction": "decreasing",
+          "step": -71,
+          "observedTransitions": 1,
+          "firstChangeInterval": {
+            "sampleIndex": 1,
+            "intervalStartFrame": 0,
+            "intervalEndFrame": 12,
+            "snapshotSource": "between the pre-event snapshot and the snapshot after event 1",
+            "exactFrameKnown": false
+          },
+          "classification": "NUMERIC_FIELD_IDENTIFIED",
+          "resourceCandidate": true,
+          "label": "oneShotSwitch",
+          "isResource": false,
+          "gameRole": "labelled non-resource"
+        }
+      ],
+      "lostDetail": [],
+      "fieldChangesAcrossModes": [
+        {
+          "mask": 4,
+          "address": 135,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 16,
+          "address": 179,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 128,
+          "address": 135,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        }
+      ],
+      "unresolvedPost": [],
+      "unresolvedPre": []
+    },
+    {
+      "label": "single-transition seed 1 arm=4 (delayed to the fourth press)",
+      "corpus": "synthetic",
+      "family": "single-transition",
+      "seed": 1,
+      "armPresses": 4,
+      "POST_ONLY": {
+        "typed": 5,
+        "resourceCandidates": 2,
+        "unresolved": 0,
+        "attributedAddresses": 6,
+        "samplesPerMask": 60,
+        "framesRun": 6480
+      },
+      "PRE_AND_POST": {
+        "typed": 5,
+        "resourceCandidates": 2,
+        "unresolved": 0,
+        "attributedAddresses": 6,
+        "samplesPerMask": 61,
+        "framesRun": 6480
+      },
+      "framesIdentical": true,
+      "extraSnapshotsPerMask": 1,
+      "gainedFields": 0,
+      "keptFields": 5,
+      "lostFields": 0,
+      "gainsWhoseFirstChangeIsTheFirstInterval": 0,
+      "scored": {
+        "recoveredResources": 0,
+        "newNonResourceDecreasing": 0,
+        "gainedUnlabelled": 0,
+        "gainedIncreasing": 0
+      },
+      "gainedDetail": [],
+      "lostDetail": [],
+      "fieldChangesAcrossModes": [
+        {
+          "mask": 2,
+          "address": 97,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 4,
+          "address": 97,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 16,
+          "address": 105,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        }
+      ],
+      "unresolvedPost": [],
+      "unresolvedPre": []
+    },
+    {
+      "label": "single-transition seed 2 arm=4 (delayed to the fourth press)",
+      "corpus": "synthetic",
+      "family": "single-transition",
+      "seed": 2,
+      "armPresses": 4,
+      "POST_ONLY": {
+        "typed": 5,
+        "resourceCandidates": 2,
+        "unresolved": 0,
+        "attributedAddresses": 6,
+        "samplesPerMask": 60,
+        "framesRun": 6480
+      },
+      "PRE_AND_POST": {
+        "typed": 5,
+        "resourceCandidates": 2,
+        "unresolved": 0,
+        "attributedAddresses": 6,
+        "samplesPerMask": 61,
+        "framesRun": 6480
+      },
+      "framesIdentical": true,
+      "extraSnapshotsPerMask": 1,
+      "gainedFields": 0,
+      "keptFields": 5,
+      "lostFields": 0,
+      "gainsWhoseFirstChangeIsTheFirstInterval": 0,
+      "scored": {
+        "recoveredResources": 0,
+        "newNonResourceDecreasing": 0,
+        "gainedUnlabelled": 0,
+        "gainedIncreasing": 0
+      },
+      "gainedDetail": [],
+      "lostDetail": [],
+      "fieldChangesAcrossModes": [
+        {
+          "mask": 4,
+          "address": 135,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 16,
+          "address": 179,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 128,
+          "address": 135,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        }
+      ],
+      "unresolvedPost": [],
+      "unresolvedPre": []
+    },
+    {
+      "label": "test seed 0",
+      "corpus": "synthetic",
+      "family": "test",
+      "seed": 0,
+      "POST_ONLY": {
+        "typed": 5,
+        "resourceCandidates": 1,
+        "unresolved": 2,
+        "attributedAddresses": 12,
+        "samplesPerMask": 60,
+        "framesRun": 6480
+      },
+      "PRE_AND_POST": {
+        "typed": 6,
+        "resourceCandidates": 1,
+        "unresolved": 2,
+        "attributedAddresses": 12,
+        "samplesPerMask": 61,
+        "framesRun": 6480
+      },
+      "framesIdentical": true,
+      "extraSnapshotsPerMask": 1,
+      "gainedFields": 1,
+      "keptFields": 5,
+      "lostFields": 0,
+      "gainsWhoseFirstChangeIsTheFirstInterval": 1,
+      "scored": {
+        "recoveredResources": 0,
+        "newNonResourceDecreasing": 0,
+        "gainedUnlabelled": 0,
+        "gainedIncreasing": 1
+      },
+      "gainedDetail": [
+        {
+          "mask": 4,
+          "address": 159,
+          "direction": "increasing",
+          "step": 6,
+          "observedTransitions": 1,
+          "firstChangeInterval": {
+            "sampleIndex": 1,
+            "intervalStartFrame": 0,
+            "intervalEndFrame": 12,
+            "snapshotSource": "between the pre-event snapshot and the snapshot after event 1",
+            "exactFrameKnown": false
+          },
+          "classification": "NUMERIC_FIELD_IDENTIFIED",
+          "resourceCandidate": false,
+          "label": "score",
+          "isResource": false,
+          "gameRole": "labelled non-resource"
+        }
+      ],
+      "lostDetail": [],
+      "fieldChangesAcrossModes": [
+        {
+          "mask": 1,
+          "address": 0,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            7,
+            7
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 1,
+          "address": 159,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 1,
+          "address": 515,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            7,
+            7
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 2,
+          "address": 178,
+          "encoding": [
+            "undetermined",
+            "undetermined"
+          ],
+          "direction": [
+            "decreasing",
+            "decreasing"
+          ],
+          "step": [
+            -1,
+            -1
+          ],
+          "observedTransitions": [
+            2,
+            3
+          ]
+        },
+        {
+          "mask": 64,
+          "address": 137,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        }
+      ],
+      "unresolvedPost": [
+        {
+          "mask": 2,
+          "span": [
+            94,
+            94
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 8,
+          "span": [
+            176,
+            176
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        }
+      ],
+      "unresolvedPre": [
+        {
+          "mask": 2,
+          "span": [
+            94,
+            94
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 8,
+          "span": [
+            176,
+            176
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        }
+      ]
+    },
+    {
+      "label": "test seed 200",
+      "corpus": "synthetic",
+      "family": "test",
+      "seed": 200,
+      "POST_ONLY": {
+        "typed": 5,
+        "resourceCandidates": 1,
+        "unresolved": 2,
+        "attributedAddresses": 12,
+        "samplesPerMask": 60,
+        "framesRun": 6480
+      },
+      "PRE_AND_POST": {
+        "typed": 6,
+        "resourceCandidates": 1,
+        "unresolved": 2,
+        "attributedAddresses": 12,
+        "samplesPerMask": 61,
+        "framesRun": 6480
+      },
+      "framesIdentical": true,
+      "extraSnapshotsPerMask": 1,
+      "gainedFields": 1,
+      "keptFields": 5,
+      "lostFields": 0,
+      "gainsWhoseFirstChangeIsTheFirstInterval": 1,
+      "scored": {
+        "recoveredResources": 0,
+        "newNonResourceDecreasing": 0,
+        "gainedUnlabelled": 0,
+        "gainedIncreasing": 1
+      },
+      "gainedDetail": [
+        {
+          "mask": 4,
+          "address": 130,
+          "direction": "increasing",
+          "step": 5,
+          "observedTransitions": 1,
+          "firstChangeInterval": {
+            "sampleIndex": 1,
+            "intervalStartFrame": 0,
+            "intervalEndFrame": 12,
+            "snapshotSource": "between the pre-event snapshot and the snapshot after event 1",
+            "exactFrameKnown": false
+          },
+          "classification": "NUMERIC_FIELD_IDENTIFIED",
+          "resourceCandidate": false,
+          "label": "score",
+          "isResource": false,
+          "gameRole": "labelled non-resource"
+        }
+      ],
+      "lostDetail": [],
+      "fieldChangesAcrossModes": [
+        {
+          "mask": 2,
+          "address": 100,
+          "encoding": [
+            "undetermined",
+            "undetermined"
+          ],
+          "direction": [
+            "decreasing",
+            "decreasing"
+          ],
+          "step": [
+            -1,
+            -1
+          ],
+          "observedTransitions": [
+            2,
+            3
+          ]
+        },
+        {
+          "mask": 64,
+          "address": 221,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 128,
+          "address": 0,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            7,
+            7
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 128,
+          "address": 130,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 128,
+          "address": 515,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            7,
+            7
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        }
+      ],
+      "unresolvedPost": [
+        {
+          "mask": 2,
+          "span": [
+            177,
+            177
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 8,
+          "span": [
+            132,
+            132
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        }
+      ],
+      "unresolvedPre": [
+        {
+          "mask": 2,
+          "span": [
+            177,
+            177
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 8,
+          "span": [
+            132,
+            132
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        }
+      ]
+    },
+    {
+      "label": "sacrifice seed 3",
+      "corpus": "synthetic",
+      "family": "sacrifice",
+      "seed": 3,
+      "POST_ONLY": {
+        "typed": 6,
+        "resourceCandidates": 1,
+        "unresolved": 0,
+        "attributedAddresses": 11,
+        "samplesPerMask": 60,
+        "framesRun": 6480
+      },
+      "PRE_AND_POST": {
+        "typed": 8,
+        "resourceCandidates": 1,
+        "unresolved": 0,
+        "attributedAddresses": 12,
+        "samplesPerMask": 61,
+        "framesRun": 6480
+      },
+      "framesIdentical": true,
+      "extraSnapshotsPerMask": 1,
+      "gainedFields": 3,
+      "keptFields": 5,
+      "lostFields": 1,
+      "gainsWhoseFirstChangeIsTheFirstInterval": 3,
+      "scored": {
+        "recoveredResources": 0,
+        "newNonResourceDecreasing": 0,
+        "gainedUnlabelled": 0,
+        "gainedIncreasing": 3
+      },
+      "gainedDetail": [
+        {
+          "mask": 2,
+          "address": 1,
+          "direction": "increasing",
+          "step": 1,
+          "observedTransitions": 1,
+          "firstChangeInterval": {
+            "sampleIndex": 1,
+            "intervalStartFrame": 0,
+            "intervalEndFrame": 12,
+            "snapshotSource": "between the pre-event snapshot and the snapshot after event 1",
+            "exactFrameKnown": false
+          },
+          "classification": "NUMERIC_FIELD_IDENTIFIED",
+          "resourceCandidate": false,
+          "label": null,
+          "isResource": null,
+          "gameRole": "UNKNOWN: typed as a numeric field, its game role is not established"
+        },
+        {
+          "mask": 4,
+          "address": 0,
+          "direction": "increasing",
+          "step": 18,
+          "observedTransitions": 1,
+          "firstChangeInterval": {
+            "sampleIndex": 1,
+            "intervalStartFrame": 0,
+            "intervalEndFrame": 12,
+            "snapshotSource": "between the pre-event snapshot and the snapshot after event 1",
+            "exactFrameKnown": false
+          },
+          "classification": "NUMERIC_FIELD_IDENTIFIED",
+          "resourceCandidate": false,
+          "label": null,
+          "isResource": null,
+          "gameRole": "UNKNOWN: typed as a numeric field, its game role is not established"
+        },
+        {
+          "mask": 4,
+          "address": 515,
+          "direction": "increasing",
+          "step": 18,
+          "observedTransitions": 1,
+          "firstChangeInterval": {
+            "sampleIndex": 1,
+            "intervalStartFrame": 0,
+            "intervalEndFrame": 12,
+            "snapshotSource": "between the pre-event snapshot and the snapshot after event 1",
+            "exactFrameKnown": false
+          },
+          "classification": "NUMERIC_FIELD_IDENTIFIED",
+          "resourceCandidate": false,
+          "label": null,
+          "isResource": null,
+          "gameRole": "UNKNOWN: typed as a numeric field, its game role is not established"
+        }
+      ],
+      "lostDetail": [
+        {
+          "mask": 2,
+          "address": 0,
+          "direction": "increasing"
+        }
+      ],
+      "fieldChangesAcrossModes": [
+        {
+          "mask": 2,
+          "address": 67,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 2,
+          "address": 515,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            5,
+            5
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 4,
+          "address": 96,
+          "encoding": [
+            "undetermined",
+            "undetermined"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            2,
+            3
+          ]
+        },
+        {
+          "mask": 4,
+          "address": 205,
+          "encoding": [
+            "undetermined",
+            "undetermined"
+          ],
+          "direction": [
+            "decreasing",
+            "decreasing"
+          ],
+          "step": [
+            -1,
+            -1
+          ],
+          "observedTransitions": [
+            2,
+            3
+          ]
+        }
+      ],
+      "unresolvedPost": [],
+      "unresolvedPre": []
+    },
+    {
+      "label": "rate-trap seed 5",
+      "corpus": "synthetic",
+      "family": "rate-trap",
+      "seed": 5,
+      "POST_ONLY": {
+        "typed": 6,
+        "resourceCandidates": 1,
+        "unresolved": 0,
+        "attributedAddresses": 10,
+        "samplesPerMask": 60,
+        "framesRun": 6480
+      },
+      "PRE_AND_POST": {
+        "typed": 6,
+        "resourceCandidates": 1,
+        "unresolved": 0,
+        "attributedAddresses": 10,
+        "samplesPerMask": 61,
+        "framesRun": 6480
+      },
+      "framesIdentical": true,
+      "extraSnapshotsPerMask": 1,
+      "gainedFields": 0,
+      "keptFields": 6,
+      "lostFields": 0,
+      "gainsWhoseFirstChangeIsTheFirstInterval": 0,
+      "scored": {
+        "recoveredResources": 0,
+        "newNonResourceDecreasing": 0,
+        "gainedUnlabelled": 0,
+        "gainedIncreasing": 0
+      },
+      "gainedDetail": [],
+      "lostDetail": [],
+      "fieldChangesAcrossModes": [
+        {
+          "mask": 2,
+          "address": 0,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            3,
+            3
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 2,
+          "address": 182,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            1,
+            1
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 2,
+          "address": 515,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            3,
+            3
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 32,
+          "address": 175,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            4,
+            4
+          ],
+          "observedTransitions": [
+            59,
+            60
+          ]
+        },
+        {
+          "mask": 128,
+          "address": 97,
+          "encoding": [
+            "undetermined",
+            "undetermined"
+          ],
+          "direction": [
+            "decreasing",
+            "decreasing"
+          ],
+          "step": [
+            -1,
+            -1
+          ],
+          "observedTransitions": [
+            2,
+            3
+          ]
+        }
+      ],
+      "unresolvedPost": [],
+      "unresolvedPre": []
+    },
+    {
+      "label": "lifeforce 1/60",
+      "corpus": "private user-supplied real-game ROM, local only; no ROM bytes in this artefact",
+      "entryProcedure": {
+        "bootFrames": 240,
+        "startPulses": 1,
+        "gapFramesBetweenPresses": 24,
+        "settleFrames": 60
+      },
+      "noLabelsExist": "no oracle exists for a real cartridge: every gained field is reported with game role UNKNOWN and is NOT counted as a recovered resource",
+      "POST_ONLY": {
+        "typed": 19,
+        "resourceCandidates": 6,
+        "unresolved": 33,
+        "attributedAddresses": 833,
+        "samplesPerMask": 60,
+        "framesRun": 6480
+      },
+      "PRE_AND_POST": {
+        "typed": 19,
+        "resourceCandidates": 6,
+        "unresolved": 33,
+        "attributedAddresses": 847,
+        "samplesPerMask": 61,
+        "framesRun": 6480
+      },
+      "framesIdentical": true,
+      "extraSnapshotsPerMask": 1,
+      "gainedFields": 0,
+      "keptFields": 19,
+      "lostFields": 0,
+      "gainsWhoseFirstChangeIsTheFirstInterval": 0,
+      "scored": null,
+      "gainedDetail": [],
+      "lostDetail": [],
+      "fieldChangesAcrossModes": [],
+      "unresolvedPost": [
+        {
+          "mask": 2,
+          "span": [
+            38,
+            38
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            150,
+            151
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            190,
+            191
+          ],
+          "status": "AMBIGUOUS",
+          "reason": "several interpretations explain the samples equally well and disagree about the value"
+        },
+        {
+          "mask": 2,
+          "span": [
+            214,
+            215
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            772,
+            773
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            789,
+            789
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            794,
+            794
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            805,
+            806
+          ],
+          "status": "AMBIGUOUS",
+          "reason": "several interpretations explain the samples equally well and disagree about the value"
+        }
+      ],
+      "unresolvedPre": [
+        {
+          "mask": 2,
+          "span": [
+            38,
+            38
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            150,
+            151
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            190,
+            191
+          ],
+          "status": "AMBIGUOUS",
+          "reason": "several interpretations explain the samples equally well and disagree about the value"
+        },
+        {
+          "mask": 2,
+          "span": [
+            214,
+            215
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            772,
+            773
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            789,
+            789
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            794,
+            794
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            805,
+            806
+          ],
+          "status": "AMBIGUOUS",
+          "reason": "several interpretations explain the samples equally well and disagree about the value"
+        }
+      ]
+    },
+    {
+      "label": "lifeforce 6/60",
+      "corpus": "private user-supplied real-game ROM, local only; no ROM bytes in this artefact",
+      "entryProcedure": {
+        "bootFrames": 240,
+        "startPulses": 6,
+        "gapFramesBetweenPresses": 24,
+        "settleFrames": 60
+      },
+      "noLabelsExist": "no oracle exists for a real cartridge: every gained field is reported with game role UNKNOWN and is NOT counted as a recovered resource",
+      "POST_ONLY": {
+        "typed": 14,
+        "resourceCandidates": 4,
+        "unresolved": 105,
+        "attributedAddresses": 757,
+        "samplesPerMask": 60,
+        "framesRun": 6480
+      },
+      "PRE_AND_POST": {
+        "typed": 16,
+        "resourceCandidates": 5,
+        "unresolved": 96,
+        "attributedAddresses": 761,
+        "samplesPerMask": 61,
+        "framesRun": 6480
+      },
+      "framesIdentical": true,
+      "extraSnapshotsPerMask": 1,
+      "gainedFields": 6,
+      "keptFields": 10,
+      "lostFields": 4,
+      "gainsWhoseFirstChangeIsTheFirstInterval": 6,
+      "scored": null,
+      "gainedDetail": [
+        {
+          "mask": 2,
+          "address": 491,
+          "direction": "increasing",
+          "step": 6,
+          "observedTransitions": 1,
+          "firstChangeInterval": {
+            "sampleIndex": 1,
+            "intervalStartFrame": 0,
+            "intervalEndFrame": 12,
+            "snapshotSource": "between the pre-event snapshot and the snapshot after event 1",
+            "exactFrameKnown": false
+          },
+          "classification": "NUMERIC_FIELD_IDENTIFIED",
+          "resourceCandidate": false,
+          "label": null,
+          "isResource": null,
+          "gameRole": "UNKNOWN: typed as a numeric field, its game role is not established"
+        },
+        {
+          "mask": 8,
+          "address": 1609,
+          "direction": "increasing",
+          "step": 8,
+          "observedTransitions": 1,
+          "firstChangeInterval": {
+            "sampleIndex": 1,
+            "intervalStartFrame": 0,
+            "intervalEndFrame": 12,
+            "snapshotSource": "between the pre-event snapshot and the snapshot after event 1",
+            "exactFrameKnown": false
+          },
+          "classification": "NUMERIC_FIELD_IDENTIFIED",
+          "resourceCandidate": false,
+          "label": null,
+          "isResource": null,
+          "gameRole": "UNKNOWN: typed as a numeric field, its game role is not established"
+        },
+        {
+          "mask": 8,
+          "address": 1619,
+          "direction": "increasing",
+          "step": 46,
+          "observedTransitions": 1,
+          "firstChangeInterval": {
+            "sampleIndex": 1,
+            "intervalStartFrame": 0,
+            "intervalEndFrame": 12,
+            "snapshotSource": "between the pre-event snapshot and the snapshot after event 1",
+            "exactFrameKnown": false
+          },
+          "classification": "NUMERIC_FIELD_IDENTIFIED",
+          "resourceCandidate": false,
+          "label": null,
+          "isResource": null,
+          "gameRole": "UNKNOWN: typed as a numeric field, its game role is not established"
+        },
+        {
+          "mask": 8,
+          "address": 1629,
+          "direction": "decreasing",
+          "step": -13,
+          "observedTransitions": 1,
+          "firstChangeInterval": {
+            "sampleIndex": 1,
+            "intervalStartFrame": 0,
+            "intervalEndFrame": 12,
+            "snapshotSource": "between the pre-event snapshot and the snapshot after event 1",
+            "exactFrameKnown": false
+          },
+          "classification": "NUMERIC_FIELD_IDENTIFIED",
+          "resourceCandidate": true,
+          "label": null,
+          "isResource": null,
+          "gameRole": "UNKNOWN: typed as a numeric field, its game role is not established"
+        },
+        {
+          "mask": 16,
+          "address": 329,
+          "direction": "increasing",
+          "step": 22,
+          "observedTransitions": 1,
+          "firstChangeInterval": {
+            "sampleIndex": 1,
+            "intervalStartFrame": 0,
+            "intervalEndFrame": 12,
+            "snapshotSource": "between the pre-event snapshot and the snapshot after event 1",
+            "exactFrameKnown": false
+          },
+          "classification": "NUMERIC_FIELD_IDENTIFIED",
+          "resourceCandidate": false,
+          "label": null,
+          "isResource": null,
+          "gameRole": "UNKNOWN: typed as a numeric field, its game role is not established"
+        },
+        {
+          "mask": 32,
+          "address": 329,
+          "direction": "increasing",
+          "step": 22,
+          "observedTransitions": 1,
+          "firstChangeInterval": {
+            "sampleIndex": 1,
+            "intervalStartFrame": 0,
+            "intervalEndFrame": 12,
+            "snapshotSource": "between the pre-event snapshot and the snapshot after event 1",
+            "exactFrameKnown": false
+          },
+          "classification": "NUMERIC_FIELD_IDENTIFIED",
+          "resourceCandidate": false,
+          "label": null,
+          "isResource": null,
+          "gameRole": "UNKNOWN: typed as a numeric field, its game role is not established"
+        }
+      ],
+      "lostDetail": [
+        {
+          "mask": 2,
+          "address": 191,
+          "direction": "increasing"
+        },
+        {
+          "mask": 2,
+          "address": 806,
+          "direction": "increasing"
+        },
+        {
+          "mask": 16,
+          "address": 335,
+          "direction": "increasing"
+        },
+        {
+          "mask": 32,
+          "address": 335,
+          "direction": "increasing"
+        }
+      ],
+      "fieldChangesAcrossModes": [
+        {
+          "mask": 32,
+          "address": 815,
+          "encoding": [
+            "binary",
+            "binary"
+          ],
+          "direction": [
+            "increasing",
+            "increasing"
+          ],
+          "step": [
+            5,
+            5
+          ],
+          "observedTransitions": [
+            26,
+            27
+          ]
+        }
+      ],
+      "unresolvedPost": [
+        {
+          "mask": 2,
+          "span": [
+            0,
+            0
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            38,
+            38
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            150,
+            151
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            214,
+            215
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            227,
+            227
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            492,
+            495
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            772,
+            773
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            789,
+            789
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        }
+      ],
+      "unresolvedPre": [
+        {
+          "mask": 2,
+          "span": [
+            0,
+            0
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            38,
+            38
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            150,
+            151
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            190,
+            191
+          ],
+          "status": "AMBIGUOUS",
+          "reason": "several interpretations explain the samples equally well and disagree about the value"
+        },
+        {
+          "mask": 2,
+          "span": [
+            214,
+            215
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            227,
+            227
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            772,
+            773
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            789,
+            789
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        }
+      ]
+    },
+    {
+      "label": "contra 6/300",
+      "corpus": "private user-supplied real-game ROM, local only; no ROM bytes in this artefact",
+      "entryProcedure": {
+        "bootFrames": 240,
+        "startPulses": 6,
+        "gapFramesBetweenPresses": 24,
+        "settleFrames": 300
+      },
+      "noLabelsExist": "no oracle exists for a real cartridge: every gained field is reported with game role UNKNOWN and is NOT counted as a recovered resource",
+      "POST_ONLY": {
+        "typed": 19,
+        "resourceCandidates": 8,
+        "unresolved": 44,
+        "attributedAddresses": 656,
+        "samplesPerMask": 60,
+        "framesRun": 6480
+      },
+      "PRE_AND_POST": {
+        "typed": 19,
+        "resourceCandidates": 8,
+        "unresolved": 44,
+        "attributedAddresses": 656,
+        "samplesPerMask": 61,
+        "framesRun": 6480
+      },
+      "framesIdentical": true,
+      "extraSnapshotsPerMask": 1,
+      "gainedFields": 0,
+      "keptFields": 19,
+      "lostFields": 0,
+      "gainsWhoseFirstChangeIsTheFirstInterval": 0,
+      "scored": null,
+      "gainedDetail": [],
+      "lostDetail": [],
+      "fieldChangesAcrossModes": [],
+      "unresolvedPost": [
+        {
+          "mask": 1,
+          "span": [
+            260,
+            260
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 1,
+          "span": [
+            266,
+            266
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 1,
+          "span": [
+            272,
+            273
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 1,
+          "span": [
+            2029,
+            2029
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            14,
+            14
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            206,
+            206
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            228,
+            228
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            260,
+            260
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        }
+      ],
+      "unresolvedPre": [
+        {
+          "mask": 1,
+          "span": [
+            260,
+            260
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 1,
+          "span": [
+            266,
+            266
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 1,
+          "span": [
+            272,
+            273
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 1,
+          "span": [
+            2029,
+            2029
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            14,
+            14
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            206,
+            206
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            228,
+            228
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        },
+        {
+          "mask": 2,
+          "span": [
+            260,
+            260
+          ],
+          "status": "UNRESOLVED",
+          "reason": "no interpretation moves by a constant step under the driving action"
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "cartridges": 11,
+    "labelledCartridges": 8,
+    "typedPostOnly": 90,
+    "typedPreAndPost": 100,
+    "resourceCandidatesPostOnly": 26,
+    "resourceCandidatesPreAndPost": 31,
+    "gainedFields": 15,
+    "keptFields": 85,
+    "lostFields": 5,
+    "gainsWhoseFirstChangeIsTheFirstInterval": 15,
+    "recoveredResources": 2,
+    "newNonResourceDecreasing": 2,
+    "gainedIncreasing": 5,
+    "gainedUnlabelled": 0,
+    "framesIdenticalEverywhere": true,
+    "extraSnapshotsPerMaskPerCartridge": 1,
+    "fieldChangesAcrossModes": 32,
+    "note": "more typed fields is NOT automatically an improvement: read recoveredResources against newNonResourceDecreasing, and note that on real cartridges no gained field is counted as recovered because no labels exist"
+  }
+}
