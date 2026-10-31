@@ -125,16 +125,26 @@ function evaluate(label,extra,bytes,entry,openOracle,labelsFor){
  };
  const scored={falseTypingsLegacy:0,falseTypingsRuled:0,
   lostUsefulCandidates:0,keptUsefulCandidates:0,
-  correctRejections:0,unlabelled:0};
+  correctRejections:0,unlabelled:0,typedIncreasingNotScored:0};
  const perField=[];
+ /* SCORING CORRECTION. The first version counted every typed non-resource as a
+    false typing, including fields typed as INCREASING - but an increasing score
+    field typed as a constant-step increasing field is correct behaviour, not an
+    error, and the resource question is about decreasing fields. Only fields
+    typed `decreasing` are scored against the resource labels; increasing ones
+    are reported separately and not scored in either direction. */
  for(const field of typed.legacy){
   const info=classify(field.address);
   const stillTyped=identifiedRuled.some(f=>f.address===field.address&&f.mask===field.mask);
+  const isDecreasing=field.direction==='decreasing';
   const row={address:field.address,mask:field.mask,step:field.step,
+   direction:field.direction,
    transitions:field.support?field.support.observedTransitions:null,
    typedByLegacy:true,typedByRule:stillTyped,
-   label:info?info.name:null,isResource:info?info.isResource:null};
-  if(!info)scored.unlabelled++;
+   label:info?info.name:null,isResource:info?info.isResource:null,
+   scoredAsResourceCandidate:isDecreasing};
+  if(!isDecreasing)scored.typedIncreasingNotScored++;
+  else if(!info)scored.unlabelled++;
   else if(info.isResource===false){
    scored.falseTypingsLegacy++;
    if(stillTyped)scored.falseTypingsRuled++;else scored.correctRejections++;
@@ -242,6 +252,16 @@ try{
   lostUsefulCandidates:sum('lostUsefulCandidates'),
   keptUsefulCandidates:sum('keptUsefulCandidates'),
   unlabelledTypedFields:sum('unlabelled'),
+  typedIncreasingNotScored:sum('typedIncreasingNotScored'),
+  /* A separate defect found while building this stage, reported because it
+     bites exactly the population the rule is about. */
+  firstEventBlindness:{
+   defect:'the typing stage samples RAM only AFTER each observed event, so a change that happens during the FIRST event and never again has nothing to be compared against and is invisible to typing',
+   where:'play() in agod-pipeline.js, and the same schedule reproduced here',
+   consequence:'part of the single-transition population the transition-support rule is meant to judge never reaches typing at all, so neither arm can see it',
+   foundBy:'the single-transition fixture typed neither of its labelled cases until an arming delay was added to move their transition inside the sampled window',
+   fixedHere:false,
+   note:'not fixed in this stage: changing when typing samples is a change to the typer and belongs to its own declared stage'},
   note:'a fall in typedByRule is not a success on its own; read falseTypings against lostUsefulCandidates'};
  report.status='COMPLETE';write();
  console.log(JSON.stringify({type:report.type,status:report.status,totals:report.totals},null,1));

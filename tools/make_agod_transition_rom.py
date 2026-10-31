@@ -94,12 +94,22 @@ def generate(seed=1):
         raise AssertionError('no room for a field of width %d' % width)
 
     switch_from, switch_to = 0x5A, 0x13      # one flip, a latch, never a counter
+    arm_presses = 4                          # declared: the single transition lands at event 4 of 60
     fields = {
         'oneShotSwitch': {'address': allocate(1), 'width': 1, 'format': 'unsigned', 'endian': 'little'},
         'singleUnit': {'address': allocate(1), 'width': 1, 'format': 'unsigned', 'endian': 'little'},
         'score': {'address': allocate(1), 'width': 1, 'format': 'unsigned', 'endian': 'little'},
         'frameCounter': {'address': allocate(2), 'width': 2, 'format': 'unsigned', 'endian': 'little'},
         'noise': {'address': allocate(1), 'width': 1, 'format': 'unsigned', 'endian': 'little'},
+        # A declared arming counter of PRESS EDGES. Both mechanisms are inert
+        # until enough presses have happened, so their single transition lands
+        # INSIDE the sampled window rather than during the very first observed
+        # event - where the typing stage cannot see it at all, because it
+        # samples only after each event and has nothing to compare the first
+        # change against. Edges are counted, not frames: this cartridge's main
+        # loop is not frame-synchronised, so a frame countdown would expire
+        # during boot.
+        'pressCount': {'address': allocate(1), 'width': 1, 'format': 'unsigned', 'endian': 'little'},
     }
     addr = lambda name: fields[name]['address']
 
@@ -132,6 +142,7 @@ def generate(seed=1):
     asm.label('reset')
     asm.emit(0x78, 0xD8, 0xA2, 0xFF, 0x9A)            # sei, cld, ldx #$ff, txs
     for address, value in [(addr('oneShotSwitch'), switch_from),
+                           (addr('pressCount'), 0),
                            (addr('singleUnit'), 1),
                            (addr('score'), 0),
                            (addr('noise'), 0),
@@ -166,7 +177,19 @@ def generate(seed=1):
     asm.zp(0xE6, addr('frameCounter') + 1)
     asm.label(skip_carry)
 
-    # ---- oneShotSwitch: flips once on the first press of `latch`, then latched
+    def count_press():
+        writer('pressCount')
+        asm.zp(0xE6, addr('pressCount'))
+
+    def when_armed(action):
+        skip = asm.fresh('not_armed')
+        asm.zp(0xA5, addr('pressCount'))
+        asm.emit(0xC9, arm_presses)                   # cmp #arm_presses
+        asm.branch(0x90, skip)                        # bcc: fewer presses than needed
+        action()
+        asm.label(skip)
+
+    # ---- oneShotSwitch: flips once on the first press of `latch` after arming
     def flip_switch():
         done = asm.fresh('already_flipped')
         asm.zp(0xA5, addr('oneShotSwitch'))
@@ -176,7 +199,7 @@ def generate(seed=1):
         asm.lda(switch_to)
         asm.sta(addr('oneShotSwitch'))
         asm.label(done)
-    edge(latch, flip_switch)
+    edge(latch, lambda: (count_press(), when_armed(flip_switch)))
 
     # ---- singleUnit: one unit, spent once; play stops when it is gone
     def spend_unit():
@@ -187,7 +210,7 @@ def generate(seed=1):
         asm.lda(0)
         asm.sta(addr('singleUnit'))
         asm.label(done)
-    edge(spend, spend_unit)
+    edge(spend, lambda: (count_press(), when_armed(spend_unit)))
 
     def raise_score():
         done = asm.fresh('no_play')
@@ -217,6 +240,7 @@ def generate(seed=1):
         'fields': fields,
         'latchMask': 1 << latch, 'spendMask': 1 << spend, 'playMask': 1 << play,
         'switchFrom': switch_from, 'switchTo': switch_to,
+        'armPresses': arm_presses,
         'echoAddresses': list(range(0x10, 0x18)),
         # Closed labels: which single transition is spurious and which is real.
         'transitionLabels': {

@@ -1,0 +1,1811 @@
+{
+  "type": "gu-agod-s11a-transition-support",
+  "version": 1,
+  "question": "which typed fields have enough repeated transitions to support a constant step, and what does requiring that cost?",
+  "rule": {
+    "ruleRevision": "s11a-transition-support-1",
+    "declaredBefore": "committed before any S11A run on a real cartridge",
+    "minObservedTransitions": 2,
+    "requireStepAgreement": true,
+    "statement": "at least two observed transitions whose non-zero steps agree",
+    "onFailure": "INSUFFICIENT_TRANSITION_SUPPORT: the candidate is kept with its measurements for diagnosis; this is a statement about the evidence, NOT about the field being useless",
+    "defaultEnabled": false
+  },
+  "scoring": "false typings AND lost useful candidates, counted separately. A drop in the number of typed fields is not by itself a success",
+  "armControl": "legacy typing (transitionSupport off) is the control; FIRST-V1 and the pipeline are untouched",
+  "oracleDiscipline": "opened only after both arms have typed the cartridge",
+  "provenance": {
+    "commit": "9f25f8a949f2eb6b048f33a2f36e07a9d13b1d48",
+    "workingTreeDirty": true,
+    "node": "v22.22.0",
+    "ramRevision": "agod-ram-e2-1",
+    "rule": {
+      "ruleRevision": "s11a-transition-support-1",
+      "declaredBefore": "committed before any S11A run on a real cartridge",
+      "minObservedTransitions": 2,
+      "requireStepAgreement": true,
+      "statement": "at least two observed transitions whose non-zero steps agree",
+      "onFailure": "INSUFFICIENT_TRANSITION_SUPPORT: the candidate is kept with its measurements for diagnosis; this is a statement about the evidence, NOT about the field being useless",
+      "defaultEnabled": false
+    }
+  },
+  "status": "COMPLETE",
+  "rows": [
+    {
+      "label": "single-transition seed 1",
+      "corpus": "synthetic",
+      "family": "single-transition",
+      "seed": 1,
+      "typedByLegacy": 5,
+      "typedByRule": 3,
+      "rejectedByRule": 2,
+      "rejectedKeptForDiagnosis": true,
+      "neutralMovedAddresses": 2,
+      "singleTransitionFields": 2,
+      "observationHorizonFrames": 720,
+      "scored": {
+        "falseTypingsLegacy": 1,
+        "falseTypingsRuled": 0,
+        "lostUsefulCandidates": 1,
+        "keptUsefulCandidates": 0,
+        "correctRejections": 1,
+        "unlabelled": 0,
+        "typedIncreasingNotScored": 3
+      },
+      "fields": [
+        {
+          "address": 97,
+          "mask": 2,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 167,
+          "mask": 2,
+          "step": -71,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": "oneShotSwitch",
+          "isResource": false,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 97,
+          "mask": 4,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 110,
+          "mask": 4,
+          "step": -1,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": "singleUnit",
+          "isResource": true,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 105,
+          "mask": 16,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": "score",
+          "isResource": false,
+          "scoredAsResourceCandidate": false
+        }
+      ],
+      "rejectedFields": [
+        {
+          "address": 167,
+          "mask": 2,
+          "step": -71,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            36
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 110,
+          "mask": 4,
+          "step": -1,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            36
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        }
+      ]
+    },
+    {
+      "label": "single-transition seed 2",
+      "corpus": "synthetic",
+      "family": "single-transition",
+      "seed": 2,
+      "typedByLegacy": 5,
+      "typedByRule": 3,
+      "rejectedByRule": 2,
+      "rejectedKeptForDiagnosis": true,
+      "neutralMovedAddresses": 2,
+      "singleTransitionFields": 2,
+      "observationHorizonFrames": 720,
+      "scored": {
+        "falseTypingsLegacy": 1,
+        "falseTypingsRuled": 0,
+        "lostUsefulCandidates": 1,
+        "keptUsefulCandidates": 0,
+        "correctRejections": 1,
+        "unlabelled": 0,
+        "typedIncreasingNotScored": 3
+      },
+      "fields": [
+        {
+          "address": 135,
+          "mask": 4,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 187,
+          "mask": 4,
+          "step": -1,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": "singleUnit",
+          "isResource": true,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 179,
+          "mask": 16,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": "score",
+          "isResource": false,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 124,
+          "mask": 128,
+          "step": -71,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": "oneShotSwitch",
+          "isResource": false,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 135,
+          "mask": 128,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        }
+      ],
+      "rejectedFields": [
+        {
+          "address": 187,
+          "mask": 4,
+          "step": -1,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            36
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 124,
+          "mask": 128,
+          "step": -71,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            36
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        }
+      ]
+    },
+    {
+      "label": "test seed 0",
+      "corpus": "synthetic",
+      "family": "test",
+      "seed": 0,
+      "typedByLegacy": 5,
+      "typedByRule": 5,
+      "rejectedByRule": 0,
+      "rejectedKeptForDiagnosis": true,
+      "neutralMovedAddresses": 5,
+      "singleTransitionFields": 0,
+      "observationHorizonFrames": 720,
+      "scored": {
+        "falseTypingsLegacy": 0,
+        "falseTypingsRuled": 0,
+        "lostUsefulCandidates": 0,
+        "keptUsefulCandidates": 1,
+        "correctRejections": 0,
+        "unlabelled": 0,
+        "typedIncreasingNotScored": 4
+      },
+      "fields": [
+        {
+          "address": 0,
+          "mask": 1,
+          "step": 7,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 159,
+          "mask": 1,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": "score",
+          "isResource": false,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 515,
+          "mask": 1,
+          "step": 7,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 178,
+          "mask": 2,
+          "step": -1,
+          "direction": "decreasing",
+          "transitions": 2,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": "lives",
+          "isResource": true,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 137,
+          "mask": 64,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        }
+      ],
+      "rejectedFields": []
+    },
+    {
+      "label": "test seed 200",
+      "corpus": "synthetic",
+      "family": "test",
+      "seed": 200,
+      "typedByLegacy": 5,
+      "typedByRule": 5,
+      "rejectedByRule": 0,
+      "rejectedKeptForDiagnosis": true,
+      "neutralMovedAddresses": 5,
+      "singleTransitionFields": 0,
+      "observationHorizonFrames": 720,
+      "scored": {
+        "falseTypingsLegacy": 0,
+        "falseTypingsRuled": 0,
+        "lostUsefulCandidates": 0,
+        "keptUsefulCandidates": 1,
+        "correctRejections": 0,
+        "unlabelled": 0,
+        "typedIncreasingNotScored": 4
+      },
+      "fields": [
+        {
+          "address": 100,
+          "mask": 2,
+          "step": -1,
+          "direction": "decreasing",
+          "transitions": 2,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": "lives",
+          "isResource": true,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 221,
+          "mask": 64,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 0,
+          "mask": 128,
+          "step": 7,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 130,
+          "mask": 128,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": "score",
+          "isResource": false,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 515,
+          "mask": 128,
+          "step": 7,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        }
+      ],
+      "rejectedFields": []
+    },
+    {
+      "label": "sacrifice seed 3",
+      "corpus": "synthetic",
+      "family": "sacrifice",
+      "seed": 3,
+      "typedByLegacy": 6,
+      "typedByRule": 5,
+      "rejectedByRule": 1,
+      "rejectedKeptForDiagnosis": true,
+      "neutralMovedAddresses": 5,
+      "singleTransitionFields": 1,
+      "observationHorizonFrames": 720,
+      "scored": {
+        "falseTypingsLegacy": 0,
+        "falseTypingsRuled": 0,
+        "lostUsefulCandidates": 0,
+        "keptUsefulCandidates": 1,
+        "correctRejections": 0,
+        "unlabelled": 0,
+        "typedIncreasingNotScored": 5
+      },
+      "fields": [
+        {
+          "address": 0,
+          "mask": 2,
+          "step": 5,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 67,
+          "mask": 2,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": "treasure",
+          "isResource": false,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 515,
+          "mask": 2,
+          "step": 5,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 90,
+          "mask": 4,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 96,
+          "mask": 4,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 2,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 205,
+          "mask": 4,
+          "step": -1,
+          "direction": "decreasing",
+          "transitions": 2,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": "charges",
+          "isResource": true,
+          "scoredAsResourceCandidate": true
+        }
+      ],
+      "rejectedFields": [
+        {
+          "address": 90,
+          "mask": 4,
+          "step": 1,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            24
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        }
+      ]
+    },
+    {
+      "label": "rate-trap seed 5",
+      "corpus": "synthetic",
+      "family": "rate-trap",
+      "seed": 5,
+      "typedByLegacy": 6,
+      "typedByRule": 5,
+      "rejectedByRule": 1,
+      "rejectedKeptForDiagnosis": true,
+      "neutralMovedAddresses": 4,
+      "singleTransitionFields": 1,
+      "observationHorizonFrames": 720,
+      "scored": {
+        "falseTypingsLegacy": 0,
+        "falseTypingsRuled": 0,
+        "lostUsefulCandidates": 0,
+        "keptUsefulCandidates": 1,
+        "correctRejections": 0,
+        "unlabelled": 0,
+        "typedIncreasingNotScored": 5
+      },
+      "fields": [
+        {
+          "address": 0,
+          "mask": 2,
+          "step": 3,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 113,
+          "mask": 2,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 182,
+          "mask": 2,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": "steadyGain",
+          "isResource": false,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 515,
+          "mask": 2,
+          "step": 3,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 175,
+          "mask": 32,
+          "step": 4,
+          "direction": "increasing",
+          "transitions": 59,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": "fickleDecoy",
+          "isResource": false,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 97,
+          "mask": 128,
+          "step": -1,
+          "direction": "decreasing",
+          "transitions": 2,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": "fuel",
+          "isResource": true,
+          "scoredAsResourceCandidate": true
+        }
+      ],
+      "rejectedFields": [
+        {
+          "address": 113,
+          "mask": 2,
+          "step": 1,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            132
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        }
+      ]
+    },
+    {
+      "label": "lifeforce 1/60",
+      "corpus": "private user-supplied real-game ROM, local only; no ROM bytes in this artefact",
+      "entryProcedure": {
+        "bootFrames": 240,
+        "startPulses": 1,
+        "gapFramesBetweenPresses": 24,
+        "settleFrames": 60
+      },
+      "noLabelsExist": "no oracle exists for a real cartridge, so no field here is scored as a false typing or a lost candidate",
+      "typedByLegacy": 19,
+      "typedByRule": 3,
+      "rejectedByRule": 16,
+      "rejectedKeptForDiagnosis": true,
+      "neutralMovedAddresses": 783,
+      "singleTransitionFields": 16,
+      "observationHorizonFrames": 720,
+      "scored": null,
+      "fields": [
+        {
+          "address": 120,
+          "mask": 2,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 445,
+          "mask": 2,
+          "step": 15,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 450,
+          "mask": 2,
+          "step": 14,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 888,
+          "mask": 2,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 893,
+          "mask": 2,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 927,
+          "mask": 2,
+          "step": -20,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 939,
+          "mask": 2,
+          "step": -20,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 944,
+          "mask": 2,
+          "step": -128,
+          "direction": "decreasing",
+          "transitions": 2,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 1085,
+          "mask": 2,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 5,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 1153,
+          "mask": 2,
+          "step": -19,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 1609,
+          "mask": 2,
+          "step": 8,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 1629,
+          "mask": 2,
+          "step": -117,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 1644,
+          "mask": 2,
+          "step": 30,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 1649,
+          "mask": 2,
+          "step": 8,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 1654,
+          "mask": 2,
+          "step": 2,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 2020,
+          "mask": 2,
+          "step": 3,
+          "direction": "increasing",
+          "transitions": 8,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 1609,
+          "mask": 8,
+          "step": 8,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 1619,
+          "mask": 8,
+          "step": 46,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 1629,
+          "mask": 8,
+          "step": -13,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        }
+      ],
+      "rejectedFields": [
+        {
+          "address": 120,
+          "mask": 2,
+          "step": 1,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            528
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 445,
+          "mask": 2,
+          "step": 15,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            636
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 450,
+          "mask": 2,
+          "step": 14,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            540
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 888,
+          "mask": 2,
+          "step": 1,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            636
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 893,
+          "mask": 2,
+          "step": 1,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            540
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 927,
+          "mask": 2,
+          "step": -20,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            672
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 939,
+          "mask": 2,
+          "step": -20,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            636
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1153,
+          "mask": 2,
+          "step": -19,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            504
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1609,
+          "mask": 2,
+          "step": 8,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            660
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1629,
+          "mask": 2,
+          "step": -117,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            660
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1644,
+          "mask": 2,
+          "step": 30,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            660
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1649,
+          "mask": 2,
+          "step": 8,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            660
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1654,
+          "mask": 2,
+          "step": 2,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            660
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1609,
+          "mask": 8,
+          "step": 8,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            60
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1619,
+          "mask": 8,
+          "step": 46,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            60
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1629,
+          "mask": 8,
+          "step": -13,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            60
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        }
+      ]
+    },
+    {
+      "label": "lifeforce 6/60",
+      "corpus": "private user-supplied real-game ROM, local only; no ROM bytes in this artefact",
+      "entryProcedure": {
+        "bootFrames": 240,
+        "startPulses": 6,
+        "gapFramesBetweenPresses": 24,
+        "settleFrames": 60
+      },
+      "noLabelsExist": "no oracle exists for a real cartridge, so no field here is scored as a false typing or a lost candidate",
+      "typedByLegacy": 14,
+      "typedByRule": 3,
+      "rejectedByRule": 11,
+      "rejectedKeptForDiagnosis": true,
+      "neutralMovedAddresses": 655,
+      "singleTransitionFields": 11,
+      "observationHorizonFrames": 720,
+      "scored": null,
+      "fields": [
+        {
+          "address": 120,
+          "mask": 2,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 2,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 191,
+          "mask": 2,
+          "step": 6,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 445,
+          "mask": 2,
+          "step": 11,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 806,
+          "mask": 2,
+          "step": 62,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 927,
+          "mask": 2,
+          "step": -20,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 939,
+          "mask": 2,
+          "step": -20,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 1649,
+          "mask": 2,
+          "step": 8,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 2020,
+          "mask": 2,
+          "step": 3,
+          "direction": "increasing",
+          "transitions": 13,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 114,
+          "mask": 16,
+          "step": -64,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 335,
+          "mask": 16,
+          "step": 34,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 335,
+          "mask": 32,
+          "step": 34,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 815,
+          "mask": 32,
+          "step": 5,
+          "direction": "increasing",
+          "transitions": 26,
+          "typedByLegacy": true,
+          "typedByRule": true,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 116,
+          "mask": 64,
+          "step": -64,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 116,
+          "mask": 128,
+          "step": 40,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        }
+      ],
+      "rejectedFields": [
+        {
+          "address": 191,
+          "mask": 2,
+          "step": 6,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            12
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 445,
+          "mask": 2,
+          "step": 11,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            492
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 806,
+          "mask": 2,
+          "step": 62,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            12
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 927,
+          "mask": 2,
+          "step": -20,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            528
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 939,
+          "mask": 2,
+          "step": -20,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            492
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1649,
+          "mask": 2,
+          "step": 8,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            504
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 114,
+          "mask": 16,
+          "step": -64,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            84
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 335,
+          "mask": 16,
+          "step": 34,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            12
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 335,
+          "mask": 32,
+          "step": 34,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            12
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 116,
+          "mask": 64,
+          "step": -64,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            192
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 116,
+          "mask": 128,
+          "step": 40,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            324
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        }
+      ]
+    },
+    {
+      "label": "contra 6/300",
+      "corpus": "private user-supplied real-game ROM, local only; no ROM bytes in this artefact",
+      "entryProcedure": {
+        "bootFrames": 240,
+        "startPulses": 6,
+        "gapFramesBetweenPresses": 24,
+        "settleFrames": 300
+      },
+      "noLabelsExist": "no oracle exists for a real cartridge, so no field here is scored as a false typing or a lost candidate",
+      "typedByLegacy": 19,
+      "typedByRule": 0,
+      "rejectedByRule": 19,
+      "rejectedKeptForDiagnosis": true,
+      "neutralMovedAddresses": 579,
+      "singleTransitionFields": 19,
+      "observationHorizonFrames": 720,
+      "scored": null,
+      "fields": [
+        {
+          "address": 266,
+          "mask": 2,
+          "step": 10,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 301,
+          "mask": 2,
+          "step": -17,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 480,
+          "mask": 2,
+          "step": -62,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 797,
+          "mask": 2,
+          "step": 95,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 266,
+          "mask": 8,
+          "step": -46,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 847,
+          "mask": 8,
+          "step": 5,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 14,
+          "mask": 128,
+          "step": -30,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 50,
+          "mask": 128,
+          "step": -1,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 130,
+          "mask": 128,
+          "step": 3,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 141,
+          "mask": 128,
+          "step": -18,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 819,
+          "mask": 128,
+          "step": -36,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 871,
+          "mask": 128,
+          "step": 40,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 1303,
+          "mask": 128,
+          "step": -1,
+          "direction": "decreasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": true
+        },
+        {
+          "address": 1335,
+          "mask": 128,
+          "step": 5,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 1351,
+          "mask": 128,
+          "step": 10,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 1415,
+          "mask": 128,
+          "step": 1,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 1431,
+          "mask": 128,
+          "step": 10,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 1447,
+          "mask": 128,
+          "step": 2,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        },
+        {
+          "address": 1762,
+          "mask": 128,
+          "step": 4,
+          "direction": "increasing",
+          "transitions": 1,
+          "typedByLegacy": true,
+          "typedByRule": false,
+          "label": null,
+          "isResource": null,
+          "scoredAsResourceCandidate": false
+        }
+      ],
+      "rejectedFields": [
+        {
+          "address": 266,
+          "mask": 2,
+          "step": 10,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            120
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 301,
+          "mask": 2,
+          "step": -17,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            120
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 480,
+          "mask": 2,
+          "step": -62,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            120
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 797,
+          "mask": 2,
+          "step": 95,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            156
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 266,
+          "mask": 8,
+          "step": -46,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            120
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 847,
+          "mask": 8,
+          "step": 5,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            120
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 14,
+          "mask": 128,
+          "step": -30,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            348
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 50,
+          "mask": 128,
+          "step": -1,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            528
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 130,
+          "mask": 128,
+          "step": 3,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            348
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 141,
+          "mask": 128,
+          "step": -18,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            348
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 819,
+          "mask": 128,
+          "step": -36,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            348
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 871,
+          "mask": 128,
+          "step": 40,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            348
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1303,
+          "mask": 128,
+          "step": -1,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            348
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1335,
+          "mask": 128,
+          "step": 5,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            348
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1351,
+          "mask": 128,
+          "step": 10,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            348
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1415,
+          "mask": 128,
+          "step": 1,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            348
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1431,
+          "mask": 128,
+          "step": 10,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            348
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1447,
+          "mask": 128,
+          "step": 2,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            348
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        },
+        {
+          "address": 1762,
+          "mask": 128,
+          "step": 4,
+          "transitions": 1,
+          "transitionFrameIndices": [
+            420
+          ],
+          "reason": "a constant step cannot be established from 1 observed transition(s) with agreeing steps"
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "cartridges": 9,
+    "labelledCartridges": 6,
+    "typedByLegacy": 84,
+    "typedByRule": 32,
+    "rejectedByRule": 52,
+    "singleTransitionFields": 52,
+    "allRejectedKeptForDiagnosis": true,
+    "falseTypingsLegacy": 2,
+    "falseTypingsUnderRule": 0,
+    "correctRejections": 2,
+    "lostUsefulCandidates": 2,
+    "keptUsefulCandidates": 4,
+    "unlabelledTypedFields": 0,
+    "typedIncreasingNotScored": 24,
+    "firstEventBlindness": {
+      "defect": "the typing stage samples RAM only AFTER each observed event, so a change that happens during the FIRST event and never again has nothing to be compared against and is invisible to typing",
+      "where": "play() in agod-pipeline.js, and the same schedule reproduced here",
+      "consequence": "part of the single-transition population the transition-support rule is meant to judge never reaches typing at all, so neither arm can see it",
+      "foundBy": "the single-transition fixture typed neither of its labelled cases until an arming delay was added to move their transition inside the sampled window",
+      "fixedHere": false,
+      "note": "not fixed in this stage: changing when typing samples is a change to the typer and belongs to its own declared stage"
+    },
+    "note": "a fall in typedByRule is not a success on its own; read falseTypings against lostUsefulCandidates"
+  }
+}
