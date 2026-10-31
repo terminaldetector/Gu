@@ -1,0 +1,56 @@
+{
+  "type": "gu-agod-s11b-preregistration",
+  "version": 2,
+  "supersedes": null,
+  "amends": { "document": "26_S11B_PREREGISTRATION_RU.md", "commit": "6b4daef", "rewritten": false },
+  "declaredBefore": "any S11B measurement; v1 measurements had not begun when v2 was published",
+  "amendment1_durationMatchedCadence": {
+    "problem": "the published horizons coincide only at 12 and 48 frames, so RECOVERED_BY_CADENCE cannot be assigned at 144, 360 or 720 without a continuous-hold control of the same duration",
+    "pairedContinuousControls": [12, 48, 144, 360, 720],
+    "conditions": [
+      "the same experimental adapter as the pulse train",
+      "the same pre-declared start states and the same independent starts",
+      "a neutral arm of equal duration and an alternative mask for every control",
+      "identical sampling points where applicable"
+    ],
+    "frame720Rule": "720 is NOT passed to the standard Causal.probeAction, whose hard per-arm cap is 600. The control runs in the isolated adapter with neutral and alternative arms and is labelled explicitly as an independent implementation.",
+    "labelRules": {
+      "RECOVERED_BY_CADENCE": "requires a duration-matched continuous control showing the change absent",
+      "RECOVERED_BY_DURATION": "long versus short within the same regime",
+      "CADENCE_UNDECIDABLE": "no duration-matched control exists, so structure and duration cannot be separated"
+    },
+    "seriesAUnchanged": true
+  },
+  "amendment2_addressTruncation": {
+    "problemConfirmedInSource": "agod-causal.js line 113 applies attributed.slice(0, limits.maxAddressesReported) inside evaluateStart, so aggregate() consumes already-truncated lists; the default is 64 and the CAP is 256",
+    "experimentalMaxAddressesReported": 256,
+    "withinExistingCap": true,
+    "productionUnchanged": true,
+    "truncationControl": [
+      "truncation is recorded when any reported list length equals the limit",
+      "a RAW MEMBERSHIP CHECK, independent of the causal verdict, asks whether the target address changed at all between the neutral and action arms; this is explicitly NOT a causal claim, only a check that the address could have been considered"
+    ],
+    "newStatus": {
+      "ADDRESS_COVERAGE_UNKNOWN": "the probe report was truncated AND the candidate's membership in the full set is not established",
+      "NOT_OBSERVED": "the report was not truncated, or membership was established, and the address is still unconfirmed"
+    },
+    "rule": "ADDRESS_COVERAGE_UNKNOWN is not NOT_OBSERVED and is not evidence that a game event is absent: it is a limit of the observing instrument"
+  },
+  "diagnosticOutcomesV2": [
+    "RECOVERED_BY_DURATION", "RECOVERED_BY_CADENCE", "CADENCE_UNDECIDABLE",
+    "TIME_EXPLAINED", "NOT_REPRODUCIBLE_ACROSS_STARTS", "TRANSIENT_WITHIN_WINDOW",
+    "ADDRESS_COVERAGE_UNKNOWN", "NOT_OBSERVED", "NOT_COMPARABLE", "BUDGET_EXCEEDED"
+  ],
+  "carriedFromV1": [
+    "series A horizons [12,48,120,240,480]", "HOLD=4 RELEASE=8", "pulses [1,4,12,30,60]",
+    "shiftTolerance=3", "totalEmulatedFrameLimit 4000000",
+    "6 primary candidates plus up to 4 S11C additions scored separately",
+    "3 independent starts per trial", "four start-state levels",
+    "an identical state hash is not an independent history", "stopping rules",
+    "four-part cost accounting", "the synthetic corpus and three real procedures",
+    "NEGATIVE verification, HOLDOUT, the S9 ranking, the ROMs, the entry procedures, FIRST-V1 and production unchanged",
+    "the S11A rule stays off", "PRE_AND_POST not enabled by default"
+  ],
+  "headlineQuestions": { "A": "duration", "B": "action structure", "C": "no causal confirmation" },
+  "instrumentRule": "a limit of the observing instrument must never be presented as the absence of a game event"
+}
