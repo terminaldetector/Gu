@@ -34,16 +34,16 @@ const directory=fs.mkdtempSync(path.join(os.tmpdir(),'gu-agod-s9-'));
 const FAMILIES=[
  {name:'test',generator:'tools/make_agod_test_rom.py',resourceField:'lives',
   seeds:(process.env.AGOD_S9_TEST_SEEDS||'0,1,2,7,8,9,47').split(',').map(Number),
-  group:'development',rightAnswer:'VERIFIED with the resource equal to lives'},
+  group:'development',expectsVerified:true,rightAnswer:'VERIFIED with the resource equal to lives'},
  {name:'test',generator:'tools/make_agod_test_rom.py',resourceField:'lives',
   seeds:(process.env.AGOD_S9_HELDOUT_SEEDS||'200,201,202,203,204,205,206').split(',').map(Number),
-  group:'heldOut',rightAnswer:'VERIFIED with the resource equal to lives'},
+  group:'heldOut',expectsVerified:true,rightAnswer:'VERIFIED with the resource equal to lives'},
  {name:'sacrifice',generator:'tools/make_agod_sacrifice_rom.py',resourceField:'charges',
   seeds:(process.env.AGOD_S9_SACRIFICE_SEEDS||'3,4,5').split(',').map(Number),
-  group:'sacrifice',rightAnswer:'a REFUSAL: the depletion is the price of progress, not harm'},
+  group:'sacrifice',expectsVerified:false,rightAnswer:'a REFUSAL: the depletion is the price of progress, not harm'},
  {name:'rate-trap',generator:'tools/make_agod_rate_trap_rom.py',resourceField:'fuel',
   seeds:(process.env.AGOD_S9_TRAP_SEEDS||'5,6,7').split(',').map(Number),
-  group:'rateTrap',rightAnswer:'no decoy accepted as a cost'}];
+  group:'rateTrap',expectsVerified:false,rightAnswer:'no decoy accepted as a cost'}];
 const REV='profile-rev-1',CORE='jsnes-nes';
 const rows=[];
 const provenance=(()=>{let head='unknown',dirty=null;
@@ -144,7 +144,16 @@ try{
     v1Correct:verifiedCorrectly(v1),v2Correct:verifiedCorrectly(v2),
     v1FalseGoal:falseGoal(v1),v2FalseGoal:falseGoal(v2),
     v1Refused:v1.status==='REFUSED',v2Refused:v2.status==='REFUSED',
-    missedByV1:!verifiedCorrectly(v1)&&trueInInventory===true,
+    /* DEFECT IN MY OWN METRIC, corrected: the first version read
+       "!v1Correct && the true field was in the inventory" as "V1 missed a
+       candidate ranking found". On the sacrifice and rate-trap families a
+       refusal IS the right answer, so v1Correct is false by design and the
+       metric reported 3 and 3 misses where V1 had done exactly the right
+       thing. It is now defined only where VERIFIED is the right answer. */
+    missedByV1:family.expectsVerified===true&&!verifiedCorrectly(v1)&&trueInInventory===true,
+    expectsVerified:family.expectsVerified===true,
+    rightAnswerGiven:family.expectsVerified?verifiedCorrectly(v1):v1.status==='REFUSED',
+    rightAnswerGivenByRanking:family.expectsVerified?verifiedCorrectly(v2):v2.status==='REFUSED',
     v2ChangedTheAnswer:v1.status!==v2.status||v1.resourceAddress!==v2.resourceAddress}});
   write();
  }
@@ -166,6 +175,9 @@ try{
     trueResourceInInventory:count(list,r=>r.trueResourceInInventory===true),
     trueResourceRankedFirst:count(list,r=>r.trueResourceRank===1),
     missedByV1ButInInventory:count(list,r=>r.verdict.missedByV1),
+    missedByV1Applicable:count(list,r=>r.verdict.expectsVerified),
+    v1GaveTheRightAnswer:count(list,r=>r.verdict.rightAnswerGiven),
+    v2GaveTheRightAnswer:count(list,r=>r.verdict.rightAnswerGivenByRanking),
     answerChangedByRanking:count(list,r=>r.verdict.v2ChangedTheAnswer),
     rankedReproducible:count(list,r=>r.rankedReproducible),
     groupedOnAdjacencyAlone:list.reduce((sum,r)=>sum+((r.inventory&&r.inventory.groupedOnAdjacencyAlone)||0),0),

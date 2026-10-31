@@ -44,6 +44,11 @@ const HOLD=4,RELEASE=8,BOOT_FRAMES=240,REV='profile-rev-1';
    without editing the tool. Defaults are the ones the published runs used. */
 const num=(name,fallback)=>{const raw=process.env[name];if(raw===undefined||raw==='')return fallback;
  const value=Number(raw);if(!Number.isInteger(value)||value<0)throw new Error(name+' must be a non-negative integer, got: '+raw);return value;};
+/* S9: which resource-selection strategy the pipeline uses. 'first' is FIRST-V1
+   and stays the default, so every S8 result reproduces unchanged. */
+const SELECTION=(()=>{const raw=process.env.AGOD_RESOURCE_SELECTION||'first';
+ if(raw!=='first'&&raw!=='ranked')throw new Error("AGOD_RESOURCE_SELECTION must be 'first' or 'ranked', got: "+raw);
+ return raw;})();
 const PREAMBLE_PULSES=num('AGOD_PREAMBLE_PULSES',6),PREAMBLE_SETTLE=num('AGOD_PREAMBLE_SETTLE',120),
 /* The gap between Start presses is the third parameter of an entry
    procedure. This checker has always used 24; it is now named so that a
@@ -77,6 +82,7 @@ result.rom={name:TARGET,sha256:romSha,fileBytes:bytes.length,
  timingHeader:nes20?['NTSC','PAL','multi','Dendy'][bytes[12]&3]:'unspecified'};
 result.coreIdentity='jsnes (bundled in assets/lab/jsnes.min.js)';
 result.frameParameters={hold:HOLD,release:RELEASE,bootFrames:BOOT_FRAMES,
+ resourceSelection:SELECTION,
  preambleStartPulses:PREAMBLE_PULSES,preambleGapFrames:PREAMBLE_GAP,
  preambleSettleFrames:PREAMBLE_SETTLE};
 save();
@@ -93,6 +99,11 @@ function machine(){
  const driver={restore(s){core.fromJSON(JSON.parse(s));},
   run(mask,frames){for(let b=0;b<8;b++)(mask&(1<<b)?core.buttonDown:core.buttonUp)(1,b);for(let i=0;i<frames;i++)core.frame();},
   readRam:ram,snapshot(){return JSON.stringify(core.toJSON());},
+  /* S9 ranking criterion 5 and the S4c counterfactual need a write. On NES this
+     is a direct store into CPU RAM; on the Sega and retro cores cpu.mem is a
+     read-only Proxy, which is recorded in the cross-platform plan as a blocker
+     rather than worked around here. */
+  poke(address,value){core.cpu.mem[address]=value&255;},
   stateHash(){return crypto.createHash('sha256').update(Buffer.from(ram())).digest('hex');}};
  return {core,driver,lastFrame(){return lastFrame;},
   motion(){return {frames:frameCount,changedFrames};},
@@ -132,7 +143,7 @@ try{
   const started=Date.now();
   let piped=null,failure=null;
   try{piped=Pipeline.run(driver,{romHash:romSha,coreRevision:'jsnes-private-corpus',profileRevision:REV,
-   contextKey:romSha+'/jsnes',nowMs:1761800000000});}
+   contextKey:romSha+'/jsnes',nowMs:1761800000000,resourceSelection:SELECTION});}
   catch(error){failure=error.message;}
   const elapsed=Date.now()-started;
 
@@ -178,6 +189,28 @@ try{
     induction:traceOf('induce').map(t=>({partition:t.partition,polarity:t.polarity,
      lifecycle:t.lifecycle,verifiable:t.verifiable,resourceTrack:t.resourceTrack})),
     promotion:traceOf('promote').map(t=>({verified:t.verified,lifecycle:t.lifecycle,blockers:t.blockers})),
+    /* S9: the inventory, the grouping and the per-candidate attempts, present
+       only in ranked mode. */
+    rankedSelection:(piped.discovered&&piped.discovered.rankedSelection)?{
+     specRevision:piped.discovered.rankedSelection.specRevision,
+     candidatesTyped:piped.discovered.rankedSelection.candidatesTyped,
+     candidatesFound:piped.discovered.rankedSelection.candidatesFound,
+     maxCandidates:piped.discovered.rankedSelection.maxCandidates,
+     budgetNote:piped.discovered.rankedSelection.budgetNote,
+     grouping:piped.discovered.rankedSelection.grouping,
+     ranked:piped.discovered.rankedSelection.ranked.map(entry=>({rank:entry.rank,
+      address:entry.address,mask:entry.mask,groupAddresses:entry.groupAddresses,
+      score:entry.score,
+      evidence:entry.record?{causality:entry.record.causality,
+       dynamics:{startsObserved:entry.record.dynamics.startsObserved,
+        startsWhereItMoved:entry.record.dynamics.startsWhereItMoved,
+        stepAgreesAcrossStarts:entry.record.dynamics.stepAgreesAcrossStarts,
+        stepsSeen:entry.record.dynamics.stepsSeen},
+       reachability:entry.record.reachability,restore:entry.record.restore,
+       phase:entry.record.phase,separability:entry.record.separability,
+       downstream:entry.record.downstream}:null}))}:null,
+    rankedAttempts:(piped.discovered&&piped.discovered.rankedAttempts)
+     ?piped.discovered.rankedAttempts:null,
     /* FINAL VERDICT, and the full detail of every refusal that produced it. */
     goal:piped.goal?{id:piped.goal.id,lifecycle:piped.goal.lifecycle,polarity:piped.goal.polarity,
      evidenceCount:piped.goal.evidenceRefs?piped.goal.evidenceRefs.length:null}:null,
@@ -190,6 +223,7 @@ try{
  result.totals={
   arms:arms.length,
   phaseEvidenceRevision:Phase.PHASE_EVIDENCE_REVISION,
+  resourceSelection:SELECTION,
   phaseStatuses:Object.fromEntries(arms.map(a=>[a.arm,a.phaseEvidence.phase])),
   phaseModalities:Object.fromEntries(arms.map(a=>[a.arm,a.phaseEvidence.modalities])),
   pipelineOutcomes:Object.fromEntries(arms.map(a=>[a.arm,a.pipeline.status+(a.pipeline.stage?'/'+a.pipeline.stage:'')])),

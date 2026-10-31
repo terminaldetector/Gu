@@ -22,6 +22,7 @@ const Goals=root.FlyAgodGoals||(require_?require_('./agod-goals.js'):null);
 const Evidence=root.FlyAgodEvidence||(require_?require_('./agod-evidence.js'):null);
 const Reward=root.FlyAgodReward||(require_?require_('./agod-reward.js'):null);
 const Candidates=root.FlyAgodCandidates||(require_?require_('./agod-candidates.js'):null);
+const Consumers=root.FlyAgodConsumers||(require_?require_('./agod-consumers.js'):null);
 
 const SCHEMA_VERSION=1,PIPELINE_REVISION='agod-pipeline-s9-4';
 const DEFAULTS=Object.freeze({masks:[1,2,4,8,16,32,64,128],frames:12,shiftTolerance:3,
@@ -30,7 +31,9 @@ const DEFAULTS=Object.freeze({masks:[1,2,4,8,16,32,64,128],frames:12,shiftTolera
  /* S9. 'first' is FIRST-V1 and stays the default, so every earlier result is
     reproduced unchanged; 'ranked' is RANKED-V2. The budget is declared here and
     not raised per cartridge. */
- resourceSelection:'first',inventoryStarts:3,inventoryPulses:8,maxCandidates:6});
+ resourceSelection:'first',inventoryStarts:3,inventoryPulses:8,maxCandidates:6,
+ /* criterion 5 of the ranking spec: a counterfactual per candidate, bounded */
+ consumerProbeSteps:16,consumerFrameBudget:4000});
 const frozen=Object.freeze.bind(Object);
 
 function movedBetween(samples){
@@ -312,6 +315,29 @@ function run(driver,options){
    for(const [,addresses] of persistent)if(addresses.indexOf(address)>=0)count++;
    return count;},
   pristine};
+ /* Criterion 5 of the pre-registered spec is a counterfactual: poke the field
+    to a second value it actually reaches and see whether the machine then does
+    something different. It needs driver.poke, which only the NES driver has;
+    where it is missing the record says NOT-SUPPORTED rather than NOT-TESTED,
+    because "we cannot ask" and "we asked and saw nothing" are different claims
+    and conflating them is the error S4c had to be rewritten to remove. */
+ const probeConsumer=(field,mask)=>{
+  if(!Consumers)return {status:'NOT-SUPPORTED',hasConsumer:null,
+   reason:'agod-consumers.js is not wired in, so criterion 5 cannot be measured',
+   caution:'this is an inability to test, not an absence of a consumer'};
+  if(typeof driver.poke!=='function')return {status:'NOT-SUPPORTED',hasConsumer:null,
+   reason:'this driver exposes no poke(address,value), so a counterfactual on a field cannot be performed on this platform',
+   caution:'this is an inability to test, not an absence of a consumer'};
+  try{
+   driver.restore(pristine);
+   return Consumers.downstreamConsumer(driver,{field,pristine,fieldMask:mask,
+    hold:config.hold,release:config.release,masks:config.masks,
+    steps:config.consumerProbeSteps,frameBudget:config.consumerFrameBudget});
+  }catch(problem){
+   return {status:'ERROR',hasConsumer:null,reason:problem.message,
+    caution:'an error in the probe is not an absence of a consumer'};
+  }
+ };
  const records=[];
  for(const entry of decreasingCandidates){
   const causal=causalByMask.get(entry.mask);
@@ -324,9 +350,11 @@ function run(driver,options){
    if(hit)return hit.starts;
    const partial=causal.contradicted.get(address);
    return partial?partial.starts:0;}));
+  const downstream=probeConsumer(entry.field,entry.mask);
+  driver.restore(pristine);
   records.push(Candidates.observe(inventoryProbe,{field:entry.field,mask:entry.mask,
    pulses:config.inventoryPulses,starts:inventoryStarts,
-   confirmedStarts,independentStarts:causal.usableStarts}));
+   confirmedStarts,independentStarts:causal.usableStarts,downstream}));
  }
  const grouped=Candidates.groupRecords(records);
  const ranking=Candidates.rankGroups(grouped,{maxCandidates:config.maxCandidates});
