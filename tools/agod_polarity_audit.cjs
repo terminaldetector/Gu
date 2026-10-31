@@ -92,6 +92,7 @@ function audit(label,driver,romHash,extra){
     initialByStart:entry.initialByStart,
     initialValuesDistinct:[...new Set((entry.initialByStart||[]).map(s=>s.value))],
     samples:entry.samples,decodeFailures:entry.decodeFailures,
+    depletionCoverage:entry.depletionCoverage,
     terms:entry.terms,coverage:entry.coverage})),
    firstFalseTermPerPartition:firstFalse,
    firstFalseTermAgreesAcrossPartitions:agreed!==null,
@@ -164,6 +165,22 @@ try{
     perCorpus[corpusKey][key]=(perCorpus[corpusKey][key]||0)+1;
    }
  }
+ /* M2 (S10B protocol fix). The first-false term alone hid a second problem:
+    reporting only "causalConfirmed broke first" left unsaid that
+    terminal.normalPlaySuppressed is false almost everywhere too. Every term is
+    now counted on every audit, so the full picture of what fails is visible
+    rather than only what fails first. */
+ const perTermFailures={};
+ const coverageTally={};
+ for(const row of all)for(const candidate of row.candidates)for(const part of candidate.partitions){
+  for(const term of part.terms){
+   perTermFailures[term.term]=perTermFailures[term.term]||{audits:0,failed:0};
+   perTermFailures[term.term].audits++;
+   if(!term.holds)perTermFailures[term.term].failed++;
+  }
+  const status=part.depletionCoverage?part.depletionCoverage.status:'not-recorded';
+  coverageTally[status]=(coverageTally[status]||0)+1;
+ }
  const vacuous=[],zeroStart=[],floorMissed=[];
  for(const row of all)for(const candidate of row.candidates)for(const part of candidate.partitions){
   const terminalTerm=part.terms.find(entry=>entry.term==='terminal.normalPlaySuppressed');
@@ -177,6 +194,19 @@ try{
  }
  report.totals={runs:rows.length,runsWithCandidates:all.length,
   firstFalseTerm:tally,firstFalseTermByCorpus:perCorpus,
+  /* M2: the full picture. A term can be false in almost every audit and never
+     be the FIRST false one, which is exactly what happened to
+     terminal.normalPlaySuppressed in the first version of this report. */
+  everyTermFailureRate:Object.fromEntries(Object.entries(perTermFailures).map(([term,counts])=>
+   [term,counts.failed+' of '+counts.audits])),
+  /* M1: the claim "six pulses are enough" rested on a vacuously satisfied
+     floor test and is withdrawn. Only INSUFFICIENT_COVERAGE is a case a larger
+     budget could change. */
+  depletionCoverage:coverageTally,
+  budgetClaim:{
+   withdrawn:'floorNotReachedInsideBudget=0 does NOT show six pulses to be sufficient: a constant track of zeros satisfies the floor test vacuously',
+   casesALargerBudgetCouldChange:coverageTally.INSUFFICIENT_COVERAGE||0,
+   note:'the budget was still not raised in this stage; any other budget is a separately declared comparison'},
   diagnoses:{
    terminalTermVacuous:{count:vacuous.length,
     meaning:'no previously confirmed effect fell inside the play scope, so "every confirmed effect stopped" is true of an empty set and the term is false by construction rather than by observation',
@@ -185,7 +215,7 @@ try{
     meaning:'the candidate reads the same zero at every independent start, so there is no depletion to observe at all',
     cases:zeroStart.slice(0,24)},
    floorNotReachedInsideBudget:{count:floorMissed.length,
-    meaning:'the minimum arrived only on the last sample or not at all, which is the one diagnosis a larger pulse budget could change. NOT acted on here: any other budget is a separately declared comparison',
+    meaning:'RETAINED FOR COMPARISON ONLY and not to be read as sufficiency: this test is satisfied vacuously by a constant track, which is why depletionCoverage above replaces it',
     cases:floorMissed.slice(0,24)}},
   note:'the pulse budget was not changed in this stage'};
  report.status='COMPLETE';write();

@@ -69,6 +69,27 @@ function run(driver,options){
  if(!driver||['restore','run','readRam','snapshot','stateHash'].some(key=>typeof driver[key]!=='function'))
   return refuse('wiring','driver must provide restore, run, readRam, snapshot and stateHash');
 
+ /* M3 (S10B protocol fix). The budget has to cover EVERYTHING the ranked
+    search runs. The previous meter wrapped only the inventory and the consumer
+    probes, while evaluateResource called the raw driver and spent frames the
+    counter never saw. The driver itself is replaced here, so every stage -
+    partition probes, depletion pulses, reversal probes and the confirmation
+    phase - is counted in one place and cannot opt out.
+
+    Exceeding it throws a NAMED condition, so a mid-candidate overrun is a
+    recognised outcome rather than an unknown error. */
+ let framesSpent=0;
+ if(config.resourceSelection==='ranked'){
+  const raw=driver;
+  driver={...raw,
+   run(mask,count){
+    framesSpent+=count;
+    if(framesSpent>config.searchFrameBudget)
+     throw new Error('FRAME_BUDGET_EXCEEDED: the ranked search spent '+framesSpent
+      +' frames, over the declared budget of '+config.searchFrameBudget);
+    return raw.run(mask,count);
+   }};
+ }
  const pristine=driver.snapshot();
  const startsFrom=(count,offset,tag)=>{
   const out=[];
@@ -219,7 +240,13 @@ function run(driver,options){
    encoding:decreasing.field.encodingDetermined?decreasing.field.encoding:'binary'});
   const judgementInputs={coupledGains,floorReversible,gainRetainedAcrossReversal};
   const playScope=persistent.get(increasing.mask)||[];
+  /* M4 (S10B protocol fix). Every partition's verdict is kept. The previous
+     version overwrote `induced` each pass, so the decision rested on whichever
+     partition happened to run last: DISCOVERY=UNKNOWN with CALIBRATION=NEGATIVE
+     would pass on the strength of the second alone. Agreement across the
+     partitions is the whole point of running more than one. */
   let induced=null;
+  const perPartition=[];
   for(const part of partitions){
    driver.restore(pristine);
    const partStarts=startsFrom(config.starts,part.offset,'part-'+part.group);
@@ -309,7 +336,48 @@ function run(driver,options){
        coupledGainCount:judgement.coupledGains.length,
        floorReversible:judgement.floorReversible,
        gainRetainedAcrossReversal:judgement.gainRetainedAcrossReversal}:null}];
+    /* M1 (S10B protocol fix). floorNotReachedInsideBudget could not support the
+       claim I made from it. With a track of 0,0,0,0,0,0,0 the floor-reached test
+       is satisfied vacuously - the minimum "arrives" at sample 0 and every later
+       sample equals it - so a resource that never depleted counted as one whose
+       floor was comfortably inside budget, and I read that as "six pulses are
+       enough". It does not say that. Four outcomes are now distinguished, and
+       only INSUFFICIENT_COVERAGE is the one a larger budget could change. */
+    const depletionCoverage=(()=>{
+     const values=samples?samples.map(entry=>entry.value):track;
+     const decodable=values.every(value=>Number.isInteger(value));
+     if(!decodable)return {status:'UNDECODABLE',
+      reason:'at least one sample could not be decoded, so the track cannot be classified'};
+     const first=values[0],min=Math.min(...values),max=Math.max(...values);
+     let fell=false,rose=false;
+     for(let i=1;i<values.length;i++){
+      if(values[i]<values[i-1])fell=true;
+      if(values[i]>values[i-1])rose=true;
+     }
+     const constant=min===max;
+     if(constant)return {status:'ALREADY_AT_MINIMUM',first,min,max,
+      reason:'the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously',
+      aLargerBudgetCouldChangeThis:false};
+     if(!fell)return {status:'NO_DEPLETION_OBSERVED',first,min,max,rose,
+      reason:'the value moved but never downward, so this is not a depletion at all',
+      aLargerBudgetCouldChangeThis:false};
+     const lastIndexOfMin=values.lastIndexOf(min),firstIndexOfMin=values.indexOf(min);
+     const settled=values.slice(firstIndexOfMin).every(value=>value===min);
+     const arrivedOnLastSample=firstIndexOfMin===values.length-1;
+     if(settled&&!arrivedOnLastSample)
+      return {status:'OBSERVED_DEPLETION',first,min,max,
+       reachedFloorAt:firstIndexOfMin,heldForSamples:values.length-firstIndexOfMin,
+       reason:'a decrease was observed, the minimum was reached before the last sample and every later sample equals it',
+       aLargerBudgetCouldChangeThis:false};
+     return {status:'INSUFFICIENT_COVERAGE',first,min,max,
+      reachedFloorAt:firstIndexOfMin,lastIndexOfMin,settled,arrivedOnLastSample,
+      reason:arrivedOnLastSample
+       ?'the minimum arrived only on the final sample, so whether it is a floor is unknown at this budget'
+       :'the value fell but never settled, so no floor was demonstrated at this budget',
+      aLargerBudgetCouldChangeThis:true};
+    })();
     note('polarity-audit',{candidate:decreasing.field.address,mask:decreasing.mask,
+     depletionCoverage,
      partition:part.group,
      field:{address:decreasing.field.address,width:decreasing.field.width,
       encoding:decreasing.field.encoding,encodingDetermined:decreasing.field.encodingDetermined,
@@ -330,6 +398,9 @@ function run(driver,options){
       interpretation:['!judgementBlocks'],
       note:'the first four are statements about what the emulator did; the fifth is a judgement about what the depletion is worth, and NEGATIVE_GAME_REWARD is that judgement, not a measurement'}});
    }
+   perPartition.push({group:part.group,polarity:induced.polarity,
+    lifecycle:induced.lifecycle,verifiable:induced.verifiable,
+    rationale:induced.rationale,depletionFact:induced.depletionFact});
    for(const observation of costProbe.perStart){
     if(observation.status!=='OBSERVED')continue;
     registry.register({id:'ev-'+part.group+'-'+observation.startId,goalId,group:part.group,
@@ -338,7 +409,16 @@ function run(driver,options){
      restored:false,atMs:config.nowMs||0});
    }
   }
-  if(!induced||induced.polarity!=='NEGATIVE'){
+  /* M4: the conjunction across partitions, not the last one standing. */
+  const disagreeing=perPartition.filter(entry=>entry.polarity!=='NEGATIVE');
+  if(perPartition.length>1&&disagreeing.length&&disagreeing.length<perPartition.length)
+   return {outcome:'REFUSED',stage:'induce',
+    reason:'the partitions disagree about polarity, so no single verdict is evidenced',
+    detail:{perPartition,
+     agreeingPartitions:perPartition.filter(entry=>entry.polarity==='NEGATIVE').map(entry=>entry.group),
+     disagreeingPartitions:disagreeing.map(entry=>entry.group),
+     note:'a NEGATIVE on one partition and an UNKNOWN on another is not evidence of a cost; the earlier version decided on whichever partition ran last'}};
+  if(!induced||induced.polarity!=='NEGATIVE'||disagreeing.length){
    const judgement=induced?induced.lossJudgement:null;
    if(judgement&&judgement.fact==='TERMINAL_RESOURCE_DEPLETION'&&judgement.judgement!=='NEGATIVE_GAME_REWARD')
     /* The fact is reported; only the verdict is withheld, and the reason says
@@ -365,7 +445,9 @@ function run(driver,options){
     detail:{polarity:induced.polarity,lifecycle:induced.lifecycle,
      polarityEvidenced:induced.verifiable,
      partitionsUsed:partitions.map(part=>part.group),
-     note:'selected on these partitions only; holdout has not been consulted'}};
+     perPartition,
+     allPartitionsAgreed:perPartition.every(entry=>entry.polarity==='NEGATIVE'),
+     note:'selected on these partitions only, and every one of them agreed; holdout has not been consulted'}};
   const promotion=registry.promote(goalId,{polarity:induced.polarity,
    polarityEvidenced:induced.verifiable,profileRevision:config.profileRevision,nowMs:config.nowMs});
   noteFor('promote',{verified:promotion.verified,lifecycle:promotion.lifecycle,blockers:promotion.blockers});
@@ -419,20 +501,13 @@ function run(driver,options){
    contradicted:new Map((outcome.contradicted||[]).map(record=>[record.address,record])),
    usableStarts:outcome.usableStarts||inventoryStarts.length});
  }
- /* P3 (S10 protocol fix). ONE frame budget over the whole ranked search, so
-    the search cannot cost an unbounded amount by running a counterfactual on
-    every typed candidate before the group limit applies. The meter wraps the
-    driver, so every frame any stage runs is counted in one place. */
- const searchFrames=(()=>{
-  let frames=0;
-  const wrapped={...driver,
-   run(mask,count){frames+=count;return driver.run(mask,count);}};
-  return {driver:wrapped,spent(){return frames;},
-   exhausted(){return frames>=config.searchFrameBudget;}};
- })();
+ /* The meter now lives in the driver itself (see the top of run()); this is
+    just the read side of it. */
+ const searchFrames={driver,spent(){return framesSpent;},
+  exhausted(){return framesSpent>=config.searchFrameBudget;}};
  const inventoryProbe={
   restore(snapshot){driver.restore(snapshot);},
-  drive(mask,pulses){for(let i=0;i<pulses;i++){searchFrames.driver.run(mask,config.hold);searchFrames.driver.run(0,config.release);}},
+  drive(mask,pulses){for(let i=0;i<pulses;i++){driver.run(mask,config.hold);driver.run(0,config.release);}},
   read:decodeField,
   ram(){return driver.readRam();},
   snapshot(){return driver.snapshot();},
@@ -464,7 +539,7 @@ function run(driver,options){
   try{
    driver.restore(pristine);
    const before=searchFrames.spent();
-   const outcome=Consumers.downstreamConsumer(searchFrames.driver,{field,pristine,fieldMask:mask,
+   const outcome=Consumers.downstreamConsumer(driver,{field,pristine,fieldMask:mask,
     hold:config.hold,release:config.release,masks:config.masks,
     steps:config.consumerProbeSteps,frameBudget:config.consumerFrameBudget});
    return {...outcome,framesSpent:searchFrames.spent()-before};
@@ -544,6 +619,7 @@ function run(driver,options){
     code and must stop the experiment rather than be filed as a refusal: a bug
     that reads as "the candidate refused" is a result that looks like evidence. */
  const KNOWN_UNEVALUABLE=[/^resource value must be an integer$/];
+ const BUDGET_EXCEEDED=/^FRAME_BUDGET_EXCEEDED:/;
  const attempts=[];
  for(const entry of ranking.withinBudget){
   const representative=entry.group.representative;
@@ -572,6 +648,19 @@ function run(driver,options){
   try{outcome=evaluateResource({mask:representative.field.mask,field},
    {partitions:selectionPartitions,promote:false});}
   catch(problem){
+   if(BUDGET_EXCEEDED.test(problem.message)){
+    /* M3: an overrun inside a candidate. Named, not an error and not a refusal
+       by the candidate: the experiment ran out of its declared frames. */
+    outcome={outcome:'BUDGET_EXCEEDED',stage:'budget',reason:problem.message,
+     detail:{framesSpent:framesSpent,budget:config.searchFrameBudget,
+      note:'the candidate was not judged; the declared frame budget ended mid-evaluation'}};
+    const attempt={rank:entry.rank,address:field.address,mask:representative.field.mask,
+     score:entry.score.total,outcome:outcome.outcome,stage:outcome.stage,
+     reason:outcome.reason,detail:outcome.detail,framesSpent:framesSpent-before};
+    attempts.push({...attempt,field,representative});
+    discovered.rankedAttempts.push(attempt);
+    break;
+   }
    const known=KNOWN_UNEVALUABLE.some(pattern=>pattern.test(problem.message));
    if(!known){
     /* Not swallowed. An unrecognised failure aborts the run. */
@@ -640,14 +729,37 @@ function run(driver,options){
   partitionsUsed:config.partitions.map(part=>part.group),
   outcome:null,stage:null,reason:null,detail:null,framesSpent:null};
  discovered.rankedConfirmation=confirmationRecord;
- const confirmation=evaluateResource({mask:chosen.mask,field:chosen.field},
-  {partitions:config.partitions,promote:true});
+ /* The confirmation phase spends frames from the same budget, so it can run out
+    too. Found by the budget ladder: at one budget the overrun landed inside the
+    candidate loop and was named, while at a larger one it landed in
+    confirmation and escaped as an unhandled error. Both are the same condition
+    and both are now named. */
+ let confirmation;
+ try{confirmation=evaluateResource({mask:chosen.mask,field:chosen.field},
+  {partitions:config.partitions,promote:true});}
+ catch(problem){
+  if(!BUDGET_EXCEEDED.test(problem.message))throw problem;
+  confirmation={outcome:'BUDGET_EXCEEDED',stage:'budget',reason:problem.message,
+   detail:{framesSpent,budget:config.searchFrameBudget,
+    note:'the selected candidate was not checked against holdout: the declared frame budget ended during confirmation'}};
+ }
  confirmationRecord.outcome=confirmation.outcome;
  confirmationRecord.stage=confirmation.stage||null;
  confirmationRecord.reason=confirmation.reason||null;
  confirmationRecord.detail=confirmation.detail||null;
  confirmationRecord.framesSpent=searchFrames.spent();
  note('confirm',{address:chosen.address,outcome:confirmation.outcome,stage:confirmation.stage||null});
+ /* A budget that ended during confirmation is NOT a holdout failure, and must
+    not be reported as one: the check never ran. The top-level reason said
+    "did not survive the independent holdout check" for both until the budget
+    ladder made the difference visible. */
+ if(confirmation.outcome==='BUDGET_EXCEEDED')
+  return refuse('ranked-budget',
+   'the declared frame budget ended during confirmation, so the selected candidate was never checked against holdout',
+   {...selectionSummary,chosenAddress:chosen.address,chosenRank:chosen.rank,
+    framesSpent,budget:config.searchFrameBudget,
+    holdoutWasNotConsulted:true,
+    note:'this is an exhausted budget, not a verdict about the candidate'});
  if(confirmation.outcome!=='VERIFIED')
   return refuse('ranked-holdout',
    'the candidate selected on DISCOVERY and CALIBRATION did not survive the independent holdout check',
