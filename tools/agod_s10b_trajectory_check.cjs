@@ -394,14 +394,23 @@ try{
 
  /* per-arm totals, each outcome counted separately */
  const armNames=['BASELINE','GATE','REPLAY','HISTORY'];
- const tally={};
- for(const arm of armNames)tally[arm]={candidates:0,causalityRestored:0,
+ /* DEFECT FOUND WHILE READING THE RESULT. byCorpus was initialised from
+    JSON.parse(JSON.stringify(tally)) at the moment a corpus was first seen -
+    by which point `tally` already held the counts of every earlier row. The
+    synthetic totals were therefore carried into the real ones, and the real
+    corpus read as causality restored on 3 of 9 when the truth is 0 of 6. That
+    is a false positive on the central question of this stage, produced by a
+    bookkeeping bug rather than by any measurement. Each bucket is now built
+    from a fresh counter. */
+ const fresh=()=>({candidates:0,causalityRestored:0,
   causalityOnSomePartition:0,nonEmptyPlayScope:0,realResourceDecreaseObserved:0,
-  partitionAgreement:0,holdoutExecuted:0,startsIndependent:0,gated:0,errors:0};
+  partitionAgreement:0,holdoutExecuted:0,startsIndependent:0,gated:0,errors:0});
+ const tally={};
+ for(const arm of armNames)tally[arm]=fresh();
  const byCorpus={};
  for(const row of rows)for(const candidate of (row.candidates||[])){
   const key=row.corpus==='synthetic'?'synthetic':'real';
-  byCorpus[key]=byCorpus[key]||JSON.parse(JSON.stringify(tally));
+  if(!byCorpus[key]){byCorpus[key]={};for(const arm of armNames)byCorpus[key][arm]=fresh();}
   for(const arm of armNames){
    const result=candidate.arms[arm];
    if(!result)continue;

@@ -6,8 +6,8 @@
   "unchanged": "NEGATIVE verification rules, thresholds and the pulse budget are exactly those of S9; the audit only reads and records",
   "factVersusInterpretation": "the first four terms are observations; the fifth is the judgement NEGATIVE_GAME_REWARD and is labelled as interpretation wherever it appears",
   "provenance": {
-    "commit": "310134436808678090f8346637fa4d84c7005838",
-    "workingTreeDirty": false,
+    "commit": "5d44fed7e90660373b4e39d02aedb8fc86d4ef4c",
+    "workingTreeDirty": true,
     "node": "v22.22.0",
     "pipelineRevision": "agod-pipeline-s10-5",
     "goalsRevision": "agod-goals-s3-2",
@@ -158,14 +158,16 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "OBSERVED_DEPLETION",
+                "status": "DECREASE_THEN_PLATEAU_OBSERVED",
                 "first": 3,
-                "min": 0,
-                "max": 3,
-                "reachedFloorAt": 3,
-                "heldForSamples": 4,
-                "reason": "a decrease was observed, the minimum was reached before the last sample and every later sample equals it",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 3,
+                "plateauStartsAt": 3,
+                "plateauHeldForSamples": 4,
+                "minimumIsSampleMinimumOnly": true,
+                "plateauDoesNotProveTerminalDepletion": true,
+                "reason": "a decrease was observed and the sampled minimum was reached before the last sample and held. N1: a plateau after a decrease does NOT prove terminal depletion - it shows the value stopped moving over the sampled horizon",
+                "aLongerHorizonCouldChangeThis": "unknown: the plateau may end beyond this horizon"
               },
               "terms": [
                 {
@@ -336,14 +338,16 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "OBSERVED_DEPLETION",
+                "status": "DECREASE_THEN_PLATEAU_OBSERVED",
                 "first": 3,
-                "min": 0,
-                "max": 3,
-                "reachedFloorAt": 3,
-                "heldForSamples": 4,
-                "reason": "a decrease was observed, the minimum was reached before the last sample and every later sample equals it",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 3,
+                "plateauStartsAt": 3,
+                "plateauHeldForSamples": 4,
+                "minimumIsSampleMinimumOnly": true,
+                "plateauDoesNotProveTerminalDepletion": true,
+                "reason": "a decrease was observed and the sampled minimum was reached before the last sample and held. N1: a plateau after a decrease does NOT prove terminal depletion - it shows the value stopped moving over the sampled horizon",
+                "aLongerHorizonCouldChangeThis": "unknown: the plateau may end beyond this horizon"
               },
               "terms": [
                 {
@@ -514,14 +518,16 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "OBSERVED_DEPLETION",
+                "status": "DECREASE_THEN_PLATEAU_OBSERVED",
                 "first": 3,
-                "min": 0,
-                "max": 3,
-                "reachedFloorAt": 3,
-                "heldForSamples": 4,
-                "reason": "a decrease was observed, the minimum was reached before the last sample and every later sample equals it",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 3,
+                "plateauStartsAt": 3,
+                "plateauHeldForSamples": 4,
+                "minimumIsSampleMinimumOnly": true,
+                "plateauDoesNotProveTerminalDepletion": true,
+                "reason": "a decrease was observed and the sampled minimum was reached before the last sample and held. N1: a plateau after a decrease does NOT prove terminal depletion - it shows the value stopped moving over the sampled horizon",
+                "aLongerHorizonCouldChangeThis": "unknown: the plateau may end beyond this horizon"
               },
               "terms": [
                 {
@@ -692,14 +698,16 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "OBSERVED_DEPLETION",
+                "status": "DECREASE_THEN_PLATEAU_OBSERVED",
                 "first": 3,
-                "min": 0,
-                "max": 3,
-                "reachedFloorAt": 3,
-                "heldForSamples": 4,
-                "reason": "a decrease was observed, the minimum was reached before the last sample and every later sample equals it",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 3,
+                "plateauStartsAt": 3,
+                "plateauHeldForSamples": 4,
+                "minimumIsSampleMinimumOnly": true,
+                "plateauDoesNotProveTerminalDepletion": true,
+                "reason": "a decrease was observed and the sampled minimum was reached before the last sample and held. N1: a plateau after a decrease does NOT prove terminal depletion - it shows the value stopped moving over the sampled horizon",
+                "aLongerHorizonCouldChangeThis": "unknown: the plateau may end beyond this horizon"
               },
               "terms": [
                 {
@@ -870,14 +878,16 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "OBSERVED_DEPLETION",
+                "status": "DECREASE_THEN_PLATEAU_OBSERVED",
                 "first": 3,
-                "min": 0,
-                "max": 3,
-                "reachedFloorAt": 3,
-                "heldForSamples": 4,
-                "reason": "a decrease was observed, the minimum was reached before the last sample and every later sample equals it",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 3,
+                "plateauStartsAt": 3,
+                "plateauHeldForSamples": 4,
+                "minimumIsSampleMinimumOnly": true,
+                "plateauDoesNotProveTerminalDepletion": true,
+                "reason": "a decrease was observed and the sampled minimum was reached before the last sample and held. N1: a plateau after a decrease does NOT prove terminal depletion - it shows the value stopped moving over the sampled horizon",
+                "aLongerHorizonCouldChangeThis": "unknown: the plateau may end beyond this horizon"
               },
               "terms": [
                 {
@@ -973,7 +983,7 @@
         }
       ],
       "framesRun": 16917,
-      "elapsedMs": 21656
+      "elapsedMs": 23000
     },
     {
       "label": "synthetic seed 200",
@@ -1118,14 +1128,16 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "OBSERVED_DEPLETION",
+                "status": "DECREASE_THEN_PLATEAU_OBSERVED",
                 "first": 3,
-                "min": 0,
-                "max": 3,
-                "reachedFloorAt": 3,
-                "heldForSamples": 4,
-                "reason": "a decrease was observed, the minimum was reached before the last sample and every later sample equals it",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 3,
+                "plateauStartsAt": 3,
+                "plateauHeldForSamples": 4,
+                "minimumIsSampleMinimumOnly": true,
+                "plateauDoesNotProveTerminalDepletion": true,
+                "reason": "a decrease was observed and the sampled minimum was reached before the last sample and held. N1: a plateau after a decrease does NOT prove terminal depletion - it shows the value stopped moving over the sampled horizon",
+                "aLongerHorizonCouldChangeThis": "unknown: the plateau may end beyond this horizon"
               },
               "terms": [
                 {
@@ -1294,14 +1306,16 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "OBSERVED_DEPLETION",
+                "status": "DECREASE_THEN_PLATEAU_OBSERVED",
                 "first": 3,
-                "min": 0,
-                "max": 3,
-                "reachedFloorAt": 3,
-                "heldForSamples": 4,
-                "reason": "a decrease was observed, the minimum was reached before the last sample and every later sample equals it",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 3,
+                "plateauStartsAt": 3,
+                "plateauHeldForSamples": 4,
+                "minimumIsSampleMinimumOnly": true,
+                "plateauDoesNotProveTerminalDepletion": true,
+                "reason": "a decrease was observed and the sampled minimum was reached before the last sample and held. N1: a plateau after a decrease does NOT prove terminal depletion - it shows the value stopped moving over the sampled horizon",
+                "aLongerHorizonCouldChangeThis": "unknown: the plateau may end beyond this horizon"
               },
               "terms": [
                 {
@@ -1470,14 +1484,16 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "OBSERVED_DEPLETION",
+                "status": "DECREASE_THEN_PLATEAU_OBSERVED",
                 "first": 3,
-                "min": 0,
-                "max": 3,
-                "reachedFloorAt": 3,
-                "heldForSamples": 4,
-                "reason": "a decrease was observed, the minimum was reached before the last sample and every later sample equals it",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 3,
+                "plateauStartsAt": 3,
+                "plateauHeldForSamples": 4,
+                "minimumIsSampleMinimumOnly": true,
+                "plateauDoesNotProveTerminalDepletion": true,
+                "reason": "a decrease was observed and the sampled minimum was reached before the last sample and held. N1: a plateau after a decrease does NOT prove terminal depletion - it shows the value stopped moving over the sampled horizon",
+                "aLongerHorizonCouldChangeThis": "unknown: the plateau may end beyond this horizon"
               },
               "terms": [
                 {
@@ -1646,14 +1662,16 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "OBSERVED_DEPLETION",
+                "status": "DECREASE_THEN_PLATEAU_OBSERVED",
                 "first": 3,
-                "min": 0,
-                "max": 3,
-                "reachedFloorAt": 3,
-                "heldForSamples": 4,
-                "reason": "a decrease was observed, the minimum was reached before the last sample and every later sample equals it",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 3,
+                "plateauStartsAt": 3,
+                "plateauHeldForSamples": 4,
+                "minimumIsSampleMinimumOnly": true,
+                "plateauDoesNotProveTerminalDepletion": true,
+                "reason": "a decrease was observed and the sampled minimum was reached before the last sample and held. N1: a plateau after a decrease does NOT prove terminal depletion - it shows the value stopped moving over the sampled horizon",
+                "aLongerHorizonCouldChangeThis": "unknown: the plateau may end beyond this horizon"
               },
               "terms": [
                 {
@@ -1822,14 +1840,16 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "OBSERVED_DEPLETION",
+                "status": "DECREASE_THEN_PLATEAU_OBSERVED",
                 "first": 3,
-                "min": 0,
-                "max": 3,
-                "reachedFloorAt": 3,
-                "heldForSamples": 4,
-                "reason": "a decrease was observed, the minimum was reached before the last sample and every later sample equals it",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 3,
+                "plateauStartsAt": 3,
+                "plateauHeldForSamples": 4,
+                "minimumIsSampleMinimumOnly": true,
+                "plateauDoesNotProveTerminalDepletion": true,
+                "reason": "a decrease was observed and the sampled minimum was reached before the last sample and held. N1: a plateau after a decrease does NOT prove terminal depletion - it shows the value stopped moving over the sampled horizon",
+                "aLongerHorizonCouldChangeThis": "unknown: the plateau may end beyond this horizon"
               },
               "terms": [
                 {
@@ -1923,7 +1943,7 @@
         }
       ],
       "framesRun": 16917,
-      "elapsedMs": 20918
+      "elapsedMs": 22258
     },
     {
       "label": "lifeforce 1/60",
@@ -2150,13 +2170,14 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "NO_DEPLETION_OBSERVED",
+                "status": "NO_DECREASE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 87,
+                "sampleMinimum": 0,
+                "sampleMaximum": 87,
                 "rose": true,
-                "reason": "the value moved but never downward, so this is not a depletion at all",
-                "aLargerBudgetCouldChangeThis": false
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value moved but never downward in the sampled track, so no decrease was observed here",
+                "aLongerHorizonCouldChangeThis": "unknown"
               },
               "terms": [
                 {
@@ -2328,13 +2349,14 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "NO_DEPLETION_OBSERVED",
+                "status": "NO_DECREASE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 87,
+                "sampleMinimum": 0,
+                "sampleMaximum": 87,
                 "rose": true,
-                "reason": "the value moved but never downward, so this is not a depletion at all",
-                "aLargerBudgetCouldChangeThis": false
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value moved but never downward in the sampled track, so no decrease was observed here",
+                "aLongerHorizonCouldChangeThis": "unknown"
               },
               "terms": [
                 {
@@ -2558,12 +2580,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -2734,12 +2757,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -2970,12 +2994,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -3146,12 +3171,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -3382,12 +3408,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -3558,12 +3585,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -3794,12 +3822,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -3970,12 +3999,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -4206,12 +4236,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -4383,12 +4414,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -4517,7 +4549,7 @@
         }
       ],
       "framesRun": 30491,
-      "elapsedMs": 50835
+      "elapsedMs": 50046
     },
     {
       "label": "lifeforce 6/60",
@@ -4714,12 +4746,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -4948,12 +4981,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -5203,12 +5237,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -5421,12 +5456,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -5654,12 +5690,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -5872,12 +5909,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -6105,12 +6143,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -6335,12 +6374,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -6485,7 +6525,7 @@
         }
       ],
       "framesRun": 24087,
-      "elapsedMs": 43908
+      "elapsedMs": 44825
     },
     {
       "label": "contra 6/300",
@@ -6720,14 +6760,15 @@
               "depletionCoverage": {
                 "status": "INSUFFICIENT_COVERAGE",
                 "first": 0,
-                "min": 0,
-                "max": 3,
-                "reachedFloorAt": 0,
-                "lastIndexOfMin": 6,
+                "sampleMinimum": 0,
+                "sampleMaximum": 3,
+                "sampleMinimumFirstAt": 0,
+                "sampleMinimumLastAt": 6,
                 "settled": false,
                 "arrivedOnLastSample": false,
-                "reason": "the value fell but never settled, so no floor was demonstrated at this budget",
-                "aLargerBudgetCouldChangeThis": true
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value fell but never settled, so no floor was demonstrated at this horizon",
+                "insufficiencyAlreadyManifest": true
               },
               "terms": [
                 {
@@ -6899,12 +6940,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -7122,14 +7164,16 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "OBSERVED_DEPLETION",
+                "status": "DECREASE_THEN_PLATEAU_OBSERVED",
                 "first": 255,
-                "min": 193,
-                "max": 255,
-                "reachedFloorAt": 5,
-                "heldForSamples": 2,
-                "reason": "a decrease was observed, the minimum was reached before the last sample and every later sample equals it",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 193,
+                "sampleMaximum": 255,
+                "plateauStartsAt": 5,
+                "plateauHeldForSamples": 2,
+                "minimumIsSampleMinimumOnly": true,
+                "plateauDoesNotProveTerminalDepletion": true,
+                "reason": "a decrease was observed and the sampled minimum was reached before the last sample and held. N1: a plateau after a decrease does NOT prove terminal depletion - it shows the value stopped moving over the sampled horizon",
+                "aLongerHorizonCouldChangeThis": "unknown: the plateau may end beyond this horizon"
               },
               "terms": [
                 {
@@ -7301,14 +7345,16 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "OBSERVED_DEPLETION",
+                "status": "DECREASE_THEN_PLATEAU_OBSERVED",
                 "first": 255,
-                "min": 193,
-                "max": 255,
-                "reachedFloorAt": 3,
-                "heldForSamples": 4,
-                "reason": "a decrease was observed, the minimum was reached before the last sample and every later sample equals it",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 193,
+                "sampleMaximum": 255,
+                "plateauStartsAt": 3,
+                "plateauHeldForSamples": 4,
+                "minimumIsSampleMinimumOnly": true,
+                "plateauDoesNotProveTerminalDepletion": true,
+                "reason": "a decrease was observed and the sampled minimum was reached before the last sample and held. N1: a plateau after a decrease does NOT prove terminal depletion - it shows the value stopped moving over the sampled horizon",
+                "aLongerHorizonCouldChangeThis": "unknown: the plateau may end beyond this horizon"
               },
               "terms": [
                 {
@@ -7501,12 +7547,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 2,
-                "min": 2,
-                "max": 2,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 2,
+                "sampleMaximum": 2,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -7678,12 +7725,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 2,
-                "min": 2,
-                "max": 2,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 2,
+                "sampleMaximum": 2,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -7901,12 +7949,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -8078,12 +8127,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -8301,12 +8351,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -8478,12 +8529,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -8701,12 +8753,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -8878,12 +8931,13 @@
               ],
               "decodeFailures": 0,
               "depletionCoverage": {
-                "status": "ALREADY_AT_MINIMUM",
+                "status": "NO_CHANGE_OBSERVED",
                 "first": 0,
-                "min": 0,
-                "max": 0,
-                "reason": "the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously",
-                "aLargerBudgetCouldChangeThis": false
+                "sampleMinimum": 0,
+                "sampleMaximum": 0,
+                "minimumIsSampleMinimumOnly": true,
+                "reason": "the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted",
+                "aLongerHorizonCouldChangeThis": "unknown: a value that does not move here may move under another action, state or horizon"
               },
               "terms": [
                 {
@@ -8998,7 +9052,7 @@
         }
       ],
       "framesRun": 32831,
-      "elapsedMs": 57273
+      "elapsedMs": 57763
     }
   ],
   "totals": {
@@ -9024,14 +9078,15 @@
       "!judgementBlocks": "32 of 42"
     },
     "depletionCoverage": {
-      "OBSERVED_DEPLETION": 12,
-      "NO_DEPLETION_OBSERVED": 2,
-      "ALREADY_AT_MINIMUM": 27,
+      "DECREASE_THEN_PLATEAU_OBSERVED": 12,
+      "NO_DECREASE_OBSERVED": 2,
+      "NO_CHANGE_OBSERVED": 27,
       "INSUFFICIENT_COVERAGE": 1
     },
     "budgetClaim": {
       "withdrawn": "floorNotReachedInsideBudget=0 does NOT show six pulses to be sufficient: a constant track of zeros satisfies the floor test vacuously",
-      "casesALargerBudgetCouldChange": 1,
+      "casesWhereInsufficiencyHasAlreadyManifested": 1,
+      "isThisAnUpperBoundOnWhatALongerHorizonCouldChange": false,
       "note": "the budget was still not raised in this stage; any other budget is a separately declared comparison"
     },
     "diagnoses": {
@@ -9133,7 +9188,7 @@
       },
       "resourceZeroAtEveryStart": {
         "count": 28,
-        "meaning": "the candidate reads the same zero at every independent start, so there is no depletion to observe at all",
+        "meaning": "the candidate reads the same zero at every independent start, so no depletion could be OBSERVED here. N1: this is an absence of observed change, not proof that the resource is exhausted",
         "cases": [
           {
             "row": "lifeforce 1/60",
