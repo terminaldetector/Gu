@@ -165,7 +165,7 @@ function startsFor(arm,host,pristine,part,discoverySnapshot,attest){
  return out;
 }
 
-function runArm(arm,host,pristine,candidate,discoverySnapshot,effectMask,playScope,attest){
+function runArm(arm,host,pristine,candidate,discoverySnapshot,effectMask,playScope,attest,coupledGains){
  const {driver}=host;
  const field=candidate.field,mask=candidate.mask;
  const perPartition=[];
@@ -224,10 +224,18 @@ function runArm(arm,host,pristine,candidate,discoverySnapshot,effectMask,playSco
   const causalConfirmed=costProbe.confirmed.some(entry=>entry.address===field.address);
   let induced=null,inductionError=null;
   try{
+   /* DEFECT FOUND BY THE SMOKE TEST. The first version omitted the judgement
+      inputs, which makes lossJudgement null and lets the NEGATIVE chain close
+      without the S3 cost-versus-sacrifice discriminator ever running. On the
+      sacrifice family every arm then looked like a success while the pipeline
+      correctly refuses - a weakening of NEGATIVE verification, which this stage
+      is not allowed to do. The coupled gains are passed, so the discriminator
+      is active here exactly as it is in the pipeline. */
    induced=Goals.induceGoal({id:'s10b-'+arm+'-'+field.address,actionMask:mask,address:field.address,
     causalConfirmed,independentStarts:costProbe.independentStarts,
     resourceTrack:{values:track},
-    terminal:{confirmedBeforeDepletion:alive,confirmedAfterDepletion:dead,scope:playScope}});
+    terminal:{confirmedBeforeDepletion:alive,confirmedAfterDepletion:dead,scope:playScope},
+    coupledGains});
   }catch(problem){inductionError=problem.message;}
   perPartition.push({partition:part.group,gated:false,
    startProvenance:starts.map(start=>({id:start.id,independent:start.independent,
@@ -248,6 +256,12 @@ function runArm(arm,host,pristine,candidate,discoverySnapshot,effectMask,playSco
     &&Number.isInteger(value)&&Number.isInteger(track[index-1])&&value<track[index-1]),
    polarity:induced?induced.polarity:null,
    rationale:induced?induced.rationale:null,
+   judgementActive:true,
+   lossJudgement:induced&&induced.lossJudgement?{
+    judgement:induced.lossJudgement.judgement,
+    classification:induced.lossJudgement.classification,
+    blockers:induced.lossJudgement.blockers}:null,
+   coupledGainCount:coupledGains?coupledGains.length:0,
    verifiable:induced?induced.verifiable:null,
    inductionError});
  }
@@ -283,13 +297,27 @@ function evaluate(label,extra,bytes,entry,attestable){
  const playScope=(discovery&&discovery.discovered&&discovery.discovered.persistingByMask
   ?(discovery.discovered.persistingByMask.find(e=>e.mask===effectMask)||{addresses:[]}).addresses
   :[]);
- /* the saved discovery snapshot for strategy B1: the state typing left behind */
- driver.restore(pristine);
- const topMask=ranked.length?ranked[0].mask:null;
- if(topMask!==null)for(let event=0;event<TYPE_EVENTS;event++){
-  driver.run(topMask,HOLD);driver.run(0,RELEASE);
- }
- const discoverySnapshot=driver.snapshot();
+ /* DEFECT FOUND BY THE SMOKE TEST. The first version took the snapshot AFTER
+    driving the mask for TYPE_EVENTS pulses - the state typing LEFT BEHIND,
+    which is a state where the resource has already been spent. REPLAY then
+    failed on the positive control, with no causality, no play scope and no
+    decrease, and that would have read as "replay does not recover causality"
+    when it only meant "I replayed a depleted state".
+
+    The state that matters for exact replay is the one the typed change was
+    observed FROM, which is the state typing starts from: pristine. So B1
+    restores exactly that, for every start. The starts then share one parent
+    state - that is the point, and why B1 can only show replay reproducibility. */
+ const discoverySnapshot=pristine;
+ const typingEndState=(()=>{
+  driver.restore(pristine);
+  const topMask=ranked.length?ranked[0].mask:null;
+  if(topMask===null)return null;
+  for(let event=0;event<TYPE_EVENTS;event++){driver.run(topMask,HOLD);driver.run(0,RELEASE);}
+  const snapshot=driver.snapshot();
+  driver.restore(pristine);
+  return snapshot;
+ })();
 
  const attest=attestable?snapshot=>{
   const phase=Phase.measurePhase(host.phaseProbe(snapshot),
@@ -298,6 +326,8 @@ function evaluate(label,extra,bytes,entry,attestable){
    attestedComparable:phase.phase==='PASS'};
  }:null;
 
+ /* gains the SAME action raises, which is what the S3 discriminator weighs */
+ const increasing=(discovery&&discovery.discovered&&discovery.discovered.increasingFields)||[];
  const candidates=[];
  const limit=Math.min(ranked.length,Number(process.env.AGOD_S10B_CANDIDATES||2));
  for(let index=0;index<limit;index++){
@@ -308,7 +338,9 @@ function evaluate(label,extra,bytes,entry,attestable){
   const arms={};
   for(const arm of ['BASELINE','GATE','REPLAY','HISTORY']){
    driver.restore(pristine);
-   try{arms[arm]=runArm(arm,host,pristine,candidate,discoverySnapshot,effectMask,playScope,attest);}
+   const coupledGains=increasing.filter(f=>f.mask===entryRanked.mask)
+    .map(f=>({address:f.address,width:f.width,step:f.step}));
+   try{arms[arm]=runArm(arm,host,pristine,candidate,discoverySnapshot,effectMask,playScope,attest,coupledGains);}
    catch(problem){arms[arm]={arm,error:problem.message};}
   }
   candidates.push({rank:entryRanked.rank,address:field.address,mask:entryRanked.mask,
@@ -318,6 +350,9 @@ function evaluate(label,extra,bytes,entry,attestable){
   discoveryStatus:discoveryError?'ERROR':discovery.status,
   discoveryStage:discoveryError?null:discovery.stage,
   discoveryError,effectMask,playScopeSize:playScope.length,
+  replayState:'pristine, the state the typed change was observed from; every REPLAY start restores exactly this',
+  typingEndStateRecorded:typingEndState!==null,
+  typingEndStateNote:'the state typing LEFT BEHIND is a depleted state and is NOT used as the replay state; using it was the first version\'s defect',
   candidatesExamined:candidates.length,candidates};
  rows.push(row);write();
  return row;
