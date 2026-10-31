@@ -629,13 +629,24 @@ function run(driver,options){
   return refuse('ranked-holdout','no HOLDOUT partition is configured, so the fixed choice cannot be checked independently',
    {...selectionSummary,chosenAddress:chosen.address});
  driver.restore(pristine);
+ /* The container is created BEFORE the call. A VERIFIED confirmation freezes
+    `discovered` on its way out, and Object.freeze is shallow, so a property
+    added to `discovered` afterwards throws while a property written into an
+    object that already hangs off it does not. This is the same trap that
+    rankedAttempts was written to avoid, and it only surfaces on a cartridge
+    where a candidate is actually selected - which is why the synthetic control
+    caught it and the real cartridges, where nothing is induced, would not. */
+ const confirmationRecord={chosenAddress:chosen.address,chosenRank:chosen.rank,
+  partitionsUsed:config.partitions.map(part=>part.group),
+  outcome:null,stage:null,reason:null,detail:null,framesSpent:null};
+ discovered.rankedConfirmation=confirmationRecord;
  const confirmation=evaluateResource({mask:chosen.mask,field:chosen.field},
   {partitions:config.partitions,promote:true});
- discovered.rankedConfirmation={chosenAddress:chosen.address,chosenRank:chosen.rank,
-  partitionsUsed:config.partitions.map(part=>part.group),
-  outcome:confirmation.outcome,stage:confirmation.stage||null,
-  reason:confirmation.reason||null,detail:confirmation.detail||null,
-  framesSpent:searchFrames.spent()};
+ confirmationRecord.outcome=confirmation.outcome;
+ confirmationRecord.stage=confirmation.stage||null;
+ confirmationRecord.reason=confirmation.reason||null;
+ confirmationRecord.detail=confirmation.detail||null;
+ confirmationRecord.framesSpent=searchFrames.spent();
  note('confirm',{address:chosen.address,outcome:confirmation.outcome,stage:confirmation.stage||null});
  if(confirmation.outcome!=='VERIFIED')
   return refuse('ranked-holdout',
