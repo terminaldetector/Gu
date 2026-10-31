@@ -1,0 +1,629 @@
+{
+  "type": "gu-agod-s11b-t2-equivalence",
+  "version": 1,
+  "question": "does the experimental adapter produce the same result as Causal.probeAction on identical starts, masks and horizons?",
+  "gate": "the synthetic trials do not start until this passes; on divergence both results are kept, the cause is localised, and RECOVERED_BY_CADENCE is withheld",
+  "horizons": [
+    12,
+    48
+  ],
+  "shiftTolerance": 3,
+  "startsPerTrial": 3,
+  "compared": [
+    "action arm RAM hash",
+    "neutral control RAM hash",
+    "alternative mask RAM hash",
+    "phase tolerance and trajectory arm count",
+    "attributed address sets",
+    "cross-start contradictions",
+    "causal confirmation for the target address"
+  ],
+  "provenance": {
+    "commit": "8a61b520232ec1f292b73465e390e71b7bf0c179",
+    "node": "v22.22.0",
+    "causalRevision": "agod-causal-e3-2",
+    "adapterRevision": "agod-s11b-adapter-1"
+  },
+  "status": "PASS",
+  "rows": [
+    {
+      "seed": 0,
+      "horizon": 12,
+      "mask": 2,
+      "alternative": 1,
+      "equivalent": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "standardConfirmed": [
+        17,
+        33,
+        94,
+        178
+      ],
+      "adapterConfirmed": [
+        17,
+        33,
+        94,
+        178
+      ],
+      "standardUsableStarts": 3,
+      "adapterUsableStarts": 3,
+      "perStart": [
+        {
+          "startId": "s0",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startId": "s1",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startId": "s2",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "seed": 0,
+      "horizon": 12,
+      "mask": 64,
+      "alternative": 1,
+      "equivalent": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "standardConfirmed": [
+        22,
+        38,
+        137
+      ],
+      "adapterConfirmed": [
+        22,
+        38,
+        137
+      ],
+      "standardUsableStarts": 3,
+      "adapterUsableStarts": 3,
+      "perStart": [
+        {
+          "startId": "s0",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startId": "s1",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startId": "s2",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "seed": 0,
+      "horizon": 48,
+      "mask": 2,
+      "alternative": 1,
+      "equivalent": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "standardConfirmed": [
+        17,
+        33,
+        70,
+        145,
+        169,
+        178
+      ],
+      "adapterConfirmed": [
+        17,
+        33,
+        70,
+        145,
+        169,
+        178
+      ],
+      "standardUsableStarts": 3,
+      "adapterUsableStarts": 3,
+      "perStart": [
+        {
+          "startId": "s0",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startId": "s1",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startId": "s2",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "seed": 0,
+      "horizon": 48,
+      "mask": 64,
+      "alternative": 1,
+      "equivalent": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "standardConfirmed": [
+        22,
+        38,
+        137
+      ],
+      "adapterConfirmed": [
+        22,
+        38,
+        137
+      ],
+      "standardUsableStarts": 3,
+      "adapterUsableStarts": 3,
+      "perStart": [
+        {
+          "startId": "s0",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startId": "s1",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startId": "s2",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "seed": 200,
+      "horizon": 12,
+      "mask": 2,
+      "alternative": 1,
+      "equivalent": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "standardConfirmed": [
+        17,
+        33,
+        100,
+        177
+      ],
+      "adapterConfirmed": [
+        17,
+        33,
+        100,
+        177
+      ],
+      "standardUsableStarts": 3,
+      "adapterUsableStarts": 3,
+      "perStart": [
+        {
+          "startId": "s0",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startId": "s1",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startId": "s2",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "seed": 200,
+      "horizon": 12,
+      "mask": 64,
+      "alternative": 1,
+      "equivalent": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "standardConfirmed": [
+        22,
+        38,
+        221
+      ],
+      "adapterConfirmed": [
+        22,
+        38,
+        221
+      ],
+      "standardUsableStarts": 3,
+      "adapterUsableStarts": 3,
+      "perStart": [
+        {
+          "startId": "s0",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startId": "s1",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startId": "s2",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "seed": 200,
+      "horizon": 48,
+      "mask": 2,
+      "alternative": 1,
+      "equivalent": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "standardConfirmed": [
+        17,
+        33,
+        100
+      ],
+      "adapterConfirmed": [
+        17,
+        33,
+        100
+      ],
+      "standardUsableStarts": 3,
+      "adapterUsableStarts": 3,
+      "perStart": [
+        {
+          "startId": "s0",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startId": "s1",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startId": "s2",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 7,
+          "adapterAttributed": 7,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "seed": 200,
+      "horizon": 48,
+      "mask": 64,
+      "alternative": 1,
+      "equivalent": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "standardConfirmed": [
+        22,
+        38,
+        103,
+        110,
+        167,
+        221
+      ],
+      "adapterConfirmed": [
+        22,
+        38,
+        103,
+        110,
+        167,
+        221
+      ],
+      "standardUsableStarts": 3,
+      "adapterUsableStarts": 3,
+      "perStart": [
+        {
+          "startId": "s0",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startId": "s1",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startId": "s2",
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    }
+  ],
+  "totals": {
+    "trials": 8,
+    "equivalent": 8,
+    "divergent": 0,
+    "gatePassed": true,
+    "verdict": "the adapter and the standard detector agree on every compared quantity: the synthetic trials may start and RECOVERED_BY_CADENCE may be used"
+  }
+}
