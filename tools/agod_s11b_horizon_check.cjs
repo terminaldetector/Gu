@@ -45,7 +45,7 @@ const report={type:'gu-agod-s11b-horizon-check',version:1,
   horizons:PAIRED_CONTROLS,pairedContinuousControls:PAIRED_CONTROLS},
  shiftTolerance:SHIFT,startsPerTrial:STARTS,maxAddressesReported:MAX_ADDRESSES,
  frameBudget:FRAME_BUDGET,
- outcomes:['PHASE_CONTROL_INSUFFICIENT','RECOVERED_BY_DURATION','RECOVERED_BY_CADENCE','CADENCE_UNDECIDABLE',
+ outcomes:['OBSERVABLE_AT_BASELINE','DURATION_EXPLAINS_NOT_CADENCE','PHASE_CONTROL_INSUFFICIENT','RECOVERED_BY_DURATION','RECOVERED_BY_CADENCE','CADENCE_UNDECIDABLE',
   'TIME_EXPLAINED','NOT_REPRODUCIBLE_ACROSS_STARTS','TRANSIENT_WITHIN_WINDOW',
   'FINAL_STATE_UNCHANGED','NO_EVENT_IN_HORIZON','ADDRESS_COVERAGE_UNKNOWN',
   'ADAPTER_DIVERGENCE_UNRESOLVED','NOT_OBSERVED','NOT_COMPARABLE','BUDGET_EXCEEDED'],
@@ -165,6 +165,17 @@ function classify(candidate,seriesA,seriesB,pairedControls,gatePassed,isKnownTim
    suspectTrainFrames:trustworthy?trustworthy.suspectTrain:null,
    why:'this candidate was confirmed ONLY at horizons where the probe also confirmed addresses the neutral arm moved by itself, so the phase control did not cover the drift there and the confirmation is an instrument artefact rather than a recovered causal link'};
  const notes=[];
+ /* DEFECT FOUND BY READING THE RESULT. The fallback below used to return
+    RECOVERED_BY_DURATION whenever a candidate was confirmed under both the
+    train and the duration-matched hold. That swept up candidates that were
+    ALREADY confirmed at the 12-frame baseline, and reported them as recovered
+    by duration when nothing had been recovered at all: it inflated A to 6 on
+    the synthetic corpus where the truth is 0. A baseline confirmation is now
+    its own outcome and contributes to neither A nor B. */
+ const baseline=seriesA.find(t=>t.frames===12)||seriesB.find(t=>t.frames===12);
+ if(baseline&&baseline.confirmed&&!baseline.phaseControlSuspect)
+  return {outcome:'OBSERVABLE_AT_BASELINE',atFrames:12,
+   why:'already confirmed at the 12-frame baseline, so neither a longer horizon nor a different action structure recovered anything'};
  /* A: duration - confirmed at a long horizon, not at the short one, same regime */
  if(anyHoldConfirmed&&shortHold&&!shortHold.confirmed)
   return {outcome:'RECOVERED_BY_DURATION',
@@ -183,8 +194,8 @@ function classify(candidate,seriesA,seriesB,pairedControls,gatePassed,isKnownTim
   if(!matched.confirmed)
    return {outcome:'RECOVERED_BY_CADENCE',atFrames:confirmedTrain.frames,
     why:'confirmed under the pulse train and NOT under continuous hold of the same duration'};
-  return {outcome:'RECOVERED_BY_DURATION',atFrames:confirmedTrain.frames,
-   why:'confirmed under both the train and the duration-matched hold, so the duration explains it'};
+  return {outcome:'DURATION_EXPLAINS_NOT_CADENCE',atFrames:confirmedTrain.frames,
+   why:'confirmed under both the train and the duration-matched hold of the same length, so the duration accounts for it and the action structure adds nothing. This is NOT a recovery: it does not enter A or B.'};
  }
  /* C: the remaining uncertainty, each cause named */
  const all=[...seriesA,...seriesB,...pairedControls];
@@ -377,6 +388,8 @@ try{
    A_missedForWantOfHorizon:tally.RECOVERED_BY_DURATION||0,
    B_missedForWrongActionStructure:tally.RECOVERED_BY_CADENCE||0,
    instrumentArtefacts_PHASE_CONTROL_INSUFFICIENT:tally.PHASE_CONTROL_INSUFFICIENT||0,
+   observableAtBaseline_neitherAnorB:tally.OBSERVABLE_AT_BASELINE||0,
+   durationExplainsNotCadence_neitherAnorB:tally.DURATION_EXPLAINS_NOT_CADENCE||0,
    C_remainingUncertainty:countOf(tally,['PHASE_CONTROL_INSUFFICIENT','CADENCE_UNDECIDABLE','TIME_EXPLAINED',
     'NOT_REPRODUCIBLE_ACROSS_STARTS','TRANSIENT_WITHIN_WINDOW','FINAL_STATE_UNCHANGED',
     'NO_EVENT_IN_HORIZON','ADDRESS_COVERAGE_UNKNOWN','ADAPTER_DIVERGENCE_UNRESOLVED',
