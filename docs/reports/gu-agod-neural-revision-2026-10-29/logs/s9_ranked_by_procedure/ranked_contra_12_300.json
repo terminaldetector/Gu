@@ -1,0 +1,3273 @@
+{
+  "type": "gu-agod-real-game-check",
+  "version": 1,
+  "corpusClass": "private user-supplied real-game ROM, local evaluation only; no ROM bytes in this artefact",
+  "oracle": "none exists for a real cartridge: discovery here is unlabelled by construction, and no judgement is recorded as a label",
+  "provenance": {
+    "commit": "03e6e661c6b3d49a8e184c7f1eb2a568350c451d",
+    "workingTreeDirty": false,
+    "node": "v22.22.0",
+    "pipelineRevision": "agod-pipeline-s9-4",
+    "causalRevision": "agod-causal-e3-2",
+    "ramRevision": "agod-ram-e2-1",
+    "phaseEvidenceRevision": "agod-phase-evidence-1"
+  },
+  "status": "COMPLETE",
+  "arms": [
+    {
+      "arm": "pure-boot",
+      "declaredIntervention": null,
+      "initialStateHash": "18338581dad57d3925aafe212323347f",
+      "phaseEvidence": {
+        "revision": "agod-phase-evidence-1",
+        "parameters": {
+          "idleFrames": 180,
+          "pulses": 14,
+          "settleFrames": 60,
+          "minDistinctOutcomes": 4,
+          "buttonMasks": [
+            1,
+            2,
+            4,
+            8,
+            16,
+            32,
+            64,
+            128
+          ],
+          "saturationPixels": 20000
+        },
+        "idle": {
+          "framesSampled": 180,
+          "pictureMotionWithoutInput": 0.139,
+          "note": "context only: an attract screen moves as much as play does, so this promotes nothing"
+        },
+        "ram": {
+          "bidirectionalRamAddresses": 0,
+          "addressSample": [],
+          "distinctOutcomesAcrossEightButtons": 4,
+          "buttonsTested": 8,
+          "neutralControlDiffersFromSomeButton": true,
+          "note": "ADDRESSES responding bidirectionally, not confirmed coordinates; a menu cursor has the same signature"
+        },
+        "video": {
+          "method": "differential between the Left and Right arms at equal frame counts from one snapshot, so an identical scrolling background cancels",
+          "differingPixelsHeld": 0,
+          "meanXOfDifferingPixelsHeld": null,
+          "massSplitAcrossHalvesHeld": {
+            "leftHalf": 0,
+            "rightHalf": 0,
+            "total": 0
+          },
+          "differingPixelsAfterRelease": 0,
+          "meanXOfDifferingPixelsAfterRelease": null,
+          "localisedEnoughToBeAnObject": false,
+          "differenceSurvivesRelease": false,
+          "directionEstablished": false,
+          "directionNote": "the differing pixels of the two arms are one set, so this yields one mean x and cannot say which way an object moved",
+          "sensitivityNote": "a differing-pixel count near the whole screen means the test cannot resolve an object, and is reported as not localised rather than as an object"
+        },
+        "criteria": "RAM bidirectionality AND >=4 distinct outcomes across eight buttons AND a localised video difference AND that difference surviving release",
+        "modalities": {
+          "ram": false,
+          "video": false
+        },
+        "phase": "NOT-REACHED",
+        "phaseNote": "neither modality indicates object control under this entry procedure; this is an absence of evidence under one procedure, not proof that the cartridge cannot be played"
+      },
+      "pipeline": {
+        "status": "REFUSED",
+        "stage": "ranked-selection",
+        "reason": "every candidate inside the declared budget refused",
+        "pipelineRevision": "agod-pipeline-s9-4",
+        "candidates": {
+          "resource": {
+            "address": 28,
+            "width": 1,
+            "endian": "n/a",
+            "encoding": "undetermined",
+            "encodingDetermined": false,
+            "step": -1,
+            "direction": "decreasing",
+            "mask": 8
+          },
+          "effect": {
+            "address": 63,
+            "width": 1,
+            "endian": "n/a",
+            "encoding": "binary",
+            "encodingDetermined": true,
+            "step": 1,
+            "direction": "increasing",
+            "mask": 1
+          },
+          "increasingFields": [
+            {
+              "address": 63,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "binary",
+              "encodingDetermined": true,
+              "step": 1,
+              "direction": "increasing",
+              "mask": 1
+            },
+            {
+              "address": 63,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "binary",
+              "encodingDetermined": true,
+              "step": 1,
+              "direction": "increasing",
+              "mask": 2
+            },
+            {
+              "address": 57,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "undetermined",
+              "encodingDetermined": false,
+              "step": 1,
+              "direction": "increasing",
+              "mask": 8
+            },
+            {
+              "address": 383,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "binary",
+              "encodingDetermined": true,
+              "step": 42,
+              "direction": "increasing",
+              "mask": 8
+            },
+            {
+              "address": 385,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "bcd",
+              "encodingDetermined": true,
+              "step": 22,
+              "direction": "increasing",
+              "mask": 8
+            },
+            {
+              "address": 63,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "binary",
+              "encodingDetermined": true,
+              "step": 1,
+              "direction": "increasing",
+              "mask": 32
+            },
+            {
+              "address": 63,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "binary",
+              "encodingDetermined": true,
+              "step": 1,
+              "direction": "increasing",
+              "mask": 64
+            },
+            {
+              "address": 63,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "binary",
+              "encodingDetermined": true,
+              "step": 1,
+              "direction": "increasing",
+              "mask": 128
+            }
+          ],
+          "increasingFieldCount": 8,
+          "persistingAddressCountByMask": [
+            {
+              "mask": 1,
+              "addresses": 1
+            },
+            {
+              "mask": 2,
+              "addresses": 1
+            },
+            {
+              "mask": 4,
+              "addresses": 1
+            },
+            {
+              "mask": 8,
+              "addresses": 19
+            },
+            {
+              "mask": 16,
+              "addresses": 1
+            },
+            {
+              "mask": 32,
+              "addresses": 1
+            },
+            {
+              "mask": 64,
+              "addresses": 1
+            },
+            {
+              "mask": 128,
+              "addresses": 1
+            }
+          ],
+          "neutralMovedAddressCount": 848
+        },
+        "attribution": [],
+        "typing": {
+          "spansExamined": 20,
+          "identified": [
+            {
+              "mask": 1,
+              "span": [
+                63,
+                63
+              ],
+              "field": {
+                "address": 63,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": 1,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 2,
+              "span": [
+                63,
+                63
+              ],
+              "field": {
+                "address": 63,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": 1,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 8,
+              "span": [
+                28,
+                28
+              ],
+              "field": {
+                "address": 28,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": -1,
+                "direction": "decreasing"
+              }
+            },
+            {
+              "mask": 8,
+              "span": [
+                57,
+                58
+              ],
+              "field": {
+                "address": 57,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": 1,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 8,
+              "span": [
+                60,
+                60
+              ],
+              "field": {
+                "address": 60,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": -56,
+                "direction": "decreasing"
+              }
+            },
+            {
+              "mask": 8,
+              "span": [
+                62,
+                62
+              ],
+              "field": {
+                "address": 62,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": -56,
+                "direction": "decreasing"
+              }
+            },
+            {
+              "mask": 8,
+              "span": [
+                383,
+                383
+              ],
+              "field": {
+                "address": 383,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": 42,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 8,
+              "span": [
+                385,
+                385
+              ],
+              "field": {
+                "address": 385,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "bcd",
+                "step": 22,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 32,
+              "span": [
+                63,
+                63
+              ],
+              "field": {
+                "address": 63,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": 1,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 64,
+              "span": [
+                63,
+                63
+              ],
+              "field": {
+                "address": 63,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": 1,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 128,
+              "span": [
+                63,
+                63
+              ],
+              "field": {
+                "address": 63,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": 1,
+                "direction": "increasing"
+              }
+            }
+          ],
+          "notIdentified": {
+            "UNRESOLVED": 7,
+            "AMBIGUOUS": 2
+          },
+          "notIdentifiedSample": [
+            {
+              "mask": 4,
+              "span": [
+                34,
+                34
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 8,
+              "span": [
+                37,
+                37
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 8,
+              "span": [
+                303,
+                303
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 8,
+              "span": [
+                306,
+                308
+              ],
+              "status": "AMBIGUOUS"
+            },
+            {
+              "mask": 8,
+              "span": [
+                331,
+                331
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 8,
+              "span": [
+                379,
+                379
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 8,
+              "span": [
+                381,
+                381
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 8,
+              "span": [
+                2018,
+                2021
+              ],
+              "status": "AMBIGUOUS"
+            }
+          ]
+        },
+        "counterfactual": {
+          "reversalProbes": [],
+          "judge": [
+            {
+              "coupledGains": 3,
+              "playGainsWatched": 5,
+              "floorReversible": false,
+              "gainRetainedAcrossReversal": false,
+              "reversalMask": null
+            },
+            {
+              "coupledGains": 3,
+              "playGainsWatched": 5,
+              "floorReversible": false,
+              "gainRetainedAcrossReversal": false,
+              "reversalMask": null
+            },
+            {
+              "coupledGains": 3,
+              "playGainsWatched": 5,
+              "floorReversible": false,
+              "gainRetainedAcrossReversal": false,
+              "reversalMask": null
+            }
+          ]
+        },
+        "induction": [
+          {
+            "partition": "DISCOVERY",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              1,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "CALIBRATION",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "HOLDOUT",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "DISCOVERY",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "CALIBRATION",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "HOLDOUT",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "DISCOVERY",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "CALIBRATION",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "HOLDOUT",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "promotion": [],
+        "rankedSelection": {
+          "specRevision": "s9-ranking-1",
+          "candidatesTyped": 3,
+          "candidatesFound": 3,
+          "maxCandidates": 6,
+          "budgetNote": "every group fits inside the declared candidate budget",
+          "grouping": {
+            "rule": "total agreement on an INFORMATIVE movement pattern (one containing both a moved and a not-moved transition), or an observed digit carry. Adjacency and a shared encoding never group on their own, and agreeing on an all-moved pattern is not evidence.",
+            "links": [
+              {
+                "a": 28,
+                "b": 60,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 3,
+                "stillTransitions": 21,
+                "agreementWasTotal": false,
+                "patternInformative": true,
+                "whyNotGrouped": "the two patterns disagree somewhere",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 28,
+                "b": 62,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 3,
+                "stillTransitions": 21,
+                "agreementWasTotal": false,
+                "patternInformative": true,
+                "whyNotGrouped": "the two patterns disagree somewhere",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 60,
+                "b": 62,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 0,
+                "stillTransitions": 24,
+                "agreementWasTotal": true,
+                "patternInformative": false,
+                "whyNotGrouped": "the shared pattern is all-moved or all-still, so agreeing on it is not evidence",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              }
+            ],
+            "groups": [
+              {
+                "addresses": [
+                  28
+                ],
+                "size": 1,
+                "representative": 28,
+                "rule": "highest score by the pre-registered spec, then widest span, then most distinct values, then lowest address"
+              },
+              {
+                "addresses": [
+                  60
+                ],
+                "size": 1,
+                "representative": 60,
+                "rule": "highest score by the pre-registered spec, then widest span, then most distinct values, then lowest address"
+              },
+              {
+                "addresses": [
+                  62
+                ],
+                "size": 1,
+                "representative": 62,
+                "rule": "highest score by the pre-registered spec, then widest span, then most distinct values, then lowest address"
+              }
+            ]
+          },
+          "ranked": [
+            {
+              "rank": 1,
+              "address": 28,
+              "mask": 8,
+              "groupAddresses": [
+                28
+              ],
+              "score": {
+                "total": 0.807,
+                "weightedSum": 15.335,
+                "breakdown": {
+                  "causality": {
+                    "score": 0.667,
+                    "weight": 5,
+                    "contribution": 3.335
+                  },
+                  "crossStartReproducibility": {
+                    "score": 1,
+                    "weight": 4,
+                    "contribution": 4
+                  },
+                  "informativeValues": {
+                    "score": 1,
+                    "weight": 3,
+                    "contribution": 3
+                  },
+                  "separability": {
+                    "score": 1,
+                    "weight": 3,
+                    "contribution": 3
+                  },
+                  "observedFunctionalEffect": {
+                    "score": 0,
+                    "weight": 2,
+                    "contribution": 0
+                  },
+                  "phaseAndRestoreRobustness": {
+                    "score": 1,
+                    "weight": 2,
+                    "contribution": 2
+                  }
+                }
+              },
+              "evidence": {
+                "causality": {
+                  "confirmedStarts": 2,
+                  "independentStarts": 3,
+                  "confirmedFraction": 0.6666666666666666
+                },
+                "dynamics": {
+                  "startsObserved": 3,
+                  "startsWhereItMoved": 3,
+                  "stepAgreesAcrossStarts": true,
+                  "stepsSeen": [
+                    -1
+                  ]
+                },
+                "reachability": {
+                  "distinctValues": 2,
+                  "values": [
+                    0,
+                    1
+                  ],
+                  "reachedNonZero": true,
+                  "floorValue": 0,
+                  "floorHeld": true
+                },
+                "restore": {
+                  "seriesIdenticalAfterRestore": true
+                },
+                "phase": {
+                  "movesAfterStartPulse": true,
+                  "resetTested": false,
+                  "resetNote": "a hardware reset is not exposed by this driver interface, so reset dependence is NOT TESTED rather than ruled out"
+                },
+                "separability": {
+                  "movedUnderNeutralControl": false,
+                  "masksThatMoveThisSpan": 1,
+                  "constantStepAcrossStarts": true
+                },
+                "downstream": {
+                  "schemaVersion": 1,
+                  "probeRevision": "agod-consumers-s4c-3",
+                  "status": "OBSERVED",
+                  "hasConsumer": false,
+                  "values": {
+                    "base": 1,
+                    "driven": 0
+                  },
+                  "signatures": {
+                    "low": "187605dce1f95376",
+                    "high": "187605dce1f95376"
+                  },
+                  "excludedBytes": 1,
+                  "steps": 16,
+                  "reason": "downstream effect not observed in the tested trajectories: this does not establish that nothing reads the field"
+                }
+              }
+            },
+            {
+              "rank": 2,
+              "address": 60,
+              "mask": 8,
+              "groupAddresses": [
+                60
+              ],
+              "score": {
+                "total": 0.221,
+                "weightedSum": 4.2,
+                "breakdown": {
+                  "causality": {
+                    "score": 0,
+                    "weight": 5,
+                    "contribution": 0
+                  },
+                  "crossStartReproducibility": {
+                    "score": 0,
+                    "weight": 4,
+                    "contribution": 0
+                  },
+                  "informativeValues": {
+                    "score": 0.3,
+                    "weight": 3,
+                    "contribution": 0.9
+                  },
+                  "separability": {
+                    "score": 0.7,
+                    "weight": 3,
+                    "contribution": 2.1
+                  },
+                  "observedFunctionalEffect": {
+                    "score": 0,
+                    "weight": 2,
+                    "contribution": 0
+                  },
+                  "phaseAndRestoreRobustness": {
+                    "score": 0.6,
+                    "weight": 2,
+                    "contribution": 1.2
+                  }
+                }
+              },
+              "evidence": {
+                "causality": {
+                  "confirmedStarts": 0,
+                  "independentStarts": 3,
+                  "confirmedFraction": 0
+                },
+                "dynamics": {
+                  "startsObserved": 3,
+                  "startsWhereItMoved": 0,
+                  "stepAgreesAcrossStarts": false,
+                  "stepsSeen": []
+                },
+                "reachability": {
+                  "distinctValues": 1,
+                  "values": [
+                    0
+                  ],
+                  "reachedNonZero": false,
+                  "floorValue": 0,
+                  "floorHeld": true
+                },
+                "restore": {
+                  "seriesIdenticalAfterRestore": true
+                },
+                "phase": {
+                  "movesAfterStartPulse": false,
+                  "resetTested": false,
+                  "resetNote": "a hardware reset is not exposed by this driver interface, so reset dependence is NOT TESTED rather than ruled out"
+                },
+                "separability": {
+                  "movedUnderNeutralControl": false,
+                  "masksThatMoveThisSpan": 1,
+                  "constantStepAcrossStarts": false
+                },
+                "downstream": {
+                  "schemaVersion": 1,
+                  "probeRevision": "agod-consumers-s4c-3",
+                  "status": "INCONCLUSIVE",
+                  "hasConsumer": null,
+                  "reason": "the field did not reach a second value, so there is nothing to contrast"
+                }
+              }
+            },
+            {
+              "rank": 3,
+              "address": 62,
+              "mask": 8,
+              "groupAddresses": [
+                62
+              ],
+              "score": {
+                "total": 0.221,
+                "weightedSum": 4.2,
+                "breakdown": {
+                  "causality": {
+                    "score": 0,
+                    "weight": 5,
+                    "contribution": 0
+                  },
+                  "crossStartReproducibility": {
+                    "score": 0,
+                    "weight": 4,
+                    "contribution": 0
+                  },
+                  "informativeValues": {
+                    "score": 0.3,
+                    "weight": 3,
+                    "contribution": 0.9
+                  },
+                  "separability": {
+                    "score": 0.7,
+                    "weight": 3,
+                    "contribution": 2.1
+                  },
+                  "observedFunctionalEffect": {
+                    "score": 0,
+                    "weight": 2,
+                    "contribution": 0
+                  },
+                  "phaseAndRestoreRobustness": {
+                    "score": 0.6,
+                    "weight": 2,
+                    "contribution": 1.2
+                  }
+                }
+              },
+              "evidence": {
+                "causality": {
+                  "confirmedStarts": 0,
+                  "independentStarts": 3,
+                  "confirmedFraction": 0
+                },
+                "dynamics": {
+                  "startsObserved": 3,
+                  "startsWhereItMoved": 0,
+                  "stepAgreesAcrossStarts": false,
+                  "stepsSeen": []
+                },
+                "reachability": {
+                  "distinctValues": 1,
+                  "values": [
+                    0
+                  ],
+                  "reachedNonZero": false,
+                  "floorValue": 0,
+                  "floorHeld": true
+                },
+                "restore": {
+                  "seriesIdenticalAfterRestore": true
+                },
+                "phase": {
+                  "movesAfterStartPulse": false,
+                  "resetTested": false,
+                  "resetNote": "a hardware reset is not exposed by this driver interface, so reset dependence is NOT TESTED rather than ruled out"
+                },
+                "separability": {
+                  "movedUnderNeutralControl": false,
+                  "masksThatMoveThisSpan": 1,
+                  "constantStepAcrossStarts": false
+                },
+                "downstream": {
+                  "schemaVersion": 1,
+                  "probeRevision": "agod-consumers-s4c-3",
+                  "status": "INCONCLUSIVE",
+                  "hasConsumer": null,
+                  "reason": "the field did not reach a second value, so there is nothing to contrast"
+                }
+              }
+            }
+          ]
+        },
+        "rankedAttempts": [
+          {
+            "rank": 1,
+            "address": 28,
+            "mask": 8,
+            "score": 0.807,
+            "outcome": "REFUSED",
+            "stage": "judge",
+            "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game",
+            "detail": {
+              "fact": "TERMINAL_RESOURCE_DEPLETION",
+              "classification": "PROVISIONAL_SACRIFICE",
+              "blockers": [
+                "the same action also raises 3 persisting field(s): a cost that buys something is not evidence of harm"
+              ],
+              "coupledGains": [
+                {
+                  "address": 57,
+                  "width": 1,
+                  "step": 1
+                },
+                {
+                  "address": 383,
+                  "width": 1,
+                  "step": 42
+                },
+                {
+                  "address": 385,
+                  "width": 1,
+                  "step": 22
+                }
+              ],
+              "floorReversible": false,
+              "gainRetainedAcrossReversal": false
+            }
+          },
+          {
+            "rank": 2,
+            "address": 60,
+            "mask": 8,
+            "score": 0.221,
+            "outcome": "REFUSED",
+            "stage": "judge",
+            "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game",
+            "detail": {
+              "fact": "TERMINAL_RESOURCE_DEPLETION",
+              "classification": "PROVISIONAL_SACRIFICE",
+              "blockers": [
+                "the same action also raises 3 persisting field(s): a cost that buys something is not evidence of harm"
+              ],
+              "coupledGains": [
+                {
+                  "address": 57,
+                  "width": 1,
+                  "step": 1
+                },
+                {
+                  "address": 383,
+                  "width": 1,
+                  "step": 42
+                },
+                {
+                  "address": 385,
+                  "width": 1,
+                  "step": 22
+                }
+              ],
+              "floorReversible": false,
+              "gainRetainedAcrossReversal": false
+            }
+          },
+          {
+            "rank": 3,
+            "address": 62,
+            "mask": 8,
+            "score": 0.221,
+            "outcome": "REFUSED",
+            "stage": "judge",
+            "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game",
+            "detail": {
+              "fact": "TERMINAL_RESOURCE_DEPLETION",
+              "classification": "PROVISIONAL_SACRIFICE",
+              "blockers": [
+                "the same action also raises 3 persisting field(s): a cost that buys something is not evidence of harm"
+              ],
+              "coupledGains": [
+                {
+                  "address": 57,
+                  "width": 1,
+                  "step": 1
+                },
+                {
+                  "address": 383,
+                  "width": 1,
+                  "step": 42
+                },
+                {
+                  "address": 385,
+                  "width": 1,
+                  "step": 22
+                }
+              ],
+              "floorReversible": false,
+              "gainRetainedAcrossReversal": false
+            }
+          }
+        ],
+        "goal": null,
+        "refusals": [
+          {
+            "stage": "judge",
+            "candidate": 28,
+            "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game",
+            "fact": "TERMINAL_RESOURCE_DEPLETION",
+            "classification": "PROVISIONAL_SACRIFICE",
+            "blockers": [
+              "the same action also raises 3 persisting field(s): a cost that buys something is not evidence of harm"
+            ],
+            "coupledGains": [
+              {
+                "address": 57,
+                "width": 1,
+                "step": 1
+              },
+              {
+                "address": 383,
+                "width": 1,
+                "step": 42
+              },
+              {
+                "address": 385,
+                "width": 1,
+                "step": 22
+              }
+            ],
+            "floorReversible": false,
+            "gainRetainedAcrossReversal": false
+          },
+          {
+            "stage": "judge",
+            "candidate": 60,
+            "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game",
+            "fact": "TERMINAL_RESOURCE_DEPLETION",
+            "classification": "PROVISIONAL_SACRIFICE",
+            "blockers": [
+              "the same action also raises 3 persisting field(s): a cost that buys something is not evidence of harm"
+            ],
+            "coupledGains": [
+              {
+                "address": 57,
+                "width": 1,
+                "step": 1
+              },
+              {
+                "address": 383,
+                "width": 1,
+                "step": 42
+              },
+              {
+                "address": 385,
+                "width": 1,
+                "step": 22
+              }
+            ],
+            "floorReversible": false,
+            "gainRetainedAcrossReversal": false
+          },
+          {
+            "stage": "judge",
+            "candidate": 62,
+            "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game",
+            "fact": "TERMINAL_RESOURCE_DEPLETION",
+            "classification": "PROVISIONAL_SACRIFICE",
+            "blockers": [
+              "the same action also raises 3 persisting field(s): a cost that buys something is not evidence of harm"
+            ],
+            "coupledGains": [
+              {
+                "address": 57,
+                "width": 1,
+                "step": 1
+              },
+              {
+                "address": 383,
+                "width": 1,
+                "step": 42
+              },
+              {
+                "address": 385,
+                "width": 1,
+                "step": 22
+              }
+            ],
+            "floorReversible": false,
+            "gainRetainedAcrossReversal": false
+          },
+          {
+            "stage": "ranked-selection",
+            "reason": "every candidate inside the declared budget refused",
+            "candidatesEvaluated": 3,
+            "candidatesFound": 3,
+            "perCandidate": [
+              {
+                "rank": 1,
+                "address": 28,
+                "stage": "judge",
+                "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game"
+              },
+              {
+                "rank": 2,
+                "address": 60,
+                "stage": "judge",
+                "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game"
+              },
+              {
+                "rank": 3,
+                "address": 62,
+                "stage": "judge",
+                "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game"
+              }
+            ]
+          }
+        ]
+      },
+      "elapsedMs": 48403
+    },
+    {
+      "arm": "start-preamble",
+      "declaredIntervention": "press Start 12 time(s) with a 24-frame gap and settle 300 frames, a declared human prior about how cartridges begin, not a RAM hint and not a reward choice",
+      "initialStateHash": "ed86012b2174b7e5bdd821b65ec3d9e1",
+      "phaseEvidence": {
+        "revision": "agod-phase-evidence-1",
+        "parameters": {
+          "idleFrames": 180,
+          "pulses": 14,
+          "settleFrames": 60,
+          "minDistinctOutcomes": 4,
+          "buttonMasks": [
+            1,
+            2,
+            4,
+            8,
+            16,
+            32,
+            64,
+            128
+          ],
+          "saturationPixels": 20000
+        },
+        "idle": {
+          "framesSampled": 180,
+          "pictureMotionWithoutInput": 0.128,
+          "note": "context only: an attract screen moves as much as play does, so this promotes nothing"
+        },
+        "ram": {
+          "bidirectionalRamAddresses": 27,
+          "addressSample": [
+            {
+              "address": 2,
+              "underRight": 56,
+              "underLeft": -23
+            },
+            {
+              "address": 515,
+              "underRight": 56,
+              "underLeft": -30
+            },
+            {
+              "address": 519,
+              "underRight": 52,
+              "underLeft": -16
+            },
+            {
+              "address": 539,
+              "underRight": 56,
+              "underLeft": -16
+            }
+          ],
+          "distinctOutcomesAcrossEightButtons": 8,
+          "buttonsTested": 8,
+          "neutralControlDiffersFromSomeButton": true,
+          "note": "ADDRESSES responding bidirectionally, not confirmed coordinates; a menu cursor has the same signature"
+        },
+        "video": {
+          "method": "differential between the Left and Right arms at equal frame counts from one snapshot, so an identical scrolling background cancels",
+          "differingPixelsHeld": 365,
+          "meanXOfDifferingPixelsHeld": 79.86,
+          "massSplitAcrossHalvesHeld": {
+            "leftHalf": 365,
+            "rightHalf": 0,
+            "total": 365
+          },
+          "differingPixelsAfterRelease": 365,
+          "meanXOfDifferingPixelsAfterRelease": 79.86,
+          "localisedEnoughToBeAnObject": true,
+          "differenceSurvivesRelease": true,
+          "directionEstablished": false,
+          "directionNote": "the differing pixels of the two arms are one set, so this yields one mean x and cannot say which way an object moved",
+          "sensitivityNote": "a differing-pixel count near the whole screen means the test cannot resolve an object, and is reported as not localised rather than as an object"
+        },
+        "criteria": "RAM bidirectionality AND >=4 distinct outcomes across eight buttons AND a localised video difference AND that difference surviving release",
+        "modalities": {
+          "ram": true,
+          "video": true
+        },
+        "phase": "PASS",
+        "phaseNote": "control of an object is corroborated across RAM and video; the phase remains an inference, not a certainty"
+      },
+      "pipeline": {
+        "status": "REFUSED",
+        "stage": "ranked-selection",
+        "reason": "every candidate inside the declared budget refused",
+        "pipelineRevision": "agod-pipeline-s9-4",
+        "candidates": {
+          "resource": {
+            "address": 338,
+            "width": 1,
+            "endian": "n/a",
+            "encoding": "binary",
+            "encodingDetermined": true,
+            "step": -128,
+            "direction": "decreasing",
+            "mask": 2
+          },
+          "effect": {
+            "address": 486,
+            "width": 1,
+            "endian": "n/a",
+            "encoding": "undetermined",
+            "encodingDetermined": false,
+            "step": 2,
+            "direction": "increasing",
+            "mask": 64
+          },
+          "increasingFields": [
+            {
+              "address": 486,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "undetermined",
+              "encodingDetermined": false,
+              "step": 2,
+              "direction": "increasing",
+              "mask": 64
+            },
+            {
+              "address": 130,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "undetermined",
+              "encodingDetermined": false,
+              "step": 3,
+              "direction": "increasing",
+              "mask": 128
+            },
+            {
+              "address": 871,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "bcd",
+              "encodingDetermined": true,
+              "step": 40,
+              "direction": "increasing",
+              "mask": 128
+            },
+            {
+              "address": 1335,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "undetermined",
+              "encodingDetermined": false,
+              "step": 5,
+              "direction": "increasing",
+              "mask": 128
+            },
+            {
+              "address": 1351,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "bcd",
+              "encodingDetermined": true,
+              "step": 10,
+              "direction": "increasing",
+              "mask": 128
+            },
+            {
+              "address": 1415,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "undetermined",
+              "encodingDetermined": false,
+              "step": 1,
+              "direction": "increasing",
+              "mask": 128
+            },
+            {
+              "address": 1431,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "bcd",
+              "encodingDetermined": true,
+              "step": 10,
+              "direction": "increasing",
+              "mask": 128
+            },
+            {
+              "address": 1447,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "undetermined",
+              "encodingDetermined": false,
+              "step": 2,
+              "direction": "increasing",
+              "mask": 128
+            }
+          ],
+          "increasingFieldCount": 8,
+          "persistingAddressCountByMask": [
+            {
+              "mask": 1,
+              "addresses": 28
+            },
+            {
+              "mask": 2,
+              "addresses": 45
+            },
+            {
+              "mask": 4,
+              "addresses": 0
+            },
+            {
+              "mask": 8,
+              "addresses": 14
+            },
+            {
+              "mask": 16,
+              "addresses": 0
+            },
+            {
+              "mask": 32,
+              "addresses": 0
+            },
+            {
+              "mask": 64,
+              "addresses": 26
+            },
+            {
+              "mask": 128,
+              "addresses": 64
+            }
+          ],
+          "neutralMovedAddressCount": 332
+        },
+        "attribution": [],
+        "typing": {
+          "spansExamined": 134,
+          "identified": [
+            {
+              "mask": 2,
+              "span": [
+                338,
+                338
+              ],
+              "field": {
+                "address": 338,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": -128,
+                "direction": "decreasing"
+              }
+            },
+            {
+              "mask": 64,
+              "span": [
+                486,
+                486
+              ],
+              "field": {
+                "address": 486,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": 2,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 128,
+              "span": [
+                50,
+                50
+              ],
+              "field": {
+                "address": 50,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": -1,
+                "direction": "decreasing"
+              }
+            },
+            {
+              "mask": 128,
+              "span": [
+                130,
+                131
+              ],
+              "field": {
+                "address": 130,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": 3,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 128,
+              "span": [
+                140,
+                141
+              ],
+              "field": {
+                "address": 141,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": -18,
+                "direction": "decreasing"
+              }
+            },
+            {
+              "mask": 128,
+              "span": [
+                296,
+                296
+              ],
+              "field": {
+                "address": 296,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": -128,
+                "direction": "decreasing"
+              }
+            },
+            {
+              "mask": 128,
+              "span": [
+                819,
+                820
+              ],
+              "field": {
+                "address": 819,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "bcd",
+                "step": -36,
+                "direction": "decreasing"
+              }
+            },
+            {
+              "mask": 128,
+              "span": [
+                871,
+                871
+              ],
+              "field": {
+                "address": 871,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "bcd",
+                "step": 40,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 128,
+              "span": [
+                1303,
+                1303
+              ],
+              "field": {
+                "address": 1303,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": -1,
+                "direction": "decreasing"
+              }
+            },
+            {
+              "mask": 128,
+              "span": [
+                1335,
+                1335
+              ],
+              "field": {
+                "address": 1335,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": 5,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 128,
+              "span": [
+                1351,
+                1351
+              ],
+              "field": {
+                "address": 1351,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "bcd",
+                "step": 10,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 128,
+              "span": [
+                1415,
+                1415
+              ],
+              "field": {
+                "address": 1415,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": 1,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 128,
+              "span": [
+                1431,
+                1431
+              ],
+              "field": {
+                "address": 1431,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "bcd",
+                "step": 10,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 128,
+              "span": [
+                1447,
+                1447
+              ],
+              "field": {
+                "address": 1447,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": 2,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 128,
+              "span": [
+                1823,
+                1825
+              ],
+              "field": {
+                "address": 1825,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": -1,
+                "direction": "decreasing"
+              }
+            }
+          ],
+          "notIdentified": {
+            "UNRESOLVED": 114,
+            "AMBIGUOUS": 5
+          },
+          "notIdentifiedSample": [
+            {
+              "mask": 1,
+              "span": [
+                6,
+                6
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 1,
+              "span": [
+                12,
+                12
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 1,
+              "span": [
+                17,
+                17
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 1,
+              "span": [
+                19,
+                21
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 1,
+              "span": [
+                148,
+                148
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 1,
+              "span": [
+                160,
+                160
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 1,
+              "span": [
+                166,
+                166
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 1,
+              "span": [
+                188,
+                188
+              ],
+              "status": "UNRESOLVED"
+            }
+          ]
+        },
+        "counterfactual": {
+          "reversalProbes": [
+            {
+              "mask": 8,
+              "resource": 130,
+              "floorResource": 112,
+              "gainsWatched": 8,
+              "gainsRetained": true,
+              "lostGainAddresses": []
+            },
+            {
+              "mask": 2,
+              "resource": 129,
+              "floorResource": 1,
+              "gainsWatched": 1,
+              "gainsRetained": true,
+              "lostGainAddresses": []
+            }
+          ],
+          "judge": [
+            {
+              "coupledGains": 0,
+              "playGainsWatched": 8,
+              "floorReversible": true,
+              "gainRetainedAcrossReversal": true,
+              "reversalMask": 8
+            },
+            {
+              "coupledGains": 7,
+              "playGainsWatched": 1,
+              "floorReversible": false,
+              "gainRetainedAcrossReversal": false,
+              "reversalMask": null
+            },
+            {
+              "coupledGains": 7,
+              "playGainsWatched": 1,
+              "floorReversible": true,
+              "gainRetainedAcrossReversal": true,
+              "reversalMask": 2
+            },
+            {
+              "coupledGains": 7,
+              "playGainsWatched": 1,
+              "floorReversible": false,
+              "gainRetainedAcrossReversal": false,
+              "reversalMask": null
+            },
+            {
+              "coupledGains": 7,
+              "playGainsWatched": 1,
+              "floorReversible": false,
+              "gainRetainedAcrossReversal": false,
+              "reversalMask": null
+            },
+            {
+              "coupledGains": 7,
+              "playGainsWatched": 1,
+              "floorReversible": false,
+              "gainRetainedAcrossReversal": false,
+              "reversalMask": null
+            }
+          ]
+        },
+        "induction": [
+          {
+            "partition": "DISCOVERY",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              240,
+              112,
+              112,
+              112,
+              112,
+              112,
+              112
+            ]
+          },
+          {
+            "partition": "CALIBRATION",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              240,
+              112,
+              112,
+              112,
+              112,
+              112,
+              112
+            ]
+          },
+          {
+            "partition": "HOLDOUT",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              240,
+              112,
+              112,
+              112,
+              112,
+              112,
+              112
+            ]
+          },
+          {
+            "partition": "DISCOVERY",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ]
+          },
+          {
+            "partition": "CALIBRATION",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ]
+          },
+          {
+            "partition": "HOLDOUT",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              2,
+              2,
+              2,
+              2,
+              2,
+              2,
+              2
+            ]
+          },
+          {
+            "partition": "DISCOVERY",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "partition": "CALIBRATION",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "partition": "HOLDOUT",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "partition": "DISCOVERY",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "partition": "CALIBRATION",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "partition": "HOLDOUT",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "partition": "DISCOVERY",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "CALIBRATION",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "HOLDOUT",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "DISCOVERY",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "CALIBRATION",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "HOLDOUT",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "promotion": [],
+        "rankedSelection": {
+          "specRevision": "s9-ranking-1",
+          "candidatesTyped": 7,
+          "candidatesFound": 7,
+          "maxCandidates": 6,
+          "budgetNote": "ranking produced 7 groups; the declared budget evaluates the top 6. The rest are recorded and not evaluated.",
+          "grouping": {
+            "rule": "total agreement on an INFORMATIVE movement pattern (one containing both a moved and a not-moved transition), or an observed digit carry. Adjacency and a shared encoding never group on their own, and agreeing on an all-moved pattern is not evidence.",
+            "links": [
+              {
+                "a": 338,
+                "b": 50,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 6,
+                "stillTransitions": 18,
+                "agreementWasTotal": false,
+                "patternInformative": true,
+                "whyNotGrouped": "the two patterns disagree somewhere",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 338,
+                "b": 141,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 6,
+                "stillTransitions": 18,
+                "agreementWasTotal": false,
+                "patternInformative": true,
+                "whyNotGrouped": "the two patterns disagree somewhere",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 338,
+                "b": 296,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 6,
+                "stillTransitions": 18,
+                "agreementWasTotal": false,
+                "patternInformative": true,
+                "whyNotGrouped": "the two patterns disagree somewhere",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 338,
+                "b": 819,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 6,
+                "stillTransitions": 18,
+                "agreementWasTotal": false,
+                "patternInformative": true,
+                "whyNotGrouped": "the two patterns disagree somewhere",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 338,
+                "b": 1303,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 6,
+                "stillTransitions": 18,
+                "agreementWasTotal": false,
+                "patternInformative": true,
+                "whyNotGrouped": "the two patterns disagree somewhere",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 338,
+                "b": 1825,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 6,
+                "stillTransitions": 18,
+                "agreementWasTotal": false,
+                "patternInformative": true,
+                "whyNotGrouped": "the two patterns disagree somewhere",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 50,
+                "b": 141,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 0,
+                "stillTransitions": 24,
+                "agreementWasTotal": true,
+                "patternInformative": false,
+                "whyNotGrouped": "the shared pattern is all-moved or all-still, so agreeing on it is not evidence",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 50,
+                "b": 296,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 0,
+                "stillTransitions": 24,
+                "agreementWasTotal": true,
+                "patternInformative": false,
+                "whyNotGrouped": "the shared pattern is all-moved or all-still, so agreeing on it is not evidence",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 50,
+                "b": 819,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 0,
+                "stillTransitions": 24,
+                "agreementWasTotal": true,
+                "patternInformative": false,
+                "whyNotGrouped": "the shared pattern is all-moved or all-still, so agreeing on it is not evidence",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 50,
+                "b": 1303,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 0,
+                "stillTransitions": 24,
+                "agreementWasTotal": true,
+                "patternInformative": false,
+                "whyNotGrouped": "the shared pattern is all-moved or all-still, so agreeing on it is not evidence",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 50,
+                "b": 1825,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 0,
+                "stillTransitions": 24,
+                "agreementWasTotal": true,
+                "patternInformative": false,
+                "whyNotGrouped": "the shared pattern is all-moved or all-still, so agreeing on it is not evidence",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 141,
+                "b": 296,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 0,
+                "stillTransitions": 24,
+                "agreementWasTotal": true,
+                "patternInformative": false,
+                "whyNotGrouped": "the shared pattern is all-moved or all-still, so agreeing on it is not evidence",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 141,
+                "b": 819,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 0,
+                "stillTransitions": 24,
+                "agreementWasTotal": true,
+                "patternInformative": false,
+                "whyNotGrouped": "the shared pattern is all-moved or all-still, so agreeing on it is not evidence",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 141,
+                "b": 1303,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 0,
+                "stillTransitions": 24,
+                "agreementWasTotal": true,
+                "patternInformative": false,
+                "whyNotGrouped": "the shared pattern is all-moved or all-still, so agreeing on it is not evidence",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 141,
+                "b": 1825,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 0,
+                "stillTransitions": 24,
+                "agreementWasTotal": true,
+                "patternInformative": false,
+                "whyNotGrouped": "the shared pattern is all-moved or all-still, so agreeing on it is not evidence",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 296,
+                "b": 819,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 0,
+                "stillTransitions": 24,
+                "agreementWasTotal": true,
+                "patternInformative": false,
+                "whyNotGrouped": "the shared pattern is all-moved or all-still, so agreeing on it is not evidence",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 296,
+                "b": 1303,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 0,
+                "stillTransitions": 24,
+                "agreementWasTotal": true,
+                "patternInformative": false,
+                "whyNotGrouped": "the shared pattern is all-moved or all-still, so agreeing on it is not evidence",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 296,
+                "b": 1825,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 0,
+                "stillTransitions": 24,
+                "agreementWasTotal": true,
+                "patternInformative": false,
+                "whyNotGrouped": "the shared pattern is all-moved or all-still, so agreeing on it is not evidence",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 819,
+                "b": 1303,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 0,
+                "stillTransitions": 24,
+                "agreementWasTotal": true,
+                "patternInformative": false,
+                "whyNotGrouped": "the shared pattern is all-moved or all-still, so agreeing on it is not evidence",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 819,
+                "b": 1825,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 0,
+                "stillTransitions": 24,
+                "agreementWasTotal": true,
+                "patternInformative": false,
+                "whyNotGrouped": "the shared pattern is all-moved or all-still, so agreeing on it is not evidence",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              },
+              {
+                "a": 1303,
+                "b": 1825,
+                "reason": null,
+                "groupedAnyway": false,
+                "transitionsCompared": 24,
+                "movedTransitions": 0,
+                "stillTransitions": 24,
+                "agreementWasTotal": true,
+                "patternInformative": false,
+                "whyNotGrouped": "the shared pattern is all-moved or all-still, so agreeing on it is not evidence",
+                "adjacentOrOverlapping": false,
+                "note": "joint dynamics did not support grouping"
+              }
+            ],
+            "groups": [
+              {
+                "addresses": [
+                  50
+                ],
+                "size": 1,
+                "representative": 50,
+                "rule": "highest score by the pre-registered spec, then widest span, then most distinct values, then lowest address"
+              },
+              {
+                "addresses": [
+                  141
+                ],
+                "size": 1,
+                "representative": 141,
+                "rule": "highest score by the pre-registered spec, then widest span, then most distinct values, then lowest address"
+              },
+              {
+                "addresses": [
+                  296
+                ],
+                "size": 1,
+                "representative": 296,
+                "rule": "highest score by the pre-registered spec, then widest span, then most distinct values, then lowest address"
+              },
+              {
+                "addresses": [
+                  338
+                ],
+                "size": 1,
+                "representative": 338,
+                "rule": "highest score by the pre-registered spec, then widest span, then most distinct values, then lowest address"
+              },
+              {
+                "addresses": [
+                  819
+                ],
+                "size": 1,
+                "representative": 819,
+                "rule": "highest score by the pre-registered spec, then widest span, then most distinct values, then lowest address"
+              },
+              {
+                "addresses": [
+                  1303
+                ],
+                "size": 1,
+                "representative": 1303,
+                "rule": "highest score by the pre-registered spec, then widest span, then most distinct values, then lowest address"
+              },
+              {
+                "addresses": [
+                  1825
+                ],
+                "size": 1,
+                "representative": 1825,
+                "rule": "highest score by the pre-registered spec, then widest span, then most distinct values, then lowest address"
+              }
+            ]
+          },
+          "ranked": [
+            {
+              "rank": 1,
+              "address": 338,
+              "mask": 2,
+              "groupAddresses": [
+                338
+              ],
+              "score": {
+                "total": 0.474,
+                "weightedSum": 9,
+                "breakdown": {
+                  "causality": {
+                    "score": 0,
+                    "weight": 5,
+                    "contribution": 0
+                  },
+                  "crossStartReproducibility": {
+                    "score": 0.7,
+                    "weight": 4,
+                    "contribution": 2.8
+                  },
+                  "informativeValues": {
+                    "score": 1,
+                    "weight": 3,
+                    "contribution": 3
+                  },
+                  "separability": {
+                    "score": 0.4,
+                    "weight": 3,
+                    "contribution": 1.2
+                  },
+                  "observedFunctionalEffect": {
+                    "score": 0,
+                    "weight": 2,
+                    "contribution": 0
+                  },
+                  "phaseAndRestoreRobustness": {
+                    "score": 1,
+                    "weight": 2,
+                    "contribution": 2
+                  }
+                }
+              },
+              "evidence": {
+                "causality": {
+                  "confirmedStarts": 0,
+                  "independentStarts": 3,
+                  "confirmedFraction": 0
+                },
+                "dynamics": {
+                  "startsObserved": 3,
+                  "startsWhereItMoved": 3,
+                  "stepAgreesAcrossStarts": false,
+                  "stepsSeen": []
+                },
+                "reachability": {
+                  "distinctValues": 2,
+                  "values": [
+                    112,
+                    240
+                  ],
+                  "reachedNonZero": true,
+                  "floorValue": 240,
+                  "floorHeld": true
+                },
+                "restore": {
+                  "seriesIdenticalAfterRestore": true
+                },
+                "phase": {
+                  "movesAfterStartPulse": true,
+                  "resetTested": false,
+                  "resetNote": "a hardware reset is not exposed by this driver interface, so reset dependence is NOT TESTED rather than ruled out"
+                },
+                "separability": {
+                  "movedUnderNeutralControl": false,
+                  "masksThatMoveThisSpan": 3,
+                  "constantStepAcrossStarts": false
+                },
+                "downstream": {
+                  "schemaVersion": 1,
+                  "probeRevision": "agod-consumers-s4c-3",
+                  "status": "INCONCLUSIVE",
+                  "hasConsumer": null,
+                  "reason": "the field did not reach a second value, so there is nothing to contrast"
+                }
+              }
+            },
+            {
+              "rank": 2,
+              "address": 50,
+              "mask": 128,
+              "groupAddresses": [
+                50
+              ],
+              "score": {
+                "total": 0.268,
+                "weightedSum": 5.1,
+                "breakdown": {
+                  "causality": {
+                    "score": 0,
+                    "weight": 5,
+                    "contribution": 0
+                  },
+                  "crossStartReproducibility": {
+                    "score": 0,
+                    "weight": 4,
+                    "contribution": 0
+                  },
+                  "informativeValues": {
+                    "score": 0.6,
+                    "weight": 3,
+                    "contribution": 1.8
+                  },
+                  "separability": {
+                    "score": 0.7,
+                    "weight": 3,
+                    "contribution": 2.1
+                  },
+                  "observedFunctionalEffect": {
+                    "score": 0,
+                    "weight": 2,
+                    "contribution": 0
+                  },
+                  "phaseAndRestoreRobustness": {
+                    "score": 0.6,
+                    "weight": 2,
+                    "contribution": 1.2
+                  }
+                }
+              },
+              "evidence": {
+                "causality": {
+                  "confirmedStarts": 0,
+                  "independentStarts": 3,
+                  "confirmedFraction": 0
+                },
+                "dynamics": {
+                  "startsObserved": 3,
+                  "startsWhereItMoved": 0,
+                  "stepAgreesAcrossStarts": false,
+                  "stepsSeen": []
+                },
+                "reachability": {
+                  "distinctValues": 1,
+                  "values": [
+                    2
+                  ],
+                  "reachedNonZero": true,
+                  "floorValue": 2,
+                  "floorHeld": true
+                },
+                "restore": {
+                  "seriesIdenticalAfterRestore": true
+                },
+                "phase": {
+                  "movesAfterStartPulse": false,
+                  "resetTested": false,
+                  "resetNote": "a hardware reset is not exposed by this driver interface, so reset dependence is NOT TESTED rather than ruled out"
+                },
+                "separability": {
+                  "movedUnderNeutralControl": false,
+                  "masksThatMoveThisSpan": 1,
+                  "constantStepAcrossStarts": false
+                },
+                "downstream": {
+                  "schemaVersion": 1,
+                  "probeRevision": "agod-consumers-s4c-3",
+                  "status": "INCONCLUSIVE",
+                  "hasConsumer": null,
+                  "reason": "the field did not reach a second value, so there is nothing to contrast"
+                }
+              }
+            },
+            {
+              "rank": 3,
+              "address": 296,
+              "mask": 128,
+              "groupAddresses": [
+                296
+              ],
+              "score": {
+                "total": 0.268,
+                "weightedSum": 5.1,
+                "breakdown": {
+                  "causality": {
+                    "score": 0,
+                    "weight": 5,
+                    "contribution": 0
+                  },
+                  "crossStartReproducibility": {
+                    "score": 0,
+                    "weight": 4,
+                    "contribution": 0
+                  },
+                  "informativeValues": {
+                    "score": 0.6,
+                    "weight": 3,
+                    "contribution": 1.8
+                  },
+                  "separability": {
+                    "score": 0.7,
+                    "weight": 3,
+                    "contribution": 2.1
+                  },
+                  "observedFunctionalEffect": {
+                    "score": 0,
+                    "weight": 2,
+                    "contribution": 0
+                  },
+                  "phaseAndRestoreRobustness": {
+                    "score": 0.6,
+                    "weight": 2,
+                    "contribution": 1.2
+                  }
+                }
+              },
+              "evidence": {
+                "causality": {
+                  "confirmedStarts": 0,
+                  "independentStarts": 3,
+                  "confirmedFraction": 0
+                },
+                "dynamics": {
+                  "startsObserved": 3,
+                  "startsWhereItMoved": 0,
+                  "stepAgreesAcrossStarts": false,
+                  "stepsSeen": []
+                },
+                "reachability": {
+                  "distinctValues": 1,
+                  "values": [
+                    1
+                  ],
+                  "reachedNonZero": true,
+                  "floorValue": 1,
+                  "floorHeld": true
+                },
+                "restore": {
+                  "seriesIdenticalAfterRestore": true
+                },
+                "phase": {
+                  "movesAfterStartPulse": false,
+                  "resetTested": false,
+                  "resetNote": "a hardware reset is not exposed by this driver interface, so reset dependence is NOT TESTED rather than ruled out"
+                },
+                "separability": {
+                  "movedUnderNeutralControl": false,
+                  "masksThatMoveThisSpan": 1,
+                  "constantStepAcrossStarts": false
+                },
+                "downstream": {
+                  "schemaVersion": 1,
+                  "probeRevision": "agod-consumers-s4c-3",
+                  "status": "INCONCLUSIVE",
+                  "hasConsumer": null,
+                  "reason": "the field did not reach a second value, so there is nothing to contrast"
+                }
+              }
+            },
+            {
+              "rank": 4,
+              "address": 1825,
+              "mask": 128,
+              "groupAddresses": [
+                1825
+              ],
+              "score": {
+                "total": 0.268,
+                "weightedSum": 5.1,
+                "breakdown": {
+                  "causality": {
+                    "score": 0,
+                    "weight": 5,
+                    "contribution": 0
+                  },
+                  "crossStartReproducibility": {
+                    "score": 0,
+                    "weight": 4,
+                    "contribution": 0
+                  },
+                  "informativeValues": {
+                    "score": 0.6,
+                    "weight": 3,
+                    "contribution": 1.8
+                  },
+                  "separability": {
+                    "score": 0.7,
+                    "weight": 3,
+                    "contribution": 2.1
+                  },
+                  "observedFunctionalEffect": {
+                    "score": 0,
+                    "weight": 2,
+                    "contribution": 0
+                  },
+                  "phaseAndRestoreRobustness": {
+                    "score": 0.6,
+                    "weight": 2,
+                    "contribution": 1.2
+                  }
+                }
+              },
+              "evidence": {
+                "causality": {
+                  "confirmedStarts": 0,
+                  "independentStarts": 3,
+                  "confirmedFraction": 0
+                },
+                "dynamics": {
+                  "startsObserved": 3,
+                  "startsWhereItMoved": 0,
+                  "stepAgreesAcrossStarts": false,
+                  "stepsSeen": []
+                },
+                "reachability": {
+                  "distinctValues": 1,
+                  "values": [
+                    1
+                  ],
+                  "reachedNonZero": true,
+                  "floorValue": 1,
+                  "floorHeld": true
+                },
+                "restore": {
+                  "seriesIdenticalAfterRestore": true
+                },
+                "phase": {
+                  "movesAfterStartPulse": false,
+                  "resetTested": false,
+                  "resetNote": "a hardware reset is not exposed by this driver interface, so reset dependence is NOT TESTED rather than ruled out"
+                },
+                "separability": {
+                  "movedUnderNeutralControl": false,
+                  "masksThatMoveThisSpan": 1,
+                  "constantStepAcrossStarts": false
+                },
+                "downstream": {
+                  "schemaVersion": 1,
+                  "probeRevision": "agod-consumers-s4c-3",
+                  "status": "INCONCLUSIVE",
+                  "hasConsumer": null,
+                  "reason": "the field did not reach a second value, so there is nothing to contrast"
+                }
+              }
+            },
+            {
+              "rank": 5,
+              "address": 141,
+              "mask": 128,
+              "groupAddresses": [
+                141
+              ],
+              "score": {
+                "total": 0.221,
+                "weightedSum": 4.2,
+                "breakdown": {
+                  "causality": {
+                    "score": 0,
+                    "weight": 5,
+                    "contribution": 0
+                  },
+                  "crossStartReproducibility": {
+                    "score": 0,
+                    "weight": 4,
+                    "contribution": 0
+                  },
+                  "informativeValues": {
+                    "score": 0.3,
+                    "weight": 3,
+                    "contribution": 0.9
+                  },
+                  "separability": {
+                    "score": 0.7,
+                    "weight": 3,
+                    "contribution": 2.1
+                  },
+                  "observedFunctionalEffect": {
+                    "score": 0,
+                    "weight": 2,
+                    "contribution": 0
+                  },
+                  "phaseAndRestoreRobustness": {
+                    "score": 0.6,
+                    "weight": 2,
+                    "contribution": 1.2
+                  }
+                }
+              },
+              "evidence": {
+                "causality": {
+                  "confirmedStarts": 0,
+                  "independentStarts": 3,
+                  "confirmedFraction": 0
+                },
+                "dynamics": {
+                  "startsObserved": 3,
+                  "startsWhereItMoved": 0,
+                  "stepAgreesAcrossStarts": false,
+                  "stepsSeen": []
+                },
+                "reachability": {
+                  "distinctValues": 1,
+                  "values": [
+                    0
+                  ],
+                  "reachedNonZero": false,
+                  "floorValue": 0,
+                  "floorHeld": true
+                },
+                "restore": {
+                  "seriesIdenticalAfterRestore": true
+                },
+                "phase": {
+                  "movesAfterStartPulse": false,
+                  "resetTested": false,
+                  "resetNote": "a hardware reset is not exposed by this driver interface, so reset dependence is NOT TESTED rather than ruled out"
+                },
+                "separability": {
+                  "movedUnderNeutralControl": false,
+                  "masksThatMoveThisSpan": 1,
+                  "constantStepAcrossStarts": false
+                },
+                "downstream": {
+                  "schemaVersion": 1,
+                  "probeRevision": "agod-consumers-s4c-3",
+                  "status": "INCONCLUSIVE",
+                  "hasConsumer": null,
+                  "reason": "the field did not reach a second value, so there is nothing to contrast"
+                }
+              }
+            },
+            {
+              "rank": 6,
+              "address": 819,
+              "mask": 128,
+              "groupAddresses": [
+                819
+              ],
+              "score": {
+                "total": 0.221,
+                "weightedSum": 4.2,
+                "breakdown": {
+                  "causality": {
+                    "score": 0,
+                    "weight": 5,
+                    "contribution": 0
+                  },
+                  "crossStartReproducibility": {
+                    "score": 0,
+                    "weight": 4,
+                    "contribution": 0
+                  },
+                  "informativeValues": {
+                    "score": 0.3,
+                    "weight": 3,
+                    "contribution": 0.9
+                  },
+                  "separability": {
+                    "score": 0.7,
+                    "weight": 3,
+                    "contribution": 2.1
+                  },
+                  "observedFunctionalEffect": {
+                    "score": 0,
+                    "weight": 2,
+                    "contribution": 0
+                  },
+                  "phaseAndRestoreRobustness": {
+                    "score": 0.6,
+                    "weight": 2,
+                    "contribution": 1.2
+                  }
+                }
+              },
+              "evidence": {
+                "causality": {
+                  "confirmedStarts": 0,
+                  "independentStarts": 3,
+                  "confirmedFraction": 0
+                },
+                "dynamics": {
+                  "startsObserved": 3,
+                  "startsWhereItMoved": 0,
+                  "stepAgreesAcrossStarts": false,
+                  "stepsSeen": []
+                },
+                "reachability": {
+                  "distinctValues": 1,
+                  "values": [
+                    0
+                  ],
+                  "reachedNonZero": false,
+                  "floorValue": 0,
+                  "floorHeld": true
+                },
+                "restore": {
+                  "seriesIdenticalAfterRestore": true
+                },
+                "phase": {
+                  "movesAfterStartPulse": false,
+                  "resetTested": false,
+                  "resetNote": "a hardware reset is not exposed by this driver interface, so reset dependence is NOT TESTED rather than ruled out"
+                },
+                "separability": {
+                  "movedUnderNeutralControl": false,
+                  "masksThatMoveThisSpan": 1,
+                  "constantStepAcrossStarts": false
+                },
+                "downstream": {
+                  "schemaVersion": 1,
+                  "probeRevision": "agod-consumers-s4c-3",
+                  "status": "INCONCLUSIVE",
+                  "hasConsumer": null,
+                  "reason": "the field did not reach a second value, so there is nothing to contrast"
+                }
+              }
+            },
+            {
+              "rank": 7,
+              "address": 1303,
+              "mask": 128,
+              "groupAddresses": [
+                1303
+              ],
+              "score": {
+                "total": 0.221,
+                "weightedSum": 4.2,
+                "breakdown": {
+                  "causality": {
+                    "score": 0,
+                    "weight": 5,
+                    "contribution": 0
+                  },
+                  "crossStartReproducibility": {
+                    "score": 0,
+                    "weight": 4,
+                    "contribution": 0
+                  },
+                  "informativeValues": {
+                    "score": 0.3,
+                    "weight": 3,
+                    "contribution": 0.9
+                  },
+                  "separability": {
+                    "score": 0.7,
+                    "weight": 3,
+                    "contribution": 2.1
+                  },
+                  "observedFunctionalEffect": {
+                    "score": 0,
+                    "weight": 2,
+                    "contribution": 0
+                  },
+                  "phaseAndRestoreRobustness": {
+                    "score": 0.6,
+                    "weight": 2,
+                    "contribution": 1.2
+                  }
+                }
+              },
+              "evidence": {
+                "causality": {
+                  "confirmedStarts": 0,
+                  "independentStarts": 3,
+                  "confirmedFraction": 0
+                },
+                "dynamics": {
+                  "startsObserved": 3,
+                  "startsWhereItMoved": 0,
+                  "stepAgreesAcrossStarts": false,
+                  "stepsSeen": []
+                },
+                "reachability": {
+                  "distinctValues": 1,
+                  "values": [
+                    0
+                  ],
+                  "reachedNonZero": false,
+                  "floorValue": 0,
+                  "floorHeld": true
+                },
+                "restore": {
+                  "seriesIdenticalAfterRestore": true
+                },
+                "phase": {
+                  "movesAfterStartPulse": false,
+                  "resetTested": false,
+                  "resetNote": "a hardware reset is not exposed by this driver interface, so reset dependence is NOT TESTED rather than ruled out"
+                },
+                "separability": {
+                  "movedUnderNeutralControl": false,
+                  "masksThatMoveThisSpan": 1,
+                  "constantStepAcrossStarts": false
+                },
+                "downstream": {
+                  "schemaVersion": 1,
+                  "probeRevision": "agod-consumers-s4c-3",
+                  "status": "INCONCLUSIVE",
+                  "hasConsumer": null,
+                  "reason": "the field did not reach a second value, so there is nothing to contrast"
+                }
+              }
+            }
+          ]
+        },
+        "rankedAttempts": [
+          {
+            "rank": 1,
+            "address": 338,
+            "mask": 2,
+            "score": 0.474,
+            "outcome": "REFUSED",
+            "stage": "induce",
+            "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+            "detail": {
+              "polarity": "UNKNOWN",
+              "rationale": "insufficient evidence",
+              "resourceTrack": null
+            }
+          },
+          {
+            "rank": 2,
+            "address": 50,
+            "mask": 128,
+            "score": 0.268,
+            "outcome": "REFUSED",
+            "stage": "induce",
+            "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+            "detail": {
+              "polarity": "UNKNOWN",
+              "rationale": "insufficient evidence",
+              "resourceTrack": null
+            }
+          },
+          {
+            "rank": 3,
+            "address": 296,
+            "mask": 128,
+            "score": 0.268,
+            "outcome": "REFUSED",
+            "stage": "induce",
+            "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+            "detail": {
+              "polarity": "UNKNOWN",
+              "rationale": "insufficient evidence",
+              "resourceTrack": null
+            }
+          },
+          {
+            "rank": 4,
+            "address": 1825,
+            "mask": 128,
+            "score": 0.268,
+            "outcome": "REFUSED",
+            "stage": "induce",
+            "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+            "detail": {
+              "polarity": "UNKNOWN",
+              "rationale": "insufficient evidence",
+              "resourceTrack": null
+            }
+          },
+          {
+            "rank": 5,
+            "address": 141,
+            "mask": 128,
+            "score": 0.221,
+            "outcome": "REFUSED",
+            "stage": "induce",
+            "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+            "detail": {
+              "polarity": "UNKNOWN",
+              "rationale": "insufficient evidence",
+              "resourceTrack": null
+            }
+          },
+          {
+            "rank": 6,
+            "address": 819,
+            "mask": 128,
+            "score": 0.221,
+            "outcome": "REFUSED",
+            "stage": "induce",
+            "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+            "detail": {
+              "polarity": "UNKNOWN",
+              "rationale": "insufficient evidence",
+              "resourceTrack": null
+            }
+          }
+        ],
+        "goal": null,
+        "refusals": [
+          {
+            "stage": "induce",
+            "candidate": 338,
+            "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+            "polarity": "UNKNOWN",
+            "rationale": "insufficient evidence",
+            "resourceTrack": null
+          },
+          {
+            "stage": "induce",
+            "candidate": 50,
+            "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+            "polarity": "UNKNOWN",
+            "rationale": "insufficient evidence",
+            "resourceTrack": null
+          },
+          {
+            "stage": "induce",
+            "candidate": 296,
+            "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+            "polarity": "UNKNOWN",
+            "rationale": "insufficient evidence",
+            "resourceTrack": null
+          },
+          {
+            "stage": "induce",
+            "candidate": 1825,
+            "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+            "polarity": "UNKNOWN",
+            "rationale": "insufficient evidence",
+            "resourceTrack": null
+          },
+          {
+            "stage": "induce",
+            "candidate": 141,
+            "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+            "polarity": "UNKNOWN",
+            "rationale": "insufficient evidence",
+            "resourceTrack": null
+          },
+          {
+            "stage": "induce",
+            "candidate": 819,
+            "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+            "polarity": "UNKNOWN",
+            "rationale": "insufficient evidence",
+            "resourceTrack": null
+          },
+          {
+            "stage": "ranked-selection",
+            "reason": "every candidate inside the declared budget refused",
+            "candidatesEvaluated": 6,
+            "candidatesFound": 7,
+            "perCandidate": [
+              {
+                "rank": 1,
+                "address": 338,
+                "stage": "induce",
+                "reason": "the resource did not produce an evidenced NEGATIVE polarity"
+              },
+              {
+                "rank": 2,
+                "address": 50,
+                "stage": "induce",
+                "reason": "the resource did not produce an evidenced NEGATIVE polarity"
+              },
+              {
+                "rank": 3,
+                "address": 296,
+                "stage": "induce",
+                "reason": "the resource did not produce an evidenced NEGATIVE polarity"
+              },
+              {
+                "rank": 4,
+                "address": 1825,
+                "stage": "induce",
+                "reason": "the resource did not produce an evidenced NEGATIVE polarity"
+              },
+              {
+                "rank": 5,
+                "address": 141,
+                "stage": "induce",
+                "reason": "the resource did not produce an evidenced NEGATIVE polarity"
+              },
+              {
+                "rank": 6,
+                "address": 819,
+                "stage": "induce",
+                "reason": "the resource did not produce an evidenced NEGATIVE polarity"
+              }
+            ]
+          }
+        ]
+      },
+      "elapsedMs": 76663
+    }
+  ],
+  "rom": {
+    "name": "contra.nes",
+    "sha256": "1f4a9b3f04e2f828688512c0b83611a87c3fc1bd4f85ed91da1b19abc5816d73",
+    "fileBytes": 131088,
+    "format": "NES 2.0",
+    "mapper": 2,
+    "submapper": 2,
+    "prgRomBytes": 131072,
+    "chrRomBytes": 0,
+    "timingHeader": "NTSC"
+  },
+  "coreIdentity": "jsnes (bundled in assets/lab/jsnes.min.js)",
+  "frameParameters": {
+    "hold": 4,
+    "release": 8,
+    "bootFrames": 240,
+    "resourceSelection": "ranked",
+    "preambleStartPulses": 12,
+    "preambleGapFrames": 24,
+    "preambleSettleFrames": 300
+  },
+  "totals": {
+    "arms": 2,
+    "phaseEvidenceRevision": "agod-phase-evidence-1",
+    "resourceSelection": "ranked",
+    "phaseStatuses": {
+      "pure-boot": "NOT-REACHED",
+      "start-preamble": "PASS"
+    },
+    "phaseModalities": {
+      "pure-boot": {
+        "ram": false,
+        "video": false
+      },
+      "start-preamble": {
+        "ram": true,
+        "video": true
+      }
+    },
+    "pipelineOutcomes": {
+      "pure-boot": "REFUSED/ranked-selection",
+      "start-preamble": "REFUSED/ranked-selection"
+    },
+    "verifiedGoalInEitherArm": false,
+    "preambleChangedThePhaseStatus": true,
+    "note": "no oracle exists for this cartridge. Nothing here is scored against a label, and no judgement about game value is recorded."
+  }
+}

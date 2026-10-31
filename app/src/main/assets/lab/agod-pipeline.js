@@ -387,7 +387,26 @@ function run(driver,options){
    attempts.push(skipped);discovered.rankedAttempts.push(skipped);continue;
   }
   driver.restore(pristine);
-  const outcome=evaluateResource({mask:representative.field.mask,field});
+  /* A candidate that cannot be evaluated is a refusal for THAT candidate, not
+     the end of the run. Evaluating more than one candidate reached a path the
+     single-candidate strategy never did: a BCD-typed field whose bytes stop
+     being valid BCD somewhere along the depletion track decodes to null, and
+     agod-goals then throws "resource value must be an integer".
+
+     The value is NOT coerced. Substituting 0 for an unreadable resource is the
+     UNKNOWN-becomes-zero shortcut this project forbids, and it would invent a
+     depletion that was never observed. The candidate is recorded as ERRORED
+     with the message and the next candidate is tried.
+
+     V1 is deliberately left to propagate such an error, so its behaviour is
+     unchanged and a crash there stays visible rather than being absorbed. */
+  let outcome;
+  try{outcome=evaluateResource({mask:representative.field.mask,field});}
+  catch(problem){
+   outcome={outcome:'ERRORED',stage:'evaluate',reason:problem.message,
+    detail:{candidateUnevaluable:true,
+     note:'this candidate could not be evaluated; its value was not coerced and no depletion was inferred'}};
+  }
   const attempt={rank:entry.rank,address:field.address,mask:representative.field.mask,
    score:entry.score.total,outcome:outcome.outcome,stage:outcome.stage||null,
    reason:outcome.reason||null,detail:outcome.detail||null};
@@ -395,16 +414,19 @@ function run(driver,options){
   discovered.rankedAttempts.push(attempt);
  }
  for(const attempt of attempts)
-  if(attempt.outcome==='REFUSED')
+  if(attempt.outcome==='REFUSED'||attempt.outcome==='ERRORED')
    refusals.push({stage:attempt.stage,candidate:attempt.address,
-    reason:attempt.reason,...(attempt.detail||{})});
+    outcome:attempt.outcome,reason:attempt.reason,...(attempt.detail||{})});
  const passed=attempts.filter(attempt=>attempt.outcome==='VERIFIED');
  if(!passed.length)
   return refuse('ranked-selection',
    'every candidate inside the declared budget refused',
    {candidatesEvaluated:attempts.length,candidatesFound:ranking.candidatesFound,
+    candidatesRefused:attempts.filter(a=>a.outcome==='REFUSED').length,
+    candidatesErrored:attempts.filter(a=>a.outcome==='ERRORED').length,
+    candidatesSkipped:attempts.filter(a=>a.outcome==='SKIPPED').length,
     perCandidate:attempts.map(attempt=>({rank:attempt.rank,address:attempt.address,
-     stage:attempt.stage,reason:attempt.reason}))});
+     outcome:attempt.outcome,stage:attempt.stage,reason:attempt.reason}))});
  /* `attempts` is in ranking order, so passed[0] IS what the pre-registered
     rule selects. Nothing is re-ordered after the outcomes are known. */
  const chosen=passed[0];
