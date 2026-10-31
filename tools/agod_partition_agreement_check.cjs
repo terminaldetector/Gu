@@ -178,6 +178,104 @@ console.log('3. M4: a partition disagreement is refused, not resolved by whichev
  ok('and the conjunction says it is not evidenced',allAgree===false);
 }
 
+console.log('3a. M4 INTEGRATION: force DISCOVERY and CALIBRATION apart inside the pipeline');
+{
+ /* N2. Checking an array of verdicts and grepping the source is not a test of
+    the pipeline's behaviour. This drives the real Pipeline.run with a scripted
+    machine built so that one partition sees the resource deplete and another
+    does not.
+
+    THE TRIGGER IS DECLARED, not a game address: partitions are reached by
+    startsFrom(count, offset), which issues a neutral run of `offset` frames.
+    The test passes partitions with offsets 11 and 500, and the machine stops
+    depleting once it has seen a neutral run of 400 frames or more. So
+    DISCOVERY (offset 11) depletes and CALIBRATION (offset 500) does not. No
+    game knowledge is used: the machine is wholly synthetic. */
+ const SIZE=0x800,COST=0x40,EFFECT=0x60,COST_MASK=2,EFFECT_MASK=1;
+ function machine(){
+  const mem=new Uint8Array(SIZE);
+  const snapshots=new Map();
+  let suppressed=false;
+  const boot=()=>{mem.fill(0);mem[COST]=4;mem[EFFECT]=1;};
+  boot();
+  return {
+   restore(id){const saved=snapshots.get(id);if(saved){mem.set(saved.mem);suppressed=saved.suppressed;}},
+   run(mask,count){
+    if(mask===0&&count>=400)suppressed=true;        /* the declared trigger */
+    if(mask===COST_MASK&&!suppressed&&mem[COST]>0)mem[COST]-=1;
+    /* The effect only works while the resource is above zero. Without this the
+       machine never reaches NEGATIVE at all - normalPlaySuppressed stays false
+       because the effect keeps being confirmed after depletion - and the first
+       version of this fixture refused for that reason instead of the
+       disagreement, which made the test pass on a fallback and prove nothing.
+       This is the same "play stops at the floor" structure the generator has. */
+    if(mask===EFFECT_MASK&&mem[COST]>0&&mem[EFFECT]<250)mem[EFFECT]+=1;
+   },
+   readRam(){return mem.slice(0,SIZE);},
+   snapshot(){const id='s'+snapshots.size;
+    snapshots.set(id,{mem:mem.slice(0),suppressed});return id;},
+   stateHash(){return crypto.createHash('sha256')
+    .update(Buffer.from(mem)).update(suppressed?'s':'n').digest('hex');}};
+ }
+ const partitions=[{group:'DISCOVERY',offset:11},{group:'CALIBRATION',offset:500},
+  {group:'HOLDOUT',offset:97}];
+ const run=selection=>{
+  let result=null,error=null;
+  try{result=Pipeline.run(machine(),{romHash:'d'.repeat(64),coreRevision:'unit',
+   profileRevision:'p',contextKey:'k',nowMs:0,partitions,
+   resourceSelection:selection,searchFrameBudget:2000000});}
+  catch(problem){error=problem.message;}
+  return {result,error};
+ };
+
+ const v1=run('first');
+ ok('FIRST-V1 does not verify when the partitions disagree: '
+  +(v1.result?v1.result.status+'@'+v1.result.stage:'THROWN '+v1.error),
+  !!(v1.result&&v1.result.status!=='VERIFIED'));
+ if(v1.result&&v1.result.refusals&&v1.result.refusals.length)
+  ok('and V1 names the disagreement specifically: '+v1.result.reason,
+   /partitions disagree about polarity/.test(v1.result.reason||''));
+
+ const v2=run('ranked');
+ ok('RANKED-V2 also refuses: '+(v2.result?v2.result.status+'@'+v2.result.stage:'THROWN '+v2.error),
+  !!(v2.result&&v2.result.status!=='VERIFIED'));
+ if(v2.result){
+  const attempts=(v2.result.discovered&&v2.result.discovered.rankedAttempts)||[];
+  const mixed=attempts.filter(a=>/partitions disagree about polarity/.test(a.reason||''));
+  ok('a candidate whose partitions disagreed is refused BY NAME, per candidate: '
+   +attempts.map(a=>a.outcome).join(',')+' | mixed='+mixed.length,
+   mixed.length>0);
+  /* The point of P1: holdout must not be consulted while selection is still
+     choosing, so a disagreement cannot be resolved by trying candidates until
+     one passes holdout. */
+  ok('HOLDOUT was never consulted to pick a candidate: no confirmation record',
+   !v2.result.discovered||!v2.result.discovered.rankedConfirmation);
+  const phase=v2.result.discovered&&v2.result.discovered.rankedSelectionPhase;
+  if(phase){
+   ok('and the selection phase records that it used only the non-holdout partitions: '
+    +phase.partitionsUsedForSelection.join(','),
+    phase.partitionsUsedForSelection.indexOf('HOLDOUT')<0);
+   ok('with holdout explicitly withheld',phase.holdoutWithheldDuringSelection===true);
+  }
+ }
+
+ /* Control: the SAME machine without the suppression trigger must verify, so
+    the refusal above is the disagreement and not a broken fixture. */
+ const agreeing=[{group:'DISCOVERY',offset:11},{group:'CALIBRATION',offset:53},
+  {group:'HOLDOUT',offset:97}];
+ let control=null,controlError=null;
+ try{control=Pipeline.run(machine(),{romHash:'e'.repeat(64),coreRevision:'unit',
+  profileRevision:'p',contextKey:'k',nowMs:0,partitions:agreeing,
+  resourceSelection:'ranked',searchFrameBudget:2000000});}
+ catch(problem){controlError=problem.message;}
+ /* The control must VERIFY. Anything weaker leaves open that the refusal above
+    came from some other weakness of the fixture, which is exactly what the
+    first version of this test did. */
+ ok('CONTROL: the same machine with agreeing partitions VERIFIES: '
+  +(control?control.status+'@'+control.stage:'THROWN '+controlError),
+  !!(control&&control.status==='VERIFIED'));
+}
+
 console.log('4. M4: the rule is in the pipeline source, not only in this test');
 {
  const source=require('node:fs').readFileSync(

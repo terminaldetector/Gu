@@ -205,14 +205,18 @@ try{
   depletionCoverage:coverageTally,
   budgetClaim:{
    withdrawn:'floorNotReachedInsideBudget=0 does NOT show six pulses to be sufficient: a constant track of zeros satisfies the floor test vacuously',
-   casesALargerBudgetCouldChange:coverageTally.INSUFFICIENT_COVERAGE||0,
+   casesWhereInsufficiencyHasAlreadyManifested:coverageTally.INSUFFICIENT_COVERAGE||0,
+   /* N1: and the count above is NOT an upper bound on what a longer horizon
+      could change. Any class could change at a longer horizon; this is only
+      where the current one has already been caught short. */
+   isThisAnUpperBoundOnWhatALongerHorizonCouldChange:false,
    note:'the budget was still not raised in this stage; any other budget is a separately declared comparison'},
   diagnoses:{
    terminalTermVacuous:{count:vacuous.length,
     meaning:'no previously confirmed effect fell inside the play scope, so "every confirmed effect stopped" is true of an empty set and the term is false by construction rather than by observation',
     cases:vacuous.slice(0,24)},
    resourceZeroAtEveryStart:{count:zeroStart.length,
-    meaning:'the candidate reads the same zero at every independent start, so there is no depletion to observe at all',
+    meaning:'the candidate reads the same zero at every independent start, so no depletion could be OBSERVED here. N1: this is an absence of observed change, not proof that the resource is exhausted',
     cases:zeroStart.slice(0,24)},
    floorNotReachedInsideBudget:{count:floorMissed.length,
     meaning:'RETAINED FOR COMPARISON ONLY and not to be read as sufficiency: this test is satisfied vacuously by a constant track, which is why depletionCoverage above replaces it',

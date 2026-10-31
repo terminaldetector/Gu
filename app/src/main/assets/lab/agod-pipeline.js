@@ -355,26 +355,44 @@ function run(driver,options){
       if(values[i]>values[i-1])rose=true;
      }
      const constant=min===max;
-     if(constant)return {status:'ALREADY_AT_MINIMUM',first,min,max,
-      reason:'the value never changed across the whole track, so no depletion could be observed and the floor test is satisfied vacuously',
-      aLargerBudgetCouldChangeThis:false};
-     if(!fell)return {status:'NO_DEPLETION_OBSERVED',first,min,max,rose,
-      reason:'the value moved but never downward, so this is not a depletion at all',
-      aLargerBudgetCouldChangeThis:false};
+     /* N1: the class used to be called ALREADY_AT_MINIMUM, which claimed more
+        than a flat track can support. A track that does not change shows an
+        absence of OBSERVED change, not that the resource is spent: the value
+        may simply not move under this action, in this state, at this horizon.
+        Renamed, and the minimum is labelled as the minimum of the samples. */
+     if(constant)return {status:'NO_CHANGE_OBSERVED',first,
+      sampleMinimum:min,sampleMaximum:max,
+      minimumIsSampleMinimumOnly:true,
+      reason:'the value never changed across the sampled track, so no depletion could be observed and the floor test is satisfied vacuously. This is an absence of observed change, NOT evidence that the resource is already exhausted',
+      aLongerHorizonCouldChangeThis:'unknown: a value that does not move here may move under another action, state or horizon'};
+     if(!fell)return {status:'NO_DECREASE_OBSERVED',first,
+      sampleMinimum:min,sampleMaximum:max,rose,
+      minimumIsSampleMinimumOnly:true,
+      reason:'the value moved but never downward in the sampled track, so no decrease was observed here',
+      aLongerHorizonCouldChangeThis:'unknown'};
      const lastIndexOfMin=values.lastIndexOf(min),firstIndexOfMin=values.indexOf(min);
      const settled=values.slice(firstIndexOfMin).every(value=>value===min);
      const arrivedOnLastSample=firstIndexOfMin===values.length-1;
      if(settled&&!arrivedOnLastSample)
-      return {status:'OBSERVED_DEPLETION',first,min,max,
-       reachedFloorAt:firstIndexOfMin,heldForSamples:values.length-firstIndexOfMin,
-       reason:'a decrease was observed, the minimum was reached before the last sample and every later sample equals it',
-       aLargerBudgetCouldChangeThis:false};
-     return {status:'INSUFFICIENT_COVERAGE',first,min,max,
-      reachedFloorAt:firstIndexOfMin,lastIndexOfMin,settled,arrivedOnLastSample,
+      return {status:'DECREASE_THEN_PLATEAU_OBSERVED',first,
+       sampleMinimum:min,sampleMaximum:max,
+       plateauStartsAt:firstIndexOfMin,plateauHeldForSamples:values.length-firstIndexOfMin,
+       minimumIsSampleMinimumOnly:true,
+       plateauDoesNotProveTerminalDepletion:true,
+       reason:'a decrease was observed and the sampled minimum was reached before the last sample and held. N1: a plateau after a decrease does NOT prove terminal depletion - it shows the value stopped moving over the sampled horizon',
+       aLongerHorizonCouldChangeThis:'unknown: the plateau may end beyond this horizon'};
+     return {status:'INSUFFICIENT_COVERAGE',first,
+      sampleMinimum:min,sampleMaximum:max,
+      sampleMinimumFirstAt:firstIndexOfMin,sampleMinimumLastAt:lastIndexOfMin,
+      settled,arrivedOnLastSample,
+      minimumIsSampleMinimumOnly:true,
       reason:arrivedOnLastSample
-       ?'the minimum arrived only on the final sample, so whether it is a floor is unknown at this budget'
-       :'the value fell but never settled, so no floor was demonstrated at this budget',
-      aLargerBudgetCouldChangeThis:true};
+       ?'the sampled minimum arrived only on the final sample, so whether it is a floor is unknown at this horizon'
+       :'the value fell but never settled, so no floor was demonstrated at this horizon',
+      /* N1: this class is where insufficiency has ALREADY SHOWN ITSELF. It is
+         not the set of cases a longer horizon could change - any other class
+         could change too, and silence about that was the earlier error. */
+      insufficiencyAlreadyManifest:true};
     })();
     note('polarity-audit',{candidate:decreasing.field.address,mask:decreasing.mask,
      depletionCoverage,
