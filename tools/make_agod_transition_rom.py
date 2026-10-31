@@ -113,6 +113,14 @@ def generate(seed=1, arm_presses=4):
         # loop is not frame-synchronised, so a frame countdown would expire
         # during boot.
         'pressCount': {'address': allocate(1), 'width': 1, 'format': 'unsigned', 'endian': 'little'},
+        # S11C review 1.1: the counterexample to "the two mechanisms are
+        # independent". This field steps down on the FIRST press edge and once
+        # more on the fifth, so POST_ONLY observes ONE transition while
+        # PRE_AND_POST observes TWO - and it crosses the S11A two-transition
+        # threshold only when the extra snapshot is taken. Zero such crossings
+        # on the earlier corpus was an observation about that corpus, never a
+        # property of the mechanisms.
+        'firstThenLater': {'address': allocate(1), 'width': 1, 'format': 'unsigned', 'endian': 'little'},
     }
     addr = lambda name: fields[name]['address']
 
@@ -147,6 +155,7 @@ def generate(seed=1, arm_presses=4):
     for address, value in [(addr('oneShotSwitch'), switch_from),
                            (addr('pressCount'), 0),
                            (addr('singleUnit'), 1),
+                           (addr('firstThenLater'), 9),
                            (addr('score'), 0),
                            (addr('noise'), 0),
                            (addr('frameCounter'), 0),
@@ -192,6 +201,21 @@ def generate(seed=1, arm_presses=4):
         action()
         asm.label(skip)
 
+    # ---- firstThenLater: steps down on press edge 1 and again on edge 5
+    def step_first_then_later():
+        apply_label = asm.fresh('ftl_apply')
+        done = asm.fresh('ftl_done')
+        asm.zp(0xA5, addr('pressCount'))
+        asm.emit(0xC9, 1)                             # cmp #1 -> first edge
+        asm.branch(0xF0, apply_label)
+        asm.zp(0xA5, addr('pressCount'))
+        asm.emit(0xC9, 5)                             # cmp #5 -> fifth edge
+        asm.branch(0xD0, done)
+        asm.label(apply_label)
+        writer('firstThenLater')
+        asm.zp(0xC6, addr('firstThenLater'))
+        asm.label(done)
+
     # ---- oneShotSwitch: flips once on the first press of `latch` after arming
     def flip_switch():
         done = asm.fresh('already_flipped')
@@ -202,7 +226,7 @@ def generate(seed=1, arm_presses=4):
         asm.lda(switch_to)
         asm.sta(addr('oneShotSwitch'))
         asm.label(done)
-    edge(latch, lambda: (count_press(), when_armed(flip_switch)))
+    edge(latch, lambda: (count_press(), step_first_then_later(), when_armed(flip_switch)))
 
     # ---- singleUnit: one unit, spent once; play stops when it is gone
     def spend_unit():
@@ -255,6 +279,16 @@ def generate(seed=1, arm_presses=4):
                        'reads it, and no horizon can produce a second transition because there is '
                        'no mechanism to produce one. Typing it as a constant-step resource is a '
                        'false typing.',
+            },
+            'firstThenLater': {
+                'transitionsAvailable': 2,
+                'transitionsVisibleToPostOnly': 1,
+                'isResource': None,
+                'why': 'steps down on the first press edge and again on the fifth. POST_ONLY sampling '
+                       'sees only the later transition, PRE_AND_POST sees both, so this field crosses '
+                       'the S11A two-transition threshold ONLY when the extra snapshot is taken. It '
+                       'exists to refute the claim that the sampling fix and the transition rule are '
+                       'independent mechanisms; its game role is deliberately left unlabelled.',
             },
             'singleUnit': {
                 'transitionsAvailable': 1,

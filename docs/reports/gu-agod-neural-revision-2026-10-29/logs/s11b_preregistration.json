@@ -1,0 +1,60 @@
+{
+  "type": "gu-agod-s11b-preregistration",
+  "version": 1,
+  "declaredBefore": "any S11B run on a real cartridge",
+  "controlCommits": { "S11A": "9baf883", "S11C": "6c116a1" },
+  "detectorRevisions": { "causal": "agod-causal-e3-2", "ram": "agod-ram-e2-1" },
+  "seriesA_continuousHold": {
+    "horizonsFrames": [12, 48, 120, 240, 480],
+    "arms": ["action", "neutral-same-duration", "neutral-repeat-determinism", "alternative-mask", "neutral-trajectory"],
+    "shiftTolerance": 3,
+    "limitsNote": "agod-causal.js defaults maxFramesPerArm=120 with a hard CAP of 600; horizons 240 and 480 pass explicit limits in an isolated experiment. Production limits unchanged."
+  },
+  "seriesB_pulseTrain": {
+    "hold": 4,
+    "release": 8,
+    "pulses": [1, 4, 12, 30, 60],
+    "horizonsFrames": [12, 48, 144, 360, 720],
+    "sampling": "RAM after every complete hold+release cycle",
+    "adapterNote": "Causal.probeAction holds one mask for the whole window and cannot express a pulse train. Passing 720 as frames is forbidden: it would substitute the action structure and exceed the hard per-arm limit of 600. A separate experimental adapter implements the train with the same neutral, alternative and independent-start principles; the standard detector's rules are unchanged."
+  },
+  "diagnosticOutcomes": [
+    "RECOVERED_BY_DURATION", "RECOVERED_BY_CADENCE", "TIME_EXPLAINED",
+    "NOT_REPRODUCIBLE_ACROSS_STARTS", "TRANSIENT_WITHIN_WINDOW",
+    "NOT_OBSERVED", "NOT_COMPARABLE", "BUDGET_EXCEEDED"
+  ],
+  "outcomeRule": "these must never be merged under CAUSAL_RECOVERED, and none of them is evidence that a game resource is useless",
+  "startStateLevels": ["SINGLE_SAVESTATE_REPLAY", "MULTIPLE_SAVED_STATES", "INDEPENDENT_HISTORIES", "PHASE_ATTESTED"],
+  "startStateRules": [
+    "the same pre-declared start states for every horizon and mask",
+    "the start procedure is not changed after a result is seen",
+    "a trajectory attested NOT-REACHED or UNCONFIRMED stays diagnostic and does not enter comparability statistics",
+    "an identical state hash is not an independent history; HOLDOUT keeps actual independence from the selection procedure"
+  ],
+  "budget": {
+    "maxCandidatesPrimary": 6,
+    "maxCandidatesExtraFromS11C": 4,
+    "extraCountedSeparately": true,
+    "independentStartsPerTrial": 3,
+    "totalEmulatedFrameLimit": 4000000,
+    "stoppingRule": "exhausting the total frame limit yields BUDGET_EXCEEDED; exhaustion inside a candidate marks that candidate BUDGET_EXCEEDED and later candidates are not evaluated"
+  },
+  "costAccounting": ["emulatedFrames", "ramSnapshots", "ramBytesRead", "cpuWallClockMs", "candidateEvaluations"],
+  "headlineQuestions": {
+    "A": "how many candidates went undetected because of the short horizon",
+    "B": "how many candidates went undetected because of the wrong action structure",
+    "C": "how many changes stay irreproducible or are explained by time, game phase or another mechanism"
+  },
+  "successRule": "more observed RAM changes is not success; the result must show an independent difference between the action and the neutral course of the game. VERIFIED_GOAL is not a goal of this stage.",
+  "unchanged": [
+    "NEGATIVE verification", "HOLDOUT and independence rules", "the S9 ranking",
+    "the game ROMs", "the accepted entry procedures", "FIRST-V1 as control",
+    "production", "cross-platform as a separate stage",
+    "the S11A two-transition rule stays OFF and is not retuned",
+    "PRE_AND_POST is not enabled by default"
+  ],
+  "corpus": {
+    "syntheticRequired": ["lives", "singleUnit", "oneShotSwitch", "both-after-fourth-edge", "firstThenLater", "frameCounter", "sacrifice", "rate-trap"],
+    "realProcedures": ["lifeforce 1/60", "lifeforce 6/60", "contra 6/300"]
+  }
+}
