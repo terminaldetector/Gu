@@ -77,7 +77,7 @@ class Assembler:
         return self.code
 
 
-def generate(seed=1):
+def generate(seed=1, arm_presses=4):
     rng = random.Random(0x7A1 + seed)
     taken = set()
 
@@ -94,7 +94,10 @@ def generate(seed=1):
         raise AssertionError('no room for a field of width %d' % width)
 
     switch_from, switch_to = 0x5A, 0x13      # one flip, a latch, never a counter
-    arm_presses = 4                          # declared: the single transition lands at event 4 of 60
+    # arm_presses = 1 makes both mechanisms fire on the FIRST press, which is the
+    # case POST_ONLY sampling cannot observe at all; 4 moves the transition
+    # inside the sampled window. S11C needs both.
+    assert arm_presses >= 1
     fields = {
         'oneShotSwitch': {'address': allocate(1), 'width': 1, 'format': 'unsigned', 'endian': 'little'},
         'singleUnit': {'address': allocate(1), 'width': 1, 'format': 'unsigned', 'endian': 'little'},
@@ -274,10 +277,12 @@ def generate(seed=1):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--seed', type=int, default=1)
+    parser.add_argument('--arm-presses', type=int, default=4,
+                        help='how many presses before the single transition fires; 1 = on the first press')
     parser.add_argument('--out', type=Path)
     parser.add_argument('--oracle-out', type=Path, help='checker-only metadata; never load into analyser')
     args = parser.parse_args()
-    rom, oracle = generate(args.seed)
+    rom, oracle = generate(args.seed, args.arm_presses)
     output = {'name': 'GU AGOD single-transition fixture', 'license': 'MIT',
               'author': 'GU contributors',
               'sha256': hashlib.sha256(rom).hexdigest(), 'base64': base64.b64encode(rom).decode()}

@@ -178,20 +178,50 @@ function identifyField(options){
  const spec=best.spec,encodings=[...new Set([best,...equivalent].map(a=>a.spec.encoding))].sort();
  /* S11A diagnostics, reported whether or not the rule is enabled. */
  const framesPerSample=Number.isInteger(options.framesPerSample)?options.framesPerSample:null;
+ /* S11C: a transition is observed BETWEEN two snapshots, so what is known is an
+    INTERVAL, never a frame. The earlier transitionFrameIndices multiplied a
+    snapshot index by the frames per event and read like an exact frame; it was
+    the boundary of an observation interval. Intervals are reported instead, with
+    the sampling mode that produced them, and no exact event time is claimed
+    without per-frame observation.
+
+    POST_ONLY     sample i is taken after event i+1, so a change seen between
+                  samples i-1 and i happened during event i+1: frames
+                  [i*F, (i+1)*F).
+    PRE_AND_POST  sample 0 is taken before any event at frame 0 and sample i>0
+                  after event i, so a change between i-1 and i happened during
+                  event i: frames [(i-1)*F, i*F). */
+ const samplingMode=options.samplingMode==='PRE_AND_POST'?'PRE_AND_POST':'POST_ONLY';
+ const interval=index=>{
+  if(framesPerSample===null)return null;
+  const start=samplingMode==='PRE_AND_POST'?(index-1)*framesPerSample:index*framesPerSample;
+  return {sampleIndex:index,
+   intervalStartFrame:start,intervalEndFrame:start+framesPerSample,
+   snapshotSource:samplingMode==='PRE_AND_POST'&&index===1
+    ?'between the pre-event snapshot and the snapshot after event 1'
+    :'between two post-event snapshots',
+   exactFrameKnown:false};
+ };
  const support=frozen({
+  samplingMode,
   observedTransitions:best.observedTransitions,
   transitionSampleIndices:best.transitionSampleIndices,
-  transitionFrameIndices:framesPerSample===null?null
-   :frozen(best.transitionSampleIndices.map(index=>index*framesPerSample)),
+  transitionIntervals:framesPerSample===null?null
+   :frozen(best.transitionSampleIndices.map(index=>frozen(interval(index)))),
+  /* kept under an honest name: these are interval STARTS, not event times */
+  transitionIntervalStartFrames:framesPerSample===null?null
+   :frozen(best.transitionSampleIndices.map(index=>interval(index).intervalStartFrame)),
+  timingCaveat:'each transition is located to an observation interval of '
+   +(framesPerSample===null?'unknown':framesPerSample)+' frames, not to a frame. No exact event time is claimed.',
   distinctNonzeroSteps:best.distinctNonzeroSteps,
   nonzeroSteps:best.nonzeroSteps,
   stepAgreementAcrossTransitions:best.stepAgreementAcrossTransitions,
   firstChangeSampleIndex:best.firstChangeSampleIndex,
   lastChangeSampleIndex:best.lastChangeSampleIndex,
-  firstChangeFrame:framesPerSample===null||best.firstChangeSampleIndex===null?null
-   :best.firstChangeSampleIndex*framesPerSample,
-  lastChangeFrame:framesPerSample===null||best.lastChangeSampleIndex===null?null
-   :best.lastChangeSampleIndex*framesPerSample,
+  firstChangeInterval:framesPerSample===null||best.firstChangeSampleIndex===null?null
+   :frozen(interval(best.firstChangeSampleIndex)),
+  lastChangeInterval:framesPerSample===null||best.lastChangeSampleIndex===null?null
+   :frozen(interval(best.lastChangeSampleIndex)),
   observationHorizonSamples:best.samples,
   observationHorizonFrames:framesPerSample===null?null:best.samples*framesPerSample,
   transitionSupportStatus:(best.observedTransitions>=TRANSITION_SUPPORT_RULE.minObservedTransitions
