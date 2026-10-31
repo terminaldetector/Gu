@@ -1,0 +1,1130 @@
+{
+  "type": "gu-agod-real-game-check",
+  "version": 1,
+  "corpusClass": "private user-supplied real-game ROM, local evaluation only; no ROM bytes in this artefact",
+  "oracle": "none exists for a real cartridge: discovery here is unlabelled by construction, and no judgement is recorded as a label",
+  "provenance": {
+    "commit": "ace0d9f8cdfefa55737aa784789d138f586b490c",
+    "workingTreeDirty": true,
+    "node": "v22.22.0",
+    "pipelineRevision": "agod-pipeline-s4b-3",
+    "causalRevision": "agod-causal-e3-2",
+    "ramRevision": "agod-ram-e2-1",
+    "phaseEvidenceRevision": "agod-phase-evidence-1"
+  },
+  "status": "COMPLETE",
+  "arms": [
+    {
+      "arm": "pure-boot",
+      "declaredIntervention": null,
+      "initialStateHash": "f587d8b0bcdcee9267d16875c5ab4e94",
+      "phaseEvidence": {
+        "revision": "agod-phase-evidence-1",
+        "parameters": {
+          "idleFrames": 180,
+          "pulses": 14,
+          "settleFrames": 60,
+          "minDistinctOutcomes": 4,
+          "buttonMasks": [
+            1,
+            2,
+            4,
+            8,
+            16,
+            32,
+            64,
+            128
+          ],
+          "saturationPixels": 20000
+        },
+        "idle": {
+          "framesSampled": 180,
+          "pictureMotionWithoutInput": 0.444,
+          "note": "context only: an attract screen moves as much as play does, so this promotes nothing"
+        },
+        "ram": {
+          "bidirectionalRamAddresses": 0,
+          "addressSample": [],
+          "distinctOutcomesAcrossEightButtons": 5,
+          "buttonsTested": 8,
+          "neutralControlDiffersFromSomeButton": true,
+          "note": "ADDRESSES responding bidirectionally, not confirmed coordinates; a menu cursor has the same signature"
+        },
+        "video": {
+          "method": "differential between the Left and Right arms at equal frame counts from one snapshot, so an identical scrolling background cancels",
+          "differingPixelsHeld": 0,
+          "meanXOfDifferingPixelsHeld": null,
+          "massSplitAcrossHalvesHeld": {
+            "leftHalf": 0,
+            "rightHalf": 0,
+            "total": 0
+          },
+          "differingPixelsAfterRelease": 0,
+          "meanXOfDifferingPixelsAfterRelease": null,
+          "localisedEnoughToBeAnObject": false,
+          "differenceSurvivesRelease": false,
+          "directionEstablished": false,
+          "directionNote": "the differing pixels of the two arms are one set, so this yields one mean x and cannot say which way an object moved",
+          "sensitivityNote": "a differing-pixel count near the whole screen means the test cannot resolve an object, and is reported as not localised rather than as an object"
+        },
+        "criteria": "RAM bidirectionality AND >=4 distinct outcomes across eight buttons AND a localised video difference AND that difference surviving release",
+        "modalities": {
+          "ram": false,
+          "video": false
+        },
+        "phase": "NOT-REACHED",
+        "phaseNote": "neither modality indicates object control under this entry procedure; this is an absence of evidence under one procedure, not proof that the cartridge cannot be played"
+      },
+      "pipeline": {
+        "status": "REFUSED",
+        "stage": "judge",
+        "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game",
+        "pipelineRevision": "agod-pipeline-s4b-3",
+        "candidates": {
+          "resource": {
+            "address": 25,
+            "width": 1,
+            "endian": "n/a",
+            "encoding": "undetermined",
+            "encodingDetermined": false,
+            "step": -1,
+            "direction": "decreasing",
+            "mask": 8
+          },
+          "effect": {
+            "address": 60,
+            "width": 1,
+            "endian": "n/a",
+            "encoding": "undetermined",
+            "encodingDetermined": false,
+            "step": 4,
+            "direction": "increasing",
+            "mask": 8
+          },
+          "increasingFields": [
+            {
+              "address": 60,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "undetermined",
+              "encodingDetermined": false,
+              "step": 4,
+              "direction": "increasing",
+              "mask": 8
+            },
+            {
+              "address": 65,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "undetermined",
+              "encodingDetermined": false,
+              "step": 1,
+              "direction": "increasing",
+              "mask": 8
+            },
+            {
+              "address": 768,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "binary",
+              "encodingDetermined": true,
+              "step": 31,
+              "direction": "increasing",
+              "mask": 8
+            },
+            {
+              "address": 1642,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "binary",
+              "encodingDetermined": true,
+              "step": 11,
+              "direction": "increasing",
+              "mask": 8
+            }
+          ],
+          "increasingFieldCount": 4,
+          "persistingAddressCountByMask": [
+            {
+              "mask": 4,
+              "addresses": 1
+            },
+            {
+              "mask": 8,
+              "addresses": 64
+            }
+          ],
+          "neutralMovedAddressCount": 786
+        },
+        "attribution": [],
+        "typing": {
+          "spansExamined": 34,
+          "identified": [
+            {
+              "mask": 8,
+              "span": [
+                24,
+                25
+              ],
+              "field": {
+                "address": 25,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": -1,
+                "direction": "decreasing"
+              }
+            },
+            {
+              "mask": 8,
+              "span": [
+                60,
+                60
+              ],
+              "field": {
+                "address": 60,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": 4,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 8,
+              "span": [
+                65,
+                65
+              ],
+              "field": {
+                "address": 65,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": 1,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 8,
+              "span": [
+                768,
+                768
+              ],
+              "field": {
+                "address": 768,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": 31,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 8,
+              "span": [
+                801,
+                801
+              ],
+              "field": {
+                "address": 801,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": -63,
+                "direction": "decreasing"
+              }
+            },
+            {
+              "mask": 8,
+              "span": [
+                834,
+                834
+              ],
+              "field": {
+                "address": 834,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "bcd",
+                "step": -38,
+                "direction": "decreasing"
+              }
+            },
+            {
+              "mask": 8,
+              "span": [
+                1640,
+                1642
+              ],
+              "field": {
+                "address": 1642,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": 11,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 8,
+              "span": [
+                1759,
+                1759
+              ],
+              "field": {
+                "address": 1759,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": -6,
+                "direction": "decreasing"
+              }
+            }
+          ],
+          "notIdentified": {
+            "UNRESOLVED": 25,
+            "AMBIGUOUS": 1
+          },
+          "notIdentifiedSample": [
+            {
+              "mask": 4,
+              "span": [
+                34,
+                34
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 8,
+              "span": [
+                36,
+                36
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 8,
+              "span": [
+                42,
+                42
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 8,
+              "span": [
+                54,
+                55
+              ],
+              "status": "AMBIGUOUS"
+            },
+            {
+              "mask": 8,
+              "span": [
+                234,
+                234
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 8,
+              "span": [
+                1600,
+                1602
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 8,
+              "span": [
+                1605,
+                1606
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 8,
+              "span": [
+                1610,
+                1612
+              ],
+              "status": "UNRESOLVED"
+            }
+          ]
+        },
+        "counterfactual": {
+          "reversalProbes": [],
+          "judge": [
+            {
+              "coupledGains": 4,
+              "playGainsWatched": 0,
+              "floorReversible": false,
+              "gainRetainedAcrossReversal": false,
+              "reversalMask": null
+            }
+          ]
+        },
+        "induction": [
+          {
+            "partition": "DISCOVERY",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "CALIBRATION",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              1,
+              1,
+              1,
+              1,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "HOLDOUT",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              1,
+              1,
+              1,
+              1,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "promotion": [],
+        "goal": null,
+        "refusals": [
+          {
+            "stage": "judge",
+            "reason": "terminal resource depletion was observed but is not evidenced as a cost to the game",
+            "fact": "TERMINAL_RESOURCE_DEPLETION",
+            "classification": "PROVISIONAL_SACRIFICE",
+            "blockers": [
+              "the same action also raises 4 persisting field(s): a cost that buys something is not evidence of harm"
+            ],
+            "coupledGains": [
+              {
+                "address": 60,
+                "width": 1,
+                "step": 4
+              },
+              {
+                "address": 65,
+                "width": 1,
+                "step": 1
+              },
+              {
+                "address": 768,
+                "width": 1,
+                "step": 31
+              },
+              {
+                "address": 1642,
+                "width": 1,
+                "step": 11
+              }
+            ],
+            "floorReversible": false,
+            "gainRetainedAcrossReversal": false
+          }
+        ]
+      },
+      "elapsedMs": 14873
+    },
+    {
+      "arm": "start-preamble",
+      "declaredIntervention": "press Start 2 time(s) with a 24-frame gap and settle 60 frames, a declared human prior about how cartridges begin, not a RAM hint and not a reward choice",
+      "initialStateHash": "acc6bc88c86712f9dafd9668bf321f8e",
+      "phaseEvidence": {
+        "revision": "agod-phase-evidence-1",
+        "parameters": {
+          "idleFrames": 180,
+          "pulses": 14,
+          "settleFrames": 60,
+          "minDistinctOutcomes": 4,
+          "buttonMasks": [
+            1,
+            2,
+            4,
+            8,
+            16,
+            32,
+            64,
+            128
+          ],
+          "saturationPixels": 20000
+        },
+        "idle": {
+          "framesSampled": 180,
+          "pictureMotionWithoutInput": 0.45,
+          "note": "context only: an attract screen moves as much as play does, so this promotes nothing"
+        },
+        "ram": {
+          "bidirectionalRamAddresses": 12,
+          "addressSample": [
+            {
+              "address": 289,
+              "underRight": 4,
+              "underLeft": -49
+            },
+            {
+              "address": 291,
+              "underRight": 4,
+              "underLeft": -51
+            },
+            {
+              "address": 293,
+              "underRight": 3,
+              "underLeft": -53
+            },
+            {
+              "address": 295,
+              "underRight": 2,
+              "underLeft": -55
+            }
+          ],
+          "distinctOutcomesAcrossEightButtons": 8,
+          "buttonsTested": 8,
+          "neutralControlDiffersFromSomeButton": true,
+          "note": "ADDRESSES responding bidirectionally, not confirmed coordinates; a menu cursor has the same signature"
+        },
+        "video": {
+          "method": "differential between the Left and Right arms at equal frame counts from one snapshot, so an identical scrolling background cancels",
+          "differingPixelsHeld": 173,
+          "meanXOfDifferingPixelsHeld": 51.38,
+          "massSplitAcrossHalvesHeld": {
+            "leftHalf": 173,
+            "rightHalf": 0,
+            "total": 173
+          },
+          "differingPixelsAfterRelease": 174,
+          "meanXOfDifferingPixelsAfterRelease": 51.55,
+          "localisedEnoughToBeAnObject": true,
+          "differenceSurvivesRelease": true,
+          "directionEstablished": false,
+          "directionNote": "the differing pixels of the two arms are one set, so this yields one mean x and cannot say which way an object moved",
+          "sensitivityNote": "a differing-pixel count near the whole screen means the test cannot resolve an object, and is reported as not localised rather than as an object"
+        },
+        "criteria": "RAM bidirectionality AND >=4 distinct outcomes across eight buttons AND a localised video difference AND that difference surviving release",
+        "modalities": {
+          "ram": true,
+          "video": true
+        },
+        "phase": "PASS",
+        "phaseNote": "control of an object is corroborated across RAM and video; the phase remains an inference, not a certainty"
+      },
+      "pipeline": {
+        "status": "REFUSED",
+        "stage": "induce",
+        "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+        "pipelineRevision": "agod-pipeline-s4b-3",
+        "candidates": {
+          "resource": {
+            "address": 939,
+            "width": 1,
+            "endian": "n/a",
+            "encoding": "bcd",
+            "encodingDetermined": true,
+            "step": -20,
+            "direction": "decreasing",
+            "mask": 2
+          },
+          "effect": {
+            "address": 120,
+            "width": 1,
+            "endian": "n/a",
+            "encoding": "undetermined",
+            "encodingDetermined": false,
+            "step": 1,
+            "direction": "increasing",
+            "mask": 2
+          },
+          "increasingFields": [
+            {
+              "address": 120,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "undetermined",
+              "encodingDetermined": false,
+              "step": 1,
+              "direction": "increasing",
+              "mask": 2
+            },
+            {
+              "address": 445,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "binary",
+              "encodingDetermined": true,
+              "step": 10,
+              "direction": "increasing",
+              "mask": 2
+            },
+            {
+              "address": 888,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "undetermined",
+              "encodingDetermined": false,
+              "step": 1,
+              "direction": "increasing",
+              "mask": 2
+            },
+            {
+              "address": 1085,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "undetermined",
+              "encodingDetermined": false,
+              "step": 1,
+              "direction": "increasing",
+              "mask": 2
+            },
+            {
+              "address": 1609,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "undetermined",
+              "encodingDetermined": false,
+              "step": 8,
+              "direction": "increasing",
+              "mask": 2
+            },
+            {
+              "address": 1644,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "bcd",
+              "encodingDetermined": true,
+              "step": 30,
+              "direction": "increasing",
+              "mask": 2
+            },
+            {
+              "address": 1649,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "undetermined",
+              "encodingDetermined": false,
+              "step": 8,
+              "direction": "increasing",
+              "mask": 2
+            },
+            {
+              "address": 1654,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "undetermined",
+              "encodingDetermined": false,
+              "step": 2,
+              "direction": "increasing",
+              "mask": 2
+            },
+            {
+              "address": 2020,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "bcd",
+              "encodingDetermined": true,
+              "step": 3,
+              "direction": "increasing",
+              "mask": 2
+            },
+            {
+              "address": 1609,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "undetermined",
+              "encodingDetermined": false,
+              "step": 8,
+              "direction": "increasing",
+              "mask": 8
+            },
+            {
+              "address": 1619,
+              "width": 1,
+              "endian": "n/a",
+              "encoding": "bcd",
+              "encodingDetermined": true,
+              "step": 46,
+              "direction": "increasing",
+              "mask": 8
+            }
+          ],
+          "increasingFieldCount": 11,
+          "persistingAddressCountByMask": [
+            {
+              "mask": 1,
+              "addresses": 0
+            },
+            {
+              "mask": 2,
+              "addresses": 40
+            },
+            {
+              "mask": 4,
+              "addresses": 0
+            },
+            {
+              "mask": 8,
+              "addresses": 11
+            },
+            {
+              "mask": 16,
+              "addresses": 1
+            },
+            {
+              "mask": 32,
+              "addresses": 1
+            },
+            {
+              "mask": 64,
+              "addresses": 1
+            },
+            {
+              "mask": 128,
+              "addresses": 1
+            }
+          ],
+          "neutralMovedAddressCount": 783
+        },
+        "attribution": [],
+        "typing": {
+          "spansExamined": 46,
+          "identified": [
+            {
+              "mask": 2,
+              "span": [
+                120,
+                120
+              ],
+              "field": {
+                "address": 120,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": 1,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 2,
+              "span": [
+                445,
+                445
+              ],
+              "field": {
+                "address": 445,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": 10,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 2,
+              "span": [
+                888,
+                888
+              ],
+              "field": {
+                "address": 888,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": 1,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 2,
+              "span": [
+                939,
+                939
+              ],
+              "field": {
+                "address": 939,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "bcd",
+                "step": -20,
+                "direction": "decreasing"
+              }
+            },
+            {
+              "mask": 2,
+              "span": [
+                1085,
+                1085
+              ],
+              "field": {
+                "address": 1085,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": 1,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 2,
+              "span": [
+                1609,
+                1609
+              ],
+              "field": {
+                "address": 1609,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": 8,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 2,
+              "span": [
+                1629,
+                1629
+              ],
+              "field": {
+                "address": 1629,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": -117,
+                "direction": "decreasing"
+              }
+            },
+            {
+              "mask": 2,
+              "span": [
+                1644,
+                1644
+              ],
+              "field": {
+                "address": 1644,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "bcd",
+                "step": 30,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 2,
+              "span": [
+                1649,
+                1649
+              ],
+              "field": {
+                "address": 1649,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": 8,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 2,
+              "span": [
+                1654,
+                1654
+              ],
+              "field": {
+                "address": 1654,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": 2,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 2,
+              "span": [
+                2020,
+                2020
+              ],
+              "field": {
+                "address": 2020,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "bcd",
+                "step": 3,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 8,
+              "span": [
+                1609,
+                1609
+              ],
+              "field": {
+                "address": 1609,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "undetermined",
+                "step": 8,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 8,
+              "span": [
+                1619,
+                1619
+              ],
+              "field": {
+                "address": 1619,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "bcd",
+                "step": 46,
+                "direction": "increasing"
+              }
+            },
+            {
+              "mask": 8,
+              "span": [
+                1629,
+                1629
+              ],
+              "field": {
+                "address": 1629,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "bcd",
+                "step": -13,
+                "direction": "decreasing"
+              }
+            },
+            {
+              "mask": 128,
+              "span": [
+                116,
+                116
+              ],
+              "field": {
+                "address": 116,
+                "width": 1,
+                "endian": "n/a",
+                "encoding": "binary",
+                "step": -64,
+                "direction": "decreasing"
+              }
+            }
+          ],
+          "notIdentified": {
+            "UNRESOLVED": 29,
+            "AMBIGUOUS": 2
+          },
+          "notIdentifiedSample": [
+            {
+              "mask": 2,
+              "span": [
+                38,
+                38
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 2,
+              "span": [
+                150,
+                151
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 2,
+              "span": [
+                190,
+                191
+              ],
+              "status": "AMBIGUOUS"
+            },
+            {
+              "mask": 2,
+              "span": [
+                214,
+                215
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 2,
+              "span": [
+                772,
+                773
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 2,
+              "span": [
+                789,
+                789
+              ],
+              "status": "UNRESOLVED"
+            },
+            {
+              "mask": 2,
+              "span": [
+                805,
+                806
+              ],
+              "status": "AMBIGUOUS"
+            },
+            {
+              "mask": 2,
+              "span": [
+                838,
+                839
+              ],
+              "status": "UNRESOLVED"
+            }
+          ]
+        },
+        "counterfactual": {
+          "reversalProbes": [],
+          "judge": [
+            {
+              "coupledGains": 9,
+              "playGainsWatched": 2,
+              "floorReversible": false,
+              "gainRetainedAcrossReversal": false,
+              "reversalMask": null
+            }
+          ]
+        },
+        "induction": [
+          {
+            "partition": "DISCOVERY",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "CALIBRATION",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "partition": "HOLDOUT",
+            "polarity": "UNKNOWN",
+            "lifecycle": "CANDIDATE",
+            "verifiable": false,
+            "resourceTrack": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        ],
+        "promotion": [],
+        "goal": null,
+        "refusals": [
+          {
+            "stage": "induce",
+            "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+            "polarity": "UNKNOWN",
+            "rationale": "insufficient evidence"
+          }
+        ]
+      },
+      "elapsedMs": 25918
+    }
+  ],
+  "rom": {
+    "name": "lifeforce.nes",
+    "sha256": "c725a0c6b3eb52f542c10cf40538b69d0b163e5884ced7530dd250dbc02749b4",
+    "fileBytes": 131088,
+    "format": "NES 2.0",
+    "mapper": 2,
+    "submapper": 2,
+    "prgRomBytes": 131072,
+    "chrRomBytes": 0,
+    "timingHeader": "NTSC"
+  },
+  "coreIdentity": "jsnes (bundled in assets/lab/jsnes.min.js)",
+  "frameParameters": {
+    "hold": 4,
+    "release": 8,
+    "bootFrames": 240,
+    "preambleStartPulses": 2,
+    "preambleGapFrames": 24,
+    "preambleSettleFrames": 60
+  },
+  "totals": {
+    "arms": 2,
+    "phaseEvidenceRevision": "agod-phase-evidence-1",
+    "phaseStatuses": {
+      "pure-boot": "NOT-REACHED",
+      "start-preamble": "PASS"
+    },
+    "phaseModalities": {
+      "pure-boot": {
+        "ram": false,
+        "video": false
+      },
+      "start-preamble": {
+        "ram": true,
+        "video": true
+      }
+    },
+    "pipelineOutcomes": {
+      "pure-boot": "REFUSED/judge",
+      "start-preamble": "REFUSED/induce"
+    },
+    "verifiedGoalInEitherArm": false,
+    "preambleChangedThePhaseStatus": true,
+    "note": "no oracle exists for this cartridge. Nothing here is scored against a label, and no judgement about game value is recorded."
+  }
+}

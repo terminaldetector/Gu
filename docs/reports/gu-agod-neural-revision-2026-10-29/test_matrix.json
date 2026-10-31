@@ -1,811 +1,853 @@
 {
-  "generatedUtc": "2026-10-30T08:18:39Z",
-  "baseCommit": "775aa68053c7b99bf699f16c1418b997ce507250",
-  "summary": {
-    "checkShPassAssertions": 115,
-    "checkShExitCode": 1,
-    "checkShStopLine": 124,
-    "checkShStopReason": "Cannot find module app/src/main/assets/lab/snes/core.js",
-    "stepsPass": 105,
-    "stepsBlocked": 3,
-    "stepsNotRun": 0,
-    "agodStandaloneChecks": 5
+ "generatedUtc": "2026-10-30T08:18:39Z",
+ "baseCommit": "775aa68053c7b99bf699f16c1418b997ce507250",
+ "summary": {
+  "checkShPassAssertions": 115,
+  "checkShExitCode": 1,
+  "checkShStopLine": 124,
+  "checkShStopReason": "Cannot find module app/src/main/assets/lab/snes/core.js",
+  "stepsPass": 105,
+  "stepsBlocked": 3,
+  "stepsNotRun": 0,
+  "agodStandaloneChecks": 5
+ },
+ "note": "PASS here means the project's own assertion passed in this environment. It is a host result and carries no Android or behavioural claim.",
+ "checkShSteps": [
+  {
+   "checkShLine": 6,
+   "command": "python tools/test_convert.py \"$task_tmp\"",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
   },
-  "note": "PASS here means the project's own assertion passed in this environment. It is a host result and carries no Android or behavioural claim.",
-  "checkShSteps": [
-    {
-      "checkShLine": 6,
-      "command": "python tools/test_convert.py \"$task_tmp\"",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 8,
-      "command": "java -cp \"$task_tmp/classes\" org.node.flyconsole.EngineCheck \"$task_tmp/test.fly\"",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 10,
-      "command": "java -cp \"$task_tmp/classes\" org.node.flyconsole.GraphDeltaCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 11,
-      "command": "java -cp \"$task_tmp/classes\" org.node.flyconsole.FdbGrowthCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 12,
-      "command": "java -cp \"$task_tmp/classes\" org.node.flyconsole.FdbLearningCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 13,
-      "command": "java -cp \"$task_tmp/classes\" org.node.flyconsole.FdbUnknownRewardCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 15,
-      "command": "java -cp \"$task_tmp/classes\" org.node.flyconsole.ExperimentCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 16,
-      "command": "node tools/nes_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 17,
-      "command": "node --check app/src/main/assets/lab/lab.js",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 18,
-      "command": "node tools/gmode_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 19,
-      "command": "node tools/system_controls_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 20,
-      "command": "node tools/console_reset_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 21,
-      "command": "node tools/neural_isolation_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 22,
-      "command": "node tools/current_gate_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 23,
-      "command": "node tools/save_states_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 24,
-      "command": "node tools/save_states_ui_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 25,
-      "command": "node tools/runtime_flow_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 26,
-      "command": "node tools/emulation_clock_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 27,
-      "command": "node tools/controller_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 28,
-      "command": "node tools/action_hold_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 29,
-      "command": "node tools/score_search_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 30,
-      "command": "node --check app/src/main/assets/lab/score-ui.js",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 31,
-      "command": "node tools/settings_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 32,
-      "command": "node tools/interface_settings_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 33,
-      "command": "node --check app/src/main/assets/lab/interface-ui.js",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 34,
-      "command": "node --check app/src/main/assets/lab/state-ui.js",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 35,
-      "command": "node --check app/src/main/assets/lab/session-logger.js",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 36,
-      "command": "node --check app/src/main/assets/lab/console-navigation.js",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 37,
-      "command": "node --check app/src/main/assets/lab/agent-quick-panel.js",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 38,
-      "command": "python tools/inspect_diagnostics_check.py",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 39,
-      "command": "node --check app/src/main/assets/lab/episode-starts.js",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 40,
-      "command": "node --check app/src/main/assets/lab/shell-ui.js",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 41,
-      "command": "node --check app/src/main/assets/lab/training-flow.js",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 43,
-      "command": "java -cp \"$task_tmp/classes\" org.node.flyconsole.RomImportCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 44,
-      "command": "node tools/two_player_mode_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 45,
-      "command": "python tools/gpu_shader_check.py",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 47,
-      "command": "node tools/learning_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 48,
-      "command": "node tools/demonstration_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 49,
-      "command": "node tools/human_capture_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 50,
-      "command": "node tools/training_sessions_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 51,
-      "command": "node tools/archive_replay_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 52,
-      "command": "node --check app/src/main/assets/lab/archive-ui.js",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 53,
-      "command": "node --check app/src/main/assets/lab/training-journal.js",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 54,
-      "command": "node tools/fdb_feedback_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 55,
-      "command": "node tools/fdb_reward_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 56,
-      "command": "node tools/model_ui_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 57,
-      "command": "node tools/synthetic_import_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 58,
-      "command": "node tools/shared_experience_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 59,
-      "command": "node tools/shared_experience_ui_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 60,
-      "command": "node --check app/src/main/assets/lab/shared-experience-ui.js",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 61,
-      "command": "node tools/dual_ui_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 62,
-      "command": "node tools/dual_routing_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 63,
-      "command": "node tools/layer_sets_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 64,
-      "command": "node tools/current_layer_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 65,
-      "command": "node --check app/src/main/assets/lab/layer-ui.js",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 67,
-      "command": "node tools/game_tools_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 68,
-      "command": "node --check app/src/main/assets/lab/core-probe.js",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 69,
-      "command": "node --check app/src/main/assets/lab/goal-discovery-ui.js",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 70,
-      "command": "node tools/core_probe_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 71,
-      "command": "python3 tools/build_nes_trace.py --check",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 72,
-      "command": "node tools/nes_write_trace_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 73,
-      "command": "node tools/goal_discovery_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 74,
-      "command": "node tools/objective_profiles_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 75,
-      "command": "node tools/agod_rom_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 84,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.LabRequestFailureCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 86,
-      "command": "java -cp \"$task_tmp/classes\" org.node.flyconsole.GraphIdentityCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 87,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.SyntheticGraphCheck examples/synthetic/*.json",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 89,
-      "command": "java -cp \"$task_tmp/controller:$task_tmp/json.jar\" org.node.flyconsole.ControllerInputCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 91,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.InferenceCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 93,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.LayerSetStoreCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 95,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.DiagnosticJournalCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 97,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.LearnedRolesCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 99,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.RomLibraryCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 100,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.EpisodeHistoryCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 102,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.CurriculumCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 103,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FrozenSeriesCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 104,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.BestPromotionGateCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 106,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbLayerBindingCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 108,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.PairedEvaluationCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 109,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbCheckpointCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 110,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbIdentityCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 111,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbProjectionCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 112,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.SyntheticLearningCheck examples/synthetic/*.json",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 113,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbPlasticityCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 114,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.ExpandedPlasticityCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 115,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbProjectionCacheCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 116,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbDualCreditCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 117,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FrozenFdbCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 118,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.GpuLayerSyncCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 119,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbDiagnosticsCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 120,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbTemporalExperiment \"${FDB_TEMPORAL_REPORT:-$task_tmp/fdb-temporal}\"",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 121,
-      "command": "node tools/fdb_diagnostics_check.cjs",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 123,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.DualAgentCheck",
-      "status": "PASS",
-      "reason": "executed inside full check.sh run 2"
-    },
-    {
-      "checkShLine": 124,
-      "command": "CODE_CLASSPATH=\"$task_tmp/classes:$task_tmp/json.jar\" node tools/fdb_game_check.cjs",
-      "status": "BLOCKED",
-      "reason": "needs app/src/main/assets/lab/snes/core.js (built by tools/build_retro.py, requires emscripten)"
-    },
-    {
-      "checkShLine": 125,
-      "command": "FDB_EXPANDED_FIXTURE=1 CODE_CLASSPATH=\"$task_tmp/classes:$task_tmp/json.jar\" node tools/expanded_game_check.cjs",
-      "status": "BLOCKED",
-      "reason": "same SNES/GB retro core dependency"
-    },
-    {
-      "checkShLine": 127,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.TrainingSessionStoreCheck",
-      "status": "PASS",
-      "reason": "executed manually after the blocked step, same command, cached org.json jar"
-    },
-    {
-      "checkShLine": 128,
-      "command": "node tools/sega_check.cjs",
-      "status": "PASS",
-      "reason": "executed manually after the blocked step, same command, cached org.json jar"
-    },
-    {
-      "checkShLine": 129,
-      "command": "node tools/sega_rom_check.cjs",
-      "status": "PASS",
-      "reason": "executed manually after the blocked step, same command, cached org.json jar"
-    },
-    {
-      "checkShLine": 130,
-      "command": "node tools/sega_p2_check.cjs",
-      "status": "PASS",
-      "reason": "executed manually after the blocked step, same command, cached org.json jar"
-    },
-    {
-      "checkShLine": 131,
-      "command": "node tools/sega_six_button_check.cjs",
-      "status": "PASS",
-      "reason": "executed manually after the blocked step, same command, cached org.json jar"
-    },
-    {
-      "checkShLine": 132,
-      "command": "node tools/sega_render_check.cjs",
-      "status": "PASS",
-      "reason": "executed manually after the blocked step, same command, cached org.json jar"
-    },
-    {
-      "checkShLine": 134,
-      "command": "node tools/sega_learning_check.cjs",
-      "status": "PASS",
-      "reason": "executed manually after the blocked step, same command, cached org.json jar"
-    },
-    {
-      "checkShLine": 135,
-      "command": "node tools/retro_check.cjs",
-      "status": "BLOCKED",
-      "reason": "same SNES/GB retro core dependency"
-    },
-    {
-      "checkShLine": 138,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.CodeLabCheck",
-      "status": "PASS",
-      "reason": "executed manually after the blocked step, same command, cached org.json jar"
-    },
-    {
-      "checkShLine": 139,
-      "command": "CODE_CLASSPATH=\"$task_tmp/classes:$task_tmp/json.jar\" node tools/code_worker_check.cjs",
-      "status": "PASS",
-      "reason": "executed manually after the blocked step, same command, cached org.json jar"
-    },
-    {
-      "checkShLine": 140,
-      "command": "node --check app/src/main/assets/code/lab.js",
-      "status": "PASS",
-      "reason": "executed manually after the blocked step, same command, cached org.json jar"
-    },
-    {
-      "checkShLine": 142,
-      "command": "node tools/benchmark_check.cjs",
-      "status": "PASS",
-      "reason": "executed manually after the blocked step, same command, cached org.json jar"
-    },
-    {
-      "checkShLine": 144,
-      "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.ReleaseCheck",
-      "status": "PASS",
-      "reason": "executed manually after the blocked step, same command, cached org.json jar"
-    }
-  ],
-  "agodStandaloneRuns": [
-    {
-      "command": "node tools/core_probe_check.cjs",
-      "status": "PASS",
-      "reason": "standalone AGOD run before full check.sh"
-    },
-    {
-      "command": "node tools/nes_write_trace_check.cjs",
-      "status": "PASS",
-      "reason": "standalone AGOD run before full check.sh"
-    },
-    {
-      "command": "node tools/goal_discovery_check.cjs",
-      "status": "PASS",
-      "reason": "standalone AGOD run before full check.sh"
-    },
-    {
-      "command": "node tools/objective_profiles_check.cjs",
-      "status": "PASS",
-      "reason": "standalone AGOD run before full check.sh"
-    },
-    {
-      "command": "node tools/agod_rom_check.cjs",
-      "status": "PASS",
-      "reason": "standalone AGOD run before full check.sh"
-    }
-  ],
-  "experimentalChecks": [
-    {
-      "command": "node tools/agod_causal_check.cjs",
-      "stage": "E3",
-      "status": "PASS",
-      "log": "logs/agod_causal_check.log"
-    },
-    {
-      "command": "node tools/agod_reward_check.cjs",
-      "stage": "E4",
-      "status": "PASS",
-      "log": "logs/agod_reward_check.log",
-      "note": "re-run after AGOD-08: still PASS, unchanged"
-    },
-    {
-      "command": "node tools/agod_evidence_check.cjs",
-      "stage": "AGOD-08/09",
-      "status": "PASS",
-      "log": "logs/agod_evidence_check.log"
-    },
-    {
-      "command": "node tools/agod_ram_check.cjs",
-      "stage": "E2",
-      "status": "PASS",
-      "log": "logs/agod_ram_check.log"
-    },
-    {
-      "command": "node tools/agod_dqn_check.cjs",
-      "stage": "E5",
-      "status": "PASS",
-      "log": "logs/agod_dqn_check.log"
-    },
-    {
-      "command": "node tools/agod_pipeline_check.cjs",
-      "stage": "E6/E7",
-      "status": "PASS",
-      "log": "logs/agod_pipeline_check.log",
-      "note": "includes the held-out group: seeds 200..206, fixed before the first run Re-run after S3 added the judge stage: results bit-identical."
-    },
-    {
-      "command": "node tools/agod_experimental_bridge_check.cjs",
-      "stage": "S1",
-      "status": "PASS",
-      "log": "logs/agod_experimental_bridge_check.log"
-    },
-    {
-      "command": "node tools/agod_replay_check.cjs",
-      "stage": "S2",
-      "status": "PASS",
-      "log": "logs/agod_replay_check.log"
-    },
-    {
-      "command": "node tools/agod_sacrifice_check.cjs",
-      "stage": "S3",
-      "status": "PASS",
-      "log": "logs/agod_sacrifice_check.log",
-      "note": "two independent controlled families; the sacrifice oracle carries closed judgement labels"
-    },
-    {
-      "command": "node tools/agod_positive_check.cjs",
-      "stage": "S4",
-      "status": "PASS",
-      "log": "logs/agod_positive_check.log"
-    },
-    {
-      "command": "node tools/agod_positive_s4b_check.cjs",
-      "stage": "S4b",
-      "status": "PASS",
-      "log": "logs/agod_positive_s4b_check.log",
-      "note": "three families; supersedes the two-family measurement of S4, whose artefact is kept"
-    },
-    {
-      "command": "node tools/agod_validity_check.cjs",
-      "stage": "S5",
-      "status": "PASS",
-      "log": "logs/agod_validity_check.log"
-    },
-    {
-      "command": "node tools/agod_baselines_check.cjs",
-      "stage": "S6",
-      "status": "PASS",
-      "log": "logs/agod_baselines_check.log"
-    },
-    {
-      "command": "AGOD_PRIVATE_ROMS=<dir> node tools/agod_private_rom_gate.cjs",
-      "stage": "private-corpus gate",
-      "status": "COMPLETE",
-      "log": "logs/private_rom_gate_report.json",
-      "note": "private user-supplied commercial ROMs; local only, never committed"
-    },
-    {
-      "command": "node tools/agod_consumers_check.cjs",
-      "stage": "S4c",
-      "status": "PASS",
-      "log": "logs/agod_consumers_check.log",
-      "note": "provenance and execution evidence recorded in the report; read counts are a lower bound"
-    },
-    {
-      "command": "node tools/agod_consumers_smoke.cjs",
-      "stage": "S4c smoke",
-      "status": "PASS",
-      "log": "(stdout)"
-    },
-    {
-      "command": "AGOD_PRIVATE_ROMS=<dir> AGOD_TARGET_ROM=galaga.nes node tools/agod_real_game_check.cjs",
-      "stage": "real-game (private corpus)",
-      "status": "REFUSED-CORRECTLY",
-      "log": "logs/galaga_report.json",
-      "note": "both arms refuse at induce; galaga is BLOCKED on reaching gameplay in this core"
-    },
-    {
-      "command": "AGOD_PRIVATE_ROMS=<dir> AGOD_TARGETS=lifeforce.nes,contra.nes node tools/agod_rom_eligibility_gate.cjs",
-      "stage": "real-game eligibility",
-      "status": "COMPLETE",
-      "log": "logs/eligibility_report.json",
-      "note": "four independent statuses; lifeforce AGOD_ELIGIBLE=YES, contra NO"
-    }
-  ],
-  "experimentalChecksNote": "New experimental checks added by this revision. They are standalone Node checks; tools/check.sh and CI were not modified."
+  {
+   "checkShLine": 8,
+   "command": "java -cp \"$task_tmp/classes\" org.node.flyconsole.EngineCheck \"$task_tmp/test.fly\"",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 10,
+   "command": "java -cp \"$task_tmp/classes\" org.node.flyconsole.GraphDeltaCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 11,
+   "command": "java -cp \"$task_tmp/classes\" org.node.flyconsole.FdbGrowthCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 12,
+   "command": "java -cp \"$task_tmp/classes\" org.node.flyconsole.FdbLearningCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 13,
+   "command": "java -cp \"$task_tmp/classes\" org.node.flyconsole.FdbUnknownRewardCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 15,
+   "command": "java -cp \"$task_tmp/classes\" org.node.flyconsole.ExperimentCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 16,
+   "command": "node tools/nes_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 17,
+   "command": "node --check app/src/main/assets/lab/lab.js",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 18,
+   "command": "node tools/gmode_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 19,
+   "command": "node tools/system_controls_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 20,
+   "command": "node tools/console_reset_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 21,
+   "command": "node tools/neural_isolation_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 22,
+   "command": "node tools/current_gate_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 23,
+   "command": "node tools/save_states_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 24,
+   "command": "node tools/save_states_ui_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 25,
+   "command": "node tools/runtime_flow_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 26,
+   "command": "node tools/emulation_clock_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 27,
+   "command": "node tools/controller_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 28,
+   "command": "node tools/action_hold_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 29,
+   "command": "node tools/score_search_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 30,
+   "command": "node --check app/src/main/assets/lab/score-ui.js",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 31,
+   "command": "node tools/settings_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 32,
+   "command": "node tools/interface_settings_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 33,
+   "command": "node --check app/src/main/assets/lab/interface-ui.js",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 34,
+   "command": "node --check app/src/main/assets/lab/state-ui.js",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 35,
+   "command": "node --check app/src/main/assets/lab/session-logger.js",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 36,
+   "command": "node --check app/src/main/assets/lab/console-navigation.js",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 37,
+   "command": "node --check app/src/main/assets/lab/agent-quick-panel.js",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 38,
+   "command": "python tools/inspect_diagnostics_check.py",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 39,
+   "command": "node --check app/src/main/assets/lab/episode-starts.js",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 40,
+   "command": "node --check app/src/main/assets/lab/shell-ui.js",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 41,
+   "command": "node --check app/src/main/assets/lab/training-flow.js",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 43,
+   "command": "java -cp \"$task_tmp/classes\" org.node.flyconsole.RomImportCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 44,
+   "command": "node tools/two_player_mode_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 45,
+   "command": "python tools/gpu_shader_check.py",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 47,
+   "command": "node tools/learning_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 48,
+   "command": "node tools/demonstration_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 49,
+   "command": "node tools/human_capture_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 50,
+   "command": "node tools/training_sessions_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 51,
+   "command": "node tools/archive_replay_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 52,
+   "command": "node --check app/src/main/assets/lab/archive-ui.js",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 53,
+   "command": "node --check app/src/main/assets/lab/training-journal.js",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 54,
+   "command": "node tools/fdb_feedback_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 55,
+   "command": "node tools/fdb_reward_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 56,
+   "command": "node tools/model_ui_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 57,
+   "command": "node tools/synthetic_import_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 58,
+   "command": "node tools/shared_experience_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 59,
+   "command": "node tools/shared_experience_ui_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 60,
+   "command": "node --check app/src/main/assets/lab/shared-experience-ui.js",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 61,
+   "command": "node tools/dual_ui_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 62,
+   "command": "node tools/dual_routing_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 63,
+   "command": "node tools/layer_sets_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 64,
+   "command": "node tools/current_layer_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 65,
+   "command": "node --check app/src/main/assets/lab/layer-ui.js",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 67,
+   "command": "node tools/game_tools_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 68,
+   "command": "node --check app/src/main/assets/lab/core-probe.js",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 69,
+   "command": "node --check app/src/main/assets/lab/goal-discovery-ui.js",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 70,
+   "command": "node tools/core_probe_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 71,
+   "command": "python3 tools/build_nes_trace.py --check",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 72,
+   "command": "node tools/nes_write_trace_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 73,
+   "command": "node tools/goal_discovery_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 74,
+   "command": "node tools/objective_profiles_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 75,
+   "command": "node tools/agod_rom_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 84,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.LabRequestFailureCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 86,
+   "command": "java -cp \"$task_tmp/classes\" org.node.flyconsole.GraphIdentityCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 87,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.SyntheticGraphCheck examples/synthetic/*.json",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 89,
+   "command": "java -cp \"$task_tmp/controller:$task_tmp/json.jar\" org.node.flyconsole.ControllerInputCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 91,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.InferenceCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 93,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.LayerSetStoreCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 95,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.DiagnosticJournalCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 97,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.LearnedRolesCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 99,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.RomLibraryCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 100,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.EpisodeHistoryCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 102,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.CurriculumCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 103,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FrozenSeriesCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 104,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.BestPromotionGateCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 106,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbLayerBindingCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 108,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.PairedEvaluationCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 109,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbCheckpointCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 110,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbIdentityCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 111,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbProjectionCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 112,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.SyntheticLearningCheck examples/synthetic/*.json",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 113,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbPlasticityCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 114,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.ExpandedPlasticityCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 115,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbProjectionCacheCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 116,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbDualCreditCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 117,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FrozenFdbCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 118,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.GpuLayerSyncCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 119,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbDiagnosticsCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 120,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.FdbTemporalExperiment \"${FDB_TEMPORAL_REPORT:-$task_tmp/fdb-temporal}\"",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 121,
+   "command": "node tools/fdb_diagnostics_check.cjs",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 123,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.DualAgentCheck",
+   "status": "PASS",
+   "reason": "executed inside full check.sh run 2"
+  },
+  {
+   "checkShLine": 124,
+   "command": "CODE_CLASSPATH=\"$task_tmp/classes:$task_tmp/json.jar\" node tools/fdb_game_check.cjs",
+   "status": "BLOCKED",
+   "reason": "needs app/src/main/assets/lab/snes/core.js (built by tools/build_retro.py, requires emscripten)"
+  },
+  {
+   "checkShLine": 125,
+   "command": "FDB_EXPANDED_FIXTURE=1 CODE_CLASSPATH=\"$task_tmp/classes:$task_tmp/json.jar\" node tools/expanded_game_check.cjs",
+   "status": "BLOCKED",
+   "reason": "same SNES/GB retro core dependency"
+  },
+  {
+   "checkShLine": 127,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.TrainingSessionStoreCheck",
+   "status": "PASS",
+   "reason": "executed manually after the blocked step, same command, cached org.json jar"
+  },
+  {
+   "checkShLine": 128,
+   "command": "node tools/sega_check.cjs",
+   "status": "PASS",
+   "reason": "executed manually after the blocked step, same command, cached org.json jar"
+  },
+  {
+   "checkShLine": 129,
+   "command": "node tools/sega_rom_check.cjs",
+   "status": "PASS",
+   "reason": "executed manually after the blocked step, same command, cached org.json jar"
+  },
+  {
+   "checkShLine": 130,
+   "command": "node tools/sega_p2_check.cjs",
+   "status": "PASS",
+   "reason": "executed manually after the blocked step, same command, cached org.json jar"
+  },
+  {
+   "checkShLine": 131,
+   "command": "node tools/sega_six_button_check.cjs",
+   "status": "PASS",
+   "reason": "executed manually after the blocked step, same command, cached org.json jar"
+  },
+  {
+   "checkShLine": 132,
+   "command": "node tools/sega_render_check.cjs",
+   "status": "PASS",
+   "reason": "executed manually after the blocked step, same command, cached org.json jar"
+  },
+  {
+   "checkShLine": 134,
+   "command": "node tools/sega_learning_check.cjs",
+   "status": "PASS",
+   "reason": "executed manually after the blocked step, same command, cached org.json jar"
+  },
+  {
+   "checkShLine": 135,
+   "command": "node tools/retro_check.cjs",
+   "status": "BLOCKED",
+   "reason": "same SNES/GB retro core dependency"
+  },
+  {
+   "checkShLine": 138,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.CodeLabCheck",
+   "status": "PASS",
+   "reason": "executed manually after the blocked step, same command, cached org.json jar"
+  },
+  {
+   "checkShLine": 139,
+   "command": "CODE_CLASSPATH=\"$task_tmp/classes:$task_tmp/json.jar\" node tools/code_worker_check.cjs",
+   "status": "PASS",
+   "reason": "executed manually after the blocked step, same command, cached org.json jar"
+  },
+  {
+   "checkShLine": 140,
+   "command": "node --check app/src/main/assets/code/lab.js",
+   "status": "PASS",
+   "reason": "executed manually after the blocked step, same command, cached org.json jar"
+  },
+  {
+   "checkShLine": 142,
+   "command": "node tools/benchmark_check.cjs",
+   "status": "PASS",
+   "reason": "executed manually after the blocked step, same command, cached org.json jar"
+  },
+  {
+   "checkShLine": 144,
+   "command": "java -cp \"$task_tmp/classes:$task_tmp/json.jar\" org.node.flyconsole.ReleaseCheck",
+   "status": "PASS",
+   "reason": "executed manually after the blocked step, same command, cached org.json jar"
+  }
+ ],
+ "agodStandaloneRuns": [
+  {
+   "command": "node tools/core_probe_check.cjs",
+   "status": "PASS",
+   "reason": "standalone AGOD run before full check.sh"
+  },
+  {
+   "command": "node tools/nes_write_trace_check.cjs",
+   "status": "PASS",
+   "reason": "standalone AGOD run before full check.sh"
+  },
+  {
+   "command": "node tools/goal_discovery_check.cjs",
+   "status": "PASS",
+   "reason": "standalone AGOD run before full check.sh"
+  },
+  {
+   "command": "node tools/objective_profiles_check.cjs",
+   "status": "PASS",
+   "reason": "standalone AGOD run before full check.sh"
+  },
+  {
+   "command": "node tools/agod_rom_check.cjs",
+   "status": "PASS",
+   "reason": "standalone AGOD run before full check.sh"
+  }
+ ],
+ "experimentalChecks": [
+  {
+   "command": "node tools/agod_causal_check.cjs",
+   "stage": "E3",
+   "status": "PASS",
+   "log": "logs/agod_causal_check.log"
+  },
+  {
+   "command": "node tools/agod_reward_check.cjs",
+   "stage": "E4",
+   "status": "PASS",
+   "log": "logs/agod_reward_check.log",
+   "note": "re-run after AGOD-08: still PASS, unchanged"
+  },
+  {
+   "command": "node tools/agod_evidence_check.cjs",
+   "stage": "AGOD-08/09",
+   "status": "PASS",
+   "log": "logs/agod_evidence_check.log"
+  },
+  {
+   "command": "node tools/agod_ram_check.cjs",
+   "stage": "E2",
+   "status": "PASS",
+   "log": "logs/agod_ram_check.log"
+  },
+  {
+   "command": "node tools/agod_dqn_check.cjs",
+   "stage": "E5",
+   "status": "PASS",
+   "log": "logs/agod_dqn_check.log"
+  },
+  {
+   "command": "node tools/agod_pipeline_check.cjs",
+   "stage": "E6/E7",
+   "status": "PASS",
+   "log": "logs/agod_pipeline_check.log",
+   "note": "includes the held-out group: seeds 200..206, fixed before the first run Re-run after S3 added the judge stage: results bit-identical."
+  },
+  {
+   "command": "node tools/agod_experimental_bridge_check.cjs",
+   "stage": "S1",
+   "status": "PASS",
+   "log": "logs/agod_experimental_bridge_check.log"
+  },
+  {
+   "command": "node tools/agod_replay_check.cjs",
+   "stage": "S2",
+   "status": "PASS",
+   "log": "logs/agod_replay_check.log"
+  },
+  {
+   "command": "node tools/agod_sacrifice_check.cjs",
+   "stage": "S3",
+   "status": "PASS",
+   "log": "logs/agod_sacrifice_check.log",
+   "note": "two independent controlled families; the sacrifice oracle carries closed judgement labels"
+  },
+  {
+   "command": "node tools/agod_positive_check.cjs",
+   "stage": "S4",
+   "status": "PASS",
+   "log": "logs/agod_positive_check.log"
+  },
+  {
+   "command": "node tools/agod_positive_s4b_check.cjs",
+   "stage": "S4b",
+   "status": "PASS",
+   "log": "logs/agod_positive_s4b_check.log",
+   "note": "three families; supersedes the two-family measurement of S4, whose artefact is kept"
+  },
+  {
+   "command": "node tools/agod_validity_check.cjs",
+   "stage": "S5",
+   "status": "PASS",
+   "log": "logs/agod_validity_check.log"
+  },
+  {
+   "command": "node tools/agod_baselines_check.cjs",
+   "stage": "S6",
+   "status": "PASS",
+   "log": "logs/agod_baselines_check.log"
+  },
+  {
+   "command": "AGOD_PRIVATE_ROMS=<dir> node tools/agod_private_rom_gate.cjs",
+   "stage": "private-corpus gate",
+   "status": "COMPLETE",
+   "log": "logs/private_rom_gate_report.json",
+   "note": "private user-supplied commercial ROMs; local only, never committed"
+  },
+  {
+   "command": "node tools/agod_consumers_check.cjs",
+   "stage": "S4c",
+   "status": "PASS",
+   "log": "logs/agod_consumers_check.log",
+   "note": "provenance and execution evidence recorded in the report; read counts are a lower bound"
+  },
+  {
+   "command": "node tools/agod_consumers_smoke.cjs",
+   "stage": "S4c smoke",
+   "status": "PASS",
+   "log": "(stdout)"
+  },
+  {
+   "command": "AGOD_PRIVATE_ROMS=<dir> AGOD_TARGET_ROM=galaga.nes node tools/agod_real_game_check.cjs",
+   "stage": "real-game (private corpus)",
+   "status": "REFUSED-CORRECTLY",
+   "log": "logs/galaga_report.json",
+   "note": "both arms refuse at induce; galaga is BLOCKED on reaching gameplay in this core"
+  },
+  {
+   "command": "AGOD_PRIVATE_ROMS=<dir> AGOD_TARGETS=lifeforce.nes,contra.nes node tools/agod_rom_eligibility_gate.cjs",
+   "stage": "real-game eligibility",
+   "status": "COMPLETE",
+   "log": "logs/eligibility_report.json",
+   "note": "four independent statuses; lifeforce AGOD_ELIGIBLE=YES, contra NO"
+  },
+  {
+   "command": "AGOD_PRIVATE_ROMS=<dir> AGOD_TARGETS=lifeforce.nes,contra.nes node tools/agod_rom_eligibility_gate.cjs",
+   "stage": "S8 gate on the shared phase module",
+   "status": "COMPLETE",
+   "log": "logs/eligibility_report_s8_defaults.json",
+   "note": "every decisive value reproduces logs/eligibility_report.json; the only diffs are JSON key order inside massSplitAcrossHalves"
+  },
+  {
+   "command": "AGOD_PRIVATE_ROMS=<dir> AGOD_TARGETS=contra.nes AGOD_ENTRY_PULSES=6 AGOD_ENTRY_GAP=24 AGOD_ENTRY_SETTLE=300 node tools/agod_rom_eligibility_gate.cjs",
+   "stage": "S8 gate, Contra at a procedure that reaches gameplay",
+   "status": "COMPLETE",
+   "log": "logs/eligibility_contra_6start_300settle.json",
+   "note": "the published run used gap 8, which does not reach gameplay; the gap is now an explicit recorded parameter"
+  },
+  {
+   "command": "AGOD_PRIVATE_ROMS=<dir> AGOD_TARGETS=lifeforce.nes,contra.nes,galaga.nes node tools/agod_phase_detector_regression.cjs",
+   "stage": "S8 did the detector change any verdict",
+   "status": "COMPLETE",
+   "log": "logs/phase_regression.json",
+   "note": "6 arms, 3 cartridges, 0 arms where the answer changed; the discarded sprite statistic saturated on 2 of 6, both galaga"
+  },
+  {
+   "command": "AGOD_PRIVATE_ROMS=<dir> AGOD_TARGETS=lifeforce.nes,contra.nes,galaga.nes node tools/agod_entry_procedure_sweep.cjs",
+   "stage": "S8 entry procedure sweep",
+   "status": "COMPLETE",
+   "log": "logs/entry_sweep.json",
+   "note": "12 generic procedures per cartridge, Life Force as positive control; lifeforce 8 PASS, contra 2 PASS, galaga 0 PASS"
+  },
+  {
+   "command": "AGOD_PRIVATE_ROMS=<dir> AGOD_TARGET_ROM=<rom> AGOD_PREAMBLE_PULSES=<n> AGOD_PREAMBLE_SETTLE=<n> node tools/agod_real_game_check.cjs",
+   "stage": "S8 bounded AGOD on every procedure that reaches gameplay",
+   "status": "REFUSED-CORRECTLY",
+   "log": "logs/agod_by_entry_procedure/ (10 runs)",
+   "note": "10 of 10 REFUSED at induce, polarity UNKNOWN in all three partitions of every run; no verified goal on any real cartridge"
+  },
+  {
+   "command": "bash tools/check_no_private_binaries_test.sh",
+   "stage": "S8 commit guard regression (re-run)",
+   "status": "PASS",
+   "log": "(stdout)",
+   "note": "5 of 5, including the TOCTOU case; local hook only, CI still not configured"
+  }
+ ],
+ "experimentalChecksNote": "New experimental checks added by this revision. They are standalone Node checks; tools/check.sh and CI were not modified."
 }
