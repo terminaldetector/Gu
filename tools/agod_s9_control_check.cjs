@@ -62,11 +62,19 @@ const report={type:'gu-agod-s9-control-check',version:1,
 const write=()=>{if(process.env.AGOD_S9_REPORT)
  fs.writeFileSync(process.env.AGOD_S9_REPORT,JSON.stringify(report,null,2)+'\n');};write();
 
+/* P4 (S10 protocol fix). The generator writes both files, but this returns a
+   DEFERRED reader for the oracle instead of its contents: the earlier version
+   parsed it before either arm had run, so the oracle was in memory during the
+   experiment even though nothing read it. It is now opened only after both arms
+   have committed their answer, which is checkable rather than promised. */
 function cartridge(generator,seed){
  const cart=path.join(directory,'rom-'+seed+'.json'),orc=path.join(directory,'oracle-'+seed+'.json');
  execFileSync(process.env.PYTHON||'python3',[generator,'--seed',String(seed),'--out',cart,'--oracle-out',orc]);
- const descriptor=JSON.parse(fs.readFileSync(cart)),oracle=JSON.parse(fs.readFileSync(orc));
- return {descriptor,oracle};
+ const descriptor=JSON.parse(fs.readFileSync(cart));
+ let opened=false;
+ return {descriptor,
+  openOracle(){opened=true;return JSON.parse(fs.readFileSync(orc));},
+  wasOpened(){return opened;}};
 }
 function machine(descriptor){
  const core=new jsnes.NES({onFrame(){},onAudioSample(){}});
@@ -102,7 +110,8 @@ function summarise(arm){
 
 try{
  for(const family of FAMILIES)for(const seed of family.seeds){
-  const {descriptor,oracle}=cartridge(family.generator,seed);
+  const cart=cartridge(family.generator,seed);
+  const descriptor=cart.descriptor;
   const romHash=crypto.createHash('sha256')
    .update(Buffer.from(descriptor.base64,'base64')).digest('hex');
   /* both arms commit before the oracle is opened */
@@ -111,6 +120,8 @@ try{
   /* reproducibility of the ranked arm: a second independent machine */
   const rankedAgain=runArm(descriptor,'ranked',romHash);
 
+  /* both arms have committed; only now is the oracle opened */
+  const oracle=cart.openOracle();
   const truth=oracle.fields[family.resourceField];
   const v1=summarise(first),v2=summarise(ranked),v2b=summarise(rankedAgain);
   const rankedOut=ranked.outcome;
@@ -127,6 +138,7 @@ try{
   rows.push({family:family.name,group:family.group,seed,romHash:romHash.slice(0,16),
    rightAnswer:family.rightAnswer,
    oracleResource:{field:family.resourceField,address:truth.address,width:truth.width},
+   oracleOpenedAfterBothArmsCommitted:true,
    FIRST_V1:v1,RANKED_V2:v2,
    rankedReproducible:v2.status===v2b.status&&v2.resourceAddress===v2b.resourceAddress,
    rankedSecondRun:{status:v2b.status,resourceAddress:v2b.resourceAddress},
@@ -134,7 +146,13 @@ try{
     groups:selection.ranked.length,maxCandidates:selection.maxCandidates,
     budgetNote:selection.budgetNote,
     groupingLinks:selection.grouping.links.length,
-    groupedOnAdjacencyAlone:selection.grouping.links.filter(l=>l.reason===null).length,
+    /* P2 (S10 protocol fix). The first version counted links with reason===null,
+       which are the pairs grouping CONSIDERED AND REJECTED - the rule working,
+       not a violation. A violation would be a link that was grouped with no
+       reason at all, which is what is counted now. */
+    rejectedLinks:selection.grouping.links.filter(l=>l.reason===null).length,
+    groupedOnAdjacencyAlone:selection.grouping.links.filter(l=>l.groupedAnyway===true&&!l.reason).length,
+    groupsBuiltByTransitiveClosure:(selection.grouping.groups||[]).filter(g=>g.builtByTransitiveClosure).length,
     order:selection.ranked.map(entry=>({rank:entry.rank,address:entry.address,
      mask:entry.mask,score:entry.score.total,breakdown:entry.score.breakdown,
      groupAddresses:entry.groupAddresses,
@@ -189,6 +207,8 @@ try{
     answerChangedByRanking:count(list,r=>r.verdict.v2ChangedTheAnswer),
     rankedReproducible:count(list,r=>r.rankedReproducible),
     groupedOnAdjacencyAlone:list.reduce((sum,r)=>sum+((r.inventory&&r.inventory.groupedOnAdjacencyAlone)||0),0),
+    rejectedLinks:list.reduce((sum,r)=>sum+((r.inventory&&r.inventory.rejectedLinks)||0),0),
+    groupsBuiltByTransitiveClosure:list.reduce((sum,r)=>sum+((r.inventory&&r.inventory.groupsBuiltByTransitiveClosure)||0),0),
     criterion5:(()=>{const tally={};
      for(const r of list)for(const entry of (r.inventory&&r.inventory.order)||[]){
       const d=entry.downstream;

@@ -169,6 +169,47 @@ console.log('5b. grouping must never demote the evidence it grouped');
  ok('both members are kept in the record',group.addresses.join(',')==='20,600');
 }
 
+console.log('5c. transitive grouping: A-B and B-C proven, A-C never shown');
+{
+ /* The chain has to be MIXED. Pattern equality is itself transitive, so if A-B
+    and B-C were both co-movement then A-C would be co-movement too and no
+    indirect pair could exist. A-B is co-movement; B-C is a digit carry, which
+    is a different relation; A-C is neither. */
+ const A=record({address:700,perStart:[[9,9,8,7,6],[4,4,3,2,1]]});
+ const B=record({address:800,encoding:'bcd',perStart:[[2,2,1,0,99],[2,2,1,0,99]]});
+ const C=record({address:900,perStart:[[5,5,5,5,4],[5,5,5,5,4]]});
+ const ab=Candidates.coMovement(A,B),ac=Candidates.coMovement(A,C);
+ const bc=Candidates.carryBetween(B,C),acCarry=Candidates.carryBetween(A,C);
+ ok('A-B is proven by co-movement on an informative pattern: '+ab.identical,ab.identical===true);
+ ok('B-C is proven by an observed carry: '+bc.observed,bc.observed===true);
+ ok('A-C is not co-movement: '+ac.identical,ac.identical===false);
+ ok('A-C is not a carry either: '+acCarry.observed,acCarry.observed===false);
+ const grouped=Candidates.groupRecords([A,B,C]);
+ ok('all three land in one group through the chain',grouped.groups.length===1);
+ const group=grouped.groups[0];
+ ok('the group declares it was built by transitive closure',
+  group.builtByTransitiveClosure===true);
+ ok('the directly proven pairs are listed: '+JSON.stringify(group.provenLinkPairs),
+  group.provenLinkPairs.length===2);
+ ok('and the pair that was never shown directly is listed as transitive-only: '
+  +JSON.stringify(group.transitiveOnlyPairs),
+  group.transitiveOnlyPairs.length===1
+  &&group.transitiveOnlyPairs[0][0]===700&&group.transitiveOnlyPairs[0][1]===900);
+ ok('nothing is grouped without a proven link on the path',
+  group.provenLinkPairs.length>0);
+}
+
+console.log('5d. a group with no transitive pairs says so');
+{
+ const A=record({address:710,perStart:[[9,8,8,7],[5,4,4,3]]});
+ const B=record({address:810,perStart:[[9,8,8,7],[5,4,4,3]]});
+ const group=Candidates.groupRecords([A,B]).groups[0];
+ ok('two directly proven members are not flagged as transitive',
+  group.builtByTransitiveClosure===false&&group.transitiveOnlyPairs.length===0);
+ ok('and the note says every pair is directly proven',
+  /every pair in this group is directly proven/.test(group.closureNote));
+}
+
 console.log('6. a null downstream result cannot sink a candidate');
 {
  const withConsumer=record({address:500,perStart:[[3,2,1,0],[3,2,1,0]],

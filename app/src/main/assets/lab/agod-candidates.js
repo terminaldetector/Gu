@@ -300,6 +300,15 @@ function groupRecords(records){
   if(!buckets.has(key))buckets.set(key,[]);
   buckets.get(key).push(records[i]);
  }
+ /* P2 (S10 protocol fix). Grouping is a TRANSITIVE CLOSURE over proven links:
+    if A-B and B-C are each established by joint dynamics, A and C end up in one
+    group even though A-C was never shown directly. That is declared, not
+    accidental - a chain of observed co-movement is the evidence - but it means
+    a group can contain a pair with no direct link, so each group records the
+    proven links it was built from and which of its pairs are indirect. Nothing
+    is grouped without at least one proven link on the path. */
+ const linkKey=(a,b)=>Math.min(a,b)+'-'+Math.max(a,b);
+ const proven=new Set(links.filter(link=>link.reason).map(link=>linkKey(link.a,link.b)));
  const groups=[...buckets.values()].map(members=>{
   /* Representative: the BEST-EVIDENCED member by the pre-registered spec, then
      the widest span, then the most distinct values, then the lowest address.
@@ -314,9 +323,20 @@ function groupRecords(records){
    (y.field.width-x.field.width)||
    (y.reachability.distinctValues-x.reachability.distinctValues)||
    (x.field.address-y.field.address));
+  const addresses=members.map(member=>member.field.address);
+  const directPairs=[],indirectPairs=[];
+  for(let i=0;i<addresses.length;i++)for(let j=i+1;j<addresses.length;j++)
+   (proven.has(linkKey(addresses[i],addresses[j]))?directPairs:indirectPairs)
+    .push([addresses[i],addresses[j]]);
   return frozen({representative:sorted[0],members:frozen(sorted),
    size:members.length,
-   addresses:frozen(members.map(member=>member.field.address).sort((a,b)=>a-b)),
+   addresses:frozen(addresses.slice().sort((a,b)=>a-b)),
+   provenLinkPairs:frozen(directPairs),
+   transitiveOnlyPairs:frozen(indirectPairs),
+   builtByTransitiveClosure:indirectPairs.length>0,
+   closureNote:indirectPairs.length
+    ?'this group contains pair(s) joined only through a chain of proven links, never directly; declared behaviour, recorded so it can be audited'
+    :'every pair in this group is directly proven',
    representativeRule:'highest score by the pre-registered spec, then widest span, then most distinct values, then lowest address'});
  });
  groups.sort((a,b)=>a.representative.field.address-b.representative.field.address);
@@ -384,7 +404,14 @@ function rankGroups(grouped,options){
    :'every group fits inside the declared candidate budget'});
 }
 
+/* Records are frozen, so attaching a late criterion-5 measurement returns a new
+   record rather than mutating one. Used by the two-phase ranking, where the
+   counterfactual is measured only on the shortlist. */
+function withDownstream(record,downstream){
+ return frozen({...record,downstream:frozen(downstream)});
+}
+
 const api={SCHEMA_VERSION,CANDIDATES_REVISION,RANKING_SPEC,
- observe,groupRecords,rankGroups,scoreRecord,coMovement,carryBetween};
+ observe,groupRecords,rankGroups,scoreRecord,coMovement,carryBetween,withDownstream};
 root.FlyAgodCandidates=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
