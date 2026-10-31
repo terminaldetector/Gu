@@ -45,11 +45,16 @@ const report={type:'gu-agod-s11b-horizon-check',version:1,
   horizons:PAIRED_CONTROLS,pairedContinuousControls:PAIRED_CONTROLS},
  shiftTolerance:SHIFT,startsPerTrial:STARTS,maxAddressesReported:MAX_ADDRESSES,
  frameBudget:FRAME_BUDGET,
- outcomes:['RECOVERED_BY_DURATION','RECOVERED_BY_CADENCE','CADENCE_UNDECIDABLE',
+ outcomes:['PHASE_CONTROL_INSUFFICIENT','RECOVERED_BY_DURATION','RECOVERED_BY_CADENCE','CADENCE_UNDECIDABLE',
   'TIME_EXPLAINED','NOT_REPRODUCIBLE_ACROSS_STARTS','TRANSIENT_WITHIN_WINDOW',
   'FINAL_STATE_UNCHANGED','NO_EVENT_IN_HORIZON','ADDRESS_COVERAGE_UNKNOWN',
   'ADAPTER_DIVERGENCE_UNRESOLVED','NOT_OBSERVED','NOT_COMPARABLE','BUDGET_EXCEEDED'],
+ outcomeAddedDuringS11B:{name:'PHASE_CONTROL_INSUFFICIENT',
+  reason:'the first synthetic run showed the declared shiftTolerance of 3 does not scale with the horizon: known time-driven fields (timer, frameCounter) are rejected at 12 frames and falsely CONFIRMED from 48 frames upward, so a confirmation at a long horizon is not interpretable as causal. Awarding RECOVERED_BY_DURATION there would present an instrument artefact as a recovered causal link - the mirror image of presenting an instrument limit as an absent event.',
+  declaredRule:'where a control field known to be time-driven is confirmed at a horizon, that horizon is marked PHASE_CONTROL_INSUFFICIENT and no recovery is claimed from it',
+  shiftToleranceUnchanged:'the pre-registered value 3 is NOT altered; a horizon-scaled tolerance is a separately declared comparison'},
  rules:['a limit of the observing instrument is never the absence of a game event',
+  'an instrument artefact is never a recovered causal link',
   'the raw diff is recorded separately and never promoted to causal evidence',
   'RECOVERED_BY_CADENCE requires a duration-matched continuous control',
   'more observed RAM changes is not success'],
@@ -121,16 +126,44 @@ function trial(host,starts,candidate,spec){
   usableStarts:result.usableStarts,excludedStarts:result.excludedStarts,
   reportTruncated:result.anyReportTruncated,
   rawDiffMembership:coverage.rawDiffMembership,
+  /* oracle-free instrument indicator: confirmed addresses that the neutral arm
+     moved by itself. Greater than zero means the phase control did not cover
+     the drift at this horizon, so a confirmation here is suspect. */
+  confirmedThatNeutralAlsoMoved:(result.confirmedThatNeutralAlsoMoved||[]).length,
+  phaseControlSuspect:(result.confirmedThatNeutralAlsoMoved||[]).length>0,
+  neutralMovedCount:result.perStart.reduce((t,e)=>Math.max(t,e.neutralMovedCount||0),0),
   framesRun:result.framesRun};
 }
 
 /* The outcome for one candidate, from its two series. Every branch is one of
    the thirteen declared outcomes; none is merged into another. */
-function classify(candidate,seriesA,seriesB,pairedControls,gatePassed){
- const shortHold=seriesA.find(t=>t.frames===12);
- const longHold=[...seriesA].reverse().find(t=>t.confirmed);
- const anyHoldConfirmed=seriesA.some(t=>t.confirmed);
- const anyTrainConfirmed=seriesB.some(t=>t.confirmed);
+function classify(candidate,seriesA,seriesB,pairedControls,gatePassed,isKnownTimeDriven,trustworthy){
+ /* A known time-driven control that the probe CONFIRMS is proof the phase
+    control failed at that horizon, not proof of a causal link. */
+ if(isKnownTimeDriven){
+  const confirmedHold=seriesA.filter(t=>t.confirmed).map(t=>t.frames);
+  const confirmedTrain=seriesB.filter(t=>t.confirmed).map(t=>t.frames);
+  if(confirmedHold.length||confirmedTrain.length)
+   return {outcome:'PHASE_CONTROL_INSUFFICIENT',
+    confirmedHoldFrames:confirmedHold,confirmedTrainFrames:confirmedTrain,
+    why:'this field is a KNOWN time-driven control and the probe confirmed it, so the neutral trajectory failed to cover the drift at those horizons. No recovery is claimed from any horizon in this list.'};
+  return {outcome:'TIME_EXPLAINED',
+   why:'a known time-driven control, correctly rejected at every horizon: the phase control held here'};
+ }
+ /* Only horizons the instrument check did not flag may support a recovery. */
+ const okHold=seriesA.filter(t=>!t.phaseControlSuspect);
+ const okTrain=seriesB.filter(t=>!t.phaseControlSuspect);
+ const shortHold=okHold.find(t=>t.frames===12);
+ const longHold=[...okHold].reverse().find(t=>t.confirmed);
+ const anyHoldConfirmed=okHold.some(t=>t.confirmed);
+ const anyTrainConfirmed=okTrain.some(t=>t.confirmed);
+ const confirmedOnlyWhereSuspect=
+  (seriesA.some(t=>t.confirmed)||seriesB.some(t=>t.confirmed))&&!anyHoldConfirmed&&!anyTrainConfirmed;
+ if(confirmedOnlyWhereSuspect)
+  return {outcome:'PHASE_CONTROL_INSUFFICIENT',
+   suspectHoldFrames:trustworthy?trustworthy.suspectHold:null,
+   suspectTrainFrames:trustworthy?trustworthy.suspectTrain:null,
+   why:'this candidate was confirmed ONLY at horizons where the probe also confirmed addresses the neutral arm moved by itself, so the phase control did not cover the drift there and the confirmation is an instrument artefact rather than a recovered causal link'};
  const notes=[];
  /* A: duration - confirmed at a long horizon, not at the short one, same regime */
  if(anyHoldConfirmed&&shortHold&&!shortHold.confirmed)
@@ -155,6 +188,9 @@ function classify(candidate,seriesA,seriesB,pairedControls,gatePassed){
  }
  /* C: the remaining uncertainty, each cause named */
  const all=[...seriesA,...seriesB,...pairedControls];
+ if(all.every(t=>t.phaseControlSuspect))
+  return {outcome:'PHASE_CONTROL_INSUFFICIENT',
+   why:'every horizon tried was flagged by the instrument check, so nothing here is interpretable'};
  if(all.some(t=>t.budgetExceeded))return {outcome:'BUDGET_EXCEEDED',why:'the declared frame budget ended before this candidate was fully evaluated'};
  if(all.some(t=>t.onSomeStart&&!t.reproducibleAcrossStarts))
   return {outcome:'NOT_REPRODUCIBLE_ACROSS_STARTS',
@@ -185,6 +221,11 @@ function evaluate(label,extra,bytes,entry,candidatesFrom,gatePassed,attestPhase)
    comparabilityCounts:p.phase==='PASS'};
  }
  const candidates=candidatesFrom.slice(0,PRIMARY_CANDIDATES+EXTRA_CANDIDATES);
+ /* Which candidates are KNOWN time-driven controls. Used only as a checker,
+    after the trials, to decide whether the instrument can be trusted at a
+    given horizon. */
+ const controlAddresses=new Set(candidates.filter(c=>/time-driven/.test(c.source||''))
+  .map(c=>c.address));
  const perCandidate=[];
  for(const candidate of candidates){
   if(framesSpent>=FRAME_BUDGET){
@@ -196,7 +237,15 @@ function evaluate(label,extra,bytes,entry,candidatesFrom,gatePassed,attestPhase)
   const seriesA=SERIES_A_HORIZONS.map(frames=>trial(host,starts,candidate,{kind:'hold',frames}));
   const seriesB=PULSES.map(pulses=>trial(host,starts,candidate,{kind:'train',pulses}));
   const paired=PAIRED_CONTROLS.map(frames=>trial(host,starts,candidate,{kind:'hold',frames}));
-  const outcome=classify(candidate,seriesA,seriesB,paired,gatePassed);
+  /* Which horizons may be trusted for THIS candidate, oracle-free: those where
+     no confirmed address is one the neutral arm moved by itself. */
+  const trustworthy={
+   hold:seriesA.filter(t=>t&&!t.phaseControlSuspect).map(t=>t.frames),
+   train:seriesB.filter(t=>t&&!t.phaseControlSuspect).map(t=>t.frames),
+   suspectHold:seriesA.filter(t=>t&&t.phaseControlSuspect).map(t=>t.frames),
+   suspectTrain:seriesB.filter(t=>t&&t.phaseControlSuspect).map(t=>t.frames)};
+  const outcome=classify(candidate,seriesA,seriesB,paired,gatePassed,
+   controlAddresses.has(candidate.address),trustworthy);
   perCandidate.push({address:candidate.address,mask:candidate.mask,
    source:candidate.source,
    seriesA:seriesA.map(t=>({frames:t.frames,confirmed:t.confirmed,
@@ -208,7 +257,8 @@ function evaluate(label,extra,bytes,entry,candidatesFrom,gatePassed,attestPhase)
     reproducible:t.reproducibleAcrossStarts,truncated:t.reportTruncated,
     rawDiff:t.rawDiffMembership})),
    pairedControls:paired.map(t=>({frames:t.frames,confirmed:t.confirmed,
-    coverage:t.coverage?t.coverage.status:null})),
+    coverage:t.coverage?t.coverage.status:null,suspect:t.phaseControlSuspect})),
+   trustworthyHorizons:trustworthy,
    outcome});
   write();
  }
@@ -326,7 +376,8 @@ try{
   headline:{
    A_missedForWantOfHorizon:tally.RECOVERED_BY_DURATION||0,
    B_missedForWrongActionStructure:tally.RECOVERED_BY_CADENCE||0,
-   C_remainingUncertainty:countOf(tally,['CADENCE_UNDECIDABLE','TIME_EXPLAINED',
+   instrumentArtefacts_PHASE_CONTROL_INSUFFICIENT:tally.PHASE_CONTROL_INSUFFICIENT||0,
+   C_remainingUncertainty:countOf(tally,['PHASE_CONTROL_INSUFFICIENT','CADENCE_UNDECIDABLE','TIME_EXPLAINED',
     'NOT_REPRODUCIBLE_ACROSS_STARTS','TRANSIENT_WITHIN_WINDOW','FINAL_STATE_UNCHANGED',
     'NO_EVENT_IN_HORIZON','ADDRESS_COVERAGE_UNKNOWN','ADAPTER_DIVERGENCE_UNRESOLVED',
     'NOT_OBSERVED','NOT_COMPARABLE','BUDGET_EXCEEDED'])},

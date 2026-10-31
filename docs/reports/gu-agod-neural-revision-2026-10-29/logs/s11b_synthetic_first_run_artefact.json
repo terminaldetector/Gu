@@ -1,0 +1,2386 @@
+{
+  "type": "gu-agod-s11b-horizon-check",
+  "version": 1,
+  "preregistration": [
+    "26_S11B_PREREGISTRATION_RU.md (v1)",
+    "27_S11B_PREREGISTRATION_V2_RU.md (v2)",
+    "28_S11B_PROTOCOL_V21_RU.md (v2.1)"
+  ],
+  "seriesA": {
+    "kind": "continuous hold",
+    "horizons": [
+      12,
+      48,
+      120,
+      240,
+      480
+    ],
+    "sampleEveryFrames": 12
+  },
+  "seriesB": {
+    "kind": "pulse train",
+    "hold": 4,
+    "release": 8,
+    "pulses": [
+      1,
+      4,
+      12,
+      30,
+      60
+    ],
+    "horizons": [
+      12,
+      48,
+      144,
+      360,
+      720
+    ],
+    "pairedContinuousControls": [
+      12,
+      48,
+      144,
+      360,
+      720
+    ]
+  },
+  "shiftTolerance": 3,
+  "startsPerTrial": 3,
+  "maxAddressesReported": 256,
+  "frameBudget": 4000000,
+  "outcomes": [
+    "RECOVERED_BY_DURATION",
+    "RECOVERED_BY_CADENCE",
+    "CADENCE_UNDECIDABLE",
+    "TIME_EXPLAINED",
+    "NOT_REPRODUCIBLE_ACROSS_STARTS",
+    "TRANSIENT_WITHIN_WINDOW",
+    "FINAL_STATE_UNCHANGED",
+    "NO_EVENT_IN_HORIZON",
+    "ADDRESS_COVERAGE_UNKNOWN",
+    "ADAPTER_DIVERGENCE_UNRESOLVED",
+    "NOT_OBSERVED",
+    "NOT_COMPARABLE",
+    "BUDGET_EXCEEDED"
+  ],
+  "rules": [
+    "a limit of the observing instrument is never the absence of a game event",
+    "the raw diff is recorded separately and never promoted to causal evidence",
+    "RECOVERED_BY_CADENCE requires a duration-matched continuous control",
+    "more observed RAM changes is not success"
+  ],
+  "provenance": {
+    "commit": "8a61b520232ec1f292b73465e390e71b7bf0c179",
+    "workingTreeDirty": true,
+    "node": "v22.22.0",
+    "causalRevision": "agod-causal-e3-2",
+    "adapterRevision": "agod-s11b-adapter-1",
+    "phaseRevision": "agod-phase-evidence-1"
+  },
+  "status": "COMPLETE",
+  "rows": [
+    {
+      "label": "test seed 0 (lives: a repeatedly decreasing resource)",
+      "corpus": "synthetic",
+      "family": "test",
+      "seed": 0,
+      "phaseAttestation": null,
+      "startStateLevels": {
+        "SINGLE_SAVESTATE_REPLAY": false,
+        "MULTIPLE_SAVED_STATES": true,
+        "INDEPENDENT_HISTORIES": false,
+        "PHASE_ATTESTED": false,
+        "note": "the declared starts are distinct saved states from one pristine snapshot: multiple saved states, NOT independent histories. An identical state hash would not be an independent history either."
+      },
+      "candidatesEvaluated": 3,
+      "perCandidate": [
+        {
+          "address": 178,
+          "mask": 2,
+          "source": "lives",
+          "seriesA": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 120,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 240,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 480,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "seriesB": [
+            {
+              "pulses": 1,
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 4,
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 12,
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 30,
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 60,
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "pairedControls": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            }
+          ],
+          "outcome": {
+            "outcome": "RECOVERED_BY_DURATION",
+            "atFrames": 12,
+            "why": "confirmed under both the train and the duration-matched hold, so the duration explains it"
+          }
+        },
+        {
+          "address": 70,
+          "mask": 2,
+          "source": "timer (time-driven)",
+          "seriesA": [
+            {
+              "frames": 12,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": false,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 120,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 240,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 480,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "seriesB": [
+            {
+              "pulses": 1,
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 4,
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 12,
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 30,
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 60,
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "pairedControls": [
+            {
+              "frames": 12,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED"
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            }
+          ],
+          "outcome": {
+            "outcome": "RECOVERED_BY_DURATION",
+            "atFrames": 480,
+            "why": "confirmed under continuous hold at a longer horizon and not at 12 frames, within the same regime"
+          }
+        },
+        {
+          "address": 169,
+          "mask": 2,
+          "source": "frameCounter (time-driven)",
+          "seriesA": [
+            {
+              "frames": 12,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": false,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 120,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 240,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 480,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "seriesB": [
+            {
+              "pulses": 1,
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 4,
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 12,
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 30,
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 60,
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "pairedControls": [
+            {
+              "frames": 12,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED"
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            }
+          ],
+          "outcome": {
+            "outcome": "RECOVERED_BY_DURATION",
+            "atFrames": 480,
+            "why": "confirmed under continuous hold at a longer horizon and not at 12 frames, within the same regime"
+          }
+        }
+      ]
+    },
+    {
+      "label": "single-transition arm=1",
+      "corpus": "synthetic",
+      "family": "single-transition",
+      "armPresses": 1,
+      "phaseAttestation": null,
+      "startStateLevels": {
+        "SINGLE_SAVESTATE_REPLAY": false,
+        "MULTIPLE_SAVED_STATES": true,
+        "INDEPENDENT_HISTORIES": false,
+        "PHASE_ATTESTED": false,
+        "note": "the declared starts are distinct saved states from one pristine snapshot: multiple saved states, NOT independent histories. An identical state hash would not be an independent history either."
+      },
+      "candidatesEvaluated": 4,
+      "perCandidate": [
+        {
+          "address": 110,
+          "mask": 4,
+          "source": "singleUnit",
+          "seriesA": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 120,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 240,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 480,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "seriesB": [
+            {
+              "pulses": 1,
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 4,
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 12,
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 30,
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 60,
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "pairedControls": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            }
+          ],
+          "outcome": {
+            "outcome": "RECOVERED_BY_DURATION",
+            "atFrames": 12,
+            "why": "confirmed under both the train and the duration-matched hold, so the duration explains it"
+          }
+        },
+        {
+          "address": 167,
+          "mask": 2,
+          "source": "oneShotSwitch",
+          "seriesA": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 120,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 240,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 480,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "seriesB": [
+            {
+              "pulses": 1,
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 4,
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 12,
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 30,
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 60,
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "pairedControls": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            }
+          ],
+          "outcome": {
+            "outcome": "RECOVERED_BY_DURATION",
+            "atFrames": 12,
+            "why": "confirmed under both the train and the duration-matched hold, so the duration explains it"
+          }
+        },
+        {
+          "address": 112,
+          "mask": 2,
+          "source": "firstThenLater",
+          "seriesA": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 120,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 240,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 480,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "seriesB": [
+            {
+              "pulses": 1,
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 4,
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 12,
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 30,
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 60,
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "pairedControls": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            }
+          ],
+          "outcome": {
+            "outcome": "RECOVERED_BY_DURATION",
+            "atFrames": 12,
+            "why": "confirmed under both the train and the duration-matched hold, so the duration explains it"
+          }
+        },
+        {
+          "address": 125,
+          "mask": 2,
+          "source": "frameCounter (time-driven)",
+          "seriesA": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 120,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 240,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 480,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "seriesB": [
+            {
+              "pulses": 1,
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 4,
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 12,
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 30,
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 60,
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "pairedControls": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 360,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED"
+            },
+            {
+              "frames": 720,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED"
+            }
+          ],
+          "outcome": {
+            "outcome": "RECOVERED_BY_DURATION",
+            "atFrames": 12,
+            "why": "confirmed under both the train and the duration-matched hold, so the duration explains it"
+          }
+        }
+      ]
+    },
+    {
+      "label": "single-transition arm=4",
+      "corpus": "synthetic",
+      "family": "single-transition",
+      "armPresses": 4,
+      "phaseAttestation": null,
+      "startStateLevels": {
+        "SINGLE_SAVESTATE_REPLAY": false,
+        "MULTIPLE_SAVED_STATES": true,
+        "INDEPENDENT_HISTORIES": false,
+        "PHASE_ATTESTED": false,
+        "note": "the declared starts are distinct saved states from one pristine snapshot: multiple saved states, NOT independent histories. An identical state hash would not be an independent history either."
+      },
+      "candidatesEvaluated": 4,
+      "perCandidate": [
+        {
+          "address": 110,
+          "mask": 4,
+          "source": "singleUnit",
+          "seriesA": [
+            {
+              "frames": 12,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED",
+              "movement": "FINAL_STATE_UNCHANGED",
+              "reproducible": false,
+              "truncated": false,
+              "rawDiff": false
+            },
+            {
+              "frames": 48,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED",
+              "movement": "NO_EVENT_IN_HORIZON",
+              "reproducible": false,
+              "truncated": false,
+              "rawDiff": false
+            },
+            {
+              "frames": 120,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED",
+              "movement": "NO_EVENT_IN_HORIZON",
+              "reproducible": false,
+              "truncated": false,
+              "rawDiff": false
+            },
+            {
+              "frames": 240,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED",
+              "movement": "NO_EVENT_IN_HORIZON",
+              "reproducible": false,
+              "truncated": false,
+              "rawDiff": false
+            },
+            {
+              "frames": 480,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED",
+              "movement": "NO_EVENT_IN_HORIZON",
+              "reproducible": false,
+              "truncated": false,
+              "rawDiff": false
+            }
+          ],
+          "seriesB": [
+            {
+              "pulses": 1,
+              "frames": 12,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED",
+              "movement": "FINAL_STATE_UNCHANGED",
+              "reproducible": false,
+              "truncated": false,
+              "rawDiff": false
+            },
+            {
+              "pulses": 4,
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 12,
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 30,
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 60,
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "pairedControls": [
+            {
+              "frames": 12,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED"
+            },
+            {
+              "frames": 48,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED"
+            },
+            {
+              "frames": 144,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED"
+            },
+            {
+              "frames": 360,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED"
+            },
+            {
+              "frames": 720,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED"
+            }
+          ],
+          "outcome": {
+            "outcome": "RECOVERED_BY_CADENCE",
+            "atFrames": 48,
+            "why": "confirmed under the pulse train and NOT under continuous hold of the same duration"
+          }
+        },
+        {
+          "address": 167,
+          "mask": 2,
+          "source": "oneShotSwitch",
+          "seriesA": [
+            {
+              "frames": 12,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED",
+              "movement": "FINAL_STATE_UNCHANGED",
+              "reproducible": false,
+              "truncated": false,
+              "rawDiff": false
+            },
+            {
+              "frames": 48,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED",
+              "movement": "NO_EVENT_IN_HORIZON",
+              "reproducible": false,
+              "truncated": false,
+              "rawDiff": false
+            },
+            {
+              "frames": 120,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED",
+              "movement": "NO_EVENT_IN_HORIZON",
+              "reproducible": false,
+              "truncated": false,
+              "rawDiff": false
+            },
+            {
+              "frames": 240,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED",
+              "movement": "NO_EVENT_IN_HORIZON",
+              "reproducible": false,
+              "truncated": false,
+              "rawDiff": false
+            },
+            {
+              "frames": 480,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED",
+              "movement": "NO_EVENT_IN_HORIZON",
+              "reproducible": false,
+              "truncated": false,
+              "rawDiff": false
+            }
+          ],
+          "seriesB": [
+            {
+              "pulses": 1,
+              "frames": 12,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED",
+              "movement": "FINAL_STATE_UNCHANGED",
+              "reproducible": false,
+              "truncated": false,
+              "rawDiff": false
+            },
+            {
+              "pulses": 4,
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 12,
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 30,
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 60,
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "pairedControls": [
+            {
+              "frames": 12,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED"
+            },
+            {
+              "frames": 48,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED"
+            },
+            {
+              "frames": 144,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED"
+            },
+            {
+              "frames": 360,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED"
+            },
+            {
+              "frames": 720,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED"
+            }
+          ],
+          "outcome": {
+            "outcome": "RECOVERED_BY_CADENCE",
+            "atFrames": 48,
+            "why": "confirmed under the pulse train and NOT under continuous hold of the same duration"
+          }
+        },
+        {
+          "address": 112,
+          "mask": 2,
+          "source": "firstThenLater",
+          "seriesA": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 120,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 240,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 480,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "seriesB": [
+            {
+              "pulses": 1,
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 4,
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 12,
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 30,
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 60,
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "pairedControls": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            }
+          ],
+          "outcome": {
+            "outcome": "RECOVERED_BY_DURATION",
+            "atFrames": 12,
+            "why": "confirmed under both the train and the duration-matched hold, so the duration explains it"
+          }
+        },
+        {
+          "address": 125,
+          "mask": 2,
+          "source": "frameCounter (time-driven)",
+          "seriesA": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 120,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 240,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 480,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "seriesB": [
+            {
+              "pulses": 1,
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 4,
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 12,
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 30,
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 60,
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "pairedControls": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 360,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED"
+            },
+            {
+              "frames": 720,
+              "confirmed": false,
+              "coverage": "NOT_CONFIRMED"
+            }
+          ],
+          "outcome": {
+            "outcome": "RECOVERED_BY_DURATION",
+            "atFrames": 12,
+            "why": "confirmed under both the train and the duration-matched hold, so the duration explains it"
+          }
+        }
+      ]
+    },
+    {
+      "label": "sacrifice seed 3",
+      "corpus": "synthetic",
+      "family": "sacrifice",
+      "seed": 3,
+      "phaseAttestation": null,
+      "startStateLevels": {
+        "SINGLE_SAVESTATE_REPLAY": false,
+        "MULTIPLE_SAVED_STATES": true,
+        "INDEPENDENT_HISTORIES": false,
+        "PHASE_ATTESTED": false,
+        "note": "the declared starts are distinct saved states from one pristine snapshot: multiple saved states, NOT independent histories. An identical state hash would not be an independent history either."
+      },
+      "candidatesEvaluated": 2,
+      "perCandidate": [
+        {
+          "address": 205,
+          "mask": 4,
+          "source": "charges",
+          "seriesA": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 120,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 240,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 480,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "seriesB": [
+            {
+              "pulses": 1,
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 4,
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 12,
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 30,
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 60,
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "pairedControls": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            }
+          ],
+          "outcome": {
+            "outcome": "RECOVERED_BY_DURATION",
+            "atFrames": 12,
+            "why": "confirmed under both the train and the duration-matched hold, so the duration explains it"
+          }
+        },
+        {
+          "address": 67,
+          "mask": 2,
+          "source": "treasure",
+          "seriesA": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 120,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 240,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 480,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "seriesB": [
+            {
+              "pulses": 1,
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 4,
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 12,
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 30,
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 60,
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "pairedControls": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            }
+          ],
+          "outcome": {
+            "outcome": "RECOVERED_BY_DURATION",
+            "atFrames": 12,
+            "why": "confirmed under both the train and the duration-matched hold, so the duration explains it"
+          }
+        }
+      ]
+    },
+    {
+      "label": "rate-trap seed 5",
+      "corpus": "synthetic",
+      "family": "rate-trap",
+      "seed": 5,
+      "phaseAttestation": null,
+      "startStateLevels": {
+        "SINGLE_SAVESTATE_REPLAY": false,
+        "MULTIPLE_SAVED_STATES": true,
+        "INDEPENDENT_HISTORIES": false,
+        "PHASE_ATTESTED": false,
+        "note": "the declared starts are distinct saved states from one pristine snapshot: multiple saved states, NOT independent histories. An identical state hash would not be an independent history either."
+      },
+      "candidatesEvaluated": 3,
+      "perCandidate": [
+        {
+          "address": 97,
+          "mask": 128,
+          "source": "fuel",
+          "seriesA": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 120,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 240,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 480,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "seriesB": [
+            {
+              "pulses": 1,
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 4,
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 12,
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 30,
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 60,
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "pairedControls": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            }
+          ],
+          "outcome": {
+            "outcome": "RECOVERED_BY_DURATION",
+            "atFrames": 12,
+            "why": "confirmed under both the train and the duration-matched hold, so the duration explains it"
+          }
+        },
+        {
+          "address": 182,
+          "mask": 2,
+          "source": "steadyGain",
+          "seriesA": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 120,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 240,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 480,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "seriesB": [
+            {
+              "pulses": 1,
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 4,
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 12,
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 30,
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 60,
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "pairedControls": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            }
+          ],
+          "outcome": {
+            "outcome": "RECOVERED_BY_DURATION",
+            "atFrames": 12,
+            "why": "confirmed under both the train and the duration-matched hold, so the duration explains it"
+          }
+        },
+        {
+          "address": 175,
+          "mask": 32,
+          "source": "fickleDecoy",
+          "seriesA": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 120,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 240,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "frames": 480,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "seriesB": [
+            {
+              "pulses": 1,
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AT_ENDPOINT",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 4,
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 12,
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 30,
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            },
+            {
+              "pulses": 60,
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED",
+              "movement": "MOVED_AND_PERSISTED",
+              "reproducible": true,
+              "truncated": false,
+              "rawDiff": true
+            }
+          ],
+          "pairedControls": [
+            {
+              "frames": 12,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 48,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 144,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 360,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            },
+            {
+              "frames": 720,
+              "confirmed": true,
+              "coverage": "CAUSALLY_CONFIRMED"
+            }
+          ],
+          "outcome": {
+            "outcome": "RECOVERED_BY_DURATION",
+            "atFrames": 12,
+            "why": "confirmed under both the train and the duration-matched hold, so the duration explains it"
+          }
+        }
+      ]
+    }
+  ],
+  "t2Gate": {
+    "file": "t2_full.json",
+    "status": "PASS",
+    "trials": 8,
+    "equivalent": 8,
+    "passed": true
+  },
+  "privateCorpus": "AGOD_PRIVATE_ROMS not set: the real half was not run",
+  "totals": {
+    "candidates": 16,
+    "outcomes": {
+      "RECOVERED_BY_DURATION": 14,
+      "RECOVERED_BY_CADENCE": 2
+    },
+    "outcomesByCorpus": {
+      "synthetic": {
+        "RECOVERED_BY_DURATION": 14,
+        "RECOVERED_BY_CADENCE": 2
+      }
+    },
+    "headline": {
+      "A_missedForWantOfHorizon": 14,
+      "B_missedForWrongActionStructure": 2,
+      "C_remainingUncertainty": 0
+    },
+    "cost": {
+      "emulatedFrames": 1833492,
+      "frameBudget": 4000000,
+      "budgetExhausted": false,
+      "ramSnapshots": 102720,
+      "ramBytesRead": 210370560,
+      "cpuWallClockMs": 1762636,
+      "candidateEvaluations": 240
+    },
+    "t2Gate": {
+      "file": "t2_full.json",
+      "status": "PASS",
+      "trials": 8,
+      "equivalent": 8,
+      "passed": true
+    },
+    "note": "more observed RAM changes is not success. A and B count candidates whose causal observability was recovered; C names every remaining cause separately, and none of its members is evidence that a game resource is useless"
+  }
+}

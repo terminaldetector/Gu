@@ -53,7 +53,7 @@ function holdArm(driver,start,mask,frames,sampleEvery){
 }
 
 /* One pulse-train arm: `pulses` cycles of hold+release, RAM after each cycle. */
-function trainArm(driver,start,mask,pulses,hold,release){
+function trainArm(driver,start,mask,pulses,hold,release,tailFrames){
  driver.restore(start.snapshot);
  const before=Array.from(driver.readRam());
  const samples=[{atFrame:0,cycle:0,ram:before}];
@@ -62,8 +62,19 @@ function trainArm(driver,start,mask,pulses,hold,release){
   driver.run(mask,hold);driver.run(0,release);run+=hold+release;
   samples.push({atFrame:run,cycle:p+1,ram:Array.from(driver.readRam())});
  }
+ /* DEFECT FIXED. The neutral trajectory for a train used to be built by adding
+    or removing whole CYCLES, so its windows sat at +/-12, 24, 36 frames and
+    never at the +/-1..3 frames where the phase drift actually lives. A
+    time-driven byte therefore slipped through even at one pulse of 12 frames,
+    while continuous hold over the SAME 12 frames correctly rejected it - same
+    duration, same mask, only the trajectory grid differing. The shift is now a
+    tail of neutral FRAMES, which is what the standard detector means by a phase
+    window. */
+ if(tailFrames){driver.run(0,tailFrames);run+=tailFrames;
+  samples.push({atFrame:run,cycle:pulses,ram:Array.from(driver.readRam())});}
  const after=samples[samples.length-1].ram;
- return {mask,pulses,hold,release,frames:run,before,after,samples,framesRun:run};
+ return {mask,pulses,hold,release,frames:run,tailFrames:tailFrames||0,
+  before,after,samples,framesRun:run};
 }
 
 /* The neutral reference trajectory, same idea as the standard detector: the
@@ -72,14 +83,18 @@ function trainArm(driver,start,mask,pulses,hold,release){
 function neutralWindows(driver,start,plan){
  const windows=[];
  for(let delta=-plan.shiftTolerance;delta<=plan.shiftTolerance;delta++){
-  const scaled=plan.kind==='hold'
-   ?{frames:plan.frames+delta}
-   :{frames:plan.frames+delta*(plan.hold+plan.release)};
-  if(scaled.frames<1)continue;
-  windows.push(plan.kind==='hold'
-   ?holdArm(driver,start,plan.neutralMask,scaled.frames,0)
-   :trainArm(driver,start,plan.neutralMask,
-      Math.max(1,plan.pulses+delta),plan.hold,plan.release));
+  if(plan.kind==='hold'){
+   const frames=plan.frames+delta;
+   if(frames<1)continue;
+   windows.push(holdArm(driver,start,plan.neutralMask,frames,0));
+  }else{
+   /* the SAME train, shifted by delta neutral FRAMES at the tail */
+   if(plan.frames+delta<1)continue;
+   windows.push(delta>=0
+    ?trainArm(driver,start,plan.neutralMask,plan.pulses,plan.hold,plan.release,delta)
+    :trainArm(driver,start,plan.neutralMask,plan.pulses,plan.hold,
+       Math.max(0,plan.release+delta),0));
+  }
  }
  return windows;
 }
@@ -143,6 +158,11 @@ function evaluateStart(driver,start,plan){
   sharedWithAlternative:shared.slice(0,limit),
   specificToMask:specific.slice(0,limit),
   neutralWindows:trajectory.length,
+  /* oracle-free: addresses the NEUTRAL arm itself moved over this horizon.
+     A byte here is time-driven at this duration. If the probe nevertheless
+     CONFIRMS such a byte, the neutral trajectory failed to cover its drift. */
+  neutralMovedAddresses:diffAddresses(neutralA.before,neutralA.after,plan.maxRamBytes).slice(0,limit),
+  neutralMovedCount:diffAddresses(neutralA.before,neutralA.after,plan.maxRamBytes).length,
   intermediateMovement:frozen(intermediate.slice(0,16)),
   intermediateSamplesTaken:action.samples.length,
   reportTruncated:truncated,
@@ -188,6 +208,12 @@ function probe(driver,options){
   usableStarts:summary.usableStarts,excludedStarts:summary.excludedStarts,
   independentStarts:(options.starts||[]).filter(s=>s.independent).length,
   anyReportTruncated:perStart.some(e=>e.reportTruncated===true),
+  /* how many confirmed addresses are ones the neutral arm moved by itself */
+  confirmedThatNeutralAlsoMoved:(()=>{
+   const neutral=new Set();
+   for(const e of perStart)for(const a of (e.neutralMovedAddresses||[]))neutral.add(a);
+   return summary.confirmed.filter(e=>neutral.has(e.address)).map(e=>e.address);
+  })(),
   framesRun:perStart.reduce((t,e)=>t+(e.framesRun||0),0)});
 }
 
