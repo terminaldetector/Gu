@@ -847,6 +847,34 @@
    "status": "PASS",
    "log": "(stdout)",
    "note": "5 of 5, including the TOCTOU case; local hook only, CI still not configured"
+  },
+  {
+   "command": "node tools/agod_candidates_unit.cjs",
+   "stage": "S10 P2 grouping and ranking unit check",
+   "status": "PASS",
+   "log": "(stdout)",
+   "note": "42 assertions, including the transitive A-B-C case; co-movement alone cannot produce an indirect pair because pattern equality is itself transitive"
+  },
+  {
+   "command": "node tools/agod_s9_control_check.cjs",
+   "stage": "S10 corrected control series",
+   "status": "PASS",
+   "log": "logs/s10_control_report.json",
+   "note": "selection without HOLDOUT, oracle opened after both arms commit, shared frame budget; both arms right 20/20, V2 cost +41% (the confirmation phase P1 adds)"
+  },
+  {
+   "command": "AGOD_PRIVATE_ROMS=<dir> node tools/agod_polarity_audit.cjs",
+   "stage": "S10A polarity audit",
+   "status": "COMPLETE",
+   "log": "logs/polarity_audit.json",
+   "note": "causalConfirmed is the first false term in 32 of 32 real-cartridge partition audits; floorNotReachedInsideBudget=0, so a larger pulse budget would change nothing; synthetic control closed the chain 10/10"
+  },
+  {
+   "command": "node tools/agod_pipeline_check.cjs",
+   "stage": "S10 FIRST-V1 regression after P1-P5",
+   "status": "PASS",
+   "log": "logs/pipeline_report.json (baseline for comparison)",
+   "note": "development 7/7, held-out 7/7, 1561 paid claims, Q(cost) lowest 21/21 - identical to the published baseline"
   }
  ],
  "experimentalChecksNote": "New experimental checks added by this revision. They are standalone Node checks; tools/check.sh and CI were not modified."
