@@ -20,7 +20,7 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path'),
 const Causal=require('../app/src/main/assets/lab/agod-causal.js'),
       Adapter=require('./agod_s11b_adapter.cjs'),
       Phase=require('./agod_phase_evidence.cjs'),
-      jsnes=require('../app/src/main/assets/lab/jsnes.min.js');
+      Host=require('./agod_s11b_host.cjs');
 
 /* ---- pre-registered, not derived from any result ---- */
 const SERIES_A_HORIZONS=[12,48,120,240,480];
@@ -37,7 +37,7 @@ const provenance=(()=>{let head='unknown',dirty=null;
   dirty=execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim().length>0;}catch(_){}
  return {commit:head,workingTreeDirty:dirty,node:process.version,
   causalRevision:Causal.DETECTOR_REVISION,adapterRevision:Adapter.ADAPTER_REVISION,
-  phaseRevision:Phase.PHASE_EVIDENCE_REVISION};})();
+  phaseRevision:Phase.PHASE_EVIDENCE_REVISION,hostRevision:Host.HOST_REVISION};})();
 const report={type:'gu-agod-s11b-horizon-check',version:1,
  preregistration:['26_S11B_PREREGISTRATION_RU.md (v1)','27_S11B_PREREGISTRATION_V2_RU.md (v2)','28_S11B_PROTOCOL_V21_RU.md (v2.1)'],
  seriesA:{kind:'continuous hold',horizons:SERIES_A_HORIZONS,sampleEveryFrames:SAMPLE_EVERY},
@@ -62,30 +62,18 @@ const report={type:'gu-agod-s11b-horizon-check',version:1,
 const write=()=>{if(process.env.AGOD_S11B_REPORT)
  fs.writeFileSync(process.env.AGOD_S11B_REPORT,JSON.stringify(report,null,2)+'\n');};write();
 
+/* R2 / A2. The host now comes from agod_s11b_host.cjs, which both this
+   experiment and agod_s11b_r2_phase_channel_test.cjs drive. The host built
+   here previously passed an EMPTY onFrame callback, so lastFrame() stayed null
+   for the whole run and the phase attestation could only ever report a
+   non-PASS: an instrument that had never been wired, reporting a finding about
+   the cartridge. The correct wiring already existed in
+   agod_real_game_check.cjs; keeping two copies is what let the broken one
+   decide results, so there is now one. */
 function machine(bytes,entry){
- const core=new jsnes.NES({onFrame(){},onAudioSample(){}});
- core.loadROM(bytes);
- let lastFrame=null,motionFrames=0,changed=0,previous=null;
- const press=(mask,count)=>{for(let b=0;b<8;b++)(mask&(1<<b)?core.buttonDown:core.buttonUp)(1,b);
-  for(let i=0;i<count;i++){core.frame();framesSpent++;}};
- core.opts&&0;
- press(0,entry.bootFrames);
- for(let i=0;i<entry.startPulses;i++){press(8,HOLD);press(0,entry.gapFrames);}
- if(entry.settleFrames)press(0,entry.settleFrames);
- const ram=()=>{snapshotsTaken++;bytesRead+=0x800;return core.cpu.mem.slice(0,0x800);};
- return {press,
-  driver:{restore(s){core.fromJSON(JSON.parse(s));},
-   run:(mask,count)=>press(mask,count),
-   readRam:ram,snapshot(){return JSON.stringify(core.toJSON());},
-   stateHash(){return crypto.createHash('sha256').update(Buffer.from(core.cpu.mem.slice(0,0x800))).digest('hex');}},
-  phaseProbe(snapshot){
-   return {restore(){core.fromJSON(JSON.parse(snapshot));},
-    press,pulses(mask,n){for(let i=0;i<n;i++){press(mask,HOLD);press(0,RELEASE);}},
-    readRam:()=>core.cpu.mem.slice(0,0x800),
-    hash(b){return crypto.createHash('sha256').update(Buffer.from(b)).digest('hex');},
-    lastFrame(){return lastFrame;},
-    resetMotion(){motionFrames=0;changed=0;previous=null;},
-    motion(){return {frames:motionFrames,changedFrames:changed};}};}};
+ return Host.createHost({bytes,entry,hold:HOLD,
+  onFrames(count){framesSpent+=count;},
+  onSnapshot(count){snapshotsTaken++;bytesRead+=count;}});
 }
 
 /* The same pre-declared start states for every horizon and mask. */
@@ -227,9 +215,22 @@ function evaluate(label,extra,bytes,entry,candidatesFrom,gatePassed,attestPhase)
  const starts=declaredStarts(host,pristine);
  let phase=null;
  if(attestPhase){
-  const p=Phase.measurePhase(host.phaseProbe(pristine),{idleFrames:60,pulses:6,settleFrames:30});
-  phase={status:p.phase,modalities:p.modalities,
-   comparabilityCounts:p.phase==='PASS'};
+  /* R2 / A2. The S8 parameters, so this attestation is the same measurement the
+     rest of the programme reports and not a cheaper variant of it. */
+  const p=Phase.measurePhase(host.phaseProbe(pristine),
+   {idleFrames:180,pulses:14,settleFrames:60});
+  phase={status:p.phase,modalities:p.modalities,parameters:p.parameters,
+   video:{videoAvailable:p.video.videoAvailable,
+    videoFramesCaptured:p.video.videoFramesCaptured,
+    differingPixelsHeld:p.video.differingPixelsHeld,
+    differingPixelsAfterRelease:p.video.differingPixelsAfterRelease,
+    localisedEnoughToBeAnObject:p.video.localisedEnoughToBeAnObject,
+    differenceSurvivesRelease:p.video.differenceSurvivesRelease},
+   ram:{bidirectionalRamAddresses:p.ram.bidirectionalRamAddresses,
+    distinctOutcomesAcrossEightButtons:p.ram.distinctOutcomesAcrossEightButtons},
+   idlePictureMotionWithoutInput:p.idle.pictureMotionWithoutInput,
+   comparabilityCounts:p.phase==='PASS',
+   instrumentFailureNotAFinding:p.phase==='VIDEO_UNAVAILABLE'};
  }
  const candidates=candidatesFrom.slice(0,PRIMARY_CANDIDATES+EXTRA_CANDIDATES);
  /* Which candidates are KNOWN time-driven controls. Used only as a checker,

@@ -85,10 +85,15 @@ const measured=rows.filter(r=>r.phase);
 const perRom={};
 for(const r of measured){
  const e=perRom[r.rom]||(perRom[r.rom]={procedures:0,pass:0,unconfirmed:0,notReached:0,
-  bestDistinctOutcomes:0,passingProcedures:[]});
+  videoUnavailable:0,bestDistinctOutcomes:0,passingProcedures:[]});
  e.procedures++;
  if(r.phase==='PASS'){e.pass++;e.passingProcedures.push(r.procedure);}
- else if(r.phase==='UNCONFIRMED')e.unconfirmed++;else e.notReached++;
+ else if(r.phase==='UNCONFIRMED')e.unconfirmed++;
+ /* R2. VIDEO_UNAVAILABLE is a failure of the observing instrument. Counting it
+    under notReached would read as "this procedure did not reach gameplay",
+    which is a claim about the cartridge that the measurement does not support. */
+ else if(r.phase==='VIDEO_UNAVAILABLE')e.videoUnavailable++;
+ else e.notReached++;
  if(r.distinctOutcomesAcrossEightButtons>e.bestDistinctOutcomes)
   e.bestDistinctOutcomes=r.distinctOutcomesAcrossEightButtons;
 }

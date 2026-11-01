@@ -1,0 +1,125 @@
+{
+  "type": "gu-agod-phase-detector-regression",
+  "version": 1,
+  "question": "on the same arms of the same cartridges, does the replaced detector give a different answer from the discarded one?",
+  "discardedStatistic": "inputDivergenceBytes: bytes differing between a Left-pulse run and a Right-pulse run, no neutral control, no sign requirement; the old rule was INTERACTIVE when it exceeded 8",
+  "corpusClass": "private user-supplied real-game ROMs, local evaluation only; no ROM bytes in this artefact",
+  "provenance": {
+    "commit": "9881ccf86eeb46a82a15e2f6aa45b364945a265b",
+    "workingTreeDirty": true,
+    "node": "v22.22.0",
+    "core": "jsnes (assets/lab/jsnes.min.js)",
+    "phaseEvidenceRevision": "agod-phase-evidence-1"
+  },
+  "status": "COMPLETE",
+  "rows": [
+    {
+      "rom": "lifeforce.nes",
+      "sha256": "c725a0c6b3eb52f5",
+      "arm": "pure-boot",
+      "discarded": {
+        "inputDivergenceBytes": 0,
+        "activeSpriteSlots": 14,
+        "spriteSlotsAvailable": 64,
+        "spriteStatisticSaturated": false,
+        "verdictUnderOldRule": "(not INTERACTIVE by the old rule)"
+      },
+      "replacement": {
+        "phase": "NOT-REACHED",
+        "modalities": {
+          "ram": false,
+          "video": false
+        },
+        "bidirectionalRamAddresses": 0,
+        "distinctOutcomesAcrossEightButtons": 5,
+        "differingPixelsHeld": 0,
+        "localisedEnoughToBeAnObject": false,
+        "differenceSurvivesRelease": false
+      },
+      "answersDiffer": false
+    },
+    {
+      "rom": "lifeforce.nes",
+      "sha256": "c725a0c6b3eb52f5",
+      "arm": "start-preamble",
+      "discarded": {
+        "inputDivergenceBytes": 59,
+        "activeSpriteSlots": 16,
+        "spriteSlotsAvailable": 64,
+        "spriteStatisticSaturated": false,
+        "verdictUnderOldRule": "INTERACTIVE"
+      },
+      "replacement": {
+        "phase": "PASS",
+        "modalities": {
+          "ram": true,
+          "video": true
+        },
+        "bidirectionalRamAddresses": 3,
+        "distinctOutcomesAcrossEightButtons": 8,
+        "differingPixelsHeld": 191,
+        "localisedEnoughToBeAnObject": true,
+        "differenceSurvivesRelease": true
+      },
+      "answersDiffer": false
+    },
+    {
+      "rom": "contra.nes",
+      "sha256": "1f4a9b3f04e2f828",
+      "arm": "pure-boot",
+      "discarded": {
+        "inputDivergenceBytes": 0,
+        "activeSpriteSlots": 24,
+        "spriteSlotsAvailable": 64,
+        "spriteStatisticSaturated": false,
+        "verdictUnderOldRule": "(not INTERACTIVE by the old rule)"
+      },
+      "replacement": {
+        "phase": "NOT-REACHED",
+        "modalities": {
+          "ram": false,
+          "video": false
+        },
+        "bidirectionalRamAddresses": 0,
+        "distinctOutcomesAcrossEightButtons": 4,
+        "differingPixelsHeld": 0,
+        "localisedEnoughToBeAnObject": false,
+        "differenceSurvivesRelease": false
+      },
+      "answersDiffer": false
+    },
+    {
+      "rom": "contra.nes",
+      "sha256": "1f4a9b3f04e2f828",
+      "arm": "start-preamble",
+      "discarded": {
+        "inputDivergenceBytes": 0,
+        "activeSpriteSlots": 0,
+        "spriteSlotsAvailable": 64,
+        "spriteStatisticSaturated": false,
+        "verdictUnderOldRule": "(not INTERACTIVE by the old rule)"
+      },
+      "replacement": {
+        "phase": "NOT-REACHED",
+        "modalities": {
+          "ram": false,
+          "video": false
+        },
+        "bidirectionalRamAddresses": 0,
+        "distinctOutcomesAcrossEightButtons": 1,
+        "differingPixelsHeld": 0,
+        "localisedEnoughToBeAnObject": false,
+        "differenceSurvivesRelease": false
+      },
+      "answersDiffer": false
+    }
+  ],
+  "totals": {
+    "armsMeasured": 4,
+    "oldRuleSaidInteractive": 1,
+    "replacementSaysPass": 1,
+    "armsWhereTheAnswerChanged": 0,
+    "spriteStatisticSaturatedOnEveryArm": false,
+    "note": "the old rule is reported for comparison only; it is not an instrument here and no verdict in any other artefact is taken from it"
+  }
+}

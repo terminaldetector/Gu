@@ -91,14 +91,29 @@ function measurePhase(probe,options){
   const frame=probe.lastFrame();
   return frame?frame.slice():null;
  };
- const held=differingPixels(frameAfter(RIGHT,0),frameAfter(LEFT,0));
- const released=differingPixels(frameAfter(RIGHT,settleFrames),frameAfter(LEFT,settleFrames));
+ const heldFrames={right:frameAfter(RIGHT,0),left:frameAfter(LEFT,0)};
+ const releasedFrames={right:frameAfter(RIGHT,settleFrames),left:frameAfter(LEFT,settleFrames)};
+ const held=differingPixels(heldFrames.right,heldFrames.left);
+ const released=differingPixels(releasedFrames.right,releasedFrames.left);
  const localised=!!(held&&held.count>0&&held.count<SATURATION_PIXELS);
  const survives=!!(released&&released.count>0&&released.count<SATURATION_PIXELS);
 
+ /* R2. The video channel can be ABSENT rather than negative: a host whose
+    onFrame callback discards the buffer leaves lastFrame null, and then both
+    differentials are null, localised and survives are false, and the verdict
+    reads as an ordinary UNCONFIRMED or NOT-REACHED. That is an instrument
+    failure reported as a measurement about the cartridge - the very thing this
+    programme forbids - so the absence of a picture now has its own status.
+    This does NOT relax the PASS criteria: VIDEO_UNAVAILABLE is never PASS, and
+    with a picture present every verdict is exactly what it was before. */
+ const videoFramesCaptured=[heldFrames.right,heldFrames.left,
+  releasedFrames.right,releasedFrames.left].filter(f=>f&&f.length>0).length;
+ const videoAvailable=videoFramesCaptured===4;
+
  const ramSide=addresses.length>0&&distinctOutcomes>=minDistinctOutcomes;
- const videoSide=localised&&survives;
- const phase=(ramSide&&videoSide)?'PASS':(ramSide?'UNCONFIRMED':'NOT-REACHED');
+ const videoSide=videoAvailable&&localised&&survives;
+ const phase=!videoAvailable?'VIDEO_UNAVAILABLE'
+  :((ramSide&&videoSide)?'PASS':(ramSide?'UNCONFIRMED':'NOT-REACHED'));
 
  return {
   revision:PHASE_EVIDENCE_REVISION,
@@ -121,17 +136,24 @@ function measurePhase(probe,options){
    meanXOfDifferingPixelsAfterRelease:released&&released.meanX!==null?Number(released.meanX.toFixed(2)):null,
    localisedEnoughToBeAnObject:localised,
    differenceSurvivesRelease:survives,
+   videoFramesCaptured,videoFramesExpected:4,videoAvailable,
+   videoChannelNote:videoAvailable
+    ?'the host delivered a picture for all four arms'
+    :'the host delivered '+videoFramesCaptured+' of 4 pictures, so the video modality did not run. This is a failure of the observing instrument and is reported as VIDEO_UNAVAILABLE, never as a negative finding about the cartridge.',
    directionEstablished:false,
    directionNote:'the differing pixels of the two arms are one set, so this yields one mean x and cannot say which way an object moved',
    sensitivityNote:'a differing-pixel count near the whole screen means the test cannot resolve an object, and is reported as not localised rather than as an object'},
   criteria:'RAM bidirectionality AND >='+minDistinctOutcomes+' distinct outcomes across eight buttons AND a localised video difference AND that difference surviving release',
   modalities:{ram:ramSide,video:videoSide},
   phase,
-  phaseNote:phase==='PASS'
+  statusValues:['PASS','UNCONFIRMED','NOT-REACHED','VIDEO_UNAVAILABLE'],
+  phaseNote:phase==='VIDEO_UNAVAILABLE'
+   ?'the host did not deliver a picture, so the video modality could not run and NO phase verdict is offered. The RAM modality is reported above on its own and is not promoted: an instrument that did not observe is not a cartridge that did not respond.'
+   :(phase==='PASS'
    ?'control of an object is corroborated across RAM and video; the phase remains an inference, not a certainty'
    :(phase==='UNCONFIRMED'
     ?'RAM responds bidirectionally but the video test did not corroborate it. This is UNCONFIRMED, not evidence that gameplay is absent: a menu cursor looks the same in RAM, and a scrolling background can defeat the video test.'
-    :'neither modality indicates object control under this entry procedure; this is an absence of evidence under one procedure, not proof that the cartridge cannot be played')
+    :'neither modality indicates object control under this entry procedure; this is an absence of evidence under one procedure, not proof that the cartridge cannot be played'))
  };
 }
 

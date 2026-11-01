@@ -1,0 +1,270 @@
+{
+  "type": "gu-agod-s11b-r2-phase-channel-test",
+  "version": 1,
+  "item": "R2 / A2 - the phase attestation video channel",
+  "s8Parameters": {
+    "idleFrames": 180,
+    "pulses": 14,
+    "settleFrames": 60
+  },
+  "entryProcedure": {
+    "lifeforce.nes": {
+      "bootFrames": 240,
+      "startPulses": 6,
+      "gapFrames": 24,
+      "settleFrames": 60
+    },
+    "contra.nes": {
+      "bootFrames": 240,
+      "startPulses": 6,
+      "gapFrames": 24,
+      "settleFrames": 300
+    },
+    "galaga.nes": {
+      "bootFrames": 240,
+      "startPulses": 6,
+      "gapFrames": 24,
+      "settleFrames": 60
+    },
+    "roadfighter.nes": {
+      "bootFrames": 240,
+      "startPulses": 6,
+      "gapFrames": 24,
+      "settleFrames": 60
+    }
+  },
+  "corpusClass": "private user-supplied real-game ROMs, local evaluation only; no ROM bytes in this artefact",
+  "rulesNote": "the phase detector PASS criteria are unchanged. VIDEO_UNAVAILABLE is a fourth status that is never PASS: it makes the instrument decline to answer where it previously answered negatively.",
+  "provenance": {
+    "commit": "9881ccf86eeb46a82a15e2f6aa45b364945a265b",
+    "workingTreeDirty": true,
+    "node": "v22.22.0",
+    "phaseRevision": "agod-phase-evidence-1",
+    "hostRevision": "agod-s11b-host-1"
+  },
+  "positiveControl": {
+    "status": "REACHED",
+    "reached": true,
+    "blocked": []
+  },
+  "rows": [
+    {
+      "check": "a probe that returns no frame",
+      "phase": "VIDEO_UNAVAILABLE",
+      "videoAvailable": false,
+      "videoFramesCaptured": 0,
+      "ramModality": false,
+      "pass": true
+    },
+    {
+      "check": "VIDEO_UNAVAILABLE is never PASS",
+      "pass": true
+    },
+    {
+      "rom": "lifeforce.nes",
+      "videoChannel": "on",
+      "frameDelivered": true,
+      "framePixels": 61440,
+      "frameSizeCorrect": true,
+      "pictureChangesOverTime": true,
+      "livenessFrames": 200,
+      "phase": "PASS",
+      "modalities": {
+        "ram": true,
+        "video": true
+      },
+      "videoAvailable": true,
+      "videoFramesCaptured": 4,
+      "differingPixelsHeld": 188,
+      "differingPixelsAfterRelease": 191,
+      "localised": true,
+      "survivesRelease": true,
+      "bidirectionalRamAddresses": 2,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "parameters": {
+        "idleFrames": 180,
+        "pulses": 14,
+        "settleFrames": 60,
+        "minDistinctOutcomes": 4,
+        "buttonMasks": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "saturationPixels": 20000
+      },
+      "pictureDiffersBetweenArms": true,
+      "pictureLive": true,
+      "livenessWitness": "the picture differs between the Left and Right arms"
+    },
+    {
+      "rom": "lifeforce.nes",
+      "videoChannel": "off",
+      "frameDelivered": false,
+      "framePixels": 0,
+      "frameWithheld": true,
+      "phase": "VIDEO_UNAVAILABLE",
+      "modalities": {
+        "ram": true,
+        "video": false
+      },
+      "videoAvailable": false,
+      "videoFramesCaptured": 0,
+      "differingPixelsHeld": null,
+      "differingPixelsAfterRelease": null,
+      "localised": false,
+      "survivesRelease": false,
+      "bidirectionalRamAddresses": 2,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "parameters": {
+        "idleFrames": 180,
+        "pulses": 14,
+        "settleFrames": 60,
+        "minDistinctOutcomes": 4,
+        "buttonMasks": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "saturationPixels": 20000
+      }
+    },
+    {
+      "check": "lifeforce.nes: the unwired host says VIDEO_UNAVAILABLE",
+      "observed": "VIDEO_UNAVAILABLE",
+      "pass": true
+    },
+    {
+      "check": "lifeforce.nes: the RAM modality is identical with and without video",
+      "withVideo": 2,
+      "withoutVideo": 2,
+      "pass": true
+    },
+    {
+      "rom": "contra.nes",
+      "videoChannel": "on",
+      "frameDelivered": true,
+      "framePixels": 61440,
+      "frameSizeCorrect": true,
+      "pictureChangesOverTime": true,
+      "livenessFrames": 200,
+      "phase": "PASS",
+      "modalities": {
+        "ram": true,
+        "video": true
+      },
+      "videoAvailable": true,
+      "videoFramesCaptured": 4,
+      "differingPixelsHeld": 598,
+      "differingPixelsAfterRelease": 373,
+      "localised": true,
+      "survivesRelease": true,
+      "bidirectionalRamAddresses": 27,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "parameters": {
+        "idleFrames": 180,
+        "pulses": 14,
+        "settleFrames": 60,
+        "minDistinctOutcomes": 4,
+        "buttonMasks": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "saturationPixels": 20000
+      },
+      "pictureDiffersBetweenArms": true,
+      "pictureLive": true,
+      "livenessWitness": "the picture differs between the Left and Right arms"
+    },
+    {
+      "rom": "contra.nes",
+      "videoChannel": "off",
+      "frameDelivered": false,
+      "framePixels": 0,
+      "frameWithheld": true,
+      "phase": "VIDEO_UNAVAILABLE",
+      "modalities": {
+        "ram": true,
+        "video": false
+      },
+      "videoAvailable": false,
+      "videoFramesCaptured": 0,
+      "differingPixelsHeld": null,
+      "differingPixelsAfterRelease": null,
+      "localised": false,
+      "survivesRelease": false,
+      "bidirectionalRamAddresses": 27,
+      "distinctOutcomesAcrossEightButtons": 8,
+      "parameters": {
+        "idleFrames": 180,
+        "pulses": 14,
+        "settleFrames": 60,
+        "minDistinctOutcomes": 4,
+        "buttonMasks": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32,
+          64,
+          128
+        ],
+        "saturationPixels": 20000
+      }
+    },
+    {
+      "check": "contra.nes: the unwired host says VIDEO_UNAVAILABLE",
+      "observed": "VIDEO_UNAVAILABLE",
+      "pass": true
+    },
+    {
+      "check": "contra.nes: the RAM modality is identical with and without video",
+      "withVideo": 27,
+      "withoutVideo": 27,
+      "pass": true
+    },
+    {
+      "check": "a known gameplay state can reach PASS under the S8 parameters",
+      "reached": true,
+      "blocked": [],
+      "pass": true
+    },
+    {
+      "check": "the PASS criteria are the S8 criteria, unchanged",
+      "criteria": "RAM bidirectionality AND >=4 distinct outcomes across eight buttons AND a localised video difference AND that difference surviving release",
+      "pass": true
+    },
+    {
+      "check": "the experiment uses the shared host rather than its own emulator",
+      "pass": true
+    },
+    {
+      "check": "the shared host keeps the picture",
+      "pass": true
+    }
+  ],
+  "totals": {
+    "checks": 10,
+    "passing": 10,
+    "failures": 0
+  },
+  "failures": [],
+  "status": "PASS"
+}
