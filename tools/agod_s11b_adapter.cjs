@@ -53,13 +53,28 @@ function holdArm(driver,start,mask,frames,sampleEvery){
 }
 
 /* One pulse-train arm: `pulses` cycles of hold+release, RAM after each cycle. */
-function trainArm(driver,start,mask,pulses,hold,release,tailFrames){
+function trainArm(driver,start,mask,pulses,hold,release,tailFrames,lastReleaseAdjust){
  driver.restore(start.snapshot);
  const before=Array.from(driver.readRam());
  const samples=[{atFrame:0,cycle:0,ram:before}];
  let run=0;
+ /* R1. A negative shift used to be applied to the release of EVERY pulse, so a
+    60-pulse train at delta=-3 ran 60*(4+5)=540 frames where the window should
+    be H+delta=717 - short by 177 frames, and with a different train structure
+    besides. The shift now lands on the FINAL release only, which keeps every
+    earlier cycle exactly as declared and makes the window length exact. */
+ const adjust=lastReleaseAdjust||0;
+ /* R1. Clamping a negative shift to zero would silently drop frames AND merge
+    the last press into the tail, so the window would no longer be the declared
+    one. A shift the release cannot absorb is an error, not something to round. */
+ if(release+adjust<0)throw new Error('SHIFT_EXCEEDS_RELEASE: a tail shift of '
+  +adjust+' cannot be absorbed by a release of '+release
+  +' frames; the window would not be the declared one');
  for(let p=0;p<pulses;p++){
-  driver.run(mask,hold);driver.run(0,release);run+=hold+release;
+  const thisRelease=(p===pulses-1)?release+adjust:release;
+  driver.run(mask,hold);
+  if(thisRelease)driver.run(0,thisRelease);
+  run+=hold+thisRelease;
   samples.push({atFrame:run,cycle:p+1,ram:Array.from(driver.readRam())});
  }
  /* DEFECT FIXED. The neutral trajectory for a train used to be built by adding
@@ -74,6 +89,8 @@ function trainArm(driver,start,mask,pulses,hold,release,tailFrames){
   samples.push({atFrame:run,cycle:pulses,ram:Array.from(driver.readRam())});}
  const after=samples[samples.length-1].ram;
  return {mask,pulses,hold,release,frames:run,tailFrames:tailFrames||0,
+  lastReleaseAdjust:adjust,
+  pressEdges:pulses,
   before,after,samples,framesRun:run};
 }
 
@@ -90,10 +107,11 @@ function neutralWindows(driver,start,plan){
   }else{
    /* the SAME train, shifted by delta neutral FRAMES at the tail */
    if(plan.frames+delta<1)continue;
+   /* positive delta: a neutral tail. negative delta: shorten the FINAL release
+      only, so the press-edge count and every earlier cycle stay as declared. */
    windows.push(delta>=0
-    ?trainArm(driver,start,plan.neutralMask,plan.pulses,plan.hold,plan.release,delta)
-    :trainArm(driver,start,plan.neutralMask,plan.pulses,plan.hold,
-       Math.max(0,plan.release+delta),0));
+    ?trainArm(driver,start,plan.neutralMask,plan.pulses,plan.hold,plan.release,delta,0)
+    :trainArm(driver,start,plan.neutralMask,plan.pulses,plan.hold,plan.release,0,delta));
   }
  }
  return windows;
@@ -208,7 +226,12 @@ function probe(driver,options){
   usableStarts:summary.usableStarts,excludedStarts:summary.excludedStarts,
   independentStarts:(options.starts||[]).filter(s=>s.independent).length,
   anyReportTruncated:perStart.some(e=>e.reportTruncated===true),
-  /* how many confirmed addresses are ones the neutral arm moved by itself */
+  /* R4. This is a CONSERVATIVE indicator that a horizon is doubtful. A byte
+     moved by the neutral arm may ALSO be driven by the button, so a flag here
+     is an uncertainty state and NOT proof that a positive observation is an
+     artefact. The six quantities below are kept separate precisely so the
+     reader can see which is which. */
+  phaseControlFlagMeaning:'uncertainty of the instrument at this horizon, not evidence that a confirmation is false',
   confirmedThatNeutralAlsoMoved:(()=>{
    const neutral=new Set();
    for(const e of perStart)for(const a of (e.neutralMovedAddresses||[]))neutral.add(a);
@@ -244,12 +267,22 @@ function horizonMovement(result,address){
  const endpointMoved=result.perStart.some(e=>(e.rawAttributed||[]).includes(address));
  const sampledThroughout=result.perStart.every(e=>(e.intermediateSamplesTaken||0)>2);
  return frozen({address,endpointMoved,intermediateMoved,sampledThroughout,
+  /* R5. Samples every 12 frames cannot exclude a change that appears and
+     disappears BETWEEN two adjacent snapshots, so the strongest honest claim is
+     about the sampled points, never about the horizon. NO_EVENT_IN_HORIZON is
+     withdrawn as a label. */
   outcome:endpointMoved?(intermediateMoved?'MOVED_AND_PERSISTED':'MOVED_AT_ENDPOINT')
    :(intermediateMoved?'TRANSIENT_WITHIN_WINDOW'
-     :(sampledThroughout?'NO_EVENT_IN_HORIZON':'FINAL_STATE_UNCHANGED')),
-  note:sampledThroughout?'intermediate samples cover the horizon'
-   :'intermediate samples do not cover the horizon, so NO_EVENT_IN_HORIZON cannot be asserted'});
+     :(sampledThroughout?'NO_CHANGE_AT_SAMPLED_POINTS':'FINAL_STATE_UNCHANGED')),
+  samplingIntervalFrames:12,
+  cannotExcludeBetweenSamples:true,
+  note:sampledThroughout
+   ?'no change at the sampled points; a transient entirely between two adjacent snapshots is NOT excluded'
+   :'intermediate samples do not cover the horizon, so even the sampled-points claim is limited to the endpoints'});
 }
 
 module.exports={ADAPTER_REVISION,probe,addressCoverage,horizonMovement,
- holdArm,trainArm,diffAddresses,hash};
+ /* neutralWindows is exported so the window geometry can be tested directly
+    (R1): the shift lives here, not in the arms, and a test that only called
+    trainArm would not exercise it. */
+ holdArm,trainArm,neutralWindows,diffAddresses,hash};
