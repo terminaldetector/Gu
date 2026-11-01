@@ -49,17 +49,17 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path'),
 const Causal=require('../app/src/main/assets/lab/agod-causal.js'),
       Adapter=require('./agod_s11b_adapter.cjs'),
       Host=require('./agod_s11b_host.cjs');
+const Provenance=require('./agod_provenance.cjs');
 
 const HORIZONS=[12,48],SHIFT=3,STARTS=3,MAX_ADDRESSES=256;
 const ZERO_RELEASE_PULSES=[1,4,12];
 const TRAIN_PULSES=[1,4,12,30],TRAIN_HOLD=4,TRAIN_RELEASE=8;
 const rows=[];
-const provenance=(()=>{let head='unknown',dirty=null;
- try{head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
-  dirty=execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim().length>0;}catch(_){}
- return {commit:head,workingTreeDirty:dirty,node:process.version,
-  causalRevision:Causal.DETECTOR_REVISION,adapterRevision:Adapter.ADAPTER_REVISION,
-  hostRevision:Host.HOST_REVISION};})();
+/* R6. The SHA256 of every source file this run depended on, as the bytes
+   were on disk when it started, and which of them differ from HEAD. A commit
+   plus a dirty flag does not say either of those things. */
+const provenance=Provenance.record({tool:'tools/agod_s11b_t2_equivalence.cjs',
+ sources:['tools/make_agod_test_rom.py']});
 const report={type:'gu-agod-s11b-t2-equivalence',version:2,
  supersedes:'version 1, whose declared hash comparison was never performed (R3 / A3)',
  question:'does the experimental adapter produce the same result as Causal.probeAction on identical starts, masks and horizons, by the same arms?',

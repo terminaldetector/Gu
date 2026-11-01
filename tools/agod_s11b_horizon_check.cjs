@@ -20,7 +20,8 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path'),
 const Causal=require('../app/src/main/assets/lab/agod-causal.js'),
       Adapter=require('./agod_s11b_adapter.cjs'),
       Phase=require('./agod_phase_evidence.cjs'),
-      Host=require('./agod_s11b_host.cjs');
+      Host=require('./agod_s11b_host.cjs'),
+      Provenance=require('./agod_provenance.cjs');
 
 /* ---- pre-registered, not derived from any result ---- */
 const SERIES_A_HORIZONS=[12,48,120,240,480];
@@ -32,12 +33,18 @@ const PRIMARY_CANDIDATES=6,EXTRA_CANDIDATES=4;
 const rows=[];
 let framesSpent=0,snapshotsTaken=0,bytesRead=0,candidateEvaluations=0;
 const started=Date.now();
-const provenance=(()=>{let head='unknown',dirty=null;
- try{head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
-  dirty=execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim().length>0;}catch(_){}
- return {commit:head,workingTreeDirty:dirty,node:process.version,
-  causalRevision:Causal.DETECTOR_REVISION,adapterRevision:Adapter.ADAPTER_REVISION,
-  phaseRevision:Phase.PHASE_EVIDENCE_REVISION,hostRevision:Host.HOST_REVISION};})();
+/* R6 / specification 8. The final S11B report recorded commit a2aad98 with
+   workingTreeDirty = true. Both true, and together they do not say which files
+   differed or what was in them, so the result could not be reproduced against
+   the published source. The run now records the SHA256 of every source file it
+   depends on, as the bytes were on disk when it started, and names the ones
+   that differ from HEAD. No evidence may outlive its own provenance. */
+const provenance={...Provenance.record({
+  tool:'tools/agod_s11b_horizon_check.cjs',
+  sources:['tools/make_agod_test_rom.py','tools/make_agod_transition_rom.py',
+   'tools/make_agod_sacrifice_rom.py','tools/make_agod_rate_trap_rom.py']}),
+ causalRevision:Causal.DETECTOR_REVISION,adapterRevision:Adapter.ADAPTER_REVISION,
+ phaseRevision:Phase.PHASE_EVIDENCE_REVISION,hostRevision:Host.HOST_REVISION};
 const report={type:'gu-agod-s11b-horizon-check',version:1,
  preregistration:['26_S11B_PREREGISTRATION_RU.md (v1)','27_S11B_PREREGISTRATION_V2_RU.md (v2)','28_S11B_PROTOCOL_V21_RU.md (v2.1)'],
  seriesA:{kind:'continuous hold',horizons:SERIES_A_HORIZONS,sampleEveryFrames:SAMPLE_EVERY},
@@ -47,12 +54,14 @@ const report={type:'gu-agod-s11b-horizon-check',version:1,
  frameBudget:FRAME_BUDGET,
  outcomes:['OBSERVABLE_AT_BASELINE','DURATION_EXPLAINS_NOT_CADENCE','PHASE_CONTROL_INSUFFICIENT','RECOVERED_BY_DURATION','RECOVERED_BY_CADENCE','CADENCE_UNDECIDABLE',
   'TIME_EXPLAINED','NOT_REPRODUCIBLE_ACROSS_STARTS','TRANSIENT_WITHIN_WINDOW',
-  'FINAL_STATE_UNCHANGED','NO_EVENT_IN_HORIZON','ADDRESS_COVERAGE_UNKNOWN',
+  'FINAL_STATE_UNCHANGED','NO_CHANGE_AT_SAMPLED_POINTS','ADDRESS_COVERAGE_UNKNOWN',
   'ADAPTER_DIVERGENCE_UNRESOLVED','NOT_OBSERVED','NOT_COMPARABLE','BUDGET_EXCEEDED'],
  outcomeAddedDuringS11B:{name:'PHASE_CONTROL_INSUFFICIENT',
   reason:'the first synthetic run showed the declared shiftTolerance of 3 does not scale with the horizon: known time-driven fields (timer, frameCounter) are rejected at 12 frames and falsely CONFIRMED from 48 frames upward, so a confirmation at a long horizon is not interpretable as causal. Awarding RECOVERED_BY_DURATION there would present an instrument artefact as a recovered causal link - the mirror image of presenting an instrument limit as an absent event.',
   declaredRule:'where a control field known to be time-driven is confirmed at a horizon, that horizon is marked PHASE_CONTROL_INSUFFICIENT and no recovery is claimed from it',
-  shiftToleranceUnchanged:'the pre-registered value 3 is NOT altered; a horizon-scaled tolerance is a separately declared comparison'},
+  shiftToleranceUnchanged:'the pre-registered value 3 is NOT altered; a horizon-scaled tolerance is a separately declared comparison',
+  meaningOfTheFlag:'a state of the instrument at a horizon, not a verdict about a candidate. R4 / A4: a field that is both time-driven and action-driven moves in the neutral arm while being correctly confirmed, so the flag withholds a recovery claim without asserting the confirmation is false. The fifth fixture family and agod_s11b_r4_dual_dependence_test.cjs keep that distinction measurable.',
+  horizonLevelNotAddressLevel:'confirmedThatNeutralAlsoMoved counts addresses across the whole probe, so the flag describes the HORIZON. Whether one particular address was itself moved by the neutral arm is a separate quantity and is reported separately.'},
  rules:['a limit of the observing instrument is never the absence of a game event',
   'an instrument artefact is never a recovered causal link',
   'the raw diff is recorded separately and never promoted to causal evidence',
@@ -71,7 +80,13 @@ const write=()=>{if(process.env.AGOD_S11B_REPORT)
    agod_real_game_check.cjs; keeping two copies is what let the broken one
    decide results, so there is now one. */
 function machine(bytes,entry){
+ /* R6. The budget is passed to the host, which meters every run, so an arm
+    that would cross the ceiling fails by name. Checking only between
+    candidates let one candidate overrun the budget by a whole series of arms.
+    The remaining budget is what is granted, so the ceiling is global across
+    every cartridge in the run and not per cartridge. */
  return Host.createHost({bytes,entry,hold:HOLD,
+  frameBudget:Math.max(1,FRAME_BUDGET-framesSpent),
   onFrames(count){framesSpent+=count;},
   onSnapshot(count){snapshotsTaken++;bytesRead+=count;}});
 }
@@ -134,7 +149,12 @@ function classify(candidate,seriesA,seriesB,pairedControls,gatePassed,isKnownTim
   if(confirmedHold.length||confirmedTrain.length)
    return {outcome:'PHASE_CONTROL_INSUFFICIENT',
     confirmedHoldFrames:confirmedHold,confirmedTrainFrames:confirmedTrain,
-    why:'this field is a KNOWN time-driven control and the probe confirmed it, so the neutral trajectory failed to cover the drift at those horizons. No recovery is claimed from any horizon in this list.'};
+    /* Reached only for a field the ORACLE labels time-driven and NOT
+       action-driven, so here the stronger reading is earned: there is no
+       action component for the confirmation to be about. A field labelled
+       with both causes is kept out of this branch by the caller. */
+    why:'this field is a KNOWN time-driven control with no action component, and the probe confirmed it, so the neutral trajectory failed to cover the drift at those horizons. No recovery is claimed from any horizon in this list.',
+    appliesOnlyToSingleCauseControls:true};
   return {outcome:'TIME_EXPLAINED',
    why:'a known time-driven control, correctly rejected at every horizon: the phase control held here'};
  }
@@ -151,7 +171,15 @@ function classify(candidate,seriesA,seriesB,pairedControls,gatePassed,isKnownTim
   return {outcome:'PHASE_CONTROL_INSUFFICIENT',
    suspectHoldFrames:trustworthy?trustworthy.suspectHold:null,
    suspectTrainFrames:trustworthy?trustworthy.suspectTrain:null,
-   why:'this candidate was confirmed ONLY at horizons where the probe also confirmed addresses the neutral arm moved by itself, so the phase control did not cover the drift there and the confirmation is an instrument artefact rather than a recovered causal link'};
+   /* R4 / A4. This used to end "the confirmation is an instrument artefact
+      rather than a recovered causal link". That asserts more than the
+      measurement supports. A field can be time-driven AND action-driven at
+      once - the fifth fixture family is built to contain one, and
+      agod_s11b_r4_dual_dependence_test.cjs confirms timeAndAction at every
+      horizon while the neutral arm also moves it. The flag withholds a
+      recovery claim; it does not assert falsity. */
+   why:'this candidate was confirmed ONLY at horizons where the probe also confirmed addresses the neutral arm moved by itself, so the phase control did not cover the drift there and the horizon cannot be read cleanly. No recovery is claimed from such a horizon. This is NOT a verdict that the confirmation is false: a field that is both time-driven and action-driven lands here while being correctly confirmed.',
+   whatWouldSettleIt:'a horizon at which no confirmed address is also moved by the neutral arm, or an independent channel that attributes the change to the action without relying on the neutral trajectory'};
  const notes=[];
  /* DEFECT FOUND BY READING THE RESULT. The fallback below used to return
     RECOVERED_BY_DURATION whenever a candidate was confirmed under both the
@@ -204,8 +232,16 @@ function classify(candidate,seriesA,seriesB,pairedControls,gatePassed,isKnownTim
  if(all.some(t=>t.rawDiffMembership))
   return {outcome:'TIME_EXPLAINED',
    why:'the address differed in the raw diff but never survived the neutral trajectory, so the change is not separable from the neutral course of the game'};
- return {outcome:sampled?'NO_EVENT_IN_HORIZON':'FINAL_STATE_UNCHANGED',
-  why:sampled?'no intermediate or final sample moved across any declared horizon'
+ /* R5 / A5. This returned NO_EVENT_IN_HORIZON, which claims the horizon
+    contained no event. The samples are 12 frames apart, so a change that
+    appears and disappears entirely between two adjacent snapshots is invisible
+    to them: the strongest honest claim is about the sampled points. The
+    adapter's own label was corrected first; this, the outcome the experiment
+    actually publishes, had been left behind. */
+ return {outcome:sampled?'NO_CHANGE_AT_SAMPLED_POINTS':'FINAL_STATE_UNCHANGED',
+  samplingIntervalFrames:SAMPLE_EVERY,
+  cannotExcludeBetweenSamples:true,
+  why:sampled?'no intermediate or final sample moved across any declared horizon. A transient entirely between two adjacent snapshots, '+SAMPLE_EVERY+' frames apart, is NOT excluded: this is a limit of the sampling density and not the absence of a game event'
    :'endpoints matched and intermediate samples do not cover the horizon'};
 }
 
@@ -236,7 +272,15 @@ function evaluate(label,extra,bytes,entry,candidatesFrom,gatePassed,attestPhase)
  /* Which candidates are KNOWN time-driven controls. Used only as a checker,
     after the trials, to decide whether the instrument can be trusted at a
     given horizon. */
- const controlAddresses=new Set(candidates.filter(c=>/time-driven/.test(c.source||''))
+ /* A control counts as purely time-driven only when the oracle labels it
+    time-driven and does NOT label it action-driven. R4: a field with both
+    causes must not be routed into the single-cause branch, which is entitled
+    to a stronger reading than a dual-dependence field allows. */
+ const controlAddresses=new Set(candidates
+  .filter(c=>/time-driven/.test(c.source||'')&&!/action-driven/.test(c.source||''))
+  .map(c=>c.address));
+ const dualAddresses=new Set(candidates
+  .filter(c=>/time-driven/.test(c.source||'')&&/action-driven/.test(c.source||''))
   .map(c=>c.address));
  const perCandidate=[];
  for(const candidate of candidates){
@@ -258,6 +302,10 @@ function evaluate(label,extra,bytes,entry,candidatesFrom,gatePassed,attestPhase)
    suspectTrain:seriesB.filter(t=>t&&t.phaseControlSuspect).map(t=>t.frames)};
   const outcome=classify(candidate,seriesA,seriesB,paired,gatePassed,
    controlAddresses.has(candidate.address),trustworthy);
+  if(dualAddresses.has(candidate.address))
+   outcome.dualDependenceControl='this candidate is labelled BOTH time-driven and action-driven. '
+    +'A phase-trust flag on it is uncertainty of the instrument at that horizon and never a false '
+    +'causal event.';
   perCandidate.push({address:candidate.address,mask:candidate.mask,
    source:candidate.source,
    seriesA:seriesA.map(t=>({frames:t.frames,confirmed:t.confirmed,
@@ -393,7 +441,7 @@ try{
    durationExplainsNotCadence_neitherAnorB:tally.DURATION_EXPLAINS_NOT_CADENCE||0,
    C_remainingUncertainty:countOf(tally,['PHASE_CONTROL_INSUFFICIENT','CADENCE_UNDECIDABLE','TIME_EXPLAINED',
     'NOT_REPRODUCIBLE_ACROSS_STARTS','TRANSIENT_WITHIN_WINDOW','FINAL_STATE_UNCHANGED',
-    'NO_EVENT_IN_HORIZON','ADDRESS_COVERAGE_UNKNOWN','ADAPTER_DIVERGENCE_UNRESOLVED',
+    'NO_CHANGE_AT_SAMPLED_POINTS','ADDRESS_COVERAGE_UNKNOWN','ADAPTER_DIVERGENCE_UNRESOLVED',
     'NOT_OBSERVED','NOT_COMPARABLE','BUDGET_EXCEEDED'])},
   cost:{emulatedFrames:framesSpent,frameBudget:FRAME_BUDGET,
    budgetExhausted:framesSpent>=FRAME_BUDGET,

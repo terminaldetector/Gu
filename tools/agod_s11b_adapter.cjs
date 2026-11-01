@@ -237,6 +237,37 @@ function probe(driver,options){
    for(const e of perStart)for(const a of (e.neutralMovedAddresses||[]))neutral.add(a);
    return summary.confirmed.filter(e=>neutral.has(e.address)).map(e=>e.address);
   })(),
+  /* R4 / A4. SIX quantities, named and kept apart, because a field can be both
+     time-driven and action-driven at once and collapsing any two of these
+     erases that case. The dual-dependence fixture family exists to make the
+     collapse visible: on a corpus where every field has exactly one cause, the
+     phase-leak indicator looks like proof, and that is a property of the corpus
+     rather than of the indicator. */
+  evidenceQuantities:frozen((()=>{
+   const neutralMoved=new Set(),actionMoved=new Set(),offTrajectory=new Set(),
+         specific=new Set();
+   for(const e of perStart){
+    for(const a of (e.neutralMovedAddresses||[]))neutralMoved.add(a);
+    for(const a of (e.rawAttributed||[]))actionMoved.add(a);
+    for(const a of (e.attributed||[]))offTrajectory.add(a);
+    for(const a of (e.specificToMask||[]))specific.add(a);
+   }
+   const confirmedSet=new Set(summary.confirmed.map(e=>e.address));
+   return {
+    one_neutralArmMovedItself:{count:neutralMoved.size,
+     means:'the address moved with no button held, at this duration. It says the field has a time-driven component; it does NOT say the field has no action-driven component.'},
+    two_actionArmMovedIt:{count:actionMoved.size,
+     means:'the raw difference between the action arm and the neutral arm. Recorded separately and never promoted to causal evidence.'},
+    three_deviatedFromNeutralTrajectory:{count:offTrajectory.size,
+     means:'the value lay off every shifted neutral window, so a phase slip alone does not account for it.'},
+    four_agreedAcrossStarts:{count:confirmedSet.size,
+     means:'present on every usable declared start. Reproducibility, not a cause.'},
+    five_specificToThisMask:{count:specific.size,
+     means:'not also attributed under the alternative mask. Specificity, not a cause.'},
+    six_phaseTrust:{suspectAddresses:[...confirmedSet].filter(a=>neutralMoved.has(a)).length,
+     status:[...confirmedSet].some(a=>neutralMoved.has(a))?'UNCERTAIN':'NOT_FLAGGED',
+     means:'UNCERTAIN means at least one confirmed address also moved in the neutral arm, so this horizon cannot be read cleanly. It is a state of the instrument. It is NOT a verdict that any particular confirmation is false, and a field that is genuinely both time-driven and action-driven lands here while being correctly confirmed.'}};
+  })()),
   framesRun:perStart.reduce((t,e)=>t+(e.framesRun||0),0)});
 }
 

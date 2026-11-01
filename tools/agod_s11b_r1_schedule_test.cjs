@@ -27,6 +27,13 @@ const fs=require('node:fs'),os=require('node:os'),path=require('node:path'),
       {execFileSync}=require('node:child_process');
 const Adapter=require('./agod_s11b_adapter.cjs'),
       jsnes=require('../app/src/main/assets/lab/jsnes.min.js');
+const Provenance=require('./agod_provenance.cjs');
+
+/* R6. The SHA256 of every source file this run depended on, as the bytes
+   were on disk when it started, and which of them differ from HEAD. A commit
+   plus a dirty flag does not say either of those things. */
+const provenance=Provenance.record({tool:'tools/agod_s11b_r1_schedule_test.cjs',
+ sources:['tools/make_agod_test_rom.py']});
 
 const PULSES=[1,4,12,30,60],DELTAS=[-3,-2,-1,0,1,2,3];
 const HOLD=4,RELEASE=8,SHIFT=3,ACTION_MASK=8;
@@ -171,6 +178,7 @@ const oldDefectWouldGive=60*(HOLD+RELEASE-3);          /* 540 */
 const report={type:'gu-agod-s11b-r1-schedule-test',version:1,
  item:'R1 - temporal geometry of the pulse train',
  adapterRevision:Adapter.ADAPTER_REVISION,
+ provenance,
  parameters:{pulses:PULSES,deltas:DELTAS,hold:HOLD,release:RELEASE,
   shiftTolerance:SHIFT,actionMask:ACTION_MASK,
   shiftToleranceUnchanged:'the pre-registered value 3 is not altered by this test'},

@@ -29,6 +29,7 @@ const HOST_REVISION='agod-s11b-host-1';
      onFrames(n)    called with the frame count of every run, for budget metering
      onSnapshot(n)  called with the byte count of every RAM read
      ramBytes       how many bytes of CPU RAM count as the observed state
+     frameBudget    a hard ceiling enforced INSIDE the arms (R6)
 */
 function createHost(options){
  const opts=options||{};
@@ -36,6 +37,13 @@ function createHost(options){
  const hold=Number.isInteger(opts.hold)?opts.hold:4;
  const videoOn=opts.videoChannel!=='off';
  const entry=opts.entry||{bootFrames:60,startPulses:0,gapFrames:0,settleFrames:0};
+ /* R6. The frame budget used to be checked only BETWEEN candidates, so a single
+    candidate could overrun it by a whole series of arms before anyone looked.
+    The host meters every run, so the ceiling belongs here: an arm that would
+    cross it fails by name instead of quietly spending frames that were not
+    granted. The entry procedure is metered too and counts against the budget. */
+ const frameBudget=Number.isInteger(opts.frameBudget)?opts.frameBudget:null;
+ let framesRun=0;
  let lastFrame=null,motionFrames=0,changedFrames=0,previous=null;
  const core=new jsnes.NES({onFrame(buffer){
    if(!videoOn)return;                     /* the defect, reproduced deliberately */
@@ -48,8 +56,13 @@ function createHost(options){
  core.loadROM(opts.bytes);
 
  const press=(mask,count)=>{
+  if(frameBudget!==null&&framesRun+count>frameBudget)
+   throw new Error('FRAME_BUDGET_EXCEEDED: this arm would bring the run to '
+    +(framesRun+count)+' emulated frames, over the declared budget of '+frameBudget
+    +'. The budget is enforced inside the arms, so no arm runs on frames that were not granted.');
   for(let b=0;b<8;b++)(mask&(1<<b)?core.buttonDown:core.buttonUp)(1,b);
   for(let i=0;i<count;i++)core.frame();
+  framesRun+=count;
   if(opts.onFrames)opts.onFrames(count);
  };
  const ram=()=>{if(opts.onSnapshot)opts.onSnapshot(ramBytes);
@@ -69,6 +82,9 @@ function createHost(options){
 
  return {HOST_REVISION,core,driver,press,
   videoChannel:videoOn?'on':'off',
+  framesRun(){return framesRun;},
+  frameBudget,
+  budgetRemaining(){return frameBudget===null?null:frameBudget-framesRun;},
   lastFrame(){return lastFrame;},
   motion(){return {frames:motionFrames,changedFrames};},
   resetMotion(){motionFrames=0;changedFrames=0;previous=null;lastFrame=null;},

@@ -36,6 +36,7 @@ const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypt
       {execFileSync}=require('node:child_process');
 const Phase=require('./agod_phase_evidence.cjs'),
       Host=require('./agod_s11b_host.cjs');
+const Provenance=require('./agod_provenance.cjs');
 
 const S8={idleFrames:180,pulses:14,settleFrames:60};
 /* The entry procedures as REGISTERED in S8/S10B, per cartridge. Contra needs
@@ -52,11 +53,10 @@ const failures=[],rows=[];
 const fail=m=>{failures.push(m);return false;};
 const expect=(condition,message)=>condition?true:fail(message);
 
-const provenance=(()=>{let head='unknown',dirty=null;
- try{head=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
-  dirty=execFileSync('git',['status','--porcelain'],{encoding:'utf8'}).trim().length>0;}catch(_){}
- return {commit:head,workingTreeDirty:dirty,node:process.version,
-  phaseRevision:Phase.PHASE_EVIDENCE_REVISION,hostRevision:Host.HOST_REVISION};})();
+/* R6. The SHA256 of every source file this run depended on, as the bytes
+   were on disk when it started, and which of them differ from HEAD. A commit
+   plus a dirty flag does not say either of those things. */
+const provenance=Provenance.record({tool:'tools/agod_s11b_r2_phase_channel_test.cjs'});
 
 /* ---- 4. a probe that hands over no frame at all ---- */
 const stubProbe=frame=>({
