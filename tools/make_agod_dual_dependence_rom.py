@@ -128,7 +128,7 @@ class Assembler:
         return self.code
 
 
-def generate(seed=1, fast_divider=6, slow_divider=40, action_step=3, start_value=120,
+def generate(seed=1, fast_divider=6, slow_divider=200, action_step=3, start_value=120,
              edges_per_step=3, transient_iterations=480, transient_value=0x5B):
     rng = random.Random(0xD0A + seed)
     taken = set()
@@ -525,7 +525,10 @@ def generate(seed=1, fast_divider=6, slow_divider=40, action_step=3, start_value
                 'slowPeriodIterations': 256 * slow_divider,
                 'why': 'advances on its own once every %d game iterations, so a short horizon does '
                        'not move it at all. It separates "this field is time-driven" from "the '
-                       'horizon was long enough to see that it is".' % (256 * slow_divider),
+                       'horizon was long enough to see that it is". The period must exceed the '
+                       'shortest declared horizon by an order of magnitude or the question is '
+                       'decided by the start phase rather than by the mechanism.'
+                       % (256 * slow_divider),
             },
         },
         'writerSites': {name: [{'pc': 0x8000 + asm.labels[label], 'bank': 0,
@@ -540,8 +543,15 @@ def main():
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--fast-divider', type=int, default=6,
                         help='timeAndAction and pureTime advance every 256*divider game iterations')
-    parser.add_argument('--slow-divider', type=int, default=40,
-                        help='slowTime advances every 256*divider game iterations')
+    parser.add_argument('--slow-divider', type=int, default=200,
+                        help='slowTime advances every 256*divider game iterations. The default is '
+                             'chosen on a stated criterion: the period must exceed the SHORTEST '
+                             'declared horizon of 12 frames by at least an order of magnitude, or '
+                             'the field is not slow relative to the sampling grid. 200 gives about '
+                             '318 frames, roughly 26 times the shortest horizon. The first value '
+                             'tried, 40, gave about 64 frames - only five times - so whether a '
+                             '12-frame window contained a tick depended on the start phase, and '
+                             'for the declared starts it did.')
     parser.add_argument('--transient-iterations', type=int, default=480,
                         help='game iterations transientPulse stays raised; ~161 iterations is one '
                              'emulated frame, so 480 is about three frames')

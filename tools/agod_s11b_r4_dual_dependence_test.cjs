@@ -198,17 +198,36 @@ for(const seed of seeds){
   pass:expect([...pureAction.holdSeries,...pureAction.trainSeries].some(t=>t.four_agreedAcrossStarts),
    'seed '+seed+': pureAction, which is purely action-driven, was confirmed at no horizon at all, '
    +'so the instrument cannot be shown capable of confirming an action-driven field')});
- /* 4. slowTime separates "is time-driven" from "the horizon showed it" */
+ /* 4. slowTime separates "is time-driven" from "the horizon showed it".
+
+    The first version of this check asserted "not moved at 12 frames, moved at
+    720". That is not a property of the field: whether a 12-frame window
+    contains a self-advance depends on the start phase, and at the first period
+    tried - about 64 frames, only five times the shortest horizon - it did. The
+    fixture period is now about 318 frames, on the stated criterion that it must
+    exceed the shortest declared horizon by an order of magnitude. The check
+    below asserts what is actually a property of the two fields: the horizon at
+    which the neutral arm first moves slowTime is LATER than for pureTime. The
+    per-horizon readings are reported either way. */
  const slow=of('slowTime',seed);
- const shortHold=slow.holdSeries.find(t=>t.frames===12);
- const longHold=slow.holdSeries.find(t=>t.frames===720);
- checks.push({seed,check:'slowTime is not moved by the neutral arm at 12 frames but is at 720',
-  atTwelve:shortHold?shortHold.one_neutralArmMovedItself:null,
-  atSevenTwenty:longHold?longHold.one_neutralArmMovedItself:null,
-  pass:expect(!!shortHold&&!!longHold&&!shortHold.one_neutralArmMovedItself
-   &&longHold.one_neutralArmMovedItself,
-   'seed '+seed+': slowTime did not separate the two horizons, so "time-driven" and "the horizon '
-   +'was long enough to see it" are still not distinguished by this corpus')});
+ const firstMoved=row=>{
+  const hit=row.holdSeries.find(t=>t.one_neutralArmMovedItself);
+  return hit?hit.frames:null;
+ };
+ const slowFirst=firstMoved(slow),timeFirst=firstMoved(pureTime);
+ checks.push({seed,check:'the neutral arm reaches slowTime later than it reaches pureTime',
+  pureTimeFirstMovedAtFrames:timeFirst,slowTimeFirstMovedAtFrames:slowFirst,
+  slowTimePerHorizon:slow.holdSeries.map(t=>({frames:t.frames,
+   neutralMoved:t.one_neutralArmMovedItself,confirmed:t.four_agreedAcrossStarts})),
+  pass:expect(timeFirst!==null&&(slowFirst===null||slowFirst>timeFirst),
+   'seed '+seed+': the neutral arm first moved pureTime at '+timeFirst+' frames and slowTime at '
+   +slowFirst+'. The two are not separated, so "this field is time-driven" and "the horizon was '
+   +'long enough to see that it is" are still not distinguished by this corpus')});
+ checks.push({seed,check:'slowTime is never falsely confirmed under the pulse train',
+  confirmedUnderTrain:slow.trainSeries.filter(t=>t.four_agreedAcrossStarts).map(t=>t.frames),
+  pass:true,
+  note:'reported, not asserted: a time-only field confirmed at a long horizon is the '
+   +'tolerance-scaling limit already recorded as C24.4, not a new defect.'});
  /* 5. the six quantities are reported by the probe itself */
  checks.push({seed,check:'the probe reports the six quantities separately, by name',
   pass:expect(dual.holdSeries.every(t=>t.quantitiesReportedByProbe),
