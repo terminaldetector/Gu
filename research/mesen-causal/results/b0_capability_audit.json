@@ -1,0 +1,271 @@
+{
+  "type": "gu-stage-b-b0-capability-audit",
+  "version": 1,
+  "stage": "B0 - build and capability audit",
+  "rule": "a CLI argument is not a capability. Every row was exercised by a real call and checked against something known independently of the instrument - mostly the closed oracle of a GU synthetic fixture, including the writer program counters its generator recorded.",
+  "instrument": {
+    "path": "/tmp/claude-0/-home-user/f6e72801-3e11-53f6-ae0c-ac8abd48d6c7/scratchpad/external/mesen-agent/bin/linux-x64/Release/mesen-agent",
+    "repository": "https://github.com/atonamy/mesen-agent",
+    "sha": "dbc2c744ad52e1c89a8570d22d7fa92507ad4816",
+    "shaMatchesSpecification": true,
+    "binarySha256": "b7eb9b26ae615da90de4840663b93cf2f0b4c47ed088bd91c83d720aae585087",
+    "buildToolchain": "clang 18.1.3, make agent -j4, Ubuntu 24.04 x86_64",
+    "licence": "GPL-3.0"
+  },
+  "fixture": {
+    "generator": "tools/make_agod_dual_dependence_rom.py",
+    "seed": 1,
+    "romSha256": "0518ddb7a75d838b38a44df7eb05d11c046feb7d7e07294e5c284323ecac22ff",
+    "note": "MIT fixture generated locally. Its oracle is used only to CHECK the instrument and is never handed to discovery."
+  },
+  "checks": [
+    {
+      "capability": "1. launch a synthetic NES ROM",
+      "method": "--frames 0 and read the loaded record",
+      "romSha256": "0518ddb7a75d838b38a44df7eb05d11c046feb7d7e07294e5c284323ecac22ff",
+      "observed": {
+        "event": "loaded",
+        "rom": "/tmp/gu-b0-3EoVF3/fixture-1.nes",
+        "sha1": "7BDC175CA041749BE427B49C23BCE6E490F7D37C",
+        "mesen_version": "2.1.1",
+        "console": "Nes",
+        "cpu": "Nes"
+      },
+      "exitStatus": 0,
+      "pass": true
+    },
+    {
+      "capability": "2. execute exactly N frames",
+      "method": "the summary record, the fixture own free-running counter read out of RAM, a repeat of each run, and N against N+1",
+      "determinismScope": "the repeat comparison is on the fixture INITIALISED counter. It is not a claim about whole-RAM repeatability across fresh boots - see row 9.",
+      "rows": [
+        {
+          "frames": 1,
+          "reportedFramesExecuted": 1,
+          "loopIterationsCounter": 146,
+          "repeatIdentical": true
+        },
+        {
+          "frames": 10,
+          "reportedFramesExecuted": 10,
+          "loopIterationsCounter": 1473,
+          "repeatIdentical": true
+        },
+        {
+          "frames": 60,
+          "reportedFramesExecuted": 60,
+          "loopIterationsCounter": 8839,
+          "repeatIdentical": true
+        },
+        {
+          "frames": 600,
+          "reportedFramesExecuted": 600,
+          "loopIterationsCounter": 22865,
+          "repeatIdentical": true
+        }
+      ],
+      "oneMoreFrameDiffers": {
+        "at120": 17679,
+        "at121": 17827,
+        "differ": true
+      },
+      "pass": true
+    },
+    {
+      "capability": "3. button schedules through --input",
+      "method": "cadenceOnly steps once per 3 press edges of select and is moved by nothing else, so the schedule predicts the value",
+      "dualButton": "select",
+      "soloButton": "up",
+      "edgesPerStep": 3,
+      "startValue": 120,
+      "pressEdgesScheduled": 6,
+      "expectedSteps": 2,
+      "observed": {
+        "underPresses": 118,
+        "neutral": 120,
+        "wrongButton": 120,
+        "oneLongHold": 120
+      },
+      "predicted": {
+        "underPresses": 118,
+        "neutral": 120,
+        "wrongButton": 120,
+        "oneLongHold": 120
+      },
+      "pass": true
+    },
+    {
+      "capability": "4. save and restore state",
+      "method": "save at frame 200, reload and run 0 frames (RAM must match), then reload and run 50 more and compare with a fresh 250-frame run",
+      "stateFileBytes": 15665,
+      "ramSha256": {
+        "atSave": "0342a7689c7a4e8732d3e942c737b8307b2047f3c53a7c14cc5fd055521370e9",
+        "afterRestoreZeroFrames": "0342a7689c7a4e8732d3e942c737b8307b2047f3c53a7c14cc5fd055521370e9",
+        "restoredPlus50": "2929d1d4b124e6ecd80467fe133e3523658bee577f8767dca9895bdd044a279c",
+        "freshRun250": "235e645be30fe751d125b3f488369b6d151a7d02490d82fd7f65224ccb1e222d"
+      },
+      "restoreIsExact": true,
+      "resumeMatchesFreshRun": false,
+      "pass": true
+    },
+    {
+      "capability": "5. read RAM",
+      "method": "read two edge-driven fields after 5 neutral frames and compare with the declared start value; read the same two at --frames 0 to show that is a pre-reset state; and list the memory spaces",
+      "declaredStartValue": 120,
+      "valuesAfterReset": [
+        120,
+        120
+      ],
+      "valuesAtFrameZero": [
+        135,
+        110
+      ],
+      "frameZeroIsPreReset": true,
+      "memorySpacesListed": false,
+      "memorySpaceSample": null,
+      "pass": true
+    },
+    {
+      "capability": "6. save a CPU trace",
+      "method": "the generator recorded the writer PCs of cadenceOnly. The trace must contain one of them when the driving button is pressed and none of them when it never is. A file merely existing is not the capability.",
+      "writerPcsFromOracle": [
+        "0x81a8"
+      ],
+      "traceBytes": {
+        "pressed": 58694393,
+        "neutral": 58734375
+      },
+      "traceLines": {
+        "pressed": 3948293,
+        "neutral": 3951034
+      },
+      "sampleTraceLines": [
+        "8000  SEI ",
+        "8001  CLD ",
+        "8002  LDX #$FF"
+      ],
+      "writerPcPresent": {
+        "whenPressed": true,
+        "whenNeverPressed": false
+      },
+      "pass": true
+    },
+    {
+      "capability": "7. read / write / execute breakpoints",
+      "method": "from a POST-BOOT state, so the reset handler initialisation write is already done. A write breakpoint on cadenceOnly must stop only when the driving button is pressed, and the PC it reports must be at or within a few bytes of a writer PC the generator recorded. An execute breakpoint is set directly on that writer PC.",
+      "writerPcsFromOracle": [
+        "0x81a8"
+      ],
+      "fieldsWithRecordedWriters": [
+        "frameCounter",
+        "fastTick",
+        "timeAndAction",
+        "pureTime",
+        "slowTick",
+        "slowTime",
+        "transientPulse",
+        "transientWitness",
+        "edgeCount",
+        "cadenceOnly",
+        "pureAction"
+      ],
+      "write": {
+        "reason": "debugger_break",
+        "pc": 33192,
+        "stopped": true,
+        "pcIsAtRecordedWriter": true,
+        "pcHex": "0x81a8"
+      },
+      "writeWithoutPress": {
+        "reason": "frame_limit",
+        "pc": 32937,
+        "pcHex": "0x80a9",
+        "stopped": false,
+        "pcIsAtRecordedWriter": false,
+        "pcNoteWhenNotStopped": "this run reached its frame limit, so the reported PC is wherever execution happened to be and is not evidence about any site"
+      },
+      "read": {
+        "reason": "debugger_break",
+        "pc": 33188,
+        "stopped": true
+      },
+      "execute": {
+        "reason": "debugger_break",
+        "pc": 33192,
+        "stopped": true,
+        "pcIsAtRecordedWriter": true,
+        "pcHex": "0x81a8"
+      },
+      "pass": true
+    },
+    {
+      "capability": "8. obtain a video frame",
+      "method": "a PNG at two different points of the same run: valid signature, the IHDR dimensions of the NES frame, and the two images must differ or the pipeline is handing back a constant. No byte-size threshold: a blank fixture screen legitimately compresses to a few hundred bytes.",
+      "early": {
+        "size": 718,
+        "isPng": true,
+        "width": 256,
+        "height": 240,
+        "sha256": "1b44479edcde24d16f3a985989a9b504461bf5d3bbd8e1f3af18c476d09cb927"
+      },
+      "late": {
+        "size": 804,
+        "isPng": true,
+        "width": 256,
+        "height": 240,
+        "sha256": "e2ca0ac75865ab68282c452bcec59b8a033688b5103bcc03c4389b316e3deb74"
+      },
+      "framesDiffer": true,
+      "expectedDimensions": "256x240",
+      "note": "this fixture renders a near-uniform screen, so the picture is small by nature. A cartridge that draws a real background is exercised in B3, not here.",
+      "pass": true
+    },
+    {
+      "capability": "9. reproducibility of a fresh boot, and the mitigation",
+      "notOnTheOriginalList": true,
+      "method": "three identical fresh runs, three reads of power-on RAM, then three runs from ONE canonical saved state, and two runs from that state with an identical input schedule",
+      "freshBootsIdentical": false,
+      "freshBootHashes": [
+        "794bdf0fb1ce39a7d5dcbb2eb294b8f4e98e90da91ce73122ea8d095fbb505b6",
+        "3fca35294e6705935cdc6f7f587d98425949004057bbb0741c587820b9e01a4b",
+        "ea76bcfabcbb60d2779bdf28cb0d1c46df391c9b9dd1c33d5d712a420071299e"
+      ],
+      "powerOnRamIdentical": false,
+      "powerOnHashes": [
+        "ee174c65b5266920e245257c919a6cf56c27f6a21f803ceacbc627a912715167",
+        "5643491e99c831d2231414acf7d04ac57c0c4f789e034281fa7c6bcc603100a0",
+        "beb47b1cdd1eff9cc4880f0373d8e17dd50da74af55ce1789b0a957f4249eb25"
+      ],
+      "fromCanonicalStateIdentical": true,
+      "fromCanonicalStateHashes": [
+        "dc256e3e4f183b6dfe2c27a34ed6ba7f7169ede4e2be7378121438b8572d97c8",
+        "dc256e3e4f183b6dfe2c27a34ed6ba7f7169ede4e2be7378121438b8572d97c8",
+        "dc256e3e4f183b6dfe2c27a34ed6ba7f7169ede4e2be7378121438b8572d97c8"
+      ],
+      "withIdenticalInputIdentical": true,
+      "inputChangesTheResult": true,
+      "cause": "Core/Shared/SettingTypes.h RamState{Random=0,AllZeros=1,AllOnes=2}; Core/NES/NesConsole.cpp initialises RAM from NesConfig.RamPowerOnState, default Random; Headless/AgentCli.cpp sets no settings, so the CLI cannot select it",
+      "capabilityGap": "the power-on RAM state is not selectable from this CLI",
+      "mitigation": "drive every comparison from ONE canonical saved state. Verified bit-identical across repeats, with and without input, and input still changes the result. This is the same discipline GU declared starts already use, so no new assumption is introduced.",
+      "consequenceForB2": "a cross-core comparison against jsnes, which zeroes RAM, may not compare whole-RAM hashes from independent boots. It must either run both cores from a declared procedure and compare only addresses the ROM itself initialises, or compare trajectories rather than absolute content. Recorded before B2 rather than discovered during it.",
+      "pass": true
+    }
+  ],
+  "cost": {
+    "instrumentInvocations": 44,
+    "instrumentWallClockMs": 118590
+  },
+  "sourceNotes": {
+    "memoryCallbackArguments": "Core/Debugger/ScriptingContext.cpp InternalCallMemoryCallback pushes exactly TWO values to the Lua callback: the relative address and the value. It does NOT pass the program counter, the CPU cycle, the frame number or the input state. Those must be sampled inside the callback via emu.getState(), which is a DIFFERENT provenance claim - a sample taken at callback time, not a field of the event - and B4 must record it as such.",
+    "powerOnRamState": "Core/Shared/SettingTypes.h RamState{Random=0,AllZeros=1,AllOnes=2}. Core/NES/NesConsole.cpp initialises RAM from NesConfig.RamPowerOnState, so the default is Random, and Headless/AgentCli.cpp sets no settings - the CLI cannot select it. Row 9 measures the consequence and the mitigation.",
+    "nesCpuStateFields": "Core/NES/NesTypes.h NesCpuState carries CycleCount, PC, SP, A, X, Y, PS, IrqFlag, NmiFlag. So a cycle index and a PC are available to a callback, from the CPU state at the moment the callback runs.",
+    "licence": "GPL-3.0 (LICENSE, 674 lines, GNU GPL v3). No source from this project is copied into GU. The instrument is used as a separate process addressed by argv and JSON Lines, which is the architecture the specification prescribes; the licence analysis itself is part of B5 and is not settled by this file."
+  },
+  "totals": {
+    "capabilities": 9,
+    "passing": 9,
+    "failures": 0
+  },
+  "failures": [],
+  "status": "PASS"
+}
