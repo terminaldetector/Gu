@@ -3,6 +3,90 @@
   "version": 1,
   "item": "R1 - temporal geometry of the pulse train",
   "adapterRevision": "agod-s11b-adapter-1",
+  "provenance": {
+    "provenanceRevision": "agod-provenance-1",
+    "recordedAt": "2026-11-01T08:13:20.848Z",
+    "node": "v22.22.0",
+    "platform": "linux",
+    "arch": "x64",
+    "git": {
+      "commit": "ac5d4d6605903bfa662779dde11c5502179d14e6",
+      "branch": "research/agod-neural-e0-e1",
+      "commitSubject": "S11B-R / R4, R5, R6: the indicator was not proof, the label was not a measurement, and the provenance was not a provenance",
+      "commitDate": "2026-11-01T08:13:11+00:00",
+      "workingTreeDirty": false,
+      "modifiedFileCount": 0,
+      "modifiedFiles": []
+    },
+    "sourceFiles": [
+      {
+        "path": "tools/agod_s11b_r1_schedule_test.cjs",
+        "sha256": "bec10a1bd6af8735d8cac41e0bb697afd18df7d076388f413c95e212aedd15d0",
+        "bytes": 10594,
+        "gitBlobAtHead": "7301bf5bdb3f26de25acda98979daa3869425fd4",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_s11b_adapter.cjs",
+        "sha256": "346dcce9c1723568bdaf8f4872b3a99a9f378e1215f7ae7792fe30d854c35402",
+        "bytes": 17779,
+        "gitBlobAtHead": "1e7ded631045ef6e8937e4e7ee55212256d1603d",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_s11b_host.cjs",
+        "sha256": "5f3ebfd3e43ab10d3dced4bea420960bf7f29df54556ff116a2865442573e030",
+        "bytes": 5091,
+        "gitBlobAtHead": "bc7580cca3203fd82f5f7756d7cbc08803c26346",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_phase_evidence.cjs",
+        "sha256": "4abbf815aef125fd80508fa2a06c03319e6cdb6f16ba1d505ec2ea609aa92cb9",
+        "bytes": 9397,
+        "gitBlobAtHead": "57250d96b1049f6f0ff79d9140b4b333843a7d66",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_provenance.cjs",
+        "sha256": "335022648aa47d4002801b72f31a56045719d5c8eb2a4f9b5742246f3c3681ec",
+        "bytes": 4892,
+        "gitBlobAtHead": "45220d396c26a6cb426d7542e679086d24265aff",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "app/src/main/assets/lab/agod-causal.js",
+        "sha256": "2b81bac1bcccf9bada5b24d6cb24ec8e1ef30a7b72f828e47a4df139faba2270",
+        "bytes": 11240,
+        "gitBlobAtHead": "c4817a719f2a4b637056e3c474082a6ad4ff1b23",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/make_agod_test_rom.py",
+        "sha256": "7c61d7b32dd533ebc646259ae63533aa7e73b6052c0e230927c053be6fb499fc",
+        "bytes": 12434,
+        "gitBlobAtHead": "eb45fe20da1232f0b7e88b8864a60dbf9f5c6db6",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      }
+    ],
+    "sourceFilesDifferingFromCommit": [],
+    "sourceSetHash": "6d35c31ea7599ea11d7b3e129f209c928da52d1239528201ceb8ea265dd49e06",
+    "reproducibilityNote": "every declared source file matched its committed version at run time"
+  },
   "parameters": {
     "pulses": [
       1,

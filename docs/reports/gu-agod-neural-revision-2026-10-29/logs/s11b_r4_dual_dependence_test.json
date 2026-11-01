@@ -1,0 +1,2038 @@
+{
+  "type": "gu-agod-s11b-r4-dual-dependence-test",
+  "version": 1,
+  "item": "R4 / A4 - a field that is both time-driven and action-driven",
+  "classification": "INSTRUMENT ATTESTATION, reported apart from the pre-registered corpus. Nothing here enters A, B or C, and nothing here is evidence about any game.",
+  "fixtureFamily": "dual-dependence (tools/make_agod_dual_dependence_rom.py), the fifth family",
+  "parameters": {
+    "holdHorizons": [
+      12,
+      48,
+      144,
+      360,
+      720
+    ],
+    "pulses": [
+      1,
+      4,
+      12,
+      30,
+      60
+    ],
+    "hold": 4,
+    "release": 8,
+    "shiftTolerance": 3,
+    "startsPerTrial": 3,
+    "sampleEveryFrames": 12,
+    "shiftToleranceUnchanged": "the pre-registered value 3 is not altered"
+  },
+  "rule": "the phase-leak indicator is a state of the instrument. UNCERTAIN means this horizon cannot be read cleanly; it never means a particular confirmation is false. A field with two causes lands there while being correctly confirmed.",
+  "provenance": {
+    "provenanceRevision": "agod-provenance-1",
+    "recordedAt": "2026-11-01T08:31:19.310Z",
+    "node": "v22.22.0",
+    "platform": "linux",
+    "arch": "x64",
+    "git": {
+      "commit": "093f9c7b76d38a280ed6ef2e0ddf6a63206647d5",
+      "branch": "research/agod-neural-e0-e1",
+      "commitSubject": "S11B-R / R4: slowTime's period was five times the shortest horizon, not an order of magnitude",
+      "commitDate": "2026-11-01T08:31:19+00:00",
+      "workingTreeDirty": false,
+      "modifiedFileCount": 0,
+      "modifiedFiles": []
+    },
+    "sourceFiles": [
+      {
+        "path": "tools/agod_s11b_r4_dual_dependence_test.cjs",
+        "sha256": "edf7be8c4b879056e8e469c3970ab97e26510f8bec6e94ef8986c1883b16131a",
+        "bytes": 17994,
+        "gitBlobAtHead": "1386d60f256fe8d88a3e446aff87488951ee2db3",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_s11b_adapter.cjs",
+        "sha256": "346dcce9c1723568bdaf8f4872b3a99a9f378e1215f7ae7792fe30d854c35402",
+        "bytes": 17779,
+        "gitBlobAtHead": "1e7ded631045ef6e8937e4e7ee55212256d1603d",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_s11b_host.cjs",
+        "sha256": "5f3ebfd3e43ab10d3dced4bea420960bf7f29df54556ff116a2865442573e030",
+        "bytes": 5091,
+        "gitBlobAtHead": "bc7580cca3203fd82f5f7756d7cbc08803c26346",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_phase_evidence.cjs",
+        "sha256": "4abbf815aef125fd80508fa2a06c03319e6cdb6f16ba1d505ec2ea609aa92cb9",
+        "bytes": 9397,
+        "gitBlobAtHead": "57250d96b1049f6f0ff79d9140b4b333843a7d66",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_provenance.cjs",
+        "sha256": "335022648aa47d4002801b72f31a56045719d5c8eb2a4f9b5742246f3c3681ec",
+        "bytes": 4892,
+        "gitBlobAtHead": "45220d396c26a6cb426d7542e679086d24265aff",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "app/src/main/assets/lab/agod-causal.js",
+        "sha256": "2b81bac1bcccf9bada5b24d6cb24ec8e1ef30a7b72f828e47a4df139faba2270",
+        "bytes": 11240,
+        "gitBlobAtHead": "c4817a719f2a4b637056e3c474082a6ad4ff1b23",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/make_agod_dual_dependence_rom.py",
+        "sha256": "de0aaa21e77d2d48ad13a8d59f6879dbdf4d2d59f6c333fdc7451cdbb0f33c5d",
+        "bytes": 30106,
+        "gitBlobAtHead": "3a53c6af0fe441ed6f1ed092780dd261149bcaef",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      }
+    ],
+    "sourceFilesDifferingFromCommit": [],
+    "sourceSetHash": "8f9b617e5103e20ef538e3092ffabcc9efd660571b72eb6b0171be4d27e69a41",
+    "reproducibilityNote": "every declared source file matched its committed version at run time"
+  },
+  "rows": [
+    {
+      "seed": 1,
+      "field": "timeAndAction",
+      "address": 225,
+      "mask": 4,
+      "alternativeMask": 16,
+      "groundTruth": {
+        "timeDriven": true,
+        "actionDriven": true,
+        "neutralArmMoves": true,
+        "requiresMultipleEdges": null
+      },
+      "holdSeries": [
+        {
+          "frames": 12,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 4,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 48,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 4,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 144,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 6,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 360,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 720,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        }
+      ],
+      "trainSeries": [
+        {
+          "pulses": 1,
+          "frames": 12,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 4
+        },
+        {
+          "pulses": 4,
+          "frames": 48,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 4
+        },
+        {
+          "pulses": 12,
+          "frames": 144,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 7
+        },
+        {
+          "pulses": 30,
+          "frames": 360,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 8
+        },
+        {
+          "pulses": 60,
+          "frames": 720,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 7
+        }
+      ]
+    },
+    {
+      "seed": 1,
+      "field": "pureTime",
+      "address": 244,
+      "mask": 4,
+      "alternativeMask": 16,
+      "groundTruth": {
+        "timeDriven": true,
+        "actionDriven": false,
+        "neutralArmMoves": true,
+        "requiresMultipleEdges": null
+      },
+      "holdSeries": [
+        {
+          "frames": 12,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 48,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 144,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 6,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 360,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 720,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        }
+      ],
+      "trainSeries": [
+        {
+          "pulses": 1,
+          "frames": 12,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4
+        },
+        {
+          "pulses": 4,
+          "frames": 48,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4
+        },
+        {
+          "pulses": 12,
+          "frames": 144,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7
+        },
+        {
+          "pulses": 30,
+          "frames": 360,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 8
+        },
+        {
+          "pulses": 60,
+          "frames": 720,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 7
+        }
+      ]
+    },
+    {
+      "seed": 1,
+      "field": "pureAction",
+      "address": 216,
+      "mask": 16,
+      "alternativeMask": 4,
+      "groundTruth": {
+        "timeDriven": false,
+        "actionDriven": true,
+        "neutralArmMoves": false,
+        "requiresMultipleEdges": null
+      },
+      "holdSeries": [
+        {
+          "frames": 12,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 3,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 48,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 3,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 144,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 6,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 360,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 5,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 720,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        }
+      ],
+      "trainSeries": [
+        {
+          "pulses": 1,
+          "frames": 12,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 3
+        },
+        {
+          "pulses": 4,
+          "frames": 48,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 3
+        },
+        {
+          "pulses": 12,
+          "frames": 144,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 3
+        },
+        {
+          "pulses": 30,
+          "frames": 360,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 3
+        },
+        {
+          "pulses": 60,
+          "frames": 720,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 5
+        }
+      ]
+    },
+    {
+      "seed": 1,
+      "field": "slowTime",
+      "address": 213,
+      "mask": 4,
+      "alternativeMask": 16,
+      "groundTruth": {
+        "timeDriven": true,
+        "actionDriven": false,
+        "neutralArmMoves": true,
+        "requiresMultipleEdges": null
+      },
+      "holdSeries": [
+        {
+          "frames": 12,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 48,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 144,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 6,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 360,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 720,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        }
+      ],
+      "trainSeries": [
+        {
+          "pulses": 1,
+          "frames": 12,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4
+        },
+        {
+          "pulses": 4,
+          "frames": 48,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4
+        },
+        {
+          "pulses": 12,
+          "frames": 144,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7
+        },
+        {
+          "pulses": 30,
+          "frames": 360,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 8
+        },
+        {
+          "pulses": 60,
+          "frames": 720,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7
+        }
+      ]
+    },
+    {
+      "seed": 1,
+      "field": "cadenceOnly",
+      "address": 214,
+      "mask": 4,
+      "alternativeMask": 16,
+      "groundTruth": {
+        "timeDriven": false,
+        "actionDriven": true,
+        "neutralArmMoves": false,
+        "movesUnderContinuousHold": false,
+        "requiresMultipleEdges": 3
+      },
+      "holdSeries": [
+        {
+          "frames": 12,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 48,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 144,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 6,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 360,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 720,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        }
+      ],
+      "trainSeries": [
+        {
+          "pulses": 1,
+          "frames": 12,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4
+        },
+        {
+          "pulses": 4,
+          "frames": 48,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4
+        },
+        {
+          "pulses": 12,
+          "frames": 144,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7
+        },
+        {
+          "pulses": 30,
+          "frames": 360,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 8
+        },
+        {
+          "pulses": 60,
+          "frames": 720,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7
+        }
+      ]
+    },
+    {
+      "seed": 2,
+      "field": "timeAndAction",
+      "address": 228,
+      "mask": 128,
+      "alternativeMask": 16,
+      "groundTruth": {
+        "timeDriven": true,
+        "actionDriven": true,
+        "neutralArmMoves": true,
+        "requiresMultipleEdges": null
+      },
+      "holdSeries": [
+        {
+          "frames": 12,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 4,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 48,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 4,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 144,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 6,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 360,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 720,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        }
+      ],
+      "trainSeries": [
+        {
+          "pulses": 1,
+          "frames": 12,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 4
+        },
+        {
+          "pulses": 4,
+          "frames": 48,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 4
+        },
+        {
+          "pulses": 12,
+          "frames": 144,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 7
+        },
+        {
+          "pulses": 30,
+          "frames": 360,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 8
+        },
+        {
+          "pulses": 60,
+          "frames": 720,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 7
+        }
+      ]
+    },
+    {
+      "seed": 2,
+      "field": "pureTime",
+      "address": 208,
+      "mask": 128,
+      "alternativeMask": 16,
+      "groundTruth": {
+        "timeDriven": true,
+        "actionDriven": false,
+        "neutralArmMoves": true,
+        "requiresMultipleEdges": null
+      },
+      "holdSeries": [
+        {
+          "frames": 12,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 48,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 144,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 6,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 360,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 720,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        }
+      ],
+      "trainSeries": [
+        {
+          "pulses": 1,
+          "frames": 12,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4
+        },
+        {
+          "pulses": 4,
+          "frames": 48,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4
+        },
+        {
+          "pulses": 12,
+          "frames": 144,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7
+        },
+        {
+          "pulses": 30,
+          "frames": 360,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 8
+        },
+        {
+          "pulses": 60,
+          "frames": 720,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "UNCERTAIN",
+          "bothTimeAndActionEvidenced": true,
+          "confirmedThatNeutralAlsoMoved": 7
+        }
+      ]
+    },
+    {
+      "seed": 2,
+      "field": "pureAction",
+      "address": 242,
+      "mask": 16,
+      "alternativeMask": 128,
+      "groundTruth": {
+        "timeDriven": false,
+        "actionDriven": true,
+        "neutralArmMoves": false,
+        "requiresMultipleEdges": null
+      },
+      "holdSeries": [
+        {
+          "frames": 12,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 3,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 48,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 3,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 144,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 6,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 360,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 5,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 720,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        }
+      ],
+      "trainSeries": [
+        {
+          "pulses": 1,
+          "frames": 12,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 3
+        },
+        {
+          "pulses": 4,
+          "frames": 48,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 3
+        },
+        {
+          "pulses": 12,
+          "frames": 144,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 3
+        },
+        {
+          "pulses": 30,
+          "frames": 360,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 3
+        },
+        {
+          "pulses": 60,
+          "frames": 720,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 5
+        }
+      ]
+    },
+    {
+      "seed": 2,
+      "field": "slowTime",
+      "address": 229,
+      "mask": 128,
+      "alternativeMask": 16,
+      "groundTruth": {
+        "timeDriven": true,
+        "actionDriven": false,
+        "neutralArmMoves": true,
+        "requiresMultipleEdges": null
+      },
+      "holdSeries": [
+        {
+          "frames": 12,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 48,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 144,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 6,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 360,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 720,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        }
+      ],
+      "trainSeries": [
+        {
+          "pulses": 1,
+          "frames": 12,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4
+        },
+        {
+          "pulses": 4,
+          "frames": 48,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4
+        },
+        {
+          "pulses": 12,
+          "frames": 144,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7
+        },
+        {
+          "pulses": 30,
+          "frames": 360,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 8
+        },
+        {
+          "pulses": 60,
+          "frames": 720,
+          "one_neutralArmMovedItself": true,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7
+        }
+      ]
+    },
+    {
+      "seed": 2,
+      "field": "cadenceOnly",
+      "address": 219,
+      "mask": 128,
+      "alternativeMask": 16,
+      "groundTruth": {
+        "timeDriven": false,
+        "actionDriven": true,
+        "neutralArmMoves": false,
+        "movesUnderContinuousHold": false,
+        "requiresMultipleEdges": 3
+      },
+      "holdSeries": [
+        {
+          "frames": 12,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 48,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 144,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 6,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 360,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        },
+        {
+          "frames": 720,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7,
+          "quantitiesReportedByProbe": true
+        }
+      ],
+      "trainSeries": [
+        {
+          "pulses": 1,
+          "frames": 12,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": false,
+          "three_deviatedFromNeutralTrajectory": false,
+          "four_agreedAcrossStarts": false,
+          "five_specificToThisMask": false,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4
+        },
+        {
+          "pulses": 4,
+          "frames": 48,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 4
+        },
+        {
+          "pulses": 12,
+          "frames": 144,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7
+        },
+        {
+          "pulses": 30,
+          "frames": 360,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 8
+        },
+        {
+          "pulses": 60,
+          "frames": 720,
+          "one_neutralArmMovedItself": false,
+          "two_actionArmMovedIt": true,
+          "three_deviatedFromNeutralTrajectory": true,
+          "four_agreedAcrossStarts": true,
+          "five_specificToThisMask": true,
+          "six_phaseTrust": "UNCERTAIN",
+          "six_phaseTrustScope": "HORIZON: computed over every confirmed address in this probe, not over this address alone",
+          "six_phaseTrustForThisAddress": "NOT_FLAGGED",
+          "bothTimeAndActionEvidenced": false,
+          "confirmedThatNeutralAlsoMoved": 7
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "seed": 1,
+      "check": "timeAndAction is confirmed AND the neutral arm moves it, at the same horizon",
+      "horizonsWhereBoth": [
+        12,
+        48,
+        144,
+        360,
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "pass": true
+    },
+    {
+      "seed": 1,
+      "check": "the phase-trust status at those horizons is UNCERTAIN, not a false-event verdict",
+      "statuses": [
+        "UNCERTAIN"
+      ],
+      "pass": true
+    },
+    {
+      "seed": 1,
+      "check": "pureTime is moved by the neutral arm",
+      "horizons": [
+        12,
+        48,
+        144,
+        360,
+        720,
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "pass": true
+    },
+    {
+      "seed": 1,
+      "check": "pureAction is never moved by the neutral arm",
+      "leakedAtHorizons": [],
+      "pass": true
+    },
+    {
+      "seed": 1,
+      "check": "pureAction is confirmed under its own mask",
+      "horizons": [
+        12,
+        48,
+        144,
+        360,
+        720,
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "pass": true
+    },
+    {
+      "seed": 1,
+      "check": "the neutral arm reaches slowTime later than it reaches pureTime",
+      "pureTimeFirstMovedAtFrames": 12,
+      "slowTimeFirstMovedAtFrames": 360,
+      "slowTimePerHorizon": [
+        {
+          "frames": 12,
+          "neutralMoved": false,
+          "confirmed": false
+        },
+        {
+          "frames": 48,
+          "neutralMoved": false,
+          "confirmed": false
+        },
+        {
+          "frames": 144,
+          "neutralMoved": false,
+          "confirmed": false
+        },
+        {
+          "frames": 360,
+          "neutralMoved": true,
+          "confirmed": false
+        },
+        {
+          "frames": 720,
+          "neutralMoved": true,
+          "confirmed": false
+        }
+      ],
+      "pass": true
+    },
+    {
+      "seed": 1,
+      "check": "slowTime is never falsely confirmed under the pulse train",
+      "confirmedUnderTrain": [],
+      "pass": true,
+      "note": "reported, not asserted: a time-only field confirmed at a long horizon is the tolerance-scaling limit already recorded as C24.4, not a new defect."
+    },
+    {
+      "seed": 1,
+      "check": "the probe reports the six quantities separately, by name",
+      "pass": true
+    },
+    {
+      "seed": 1,
+      "check": "the phase-trust flag is reported at horizon level AND per address, separately",
+      "pureActionHorizonFlag": [
+        "UNCERTAIN"
+      ],
+      "pureActionAddressFlag": [
+        "NOT_FLAGGED"
+      ],
+      "pass": true
+    },
+    {
+      "seed": 1,
+      "check": "cadence positive control: cadenceOnly is confirmed under the train and not under the duration-matched hold",
+      "confirmedUnderTrain": [
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedUnderHold": [],
+      "confirmedUnderTrainOnly": [
+        48,
+        144,
+        360,
+        720
+      ],
+      "instrumentCanSeeCadence": true,
+      "groundTruth": "a continuous hold is ONE press edge and cannot move this field at any duration; a train of 3 or more pulses can",
+      "pass": true,
+      "note": "reported, not asserted. A null result here is a measured limit of the instrument and is published as one; forcing it to be non-zero is exactly what this programme forbids."
+    },
+    {
+      "seed": 1,
+      "check": "cadenceOnly is NOT confirmed under any continuous hold",
+      "confirmedUnderHold": [],
+      "pass": true
+    },
+    {
+      "seed": 1,
+      "check": "why timeAndAction is not the cadence control: it is confirmed under both structures",
+      "confirmedUnderTrain": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedUnderHold": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedUnderTrainOnly": [],
+      "pass": true,
+      "note": "its action half fires on every edge, so the single edge of a continuous hold already moves it. Recorded so the empty train-only set is not mistaken for a statement about cadence."
+    },
+    {
+      "seed": 2,
+      "check": "timeAndAction is confirmed AND the neutral arm moves it, at the same horizon",
+      "horizonsWhereBoth": [
+        12,
+        48,
+        144,
+        360,
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "pass": true
+    },
+    {
+      "seed": 2,
+      "check": "the phase-trust status at those horizons is UNCERTAIN, not a false-event verdict",
+      "statuses": [
+        "UNCERTAIN"
+      ],
+      "pass": true
+    },
+    {
+      "seed": 2,
+      "check": "pureTime is moved by the neutral arm",
+      "horizons": [
+        12,
+        48,
+        144,
+        360,
+        720,
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "pass": true
+    },
+    {
+      "seed": 2,
+      "check": "pureAction is never moved by the neutral arm",
+      "leakedAtHorizons": [],
+      "pass": true
+    },
+    {
+      "seed": 2,
+      "check": "pureAction is confirmed under its own mask",
+      "horizons": [
+        12,
+        48,
+        144,
+        360,
+        720,
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "pass": true
+    },
+    {
+      "seed": 2,
+      "check": "the neutral arm reaches slowTime later than it reaches pureTime",
+      "pureTimeFirstMovedAtFrames": 12,
+      "slowTimeFirstMovedAtFrames": 360,
+      "slowTimePerHorizon": [
+        {
+          "frames": 12,
+          "neutralMoved": false,
+          "confirmed": false
+        },
+        {
+          "frames": 48,
+          "neutralMoved": false,
+          "confirmed": false
+        },
+        {
+          "frames": 144,
+          "neutralMoved": false,
+          "confirmed": false
+        },
+        {
+          "frames": 360,
+          "neutralMoved": true,
+          "confirmed": false
+        },
+        {
+          "frames": 720,
+          "neutralMoved": true,
+          "confirmed": false
+        }
+      ],
+      "pass": true
+    },
+    {
+      "seed": 2,
+      "check": "slowTime is never falsely confirmed under the pulse train",
+      "confirmedUnderTrain": [],
+      "pass": true,
+      "note": "reported, not asserted: a time-only field confirmed at a long horizon is the tolerance-scaling limit already recorded as C24.4, not a new defect."
+    },
+    {
+      "seed": 2,
+      "check": "the probe reports the six quantities separately, by name",
+      "pass": true
+    },
+    {
+      "seed": 2,
+      "check": "the phase-trust flag is reported at horizon level AND per address, separately",
+      "pureActionHorizonFlag": [
+        "UNCERTAIN"
+      ],
+      "pureActionAddressFlag": [
+        "NOT_FLAGGED"
+      ],
+      "pass": true
+    },
+    {
+      "seed": 2,
+      "check": "cadence positive control: cadenceOnly is confirmed under the train and not under the duration-matched hold",
+      "confirmedUnderTrain": [
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedUnderHold": [],
+      "confirmedUnderTrainOnly": [
+        48,
+        144,
+        360,
+        720
+      ],
+      "instrumentCanSeeCadence": true,
+      "groundTruth": "a continuous hold is ONE press edge and cannot move this field at any duration; a train of 3 or more pulses can",
+      "pass": true,
+      "note": "reported, not asserted. A null result here is a measured limit of the instrument and is published as one; forcing it to be non-zero is exactly what this programme forbids."
+    },
+    {
+      "seed": 2,
+      "check": "cadenceOnly is NOT confirmed under any continuous hold",
+      "confirmedUnderHold": [],
+      "pass": true
+    },
+    {
+      "seed": 2,
+      "check": "why timeAndAction is not the cadence control: it is confirmed under both structures",
+      "confirmedUnderTrain": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedUnderHold": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedUnderTrainOnly": [],
+      "pass": true,
+      "note": "its action half fires on every edge, so the single edge of a continuous hold already moves it. Recorded so the empty train-only set is not mistaken for a statement about cadence."
+    }
+  ],
+  "cost": {
+    "emulatedFrames": 77040
+  },
+  "totals": {
+    "checks": 24,
+    "passing": 24,
+    "failures": 0
+  },
+  "failures": [],
+  "status": "PASS"
+}
