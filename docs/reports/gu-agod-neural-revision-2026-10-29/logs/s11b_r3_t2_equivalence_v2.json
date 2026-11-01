@@ -1,0 +1,4558 @@
+{
+  "type": "gu-agod-s11b-t2-equivalence",
+  "version": 2,
+  "supersedes": "version 1, whose declared hash comparison was never performed (R3 / A3)",
+  "question": "does the experimental adapter produce the same result as Causal.probeAction on identical starts, masks and horizons, by the same arms?",
+  "gate": "the synthetic trials do not start until this passes; on divergence both results are kept, the cause is localised, and RECOVERED_BY_CADENCE is withheld",
+  "horizons": [
+    12,
+    48
+  ],
+  "shiftTolerance": 3,
+  "startsPerTrial": 3,
+  "series": {
+    "T2a": "continuous hold vs the standard detector, shiftTolerance 3",
+    "T2b": "pulse train with release 0 vs the standard detector continuous hold of the same duration, shiftTolerance 0: the train code path against the reference instrument",
+    "T2c": "pulse train HOLD 4 RELEASE 8, shiftTolerance 3, vs an independent reimplementation in this file, compared arm by arm: the only available check on the real train"
+  },
+  "compared": [
+    "the ordered arm schedule actually issued, (mask,frames) per run",
+    "the RAM hash each arm ended on, arm by arm",
+    "the action, neutral and alternative arm hashes by name",
+    "attributed, raw, shift-explained, specific and shared address sets",
+    "confirmed and contradicted address sets",
+    "usable and excluded starts",
+    "the shift tolerance each instrument reports it used",
+    "the neutral trajectory arm count",
+    "the total frames actually emulated and the wall-clock duration"
+  ],
+  "provenance": {
+    "commit": "e33851576a2d51220e2254ad61c0117c99ad6c1a",
+    "workingTreeDirty": true,
+    "node": "v22.22.0",
+    "causalRevision": "agod-causal-e3-2",
+    "adapterRevision": "agod-s11b-adapter-1",
+    "hostRevision": "agod-s11b-host-1"
+  },
+  "status": "PASS",
+  "rows": [
+    {
+      "series": "T2a",
+      "seed": 0,
+      "horizon": 12,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "armCountStandard": 33,
+      "armCountAdapter": 33,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "namedHashMatch": true,
+      "namedArmHashes": {
+        "standard": [
+          {
+            "startIndex": 0,
+            "neutralA": "ae78d4d937e7eeb9f582ec0c64394c6214ca5836666c4fa4306211f8b2b3d23f",
+            "neutralB": "ae78d4d937e7eeb9f582ec0c64394c6214ca5836666c4fa4306211f8b2b3d23f",
+            "trajectory": [
+              "6b42115debe1722eebb43939936f2bb0e29ebd927a1b46de68fbd8321c150c1d",
+              "4eb159e9f103a0c51b30505d2c5c5230a75588e3f5a98db5db5bd211c6aed012",
+              "8198f7138097a3d0b5cbb22119961773d26729cebead192707e55647b4aaf844",
+              "ae78d4d937e7eeb9f582ec0c64394c6214ca5836666c4fa4306211f8b2b3d23f",
+              "977b74aaa6c1c45675ce36bf21112ec00ac8dc9646a3578ae8fdad92e9e7bbe5",
+              "6fe1979ce88f2b35d955045fa6cd8aefa16fad6723b8f8b8b6b6be9840d25530",
+              "1f50018a67d466b81d84590ece95b196e6012a93223945f90fbd71451ac6a925"
+            ],
+            "action": "91fcb1d286d31e511ab05cbf9b34737899d3a9d8b8d8ec67c4e28dd8fa7b0c74",
+            "alternative": "5cec5fbb2fb4d739a496a64674ae866e13399c80e066136aa28d496d82f0d930"
+          },
+          {
+            "startIndex": 1,
+            "neutralA": "af787c3b060578f7dd7563de3f21a98fc933bf9e607b1b66910e14a47397b521",
+            "neutralB": "af787c3b060578f7dd7563de3f21a98fc933bf9e607b1b66910e14a47397b521",
+            "trajectory": [
+              "74954e3ce46e295ce8a873cd4ec11a4d3a0d5413c12e8c5025a6f8767323d873",
+              "4505321a91d391ef7cd27f8c343700450bcab7ae52cb1c251b4455ca788cf0a3",
+              "ca772e0512c391ff32fd2f652b7cbb00ad3fa4793ca8522476c3a5b8a5fdba05",
+              "af787c3b060578f7dd7563de3f21a98fc933bf9e607b1b66910e14a47397b521",
+              "84abb9dfb304a5e5df0fd574d770876d5b00fd80d61c8e5a983e68288b808031",
+              "ee8bb83bfd9c910fa4d6c46127c0f893817e98d1907f9276d1a69c02da814986",
+              "3aeb7533a77a0784b07a1af972ff73c803f59944d0f1e1bd2b6d418d997852f4"
+            ],
+            "action": "a0c69eb7f2ccb3e0574b1c17c6841e5c41c07976f9c50ea196cd2ad6238e756e",
+            "alternative": "127d1f266f7ba7619a2f85052a4ef5f061c1e1a7b8345bff6e9527a7688713e5"
+          },
+          {
+            "startIndex": 2,
+            "neutralA": "45665fc0e308d37c8f2723635f7825cfc938d86f0008dd82f06b1ad4897d6705",
+            "neutralB": "45665fc0e308d37c8f2723635f7825cfc938d86f0008dd82f06b1ad4897d6705",
+            "trajectory": [
+              "dd7e670df64f58968c18b8e0429bb0d1b95f0e6a41e97764cc87fd710f2ed930",
+              "9d3be12216ac6daa794ffd741dda599cfa5e6dee2490c17cf3f50a1ed7a4ec8a",
+              "d8a14a165dd23e2126f98e5007c63095d7bb1e58785bdc259ff046efad79e525",
+              "45665fc0e308d37c8f2723635f7825cfc938d86f0008dd82f06b1ad4897d6705",
+              "aec78bf4cdbc40c88422471ecd56d4eec43b287a406689610c5372da364d7e4e",
+              "b56e86acc946fa9b473c989c3b17591e93954eac15fa0de84b98f22b4ec7d896",
+              "d2d2c2a245c6baea33a37db08a42b7fdf8483bbc4758c05ea477e13496792cbf"
+            ],
+            "action": "e81c8c7b729934bdd300eeb32922bc35a834eb7610de954adca7768a5fe38181",
+            "alternative": "7d95793b51718c68a8cf757935ff0521fe7c04bacc687bc4e14447d2731b3b68"
+          }
+        ],
+        "adapter": [
+          {
+            "startIndex": 0,
+            "neutralA": "ae78d4d937e7eeb9f582ec0c64394c6214ca5836666c4fa4306211f8b2b3d23f",
+            "neutralB": "ae78d4d937e7eeb9f582ec0c64394c6214ca5836666c4fa4306211f8b2b3d23f",
+            "trajectory": [
+              "6b42115debe1722eebb43939936f2bb0e29ebd927a1b46de68fbd8321c150c1d",
+              "4eb159e9f103a0c51b30505d2c5c5230a75588e3f5a98db5db5bd211c6aed012",
+              "8198f7138097a3d0b5cbb22119961773d26729cebead192707e55647b4aaf844",
+              "ae78d4d937e7eeb9f582ec0c64394c6214ca5836666c4fa4306211f8b2b3d23f",
+              "977b74aaa6c1c45675ce36bf21112ec00ac8dc9646a3578ae8fdad92e9e7bbe5",
+              "6fe1979ce88f2b35d955045fa6cd8aefa16fad6723b8f8b8b6b6be9840d25530",
+              "1f50018a67d466b81d84590ece95b196e6012a93223945f90fbd71451ac6a925"
+            ],
+            "action": "91fcb1d286d31e511ab05cbf9b34737899d3a9d8b8d8ec67c4e28dd8fa7b0c74",
+            "alternative": "5cec5fbb2fb4d739a496a64674ae866e13399c80e066136aa28d496d82f0d930"
+          },
+          {
+            "startIndex": 1,
+            "neutralA": "af787c3b060578f7dd7563de3f21a98fc933bf9e607b1b66910e14a47397b521",
+            "neutralB": "af787c3b060578f7dd7563de3f21a98fc933bf9e607b1b66910e14a47397b521",
+            "trajectory": [
+              "74954e3ce46e295ce8a873cd4ec11a4d3a0d5413c12e8c5025a6f8767323d873",
+              "4505321a91d391ef7cd27f8c343700450bcab7ae52cb1c251b4455ca788cf0a3",
+              "ca772e0512c391ff32fd2f652b7cbb00ad3fa4793ca8522476c3a5b8a5fdba05",
+              "af787c3b060578f7dd7563de3f21a98fc933bf9e607b1b66910e14a47397b521",
+              "84abb9dfb304a5e5df0fd574d770876d5b00fd80d61c8e5a983e68288b808031",
+              "ee8bb83bfd9c910fa4d6c46127c0f893817e98d1907f9276d1a69c02da814986",
+              "3aeb7533a77a0784b07a1af972ff73c803f59944d0f1e1bd2b6d418d997852f4"
+            ],
+            "action": "a0c69eb7f2ccb3e0574b1c17c6841e5c41c07976f9c50ea196cd2ad6238e756e",
+            "alternative": "127d1f266f7ba7619a2f85052a4ef5f061c1e1a7b8345bff6e9527a7688713e5"
+          },
+          {
+            "startIndex": 2,
+            "neutralA": "45665fc0e308d37c8f2723635f7825cfc938d86f0008dd82f06b1ad4897d6705",
+            "neutralB": "45665fc0e308d37c8f2723635f7825cfc938d86f0008dd82f06b1ad4897d6705",
+            "trajectory": [
+              "dd7e670df64f58968c18b8e0429bb0d1b95f0e6a41e97764cc87fd710f2ed930",
+              "9d3be12216ac6daa794ffd741dda599cfa5e6dee2490c17cf3f50a1ed7a4ec8a",
+              "d8a14a165dd23e2126f98e5007c63095d7bb1e58785bdc259ff046efad79e525",
+              "45665fc0e308d37c8f2723635f7825cfc938d86f0008dd82f06b1ad4897d6705",
+              "aec78bf4cdbc40c88422471ecd56d4eec43b287a406689610c5372da364d7e4e",
+              "b56e86acc946fa9b473c989c3b17591e93954eac15fa0de84b98f22b4ec7d896",
+              "d2d2c2a245c6baea33a37db08a42b7fdf8483bbc4758c05ea477e13496792cbf"
+            ],
+            "action": "e81c8c7b729934bdd300eeb32922bc35a834eb7610de954adca7768a5fe38181",
+            "alternative": "7d95793b51718c68a8cf757935ff0521fe7c04bacc687bc4e14447d2731b3b68"
+          }
+        ]
+      },
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "startsMatch": true,
+      "shiftMatch": true,
+      "framesMatch": true,
+      "standardShiftTolerance": 3,
+      "adapterShiftTolerance": 3,
+      "standardConfirmed": [
+        17,
+        33,
+        94,
+        178
+      ],
+      "adapterConfirmed": [
+        17,
+        33,
+        94,
+        178
+      ],
+      "standardUsableStarts": 3,
+      "adapterUsableStarts": 3,
+      "standardExcludedStarts": 0,
+      "adapterExcludedStarts": 0,
+      "framesEmulated": {
+        "standard": 396,
+        "adapter": 396
+      },
+      "wallClockMs": {
+        "standard": 818,
+        "adapter": 780
+      },
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2a",
+      "seed": 0,
+      "horizon": 12,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "armCountStandard": 33,
+      "armCountAdapter": 33,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "namedHashMatch": true,
+      "namedArmHashes": {
+        "standard": [
+          {
+            "startIndex": 0,
+            "neutralA": "ae78d4d937e7eeb9f582ec0c64394c6214ca5836666c4fa4306211f8b2b3d23f",
+            "neutralB": "ae78d4d937e7eeb9f582ec0c64394c6214ca5836666c4fa4306211f8b2b3d23f",
+            "trajectory": [
+              "6b42115debe1722eebb43939936f2bb0e29ebd927a1b46de68fbd8321c150c1d",
+              "4eb159e9f103a0c51b30505d2c5c5230a75588e3f5a98db5db5bd211c6aed012",
+              "8198f7138097a3d0b5cbb22119961773d26729cebead192707e55647b4aaf844",
+              "ae78d4d937e7eeb9f582ec0c64394c6214ca5836666c4fa4306211f8b2b3d23f",
+              "977b74aaa6c1c45675ce36bf21112ec00ac8dc9646a3578ae8fdad92e9e7bbe5",
+              "6fe1979ce88f2b35d955045fa6cd8aefa16fad6723b8f8b8b6b6be9840d25530",
+              "1f50018a67d466b81d84590ece95b196e6012a93223945f90fbd71451ac6a925"
+            ],
+            "action": "2b5b346c208ddb1f890c1319c7d4fff526ba25e497ae2e12946c1f5aeb7e699a",
+            "alternative": "5cec5fbb2fb4d739a496a64674ae866e13399c80e066136aa28d496d82f0d930"
+          },
+          {
+            "startIndex": 1,
+            "neutralA": "af787c3b060578f7dd7563de3f21a98fc933bf9e607b1b66910e14a47397b521",
+            "neutralB": "af787c3b060578f7dd7563de3f21a98fc933bf9e607b1b66910e14a47397b521",
+            "trajectory": [
+              "74954e3ce46e295ce8a873cd4ec11a4d3a0d5413c12e8c5025a6f8767323d873",
+              "4505321a91d391ef7cd27f8c343700450bcab7ae52cb1c251b4455ca788cf0a3",
+              "ca772e0512c391ff32fd2f652b7cbb00ad3fa4793ca8522476c3a5b8a5fdba05",
+              "af787c3b060578f7dd7563de3f21a98fc933bf9e607b1b66910e14a47397b521",
+              "84abb9dfb304a5e5df0fd574d770876d5b00fd80d61c8e5a983e68288b808031",
+              "ee8bb83bfd9c910fa4d6c46127c0f893817e98d1907f9276d1a69c02da814986",
+              "3aeb7533a77a0784b07a1af972ff73c803f59944d0f1e1bd2b6d418d997852f4"
+            ],
+            "action": "3443b7ba8eaf12619496add14b5b4e700e1bcb85bb9a22653af4dc8681ca9c55",
+            "alternative": "127d1f266f7ba7619a2f85052a4ef5f061c1e1a7b8345bff6e9527a7688713e5"
+          },
+          {
+            "startIndex": 2,
+            "neutralA": "45665fc0e308d37c8f2723635f7825cfc938d86f0008dd82f06b1ad4897d6705",
+            "neutralB": "45665fc0e308d37c8f2723635f7825cfc938d86f0008dd82f06b1ad4897d6705",
+            "trajectory": [
+              "dd7e670df64f58968c18b8e0429bb0d1b95f0e6a41e97764cc87fd710f2ed930",
+              "9d3be12216ac6daa794ffd741dda599cfa5e6dee2490c17cf3f50a1ed7a4ec8a",
+              "d8a14a165dd23e2126f98e5007c63095d7bb1e58785bdc259ff046efad79e525",
+              "45665fc0e308d37c8f2723635f7825cfc938d86f0008dd82f06b1ad4897d6705",
+              "aec78bf4cdbc40c88422471ecd56d4eec43b287a406689610c5372da364d7e4e",
+              "b56e86acc946fa9b473c989c3b17591e93954eac15fa0de84b98f22b4ec7d896",
+              "d2d2c2a245c6baea33a37db08a42b7fdf8483bbc4758c05ea477e13496792cbf"
+            ],
+            "action": "241e05a6c38bc14d459b354453f4e2da6d7cb2daab77211c6ec23067909fb77f",
+            "alternative": "7d95793b51718c68a8cf757935ff0521fe7c04bacc687bc4e14447d2731b3b68"
+          }
+        ],
+        "adapter": [
+          {
+            "startIndex": 0,
+            "neutralA": "ae78d4d937e7eeb9f582ec0c64394c6214ca5836666c4fa4306211f8b2b3d23f",
+            "neutralB": "ae78d4d937e7eeb9f582ec0c64394c6214ca5836666c4fa4306211f8b2b3d23f",
+            "trajectory": [
+              "6b42115debe1722eebb43939936f2bb0e29ebd927a1b46de68fbd8321c150c1d",
+              "4eb159e9f103a0c51b30505d2c5c5230a75588e3f5a98db5db5bd211c6aed012",
+              "8198f7138097a3d0b5cbb22119961773d26729cebead192707e55647b4aaf844",
+              "ae78d4d937e7eeb9f582ec0c64394c6214ca5836666c4fa4306211f8b2b3d23f",
+              "977b74aaa6c1c45675ce36bf21112ec00ac8dc9646a3578ae8fdad92e9e7bbe5",
+              "6fe1979ce88f2b35d955045fa6cd8aefa16fad6723b8f8b8b6b6be9840d25530",
+              "1f50018a67d466b81d84590ece95b196e6012a93223945f90fbd71451ac6a925"
+            ],
+            "action": "2b5b346c208ddb1f890c1319c7d4fff526ba25e497ae2e12946c1f5aeb7e699a",
+            "alternative": "5cec5fbb2fb4d739a496a64674ae866e13399c80e066136aa28d496d82f0d930"
+          },
+          {
+            "startIndex": 1,
+            "neutralA": "af787c3b060578f7dd7563de3f21a98fc933bf9e607b1b66910e14a47397b521",
+            "neutralB": "af787c3b060578f7dd7563de3f21a98fc933bf9e607b1b66910e14a47397b521",
+            "trajectory": [
+              "74954e3ce46e295ce8a873cd4ec11a4d3a0d5413c12e8c5025a6f8767323d873",
+              "4505321a91d391ef7cd27f8c343700450bcab7ae52cb1c251b4455ca788cf0a3",
+              "ca772e0512c391ff32fd2f652b7cbb00ad3fa4793ca8522476c3a5b8a5fdba05",
+              "af787c3b060578f7dd7563de3f21a98fc933bf9e607b1b66910e14a47397b521",
+              "84abb9dfb304a5e5df0fd574d770876d5b00fd80d61c8e5a983e68288b808031",
+              "ee8bb83bfd9c910fa4d6c46127c0f893817e98d1907f9276d1a69c02da814986",
+              "3aeb7533a77a0784b07a1af972ff73c803f59944d0f1e1bd2b6d418d997852f4"
+            ],
+            "action": "3443b7ba8eaf12619496add14b5b4e700e1bcb85bb9a22653af4dc8681ca9c55",
+            "alternative": "127d1f266f7ba7619a2f85052a4ef5f061c1e1a7b8345bff6e9527a7688713e5"
+          },
+          {
+            "startIndex": 2,
+            "neutralA": "45665fc0e308d37c8f2723635f7825cfc938d86f0008dd82f06b1ad4897d6705",
+            "neutralB": "45665fc0e308d37c8f2723635f7825cfc938d86f0008dd82f06b1ad4897d6705",
+            "trajectory": [
+              "dd7e670df64f58968c18b8e0429bb0d1b95f0e6a41e97764cc87fd710f2ed930",
+              "9d3be12216ac6daa794ffd741dda599cfa5e6dee2490c17cf3f50a1ed7a4ec8a",
+              "d8a14a165dd23e2126f98e5007c63095d7bb1e58785bdc259ff046efad79e525",
+              "45665fc0e308d37c8f2723635f7825cfc938d86f0008dd82f06b1ad4897d6705",
+              "aec78bf4cdbc40c88422471ecd56d4eec43b287a406689610c5372da364d7e4e",
+              "b56e86acc946fa9b473c989c3b17591e93954eac15fa0de84b98f22b4ec7d896",
+              "d2d2c2a245c6baea33a37db08a42b7fdf8483bbc4758c05ea477e13496792cbf"
+            ],
+            "action": "241e05a6c38bc14d459b354453f4e2da6d7cb2daab77211c6ec23067909fb77f",
+            "alternative": "7d95793b51718c68a8cf757935ff0521fe7c04bacc687bc4e14447d2731b3b68"
+          }
+        ]
+      },
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "startsMatch": true,
+      "shiftMatch": true,
+      "framesMatch": true,
+      "standardShiftTolerance": 3,
+      "adapterShiftTolerance": 3,
+      "standardConfirmed": [
+        22,
+        38,
+        137
+      ],
+      "adapterConfirmed": [
+        22,
+        38,
+        137
+      ],
+      "standardUsableStarts": 3,
+      "adapterUsableStarts": 3,
+      "standardExcludedStarts": 0,
+      "adapterExcludedStarts": 0,
+      "framesEmulated": {
+        "standard": 396,
+        "adapter": 396
+      },
+      "wallClockMs": {
+        "standard": 755,
+        "adapter": 752
+      },
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2a",
+      "seed": 0,
+      "horizon": 48,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "armCountStandard": 33,
+      "armCountAdapter": 33,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "namedHashMatch": true,
+      "namedArmHashes": {
+        "standard": [
+          {
+            "startIndex": 0,
+            "neutralA": "6a072ead6b5004072f1d34bb5f7a270aae8b6fa08135d83f2bb1dad609eaca63",
+            "neutralB": "6a072ead6b5004072f1d34bb5f7a270aae8b6fa08135d83f2bb1dad609eaca63",
+            "trajectory": [
+              "a3e95215595c7db44790406555ad954ffd883daa01d89a60d5c1c8e10cba07be",
+              "1a5e3f6062c49eb318efb2592127ae6610ad88f18483bdac9277cc54778f7abf",
+              "abf9ffce94248629b4aef452702f618064915318a470e069688fc98ea1f3cb75",
+              "6a072ead6b5004072f1d34bb5f7a270aae8b6fa08135d83f2bb1dad609eaca63",
+              "0664b9c01cb0afc7b554d36b4dc59a6ec956de20bb6ec201380462a1da91ec8f",
+              "2354efdfbafc0520b0a3ef65398e8bf8174de3eae8cbc0245cb9c9bd592d2c09",
+              "956d0e4761ad3c9f3d845fed25025a3368ea06e8ba49084efe4007395510319a"
+            ],
+            "action": "85c5a7e415053dce3beb7057b5fb4af944919b3bd1faaa521f668f795a90d8f8",
+            "alternative": "b6c4571abfba702231c82069da8df49e67cbaaa57fa5f1c213cbfdfe3a5fe6fe"
+          },
+          {
+            "startIndex": 1,
+            "neutralA": "92a72d1be3455467129541fa5d01d90d708ad9cb7cc382c81c18319a9902a315",
+            "neutralB": "92a72d1be3455467129541fa5d01d90d708ad9cb7cc382c81c18319a9902a315",
+            "trajectory": [
+              "b56e86acc946fa9b473c989c3b17591e93954eac15fa0de84b98f22b4ec7d896",
+              "d2d2c2a245c6baea33a37db08a42b7fdf8483bbc4758c05ea477e13496792cbf",
+              "3e367d2e305a014abd8d42e343b58c84870f39254d40b03d85160aa99340a943",
+              "92a72d1be3455467129541fa5d01d90d708ad9cb7cc382c81c18319a9902a315",
+              "51945e7e27bbaec349b14acdd0233cebd7feaa2c9b44346b25e6809dd97a0038",
+              "639eb34f107dcc58f8fd45b13d7f0e133afdae409f2a093c4c330fdb32e83217",
+              "f567da90c30dd6af5a64ba844d951afd351e43ef2a30eb29675936f75236f411"
+            ],
+            "action": "cb1beb5607ed8deb32fc813487ba887477989b9923f2d3b08a9ddb9922f1596c",
+            "alternative": "e7b1e30aca9e5b8d8769a5225c356dc2e88a57243830b1f03fa0fdd8c9fbc885"
+          },
+          {
+            "startIndex": 2,
+            "neutralA": "e53dc620455d104fcb5d0b8cd67c71839f225d082bc07aba0e4866d84ef085be",
+            "neutralB": "e53dc620455d104fcb5d0b8cd67c71839f225d082bc07aba0e4866d84ef085be",
+            "trajectory": [
+              "af0300a710260adbb0a6bef29f69ababd2e3fb2037bb86f9a26244235e8097fc",
+              "ee1b07c5fa46e509644b72b071d225bac9332f60fe6f61cf681e473cc6cf3af3",
+              "758f321ffc6096b0789b0eb709906769559efdf1fd76cd38121187be3abd8217",
+              "e53dc620455d104fcb5d0b8cd67c71839f225d082bc07aba0e4866d84ef085be",
+              "6a1083bdcddc30f715fca9beb9de8286d04c43fbd369c403a816b74ad28eed1a",
+              "167862dc500c02f4f6ff0dec6fcad6b9494921e128872e8b39fe0a1dc9e83b08",
+              "4fc52e0b45d1221386c57a71ec84e39d217dcfae453e7bc64753d310cddf6552"
+            ],
+            "action": "effe9905d11d119599816d60b729a254efc11e2f4325ba5d7b28a94bc728c9f2",
+            "alternative": "b06752f14d5d80593d5e27d09954023452441994d22b23621989be8c924c5700"
+          }
+        ],
+        "adapter": [
+          {
+            "startIndex": 0,
+            "neutralA": "6a072ead6b5004072f1d34bb5f7a270aae8b6fa08135d83f2bb1dad609eaca63",
+            "neutralB": "6a072ead6b5004072f1d34bb5f7a270aae8b6fa08135d83f2bb1dad609eaca63",
+            "trajectory": [
+              "a3e95215595c7db44790406555ad954ffd883daa01d89a60d5c1c8e10cba07be",
+              "1a5e3f6062c49eb318efb2592127ae6610ad88f18483bdac9277cc54778f7abf",
+              "abf9ffce94248629b4aef452702f618064915318a470e069688fc98ea1f3cb75",
+              "6a072ead6b5004072f1d34bb5f7a270aae8b6fa08135d83f2bb1dad609eaca63",
+              "0664b9c01cb0afc7b554d36b4dc59a6ec956de20bb6ec201380462a1da91ec8f",
+              "2354efdfbafc0520b0a3ef65398e8bf8174de3eae8cbc0245cb9c9bd592d2c09",
+              "956d0e4761ad3c9f3d845fed25025a3368ea06e8ba49084efe4007395510319a"
+            ],
+            "action": "85c5a7e415053dce3beb7057b5fb4af944919b3bd1faaa521f668f795a90d8f8",
+            "alternative": "b6c4571abfba702231c82069da8df49e67cbaaa57fa5f1c213cbfdfe3a5fe6fe"
+          },
+          {
+            "startIndex": 1,
+            "neutralA": "92a72d1be3455467129541fa5d01d90d708ad9cb7cc382c81c18319a9902a315",
+            "neutralB": "92a72d1be3455467129541fa5d01d90d708ad9cb7cc382c81c18319a9902a315",
+            "trajectory": [
+              "b56e86acc946fa9b473c989c3b17591e93954eac15fa0de84b98f22b4ec7d896",
+              "d2d2c2a245c6baea33a37db08a42b7fdf8483bbc4758c05ea477e13496792cbf",
+              "3e367d2e305a014abd8d42e343b58c84870f39254d40b03d85160aa99340a943",
+              "92a72d1be3455467129541fa5d01d90d708ad9cb7cc382c81c18319a9902a315",
+              "51945e7e27bbaec349b14acdd0233cebd7feaa2c9b44346b25e6809dd97a0038",
+              "639eb34f107dcc58f8fd45b13d7f0e133afdae409f2a093c4c330fdb32e83217",
+              "f567da90c30dd6af5a64ba844d951afd351e43ef2a30eb29675936f75236f411"
+            ],
+            "action": "cb1beb5607ed8deb32fc813487ba887477989b9923f2d3b08a9ddb9922f1596c",
+            "alternative": "e7b1e30aca9e5b8d8769a5225c356dc2e88a57243830b1f03fa0fdd8c9fbc885"
+          },
+          {
+            "startIndex": 2,
+            "neutralA": "e53dc620455d104fcb5d0b8cd67c71839f225d082bc07aba0e4866d84ef085be",
+            "neutralB": "e53dc620455d104fcb5d0b8cd67c71839f225d082bc07aba0e4866d84ef085be",
+            "trajectory": [
+              "af0300a710260adbb0a6bef29f69ababd2e3fb2037bb86f9a26244235e8097fc",
+              "ee1b07c5fa46e509644b72b071d225bac9332f60fe6f61cf681e473cc6cf3af3",
+              "758f321ffc6096b0789b0eb709906769559efdf1fd76cd38121187be3abd8217",
+              "e53dc620455d104fcb5d0b8cd67c71839f225d082bc07aba0e4866d84ef085be",
+              "6a1083bdcddc30f715fca9beb9de8286d04c43fbd369c403a816b74ad28eed1a",
+              "167862dc500c02f4f6ff0dec6fcad6b9494921e128872e8b39fe0a1dc9e83b08",
+              "4fc52e0b45d1221386c57a71ec84e39d217dcfae453e7bc64753d310cddf6552"
+            ],
+            "action": "effe9905d11d119599816d60b729a254efc11e2f4325ba5d7b28a94bc728c9f2",
+            "alternative": "b06752f14d5d80593d5e27d09954023452441994d22b23621989be8c924c5700"
+          }
+        ]
+      },
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "startsMatch": true,
+      "shiftMatch": true,
+      "framesMatch": true,
+      "standardShiftTolerance": 3,
+      "adapterShiftTolerance": 3,
+      "standardConfirmed": [
+        17,
+        33,
+        70,
+        145,
+        169,
+        178
+      ],
+      "adapterConfirmed": [
+        17,
+        33,
+        70,
+        145,
+        169,
+        178
+      ],
+      "standardUsableStarts": 3,
+      "adapterUsableStarts": 3,
+      "standardExcludedStarts": 0,
+      "adapterExcludedStarts": 0,
+      "framesEmulated": {
+        "standard": 1584,
+        "adapter": 1584
+      },
+      "wallClockMs": {
+        "standard": 2747,
+        "adapter": 2493
+      },
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2a",
+      "seed": 0,
+      "horizon": 48,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "armCountStandard": 33,
+      "armCountAdapter": 33,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "namedHashMatch": true,
+      "namedArmHashes": {
+        "standard": [
+          {
+            "startIndex": 0,
+            "neutralA": "6a072ead6b5004072f1d34bb5f7a270aae8b6fa08135d83f2bb1dad609eaca63",
+            "neutralB": "6a072ead6b5004072f1d34bb5f7a270aae8b6fa08135d83f2bb1dad609eaca63",
+            "trajectory": [
+              "a3e95215595c7db44790406555ad954ffd883daa01d89a60d5c1c8e10cba07be",
+              "1a5e3f6062c49eb318efb2592127ae6610ad88f18483bdac9277cc54778f7abf",
+              "abf9ffce94248629b4aef452702f618064915318a470e069688fc98ea1f3cb75",
+              "6a072ead6b5004072f1d34bb5f7a270aae8b6fa08135d83f2bb1dad609eaca63",
+              "0664b9c01cb0afc7b554d36b4dc59a6ec956de20bb6ec201380462a1da91ec8f",
+              "2354efdfbafc0520b0a3ef65398e8bf8174de3eae8cbc0245cb9c9bd592d2c09",
+              "956d0e4761ad3c9f3d845fed25025a3368ea06e8ba49084efe4007395510319a"
+            ],
+            "action": "5623d7bb7f225e65f9972ef408d47125da4d8c04710c7ad6a1e89b35a1677085",
+            "alternative": "b6c4571abfba702231c82069da8df49e67cbaaa57fa5f1c213cbfdfe3a5fe6fe"
+          },
+          {
+            "startIndex": 1,
+            "neutralA": "92a72d1be3455467129541fa5d01d90d708ad9cb7cc382c81c18319a9902a315",
+            "neutralB": "92a72d1be3455467129541fa5d01d90d708ad9cb7cc382c81c18319a9902a315",
+            "trajectory": [
+              "b56e86acc946fa9b473c989c3b17591e93954eac15fa0de84b98f22b4ec7d896",
+              "d2d2c2a245c6baea33a37db08a42b7fdf8483bbc4758c05ea477e13496792cbf",
+              "3e367d2e305a014abd8d42e343b58c84870f39254d40b03d85160aa99340a943",
+              "92a72d1be3455467129541fa5d01d90d708ad9cb7cc382c81c18319a9902a315",
+              "51945e7e27bbaec349b14acdd0233cebd7feaa2c9b44346b25e6809dd97a0038",
+              "639eb34f107dcc58f8fd45b13d7f0e133afdae409f2a093c4c330fdb32e83217",
+              "f567da90c30dd6af5a64ba844d951afd351e43ef2a30eb29675936f75236f411"
+            ],
+            "action": "13edf0cfff0e6db7b790e6429c3a529c86b1751672d2ae5997ab0355098134ba",
+            "alternative": "e7b1e30aca9e5b8d8769a5225c356dc2e88a57243830b1f03fa0fdd8c9fbc885"
+          },
+          {
+            "startIndex": 2,
+            "neutralA": "e53dc620455d104fcb5d0b8cd67c71839f225d082bc07aba0e4866d84ef085be",
+            "neutralB": "e53dc620455d104fcb5d0b8cd67c71839f225d082bc07aba0e4866d84ef085be",
+            "trajectory": [
+              "af0300a710260adbb0a6bef29f69ababd2e3fb2037bb86f9a26244235e8097fc",
+              "ee1b07c5fa46e509644b72b071d225bac9332f60fe6f61cf681e473cc6cf3af3",
+              "758f321ffc6096b0789b0eb709906769559efdf1fd76cd38121187be3abd8217",
+              "e53dc620455d104fcb5d0b8cd67c71839f225d082bc07aba0e4866d84ef085be",
+              "6a1083bdcddc30f715fca9beb9de8286d04c43fbd369c403a816b74ad28eed1a",
+              "167862dc500c02f4f6ff0dec6fcad6b9494921e128872e8b39fe0a1dc9e83b08",
+              "4fc52e0b45d1221386c57a71ec84e39d217dcfae453e7bc64753d310cddf6552"
+            ],
+            "action": "5c7956c170505da9cef1f6f4db63e26c35d2754994bf020584a564e7644d836c",
+            "alternative": "b06752f14d5d80593d5e27d09954023452441994d22b23621989be8c924c5700"
+          }
+        ],
+        "adapter": [
+          {
+            "startIndex": 0,
+            "neutralA": "6a072ead6b5004072f1d34bb5f7a270aae8b6fa08135d83f2bb1dad609eaca63",
+            "neutralB": "6a072ead6b5004072f1d34bb5f7a270aae8b6fa08135d83f2bb1dad609eaca63",
+            "trajectory": [
+              "a3e95215595c7db44790406555ad954ffd883daa01d89a60d5c1c8e10cba07be",
+              "1a5e3f6062c49eb318efb2592127ae6610ad88f18483bdac9277cc54778f7abf",
+              "abf9ffce94248629b4aef452702f618064915318a470e069688fc98ea1f3cb75",
+              "6a072ead6b5004072f1d34bb5f7a270aae8b6fa08135d83f2bb1dad609eaca63",
+              "0664b9c01cb0afc7b554d36b4dc59a6ec956de20bb6ec201380462a1da91ec8f",
+              "2354efdfbafc0520b0a3ef65398e8bf8174de3eae8cbc0245cb9c9bd592d2c09",
+              "956d0e4761ad3c9f3d845fed25025a3368ea06e8ba49084efe4007395510319a"
+            ],
+            "action": "5623d7bb7f225e65f9972ef408d47125da4d8c04710c7ad6a1e89b35a1677085",
+            "alternative": "b6c4571abfba702231c82069da8df49e67cbaaa57fa5f1c213cbfdfe3a5fe6fe"
+          },
+          {
+            "startIndex": 1,
+            "neutralA": "92a72d1be3455467129541fa5d01d90d708ad9cb7cc382c81c18319a9902a315",
+            "neutralB": "92a72d1be3455467129541fa5d01d90d708ad9cb7cc382c81c18319a9902a315",
+            "trajectory": [
+              "b56e86acc946fa9b473c989c3b17591e93954eac15fa0de84b98f22b4ec7d896",
+              "d2d2c2a245c6baea33a37db08a42b7fdf8483bbc4758c05ea477e13496792cbf",
+              "3e367d2e305a014abd8d42e343b58c84870f39254d40b03d85160aa99340a943",
+              "92a72d1be3455467129541fa5d01d90d708ad9cb7cc382c81c18319a9902a315",
+              "51945e7e27bbaec349b14acdd0233cebd7feaa2c9b44346b25e6809dd97a0038",
+              "639eb34f107dcc58f8fd45b13d7f0e133afdae409f2a093c4c330fdb32e83217",
+              "f567da90c30dd6af5a64ba844d951afd351e43ef2a30eb29675936f75236f411"
+            ],
+            "action": "13edf0cfff0e6db7b790e6429c3a529c86b1751672d2ae5997ab0355098134ba",
+            "alternative": "e7b1e30aca9e5b8d8769a5225c356dc2e88a57243830b1f03fa0fdd8c9fbc885"
+          },
+          {
+            "startIndex": 2,
+            "neutralA": "e53dc620455d104fcb5d0b8cd67c71839f225d082bc07aba0e4866d84ef085be",
+            "neutralB": "e53dc620455d104fcb5d0b8cd67c71839f225d082bc07aba0e4866d84ef085be",
+            "trajectory": [
+              "af0300a710260adbb0a6bef29f69ababd2e3fb2037bb86f9a26244235e8097fc",
+              "ee1b07c5fa46e509644b72b071d225bac9332f60fe6f61cf681e473cc6cf3af3",
+              "758f321ffc6096b0789b0eb709906769559efdf1fd76cd38121187be3abd8217",
+              "e53dc620455d104fcb5d0b8cd67c71839f225d082bc07aba0e4866d84ef085be",
+              "6a1083bdcddc30f715fca9beb9de8286d04c43fbd369c403a816b74ad28eed1a",
+              "167862dc500c02f4f6ff0dec6fcad6b9494921e128872e8b39fe0a1dc9e83b08",
+              "4fc52e0b45d1221386c57a71ec84e39d217dcfae453e7bc64753d310cddf6552"
+            ],
+            "action": "5c7956c170505da9cef1f6f4db63e26c35d2754994bf020584a564e7644d836c",
+            "alternative": "b06752f14d5d80593d5e27d09954023452441994d22b23621989be8c924c5700"
+          }
+        ]
+      },
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "startsMatch": true,
+      "shiftMatch": true,
+      "framesMatch": true,
+      "standardShiftTolerance": 3,
+      "adapterShiftTolerance": 3,
+      "standardConfirmed": [
+        22,
+        38,
+        137
+      ],
+      "adapterConfirmed": [
+        22,
+        38,
+        137
+      ],
+      "standardUsableStarts": 3,
+      "adapterUsableStarts": 3,
+      "standardExcludedStarts": 0,
+      "adapterExcludedStarts": 0,
+      "framesEmulated": {
+        "standard": 1584,
+        "adapter": 1584
+      },
+      "wallClockMs": {
+        "standard": 2273,
+        "adapter": 2223
+      },
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2b",
+      "seed": 0,
+      "pulses": 1,
+      "hold": 4,
+      "release": 0,
+      "frames": 4,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 0,
+      "equivalent": true,
+      "armHashMatch": true,
+      "armFramesMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "scheduleDiffersByDesign": "the standard detector issues one run of 4 frames, the adapter issues 1 runs of 4; the button state is identical frame for frame, which is the point of this series",
+      "framesEmulated": {
+        "standard": 60,
+        "adapter": 60
+      },
+      "wallClockMs": {
+        "standard": 213,
+        "adapter": 174
+      },
+      "standardConfirmed": [
+        17,
+        33,
+        94,
+        178
+      ],
+      "adapterConfirmed": [
+        17,
+        33,
+        94,
+        178
+      ],
+      "pressEdges": 1,
+      "pressEdgesNote": "a train of zero release has ONE press edge, not one per pulse: this series tests the train code path, not cadence",
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 7,
+          "adapterAttributed": 7,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 7,
+          "adapterAttributed": 7,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2b",
+      "seed": 0,
+      "pulses": 1,
+      "hold": 4,
+      "release": 0,
+      "frames": 4,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 0,
+      "equivalent": true,
+      "armHashMatch": true,
+      "armFramesMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "scheduleDiffersByDesign": "the standard detector issues one run of 4 frames, the adapter issues 1 runs of 4; the button state is identical frame for frame, which is the point of this series",
+      "framesEmulated": {
+        "standard": 60,
+        "adapter": 60
+      },
+      "wallClockMs": {
+        "standard": 177,
+        "adapter": 175
+      },
+      "standardConfirmed": [
+        22,
+        38,
+        137
+      ],
+      "adapterConfirmed": [
+        22,
+        38,
+        137
+      ],
+      "pressEdges": 1,
+      "pressEdgesNote": "a train of zero release has ONE press edge, not one per pulse: this series tests the train code path, not cadence",
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2b",
+      "seed": 0,
+      "pulses": 4,
+      "hold": 4,
+      "release": 0,
+      "frames": 16,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 0,
+      "equivalent": true,
+      "armHashMatch": true,
+      "armFramesMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "scheduleDiffersByDesign": "the standard detector issues one run of 16 frames, the adapter issues 4 runs of 4; the button state is identical frame for frame, which is the point of this series",
+      "framesEmulated": {
+        "standard": 240,
+        "adapter": 240
+      },
+      "wallClockMs": {
+        "standard": 411,
+        "adapter": 460
+      },
+      "standardConfirmed": [
+        17,
+        33,
+        70,
+        94,
+        145,
+        169,
+        178
+      ],
+      "adapterConfirmed": [
+        17,
+        33,
+        70,
+        94,
+        145,
+        169,
+        178
+      ],
+      "pressEdges": 1,
+      "pressEdgesNote": "a train of zero release has ONE press edge, not one per pulse: this series tests the train code path, not cadence",
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 7,
+          "adapterAttributed": 7,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 8,
+          "adapterAttributed": 8,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 8,
+          "adapterAttributed": 8,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2b",
+      "seed": 0,
+      "pulses": 4,
+      "hold": 4,
+      "release": 0,
+      "frames": 16,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 0,
+      "equivalent": true,
+      "armHashMatch": true,
+      "armFramesMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "scheduleDiffersByDesign": "the standard detector issues one run of 16 frames, the adapter issues 4 runs of 4; the button state is identical frame for frame, which is the point of this series",
+      "framesEmulated": {
+        "standard": 240,
+        "adapter": 240
+      },
+      "wallClockMs": {
+        "standard": 480,
+        "adapter": 416
+      },
+      "standardConfirmed": [
+        22,
+        38,
+        137
+      ],
+      "adapterConfirmed": [
+        22,
+        38,
+        137
+      ],
+      "pressEdges": 1,
+      "pressEdgesNote": "a train of zero release has ONE press edge, not one per pulse: this series tests the train code path, not cadence",
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 7,
+          "adapterAttributed": 7,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2b",
+      "seed": 0,
+      "pulses": 12,
+      "hold": 4,
+      "release": 0,
+      "frames": 48,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 0,
+      "equivalent": true,
+      "armHashMatch": true,
+      "armFramesMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "scheduleDiffersByDesign": "the standard detector issues one run of 48 frames, the adapter issues 12 runs of 4; the button state is identical frame for frame, which is the point of this series",
+      "framesEmulated": {
+        "standard": 720,
+        "adapter": 720
+      },
+      "wallClockMs": {
+        "standard": 1089,
+        "adapter": 1026
+      },
+      "standardConfirmed": [
+        17,
+        33,
+        70,
+        145,
+        169,
+        178
+      ],
+      "adapterConfirmed": [
+        17,
+        33,
+        70,
+        145,
+        169,
+        178
+      ],
+      "pressEdges": 1,
+      "pressEdgesNote": "a train of zero release has ONE press edge, not one per pulse: this series tests the train code path, not cadence",
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 7,
+          "adapterAttributed": 7,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 7,
+          "adapterAttributed": 7,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2b",
+      "seed": 0,
+      "pulses": 12,
+      "hold": 4,
+      "release": 0,
+      "frames": 48,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 0,
+      "equivalent": true,
+      "armHashMatch": true,
+      "armFramesMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "scheduleDiffersByDesign": "the standard detector issues one run of 48 frames, the adapter issues 12 runs of 4; the button state is identical frame for frame, which is the point of this series",
+      "framesEmulated": {
+        "standard": 720,
+        "adapter": 720
+      },
+      "wallClockMs": {
+        "standard": 1109,
+        "adapter": 1028
+      },
+      "standardConfirmed": [
+        22,
+        38,
+        70,
+        137,
+        145,
+        169
+      ],
+      "adapterConfirmed": [
+        22,
+        38,
+        70,
+        137,
+        145,
+        169
+      ],
+      "pressEdges": 1,
+      "pressEdgesNote": "a train of zero release has ONE press edge, not one per pulse: this series tests the train code path, not cadence",
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 7,
+          "adapterAttributed": 7,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 7,
+          "adapterAttributed": 7,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2c",
+      "seed": 0,
+      "pulses": 1,
+      "hold": 4,
+      "release": 8,
+      "frames": 12,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "hashMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "armCount": {
+        "adapter": 33,
+        "independent": 33
+      },
+      "framesEmulated": {
+        "adapter": 396,
+        "independent": 396
+      },
+      "reference": "an independent reimplementation in this file; the standard detector cannot express a train",
+      "actionAndNeutralHashes": [
+        {
+          "startIndex": 0,
+          "independentAction": "a68ea77dfbd0f71ac012ad8a283c2b0b35a343e39ed939c23ba27e237f58fac3",
+          "adapterAction": "a68ea77dfbd0f71ac012ad8a283c2b0b35a343e39ed939c23ba27e237f58fac3",
+          "independentNeutral": "ae78d4d937e7eeb9f582ec0c64394c6214ca5836666c4fa4306211f8b2b3d23f",
+          "adapterNeutral": "ae78d4d937e7eeb9f582ec0c64394c6214ca5836666c4fa4306211f8b2b3d23f"
+        },
+        {
+          "startIndex": 1,
+          "independentAction": "9604dabc183b38a00ae525d25def671c3aa31390deaa34f236b02c68ea544ff5",
+          "adapterAction": "9604dabc183b38a00ae525d25def671c3aa31390deaa34f236b02c68ea544ff5",
+          "independentNeutral": "af787c3b060578f7dd7563de3f21a98fc933bf9e607b1b66910e14a47397b521",
+          "adapterNeutral": "af787c3b060578f7dd7563de3f21a98fc933bf9e607b1b66910e14a47397b521"
+        },
+        {
+          "startIndex": 2,
+          "independentAction": "c4f26667fe12d7525265e4157fc3320aa49768e8b4d3bc9c9d86d47d436c3568",
+          "adapterAction": "c4f26667fe12d7525265e4157fc3320aa49768e8b4d3bc9c9d86d47d436c3568",
+          "independentNeutral": "45665fc0e308d37c8f2723635f7825cfc938d86f0008dd82f06b1ad4897d6705",
+          "adapterNeutral": "45665fc0e308d37c8f2723635f7825cfc938d86f0008dd82f06b1ad4897d6705"
+        }
+      ],
+      "independentConfirmed": [
+        94,
+        178
+      ],
+      "adapterConfirmed": [
+        94,
+        178
+      ],
+      "wallClockMs": {
+        "adapter": 746,
+        "independent": 832
+      },
+      "adapterFramesRun": 36,
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2c",
+      "seed": 0,
+      "pulses": 1,
+      "hold": 4,
+      "release": 8,
+      "frames": 12,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "hashMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "armCount": {
+        "adapter": 33,
+        "independent": 33
+      },
+      "framesEmulated": {
+        "adapter": 396,
+        "independent": 396
+      },
+      "reference": "an independent reimplementation in this file; the standard detector cannot express a train",
+      "actionAndNeutralHashes": [
+        {
+          "startIndex": 0,
+          "independentAction": "9c2a8e3f4ae22d117dd4bd1172abd7933a6e0eeac0bae2eb113fdae044903ef5",
+          "adapterAction": "9c2a8e3f4ae22d117dd4bd1172abd7933a6e0eeac0bae2eb113fdae044903ef5",
+          "independentNeutral": "ae78d4d937e7eeb9f582ec0c64394c6214ca5836666c4fa4306211f8b2b3d23f",
+          "adapterNeutral": "ae78d4d937e7eeb9f582ec0c64394c6214ca5836666c4fa4306211f8b2b3d23f"
+        },
+        {
+          "startIndex": 1,
+          "independentAction": "2b607e23c1fbe84c48c3141da78e41bafca7258e5430fb5b799c6a1a94e1a370",
+          "adapterAction": "2b607e23c1fbe84c48c3141da78e41bafca7258e5430fb5b799c6a1a94e1a370",
+          "independentNeutral": "af787c3b060578f7dd7563de3f21a98fc933bf9e607b1b66910e14a47397b521",
+          "adapterNeutral": "af787c3b060578f7dd7563de3f21a98fc933bf9e607b1b66910e14a47397b521"
+        },
+        {
+          "startIndex": 2,
+          "independentAction": "e79eec4362e8e7f653fdc8965f9958917d13f12af34055ecfbc59583cf6b6b6e",
+          "adapterAction": "e79eec4362e8e7f653fdc8965f9958917d13f12af34055ecfbc59583cf6b6b6e",
+          "independentNeutral": "45665fc0e308d37c8f2723635f7825cfc938d86f0008dd82f06b1ad4897d6705",
+          "adapterNeutral": "45665fc0e308d37c8f2723635f7825cfc938d86f0008dd82f06b1ad4897d6705"
+        }
+      ],
+      "independentConfirmed": [
+        137
+      ],
+      "adapterConfirmed": [
+        137
+      ],
+      "wallClockMs": {
+        "adapter": 736,
+        "independent": 923
+      },
+      "adapterFramesRun": 36,
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 1,
+          "adapterAttributed": 1,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 1,
+          "adapterAttributed": 1,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 1,
+          "adapterAttributed": 1,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2c",
+      "seed": 0,
+      "pulses": 4,
+      "hold": 4,
+      "release": 8,
+      "frames": 48,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "hashMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "armCount": {
+        "adapter": 33,
+        "independent": 33
+      },
+      "framesEmulated": {
+        "adapter": 1584,
+        "independent": 1584
+      },
+      "reference": "an independent reimplementation in this file; the standard detector cannot express a train",
+      "actionAndNeutralHashes": [
+        {
+          "startIndex": 0,
+          "independentAction": "b73e773abd1458ebb1187ba07a1795f51ef5f6115d23e0fcecc23dc761e76769",
+          "adapterAction": "b73e773abd1458ebb1187ba07a1795f51ef5f6115d23e0fcecc23dc761e76769",
+          "independentNeutral": "6a072ead6b5004072f1d34bb5f7a270aae8b6fa08135d83f2bb1dad609eaca63",
+          "adapterNeutral": "6a072ead6b5004072f1d34bb5f7a270aae8b6fa08135d83f2bb1dad609eaca63"
+        },
+        {
+          "startIndex": 1,
+          "independentAction": "1b62411b14b5e56050035812642ab80a2baa27dcf631f717b6047273e64cee49",
+          "adapterAction": "1b62411b14b5e56050035812642ab80a2baa27dcf631f717b6047273e64cee49",
+          "independentNeutral": "92a72d1be3455467129541fa5d01d90d708ad9cb7cc382c81c18319a9902a315",
+          "adapterNeutral": "92a72d1be3455467129541fa5d01d90d708ad9cb7cc382c81c18319a9902a315"
+        },
+        {
+          "startIndex": 2,
+          "independentAction": "cbfeeaf79b13f00e11e6b688364d1c4838897957e3f5eebdbdea741dbe8a5c36",
+          "adapterAction": "cbfeeaf79b13f00e11e6b688364d1c4838897957e3f5eebdbdea741dbe8a5c36",
+          "independentNeutral": "e53dc620455d104fcb5d0b8cd67c71839f225d082bc07aba0e4866d84ef085be",
+          "adapterNeutral": "e53dc620455d104fcb5d0b8cd67c71839f225d082bc07aba0e4866d84ef085be"
+        }
+      ],
+      "independentConfirmed": [
+        94,
+        178
+      ],
+      "adapterConfirmed": [
+        94,
+        178
+      ],
+      "wallClockMs": {
+        "adapter": 3173,
+        "independent": 2263
+      },
+      "adapterFramesRun": 144,
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 5,
+          "adapterAttributed": 5,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2c",
+      "seed": 0,
+      "pulses": 4,
+      "hold": 4,
+      "release": 8,
+      "frames": 48,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "hashMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "armCount": {
+        "adapter": 33,
+        "independent": 33
+      },
+      "framesEmulated": {
+        "adapter": 1584,
+        "independent": 1584
+      },
+      "reference": "an independent reimplementation in this file; the standard detector cannot express a train",
+      "actionAndNeutralHashes": [
+        {
+          "startIndex": 0,
+          "independentAction": "e5f2dc506b7bf9dc8c8f9c4fe9c7f90251599aa43f52b2296a2fc96c26423dd0",
+          "adapterAction": "e5f2dc506b7bf9dc8c8f9c4fe9c7f90251599aa43f52b2296a2fc96c26423dd0",
+          "independentNeutral": "6a072ead6b5004072f1d34bb5f7a270aae8b6fa08135d83f2bb1dad609eaca63",
+          "adapterNeutral": "6a072ead6b5004072f1d34bb5f7a270aae8b6fa08135d83f2bb1dad609eaca63"
+        },
+        {
+          "startIndex": 1,
+          "independentAction": "c511f731655cb508b1b76339a6039d21b77d3e7d93cecf80ffb7aeb4e0a80e5b",
+          "adapterAction": "c511f731655cb508b1b76339a6039d21b77d3e7d93cecf80ffb7aeb4e0a80e5b",
+          "independentNeutral": "92a72d1be3455467129541fa5d01d90d708ad9cb7cc382c81c18319a9902a315",
+          "adapterNeutral": "92a72d1be3455467129541fa5d01d90d708ad9cb7cc382c81c18319a9902a315"
+        },
+        {
+          "startIndex": 2,
+          "independentAction": "f5066e57e54eed98048cc624db752c51312b7713d9227c9ec131f5ae1facb8e1",
+          "adapterAction": "f5066e57e54eed98048cc624db752c51312b7713d9227c9ec131f5ae1facb8e1",
+          "independentNeutral": "e53dc620455d104fcb5d0b8cd67c71839f225d082bc07aba0e4866d84ef085be",
+          "adapterNeutral": "e53dc620455d104fcb5d0b8cd67c71839f225d082bc07aba0e4866d84ef085be"
+        }
+      ],
+      "independentConfirmed": [
+        137
+      ],
+      "adapterConfirmed": [
+        137
+      ],
+      "wallClockMs": {
+        "adapter": 2444,
+        "independent": 2538
+      },
+      "adapterFramesRun": 144,
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 1,
+          "adapterAttributed": 1,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 1,
+          "adapterAttributed": 1,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 1,
+          "adapterAttributed": 1,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2c",
+      "seed": 0,
+      "pulses": 12,
+      "hold": 4,
+      "release": 8,
+      "frames": 144,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "hashMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "armCount": {
+        "adapter": 33,
+        "independent": 33
+      },
+      "framesEmulated": {
+        "adapter": 4752,
+        "independent": 4752
+      },
+      "reference": "an independent reimplementation in this file; the standard detector cannot express a train",
+      "actionAndNeutralHashes": [
+        {
+          "startIndex": 0,
+          "independentAction": "8e9dc8aa668da941686eed60eb23118cb516a0efe18da6c7e7156be95122995a",
+          "adapterAction": "8e9dc8aa668da941686eed60eb23118cb516a0efe18da6c7e7156be95122995a",
+          "independentNeutral": "51942217b107e7a3eedb7648820c55ce4b471908f1330d34efe5ca097a28a55e",
+          "adapterNeutral": "51942217b107e7a3eedb7648820c55ce4b471908f1330d34efe5ca097a28a55e"
+        },
+        {
+          "startIndex": 1,
+          "independentAction": "68432e6e11a02d41adb8798adb5cddcd4113e76b90d27dd4ed29c00dc2f9ec8f",
+          "adapterAction": "68432e6e11a02d41adb8798adb5cddcd4113e76b90d27dd4ed29c00dc2f9ec8f",
+          "independentNeutral": "494b870f0dbdc9862f312961ea581973411e987e8c173adf7d9354610506f1f7",
+          "adapterNeutral": "494b870f0dbdc9862f312961ea581973411e987e8c173adf7d9354610506f1f7"
+        },
+        {
+          "startIndex": 2,
+          "independentAction": "29b59f436f63ac4d27b7c29057ee536a5da9873f921894a82f4f14b6ae6643c4",
+          "adapterAction": "29b59f436f63ac4d27b7c29057ee536a5da9873f921894a82f4f14b6ae6643c4",
+          "independentNeutral": "32402f63c11bf7dd959278832b1105250523fc352e615577f4251368ec7dfdfb",
+          "adapterNeutral": "32402f63c11bf7dd959278832b1105250523fc352e615577f4251368ec7dfdfb"
+        }
+      ],
+      "independentConfirmed": [
+        94,
+        178
+      ],
+      "adapterConfirmed": [
+        94,
+        178
+      ],
+      "wallClockMs": {
+        "adapter": 6571,
+        "independent": 6543
+      },
+      "adapterFramesRun": 432,
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 5,
+          "adapterAttributed": 5,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2c",
+      "seed": 0,
+      "pulses": 12,
+      "hold": 4,
+      "release": 8,
+      "frames": 144,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "hashMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "armCount": {
+        "adapter": 33,
+        "independent": 33
+      },
+      "framesEmulated": {
+        "adapter": 4752,
+        "independent": 4752
+      },
+      "reference": "an independent reimplementation in this file; the standard detector cannot express a train",
+      "actionAndNeutralHashes": [
+        {
+          "startIndex": 0,
+          "independentAction": "30ce7be8d01af53908ad137812b4d15927fc0295c2c510b5fd85b6e57d55db8b",
+          "adapterAction": "30ce7be8d01af53908ad137812b4d15927fc0295c2c510b5fd85b6e57d55db8b",
+          "independentNeutral": "51942217b107e7a3eedb7648820c55ce4b471908f1330d34efe5ca097a28a55e",
+          "adapterNeutral": "51942217b107e7a3eedb7648820c55ce4b471908f1330d34efe5ca097a28a55e"
+        },
+        {
+          "startIndex": 1,
+          "independentAction": "06c86a24f958963c8edd3277d7d0e0042b579874779b2215d135561c5a99b8f5",
+          "adapterAction": "06c86a24f958963c8edd3277d7d0e0042b579874779b2215d135561c5a99b8f5",
+          "independentNeutral": "494b870f0dbdc9862f312961ea581973411e987e8c173adf7d9354610506f1f7",
+          "adapterNeutral": "494b870f0dbdc9862f312961ea581973411e987e8c173adf7d9354610506f1f7"
+        },
+        {
+          "startIndex": 2,
+          "independentAction": "cd341ac13b489a9b232e86be9a6002a17729b5fb9e810aaf8a3da0a55701d755",
+          "adapterAction": "cd341ac13b489a9b232e86be9a6002a17729b5fb9e810aaf8a3da0a55701d755",
+          "independentNeutral": "32402f63c11bf7dd959278832b1105250523fc352e615577f4251368ec7dfdfb",
+          "adapterNeutral": "32402f63c11bf7dd959278832b1105250523fc352e615577f4251368ec7dfdfb"
+        }
+      ],
+      "independentConfirmed": [
+        137
+      ],
+      "adapterConfirmed": [
+        137
+      ],
+      "wallClockMs": {
+        "adapter": 6388,
+        "independent": 6918
+      },
+      "adapterFramesRun": 432,
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 5,
+          "adapterAttributed": 5,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 1,
+          "adapterAttributed": 1,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2c",
+      "seed": 0,
+      "pulses": 30,
+      "hold": 4,
+      "release": 8,
+      "frames": 360,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "hashMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "armCount": {
+        "adapter": 33,
+        "independent": 33
+      },
+      "framesEmulated": {
+        "adapter": 11880,
+        "independent": 11880
+      },
+      "reference": "an independent reimplementation in this file; the standard detector cannot express a train",
+      "actionAndNeutralHashes": [
+        {
+          "startIndex": 0,
+          "independentAction": "2ca3dbb7ccb4a120c3bc50e3364a929316b2a2caa2ac136839c5e22397470db8",
+          "adapterAction": "2ca3dbb7ccb4a120c3bc50e3364a929316b2a2caa2ac136839c5e22397470db8",
+          "independentNeutral": "e597d2a66964c9de3750df00a547fed561ac5d265c85607e4ffe35da5d3dbe1d",
+          "adapterNeutral": "e597d2a66964c9de3750df00a547fed561ac5d265c85607e4ffe35da5d3dbe1d"
+        },
+        {
+          "startIndex": 1,
+          "independentAction": "88a88e8d4405647743db44a20d61cfa2dc8d92a206c6158b455e6449a37df79c",
+          "adapterAction": "88a88e8d4405647743db44a20d61cfa2dc8d92a206c6158b455e6449a37df79c",
+          "independentNeutral": "127b10a39062edc606f5b36c9fa1264a837cf709a93ba871cb08a8c9f21a69f4",
+          "adapterNeutral": "127b10a39062edc606f5b36c9fa1264a837cf709a93ba871cb08a8c9f21a69f4"
+        },
+        {
+          "startIndex": 2,
+          "independentAction": "fe399434eb5e0b2d6176dffe831a5ce0cdf7588eb7b8db18067044302c2ca381",
+          "adapterAction": "fe399434eb5e0b2d6176dffe831a5ce0cdf7588eb7b8db18067044302c2ca381",
+          "independentNeutral": "f23751a85e9b41ce0671bff4bf2921b88439a62253c93d9d457882d3fab6c887",
+          "adapterNeutral": "f23751a85e9b41ce0671bff4bf2921b88439a62253c93d9d457882d3fab6c887"
+        }
+      ],
+      "independentConfirmed": [
+        94,
+        178
+      ],
+      "adapterConfirmed": [
+        94,
+        178
+      ],
+      "wallClockMs": {
+        "adapter": 15362,
+        "independent": 16085
+      },
+      "adapterFramesRun": 1080,
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 5,
+          "adapterAttributed": 5,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2c",
+      "seed": 0,
+      "pulses": 30,
+      "hold": 4,
+      "release": 8,
+      "frames": 360,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "hashMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "armCount": {
+        "adapter": 33,
+        "independent": 33
+      },
+      "framesEmulated": {
+        "adapter": 11880,
+        "independent": 11880
+      },
+      "reference": "an independent reimplementation in this file; the standard detector cannot express a train",
+      "actionAndNeutralHashes": [
+        {
+          "startIndex": 0,
+          "independentAction": "d3e79303be2e3412867fc7a653decc3c735853378fd767f6e90c00e1fbe47ae8",
+          "adapterAction": "d3e79303be2e3412867fc7a653decc3c735853378fd767f6e90c00e1fbe47ae8",
+          "independentNeutral": "e597d2a66964c9de3750df00a547fed561ac5d265c85607e4ffe35da5d3dbe1d",
+          "adapterNeutral": "e597d2a66964c9de3750df00a547fed561ac5d265c85607e4ffe35da5d3dbe1d"
+        },
+        {
+          "startIndex": 1,
+          "independentAction": "608e34bd40eed4ea76b18333fb1fef71e1a092f0e8697b312e9fcf29253fb4ab",
+          "adapterAction": "608e34bd40eed4ea76b18333fb1fef71e1a092f0e8697b312e9fcf29253fb4ab",
+          "independentNeutral": "127b10a39062edc606f5b36c9fa1264a837cf709a93ba871cb08a8c9f21a69f4",
+          "adapterNeutral": "127b10a39062edc606f5b36c9fa1264a837cf709a93ba871cb08a8c9f21a69f4"
+        },
+        {
+          "startIndex": 2,
+          "independentAction": "3c31567eea35e59da316636860f637025a114f64e3b02ccd476525192deb9d2e",
+          "adapterAction": "3c31567eea35e59da316636860f637025a114f64e3b02ccd476525192deb9d2e",
+          "independentNeutral": "f23751a85e9b41ce0671bff4bf2921b88439a62253c93d9d457882d3fab6c887",
+          "adapterNeutral": "f23751a85e9b41ce0671bff4bf2921b88439a62253c93d9d457882d3fab6c887"
+        }
+      ],
+      "independentConfirmed": [
+        70,
+        121,
+        137,
+        145,
+        169
+      ],
+      "adapterConfirmed": [
+        70,
+        121,
+        137,
+        145,
+        169
+      ],
+      "wallClockMs": {
+        "adapter": 17139,
+        "independent": 16723
+      },
+      "adapterFramesRun": 1080,
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 5,
+          "adapterAttributed": 5,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 5,
+          "adapterAttributed": 5,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 5,
+          "adapterAttributed": 5,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2a",
+      "seed": 200,
+      "horizon": 12,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "armCountStandard": 33,
+      "armCountAdapter": 33,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "namedHashMatch": true,
+      "namedArmHashes": {
+        "standard": [
+          {
+            "startIndex": 0,
+            "neutralA": "165a63627d55ac1b4df85c8477a86d71131aa689e7bddfd557a7ff1dd4e2754c",
+            "neutralB": "165a63627d55ac1b4df85c8477a86d71131aa689e7bddfd557a7ff1dd4e2754c",
+            "trajectory": [
+              "322ae79db6bef25c52cfeb801468eaddf2c2de369d377bea42cfe32f58eb3fe5",
+              "7730fc40cfe5c5ba5f96a06535b68bc91c12bd6d741dba1c919f122c1feea631",
+              "c25a7f6addcb24d3eb01559694ed002e847a2c6fcc2f1e48020fb9d71eefcc89",
+              "165a63627d55ac1b4df85c8477a86d71131aa689e7bddfd557a7ff1dd4e2754c",
+              "f845202a7a34b332edfc01c4ec6eaa466844b15eeb133e9b391e1bdea6eb784e",
+              "079773bf361161e62723caf2841139f7453b42e9cf0ee43cb07d99c4476da27c",
+              "cf6a383e4ee2abeab5366a66d410faf005f48da11cd0499c526506e5d0c99a86"
+            ],
+            "action": "52f87a7fbeec40594e7dc87f541eeae19c891c7f6567dee64b7a1afdb43b7294",
+            "alternative": "5e8d3a86ccfa5e009c73ba605b44279f22f5e98847446cf14d6553d0afb3e77a"
+          },
+          {
+            "startIndex": 1,
+            "neutralA": "1cdf43e35f1362ce71d9c5f977ef7d4c4a7cf3a0da02322fc269d39dbbc6b73a",
+            "neutralB": "1cdf43e35f1362ce71d9c5f977ef7d4c4a7cf3a0da02322fc269d39dbbc6b73a",
+            "trajectory": [
+              "4b4ec633cb831ad10bf38ffaa5180c70559e002a3e2bb140a1fc12f0a69a26ab",
+              "7d01a43c2fc12a88ca67a12214c0c659ba5d235a55972756b1da65524324b09e",
+              "6f5f44e2cc9f2c62edb03731f4fa83e4cfb464015d9fa5d75818e8ba71f2bb5d",
+              "1cdf43e35f1362ce71d9c5f977ef7d4c4a7cf3a0da02322fc269d39dbbc6b73a",
+              "76b4014d9104363e5b76bb131dd514ae04ac1e1c7a734b2af5cf289304daae8f",
+              "a31270637d2df232779bace2ec5089bd0cfb5f898d2620342f1428f8a923a680",
+              "98d0709911691c41fee8d0ad84a5049af7bdbb645d094a369a26b4ed3a004d19"
+            ],
+            "action": "7d03374a8f4e1db2c1d43ecab3789bb4100aad480d16b185f6968730ce9f9fd1",
+            "alternative": "bc4e19f2dd62a4bed13d2c6c17d5449d0d1535de279bd5096463dbfc194bec7c"
+          },
+          {
+            "startIndex": 2,
+            "neutralA": "2b5d27363c70de0be6c4b66fea87b1c68a93c0d7199dd58aeed3710a5dbeb7ba",
+            "neutralB": "2b5d27363c70de0be6c4b66fea87b1c68a93c0d7199dd58aeed3710a5dbeb7ba",
+            "trajectory": [
+              "bb290b13e458f6f190c4ac00957c277f630e3e31690c43bb505b6d9f2948ada2",
+              "214ce9c065cfc5138d688d18aaaeda63beb7c39bf654f17644120c6c242d25ca",
+              "a6e60a951673f61c6e48a9e13d37eb08559f2ae1aa429eb5d16460f0d7cab56a",
+              "2b5d27363c70de0be6c4b66fea87b1c68a93c0d7199dd58aeed3710a5dbeb7ba",
+              "218a7d131c4eb21d33076428bd704deba446b146028beb8e0fdf6391485f8ef8",
+              "715d1b657ef104bbea422bafcf02ebfcbbb75be55b81ddc2c39e9d6d53addf08",
+              "cd7e6f0a43fed3975d9197f49d29d7e5535f001fd239ed11ddf6315ef9a8fd77"
+            ],
+            "action": "49c6a039a3ead1a3cdf60b5e6caf0eed773e8ed032c7157f29a44ee05800b1ff",
+            "alternative": "eb60e9f28d56765471edecd4620e578140a41e0176cc9e66f9de514f7822559f"
+          }
+        ],
+        "adapter": [
+          {
+            "startIndex": 0,
+            "neutralA": "165a63627d55ac1b4df85c8477a86d71131aa689e7bddfd557a7ff1dd4e2754c",
+            "neutralB": "165a63627d55ac1b4df85c8477a86d71131aa689e7bddfd557a7ff1dd4e2754c",
+            "trajectory": [
+              "322ae79db6bef25c52cfeb801468eaddf2c2de369d377bea42cfe32f58eb3fe5",
+              "7730fc40cfe5c5ba5f96a06535b68bc91c12bd6d741dba1c919f122c1feea631",
+              "c25a7f6addcb24d3eb01559694ed002e847a2c6fcc2f1e48020fb9d71eefcc89",
+              "165a63627d55ac1b4df85c8477a86d71131aa689e7bddfd557a7ff1dd4e2754c",
+              "f845202a7a34b332edfc01c4ec6eaa466844b15eeb133e9b391e1bdea6eb784e",
+              "079773bf361161e62723caf2841139f7453b42e9cf0ee43cb07d99c4476da27c",
+              "cf6a383e4ee2abeab5366a66d410faf005f48da11cd0499c526506e5d0c99a86"
+            ],
+            "action": "52f87a7fbeec40594e7dc87f541eeae19c891c7f6567dee64b7a1afdb43b7294",
+            "alternative": "5e8d3a86ccfa5e009c73ba605b44279f22f5e98847446cf14d6553d0afb3e77a"
+          },
+          {
+            "startIndex": 1,
+            "neutralA": "1cdf43e35f1362ce71d9c5f977ef7d4c4a7cf3a0da02322fc269d39dbbc6b73a",
+            "neutralB": "1cdf43e35f1362ce71d9c5f977ef7d4c4a7cf3a0da02322fc269d39dbbc6b73a",
+            "trajectory": [
+              "4b4ec633cb831ad10bf38ffaa5180c70559e002a3e2bb140a1fc12f0a69a26ab",
+              "7d01a43c2fc12a88ca67a12214c0c659ba5d235a55972756b1da65524324b09e",
+              "6f5f44e2cc9f2c62edb03731f4fa83e4cfb464015d9fa5d75818e8ba71f2bb5d",
+              "1cdf43e35f1362ce71d9c5f977ef7d4c4a7cf3a0da02322fc269d39dbbc6b73a",
+              "76b4014d9104363e5b76bb131dd514ae04ac1e1c7a734b2af5cf289304daae8f",
+              "a31270637d2df232779bace2ec5089bd0cfb5f898d2620342f1428f8a923a680",
+              "98d0709911691c41fee8d0ad84a5049af7bdbb645d094a369a26b4ed3a004d19"
+            ],
+            "action": "7d03374a8f4e1db2c1d43ecab3789bb4100aad480d16b185f6968730ce9f9fd1",
+            "alternative": "bc4e19f2dd62a4bed13d2c6c17d5449d0d1535de279bd5096463dbfc194bec7c"
+          },
+          {
+            "startIndex": 2,
+            "neutralA": "2b5d27363c70de0be6c4b66fea87b1c68a93c0d7199dd58aeed3710a5dbeb7ba",
+            "neutralB": "2b5d27363c70de0be6c4b66fea87b1c68a93c0d7199dd58aeed3710a5dbeb7ba",
+            "trajectory": [
+              "bb290b13e458f6f190c4ac00957c277f630e3e31690c43bb505b6d9f2948ada2",
+              "214ce9c065cfc5138d688d18aaaeda63beb7c39bf654f17644120c6c242d25ca",
+              "a6e60a951673f61c6e48a9e13d37eb08559f2ae1aa429eb5d16460f0d7cab56a",
+              "2b5d27363c70de0be6c4b66fea87b1c68a93c0d7199dd58aeed3710a5dbeb7ba",
+              "218a7d131c4eb21d33076428bd704deba446b146028beb8e0fdf6391485f8ef8",
+              "715d1b657ef104bbea422bafcf02ebfcbbb75be55b81ddc2c39e9d6d53addf08",
+              "cd7e6f0a43fed3975d9197f49d29d7e5535f001fd239ed11ddf6315ef9a8fd77"
+            ],
+            "action": "49c6a039a3ead1a3cdf60b5e6caf0eed773e8ed032c7157f29a44ee05800b1ff",
+            "alternative": "eb60e9f28d56765471edecd4620e578140a41e0176cc9e66f9de514f7822559f"
+          }
+        ]
+      },
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "startsMatch": true,
+      "shiftMatch": true,
+      "framesMatch": true,
+      "standardShiftTolerance": 3,
+      "adapterShiftTolerance": 3,
+      "standardConfirmed": [
+        17,
+        33,
+        100,
+        177
+      ],
+      "adapterConfirmed": [
+        17,
+        33,
+        100,
+        177
+      ],
+      "standardUsableStarts": 3,
+      "adapterUsableStarts": 3,
+      "standardExcludedStarts": 0,
+      "adapterExcludedStarts": 0,
+      "framesEmulated": {
+        "standard": 396,
+        "adapter": 396
+      },
+      "wallClockMs": {
+        "standard": 833,
+        "adapter": 948
+      },
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2a",
+      "seed": 200,
+      "horizon": 12,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "armCountStandard": 33,
+      "armCountAdapter": 33,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "namedHashMatch": true,
+      "namedArmHashes": {
+        "standard": [
+          {
+            "startIndex": 0,
+            "neutralA": "165a63627d55ac1b4df85c8477a86d71131aa689e7bddfd557a7ff1dd4e2754c",
+            "neutralB": "165a63627d55ac1b4df85c8477a86d71131aa689e7bddfd557a7ff1dd4e2754c",
+            "trajectory": [
+              "322ae79db6bef25c52cfeb801468eaddf2c2de369d377bea42cfe32f58eb3fe5",
+              "7730fc40cfe5c5ba5f96a06535b68bc91c12bd6d741dba1c919f122c1feea631",
+              "c25a7f6addcb24d3eb01559694ed002e847a2c6fcc2f1e48020fb9d71eefcc89",
+              "165a63627d55ac1b4df85c8477a86d71131aa689e7bddfd557a7ff1dd4e2754c",
+              "f845202a7a34b332edfc01c4ec6eaa466844b15eeb133e9b391e1bdea6eb784e",
+              "079773bf361161e62723caf2841139f7453b42e9cf0ee43cb07d99c4476da27c",
+              "cf6a383e4ee2abeab5366a66d410faf005f48da11cd0499c526506e5d0c99a86"
+            ],
+            "action": "e4bbfc7bba59e870a17e2c2869e19c60aafb21c9fda50c67fb351ad92987ae90",
+            "alternative": "5e8d3a86ccfa5e009c73ba605b44279f22f5e98847446cf14d6553d0afb3e77a"
+          },
+          {
+            "startIndex": 1,
+            "neutralA": "1cdf43e35f1362ce71d9c5f977ef7d4c4a7cf3a0da02322fc269d39dbbc6b73a",
+            "neutralB": "1cdf43e35f1362ce71d9c5f977ef7d4c4a7cf3a0da02322fc269d39dbbc6b73a",
+            "trajectory": [
+              "4b4ec633cb831ad10bf38ffaa5180c70559e002a3e2bb140a1fc12f0a69a26ab",
+              "7d01a43c2fc12a88ca67a12214c0c659ba5d235a55972756b1da65524324b09e",
+              "6f5f44e2cc9f2c62edb03731f4fa83e4cfb464015d9fa5d75818e8ba71f2bb5d",
+              "1cdf43e35f1362ce71d9c5f977ef7d4c4a7cf3a0da02322fc269d39dbbc6b73a",
+              "76b4014d9104363e5b76bb131dd514ae04ac1e1c7a734b2af5cf289304daae8f",
+              "a31270637d2df232779bace2ec5089bd0cfb5f898d2620342f1428f8a923a680",
+              "98d0709911691c41fee8d0ad84a5049af7bdbb645d094a369a26b4ed3a004d19"
+            ],
+            "action": "b837f91dd10a84e285a2bf9576b92df69c8731b1c6291b53217d98bdc8921067",
+            "alternative": "bc4e19f2dd62a4bed13d2c6c17d5449d0d1535de279bd5096463dbfc194bec7c"
+          },
+          {
+            "startIndex": 2,
+            "neutralA": "2b5d27363c70de0be6c4b66fea87b1c68a93c0d7199dd58aeed3710a5dbeb7ba",
+            "neutralB": "2b5d27363c70de0be6c4b66fea87b1c68a93c0d7199dd58aeed3710a5dbeb7ba",
+            "trajectory": [
+              "bb290b13e458f6f190c4ac00957c277f630e3e31690c43bb505b6d9f2948ada2",
+              "214ce9c065cfc5138d688d18aaaeda63beb7c39bf654f17644120c6c242d25ca",
+              "a6e60a951673f61c6e48a9e13d37eb08559f2ae1aa429eb5d16460f0d7cab56a",
+              "2b5d27363c70de0be6c4b66fea87b1c68a93c0d7199dd58aeed3710a5dbeb7ba",
+              "218a7d131c4eb21d33076428bd704deba446b146028beb8e0fdf6391485f8ef8",
+              "715d1b657ef104bbea422bafcf02ebfcbbb75be55b81ddc2c39e9d6d53addf08",
+              "cd7e6f0a43fed3975d9197f49d29d7e5535f001fd239ed11ddf6315ef9a8fd77"
+            ],
+            "action": "404089d66bda737b10acf38745c80976120c1504812b3bb05dae874b6df6db15",
+            "alternative": "eb60e9f28d56765471edecd4620e578140a41e0176cc9e66f9de514f7822559f"
+          }
+        ],
+        "adapter": [
+          {
+            "startIndex": 0,
+            "neutralA": "165a63627d55ac1b4df85c8477a86d71131aa689e7bddfd557a7ff1dd4e2754c",
+            "neutralB": "165a63627d55ac1b4df85c8477a86d71131aa689e7bddfd557a7ff1dd4e2754c",
+            "trajectory": [
+              "322ae79db6bef25c52cfeb801468eaddf2c2de369d377bea42cfe32f58eb3fe5",
+              "7730fc40cfe5c5ba5f96a06535b68bc91c12bd6d741dba1c919f122c1feea631",
+              "c25a7f6addcb24d3eb01559694ed002e847a2c6fcc2f1e48020fb9d71eefcc89",
+              "165a63627d55ac1b4df85c8477a86d71131aa689e7bddfd557a7ff1dd4e2754c",
+              "f845202a7a34b332edfc01c4ec6eaa466844b15eeb133e9b391e1bdea6eb784e",
+              "079773bf361161e62723caf2841139f7453b42e9cf0ee43cb07d99c4476da27c",
+              "cf6a383e4ee2abeab5366a66d410faf005f48da11cd0499c526506e5d0c99a86"
+            ],
+            "action": "e4bbfc7bba59e870a17e2c2869e19c60aafb21c9fda50c67fb351ad92987ae90",
+            "alternative": "5e8d3a86ccfa5e009c73ba605b44279f22f5e98847446cf14d6553d0afb3e77a"
+          },
+          {
+            "startIndex": 1,
+            "neutralA": "1cdf43e35f1362ce71d9c5f977ef7d4c4a7cf3a0da02322fc269d39dbbc6b73a",
+            "neutralB": "1cdf43e35f1362ce71d9c5f977ef7d4c4a7cf3a0da02322fc269d39dbbc6b73a",
+            "trajectory": [
+              "4b4ec633cb831ad10bf38ffaa5180c70559e002a3e2bb140a1fc12f0a69a26ab",
+              "7d01a43c2fc12a88ca67a12214c0c659ba5d235a55972756b1da65524324b09e",
+              "6f5f44e2cc9f2c62edb03731f4fa83e4cfb464015d9fa5d75818e8ba71f2bb5d",
+              "1cdf43e35f1362ce71d9c5f977ef7d4c4a7cf3a0da02322fc269d39dbbc6b73a",
+              "76b4014d9104363e5b76bb131dd514ae04ac1e1c7a734b2af5cf289304daae8f",
+              "a31270637d2df232779bace2ec5089bd0cfb5f898d2620342f1428f8a923a680",
+              "98d0709911691c41fee8d0ad84a5049af7bdbb645d094a369a26b4ed3a004d19"
+            ],
+            "action": "b837f91dd10a84e285a2bf9576b92df69c8731b1c6291b53217d98bdc8921067",
+            "alternative": "bc4e19f2dd62a4bed13d2c6c17d5449d0d1535de279bd5096463dbfc194bec7c"
+          },
+          {
+            "startIndex": 2,
+            "neutralA": "2b5d27363c70de0be6c4b66fea87b1c68a93c0d7199dd58aeed3710a5dbeb7ba",
+            "neutralB": "2b5d27363c70de0be6c4b66fea87b1c68a93c0d7199dd58aeed3710a5dbeb7ba",
+            "trajectory": [
+              "bb290b13e458f6f190c4ac00957c277f630e3e31690c43bb505b6d9f2948ada2",
+              "214ce9c065cfc5138d688d18aaaeda63beb7c39bf654f17644120c6c242d25ca",
+              "a6e60a951673f61c6e48a9e13d37eb08559f2ae1aa429eb5d16460f0d7cab56a",
+              "2b5d27363c70de0be6c4b66fea87b1c68a93c0d7199dd58aeed3710a5dbeb7ba",
+              "218a7d131c4eb21d33076428bd704deba446b146028beb8e0fdf6391485f8ef8",
+              "715d1b657ef104bbea422bafcf02ebfcbbb75be55b81ddc2c39e9d6d53addf08",
+              "cd7e6f0a43fed3975d9197f49d29d7e5535f001fd239ed11ddf6315ef9a8fd77"
+            ],
+            "action": "404089d66bda737b10acf38745c80976120c1504812b3bb05dae874b6df6db15",
+            "alternative": "eb60e9f28d56765471edecd4620e578140a41e0176cc9e66f9de514f7822559f"
+          }
+        ]
+      },
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "startsMatch": true,
+      "shiftMatch": true,
+      "framesMatch": true,
+      "standardShiftTolerance": 3,
+      "adapterShiftTolerance": 3,
+      "standardConfirmed": [
+        22,
+        38,
+        221
+      ],
+      "adapterConfirmed": [
+        22,
+        38,
+        221
+      ],
+      "standardUsableStarts": 3,
+      "adapterUsableStarts": 3,
+      "standardExcludedStarts": 0,
+      "adapterExcludedStarts": 0,
+      "framesEmulated": {
+        "standard": 396,
+        "adapter": 396
+      },
+      "wallClockMs": {
+        "standard": 853,
+        "adapter": 721
+      },
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2a",
+      "seed": 200,
+      "horizon": 48,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "armCountStandard": 33,
+      "armCountAdapter": 33,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "namedHashMatch": true,
+      "namedArmHashes": {
+        "standard": [
+          {
+            "startIndex": 0,
+            "neutralA": "3cd673125a9d439fa5bf183d6969a25e9372cade038225d2240bb5b8c94a943d",
+            "neutralB": "3cd673125a9d439fa5bf183d6969a25e9372cade038225d2240bb5b8c94a943d",
+            "trajectory": [
+              "e2825efef4f5a8d8105928202520c9ea6df4ad03c17b570ad1fcde7d027c6252",
+              "d0d1bb15b4f4679e0853741270f06410236a92828047419e737712d64d5d3f49",
+              "2cb30c94d7a166e85512806be8fd84426e91b84030c32747e6f47954e9da257c",
+              "3cd673125a9d439fa5bf183d6969a25e9372cade038225d2240bb5b8c94a943d",
+              "d9625e1365ccbd4101b806bcb5a092e91e67d67627c544f5daf9d69aa6e9bc65",
+              "d9625e1365ccbd4101b806bcb5a092e91e67d67627c544f5daf9d69aa6e9bc65",
+              "f63853c3218ae1483c246fb2360c0878ce650ff0923fa994dbb3ae52cb0f9cc4"
+            ],
+            "action": "f7b4e3bcc7ba6c82cd0a528472d32080da151edaf20d2ea227edf8fc1659ccfd",
+            "alternative": "339a6fa754a28145bed24a6c91e0cc097e542fa33ba5e87f056bdaff21313c21"
+          },
+          {
+            "startIndex": 1,
+            "neutralA": "408d48f8bf739e962ebd580859504e0ee4b9a234b3dfa9bc3faa08407a058e40",
+            "neutralB": "408d48f8bf739e962ebd580859504e0ee4b9a234b3dfa9bc3faa08407a058e40",
+            "trajectory": [
+              "715d1b657ef104bbea422bafcf02ebfcbbb75be55b81ddc2c39e9d6d53addf08",
+              "cd7e6f0a43fed3975d9197f49d29d7e5535f001fd239ed11ddf6315ef9a8fd77",
+              "76d2f6359efb0223ef95deb65339765ddd032a75b902161740d052f3e111dda6",
+              "408d48f8bf739e962ebd580859504e0ee4b9a234b3dfa9bc3faa08407a058e40",
+              "4b190f78cfa03d8d9c66fd842f05e43a47319e3176654070c8bb555b36b00eaf",
+              "e1802cd10c2a1335a9d003e4c2d307b2d15a9efd3d538bb29fa44ac8f36dbb1b",
+              "5ebbe373bbd64cdadb545d1402714c591d77f982598d01a81188e64becfbc63c"
+            ],
+            "action": "dc8b3438db181ebffd4a94723eb56d70bd37cd69e2461c7318be06597de42e5b",
+            "alternative": "034550878328234a62a39f893c1d4aeca5a9b85210c31466044a49139e9e35c0"
+          },
+          {
+            "startIndex": 2,
+            "neutralA": "9ed31d20da6c03ba896344d34480073c693524339bf12facd3a55563dc081dbe",
+            "neutralB": "9ed31d20da6c03ba896344d34480073c693524339bf12facd3a55563dc081dbe",
+            "trajectory": [
+              "1127e8a3da95aa5ddf0af01cbcd04891624955afaff8b9d954a4f053776688e6",
+              "97b697e93bfcb8cc59899cffc1024b19b37096f236c4ccad2ecbf27e2965f12f",
+              "dbc69c00e5474fe0f5ac645f44837a5c83f3e7e9e9bdfdd83dd5a4f28ec3f9a0",
+              "9ed31d20da6c03ba896344d34480073c693524339bf12facd3a55563dc081dbe",
+              "662330f321a7546bb0c1dc59a5212fc7037c5840a6e8ee6cef20527025cc0bee",
+              "5fc06e7dd44a02031bfd5dd6eba8324f9f790a88eb1039208a2e74039ec702f2",
+              "0cd4d9868ff82a79ce06b9c0c0a0687fc8aec9a1afbc9267d6a6a9bc13ef931d"
+            ],
+            "action": "fbc6fb64372c1bf4ffd1c6d47abedab7e42b38ad90f4cf083495b3621497f2b6",
+            "alternative": "e45fad8ba3144c26bc64a0beaf52682ce92d271a8f1ed79cb4c8a64760fbee20"
+          }
+        ],
+        "adapter": [
+          {
+            "startIndex": 0,
+            "neutralA": "3cd673125a9d439fa5bf183d6969a25e9372cade038225d2240bb5b8c94a943d",
+            "neutralB": "3cd673125a9d439fa5bf183d6969a25e9372cade038225d2240bb5b8c94a943d",
+            "trajectory": [
+              "e2825efef4f5a8d8105928202520c9ea6df4ad03c17b570ad1fcde7d027c6252",
+              "d0d1bb15b4f4679e0853741270f06410236a92828047419e737712d64d5d3f49",
+              "2cb30c94d7a166e85512806be8fd84426e91b84030c32747e6f47954e9da257c",
+              "3cd673125a9d439fa5bf183d6969a25e9372cade038225d2240bb5b8c94a943d",
+              "d9625e1365ccbd4101b806bcb5a092e91e67d67627c544f5daf9d69aa6e9bc65",
+              "d9625e1365ccbd4101b806bcb5a092e91e67d67627c544f5daf9d69aa6e9bc65",
+              "f63853c3218ae1483c246fb2360c0878ce650ff0923fa994dbb3ae52cb0f9cc4"
+            ],
+            "action": "f7b4e3bcc7ba6c82cd0a528472d32080da151edaf20d2ea227edf8fc1659ccfd",
+            "alternative": "339a6fa754a28145bed24a6c91e0cc097e542fa33ba5e87f056bdaff21313c21"
+          },
+          {
+            "startIndex": 1,
+            "neutralA": "408d48f8bf739e962ebd580859504e0ee4b9a234b3dfa9bc3faa08407a058e40",
+            "neutralB": "408d48f8bf739e962ebd580859504e0ee4b9a234b3dfa9bc3faa08407a058e40",
+            "trajectory": [
+              "715d1b657ef104bbea422bafcf02ebfcbbb75be55b81ddc2c39e9d6d53addf08",
+              "cd7e6f0a43fed3975d9197f49d29d7e5535f001fd239ed11ddf6315ef9a8fd77",
+              "76d2f6359efb0223ef95deb65339765ddd032a75b902161740d052f3e111dda6",
+              "408d48f8bf739e962ebd580859504e0ee4b9a234b3dfa9bc3faa08407a058e40",
+              "4b190f78cfa03d8d9c66fd842f05e43a47319e3176654070c8bb555b36b00eaf",
+              "e1802cd10c2a1335a9d003e4c2d307b2d15a9efd3d538bb29fa44ac8f36dbb1b",
+              "5ebbe373bbd64cdadb545d1402714c591d77f982598d01a81188e64becfbc63c"
+            ],
+            "action": "dc8b3438db181ebffd4a94723eb56d70bd37cd69e2461c7318be06597de42e5b",
+            "alternative": "034550878328234a62a39f893c1d4aeca5a9b85210c31466044a49139e9e35c0"
+          },
+          {
+            "startIndex": 2,
+            "neutralA": "9ed31d20da6c03ba896344d34480073c693524339bf12facd3a55563dc081dbe",
+            "neutralB": "9ed31d20da6c03ba896344d34480073c693524339bf12facd3a55563dc081dbe",
+            "trajectory": [
+              "1127e8a3da95aa5ddf0af01cbcd04891624955afaff8b9d954a4f053776688e6",
+              "97b697e93bfcb8cc59899cffc1024b19b37096f236c4ccad2ecbf27e2965f12f",
+              "dbc69c00e5474fe0f5ac645f44837a5c83f3e7e9e9bdfdd83dd5a4f28ec3f9a0",
+              "9ed31d20da6c03ba896344d34480073c693524339bf12facd3a55563dc081dbe",
+              "662330f321a7546bb0c1dc59a5212fc7037c5840a6e8ee6cef20527025cc0bee",
+              "5fc06e7dd44a02031bfd5dd6eba8324f9f790a88eb1039208a2e74039ec702f2",
+              "0cd4d9868ff82a79ce06b9c0c0a0687fc8aec9a1afbc9267d6a6a9bc13ef931d"
+            ],
+            "action": "fbc6fb64372c1bf4ffd1c6d47abedab7e42b38ad90f4cf083495b3621497f2b6",
+            "alternative": "e45fad8ba3144c26bc64a0beaf52682ce92d271a8f1ed79cb4c8a64760fbee20"
+          }
+        ]
+      },
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "startsMatch": true,
+      "shiftMatch": true,
+      "framesMatch": true,
+      "standardShiftTolerance": 3,
+      "adapterShiftTolerance": 3,
+      "standardConfirmed": [
+        17,
+        33,
+        100
+      ],
+      "adapterConfirmed": [
+        17,
+        33,
+        100
+      ],
+      "standardUsableStarts": 3,
+      "adapterUsableStarts": 3,
+      "standardExcludedStarts": 0,
+      "adapterExcludedStarts": 0,
+      "framesEmulated": {
+        "standard": 1584,
+        "adapter": 1584
+      },
+      "wallClockMs": {
+        "standard": 2477,
+        "adapter": 2435
+      },
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 7,
+          "adapterAttributed": 7,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2a",
+      "seed": 200,
+      "horizon": 48,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "armCountStandard": 33,
+      "armCountAdapter": 33,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "namedHashMatch": true,
+      "namedArmHashes": {
+        "standard": [
+          {
+            "startIndex": 0,
+            "neutralA": "3cd673125a9d439fa5bf183d6969a25e9372cade038225d2240bb5b8c94a943d",
+            "neutralB": "3cd673125a9d439fa5bf183d6969a25e9372cade038225d2240bb5b8c94a943d",
+            "trajectory": [
+              "e2825efef4f5a8d8105928202520c9ea6df4ad03c17b570ad1fcde7d027c6252",
+              "d0d1bb15b4f4679e0853741270f06410236a92828047419e737712d64d5d3f49",
+              "2cb30c94d7a166e85512806be8fd84426e91b84030c32747e6f47954e9da257c",
+              "3cd673125a9d439fa5bf183d6969a25e9372cade038225d2240bb5b8c94a943d",
+              "d9625e1365ccbd4101b806bcb5a092e91e67d67627c544f5daf9d69aa6e9bc65",
+              "d9625e1365ccbd4101b806bcb5a092e91e67d67627c544f5daf9d69aa6e9bc65",
+              "f63853c3218ae1483c246fb2360c0878ce650ff0923fa994dbb3ae52cb0f9cc4"
+            ],
+            "action": "201ac5ad69a9df28afeed729e27b8a67f29454a994b87fa97789f19d76c66569",
+            "alternative": "339a6fa754a28145bed24a6c91e0cc097e542fa33ba5e87f056bdaff21313c21"
+          },
+          {
+            "startIndex": 1,
+            "neutralA": "408d48f8bf739e962ebd580859504e0ee4b9a234b3dfa9bc3faa08407a058e40",
+            "neutralB": "408d48f8bf739e962ebd580859504e0ee4b9a234b3dfa9bc3faa08407a058e40",
+            "trajectory": [
+              "715d1b657ef104bbea422bafcf02ebfcbbb75be55b81ddc2c39e9d6d53addf08",
+              "cd7e6f0a43fed3975d9197f49d29d7e5535f001fd239ed11ddf6315ef9a8fd77",
+              "76d2f6359efb0223ef95deb65339765ddd032a75b902161740d052f3e111dda6",
+              "408d48f8bf739e962ebd580859504e0ee4b9a234b3dfa9bc3faa08407a058e40",
+              "4b190f78cfa03d8d9c66fd842f05e43a47319e3176654070c8bb555b36b00eaf",
+              "e1802cd10c2a1335a9d003e4c2d307b2d15a9efd3d538bb29fa44ac8f36dbb1b",
+              "5ebbe373bbd64cdadb545d1402714c591d77f982598d01a81188e64becfbc63c"
+            ],
+            "action": "404089d66bda737b10acf38745c80976120c1504812b3bb05dae874b6df6db15",
+            "alternative": "034550878328234a62a39f893c1d4aeca5a9b85210c31466044a49139e9e35c0"
+          },
+          {
+            "startIndex": 2,
+            "neutralA": "9ed31d20da6c03ba896344d34480073c693524339bf12facd3a55563dc081dbe",
+            "neutralB": "9ed31d20da6c03ba896344d34480073c693524339bf12facd3a55563dc081dbe",
+            "trajectory": [
+              "1127e8a3da95aa5ddf0af01cbcd04891624955afaff8b9d954a4f053776688e6",
+              "97b697e93bfcb8cc59899cffc1024b19b37096f236c4ccad2ecbf27e2965f12f",
+              "dbc69c00e5474fe0f5ac645f44837a5c83f3e7e9e9bdfdd83dd5a4f28ec3f9a0",
+              "9ed31d20da6c03ba896344d34480073c693524339bf12facd3a55563dc081dbe",
+              "662330f321a7546bb0c1dc59a5212fc7037c5840a6e8ee6cef20527025cc0bee",
+              "5fc06e7dd44a02031bfd5dd6eba8324f9f790a88eb1039208a2e74039ec702f2",
+              "0cd4d9868ff82a79ce06b9c0c0a0687fc8aec9a1afbc9267d6a6a9bc13ef931d"
+            ],
+            "action": "6ed26299f183328111f265e266a91164a551c300ee599ab53fd373b5226e6fc4",
+            "alternative": "e45fad8ba3144c26bc64a0beaf52682ce92d271a8f1ed79cb4c8a64760fbee20"
+          }
+        ],
+        "adapter": [
+          {
+            "startIndex": 0,
+            "neutralA": "3cd673125a9d439fa5bf183d6969a25e9372cade038225d2240bb5b8c94a943d",
+            "neutralB": "3cd673125a9d439fa5bf183d6969a25e9372cade038225d2240bb5b8c94a943d",
+            "trajectory": [
+              "e2825efef4f5a8d8105928202520c9ea6df4ad03c17b570ad1fcde7d027c6252",
+              "d0d1bb15b4f4679e0853741270f06410236a92828047419e737712d64d5d3f49",
+              "2cb30c94d7a166e85512806be8fd84426e91b84030c32747e6f47954e9da257c",
+              "3cd673125a9d439fa5bf183d6969a25e9372cade038225d2240bb5b8c94a943d",
+              "d9625e1365ccbd4101b806bcb5a092e91e67d67627c544f5daf9d69aa6e9bc65",
+              "d9625e1365ccbd4101b806bcb5a092e91e67d67627c544f5daf9d69aa6e9bc65",
+              "f63853c3218ae1483c246fb2360c0878ce650ff0923fa994dbb3ae52cb0f9cc4"
+            ],
+            "action": "201ac5ad69a9df28afeed729e27b8a67f29454a994b87fa97789f19d76c66569",
+            "alternative": "339a6fa754a28145bed24a6c91e0cc097e542fa33ba5e87f056bdaff21313c21"
+          },
+          {
+            "startIndex": 1,
+            "neutralA": "408d48f8bf739e962ebd580859504e0ee4b9a234b3dfa9bc3faa08407a058e40",
+            "neutralB": "408d48f8bf739e962ebd580859504e0ee4b9a234b3dfa9bc3faa08407a058e40",
+            "trajectory": [
+              "715d1b657ef104bbea422bafcf02ebfcbbb75be55b81ddc2c39e9d6d53addf08",
+              "cd7e6f0a43fed3975d9197f49d29d7e5535f001fd239ed11ddf6315ef9a8fd77",
+              "76d2f6359efb0223ef95deb65339765ddd032a75b902161740d052f3e111dda6",
+              "408d48f8bf739e962ebd580859504e0ee4b9a234b3dfa9bc3faa08407a058e40",
+              "4b190f78cfa03d8d9c66fd842f05e43a47319e3176654070c8bb555b36b00eaf",
+              "e1802cd10c2a1335a9d003e4c2d307b2d15a9efd3d538bb29fa44ac8f36dbb1b",
+              "5ebbe373bbd64cdadb545d1402714c591d77f982598d01a81188e64becfbc63c"
+            ],
+            "action": "404089d66bda737b10acf38745c80976120c1504812b3bb05dae874b6df6db15",
+            "alternative": "034550878328234a62a39f893c1d4aeca5a9b85210c31466044a49139e9e35c0"
+          },
+          {
+            "startIndex": 2,
+            "neutralA": "9ed31d20da6c03ba896344d34480073c693524339bf12facd3a55563dc081dbe",
+            "neutralB": "9ed31d20da6c03ba896344d34480073c693524339bf12facd3a55563dc081dbe",
+            "trajectory": [
+              "1127e8a3da95aa5ddf0af01cbcd04891624955afaff8b9d954a4f053776688e6",
+              "97b697e93bfcb8cc59899cffc1024b19b37096f236c4ccad2ecbf27e2965f12f",
+              "dbc69c00e5474fe0f5ac645f44837a5c83f3e7e9e9bdfdd83dd5a4f28ec3f9a0",
+              "9ed31d20da6c03ba896344d34480073c693524339bf12facd3a55563dc081dbe",
+              "662330f321a7546bb0c1dc59a5212fc7037c5840a6e8ee6cef20527025cc0bee",
+              "5fc06e7dd44a02031bfd5dd6eba8324f9f790a88eb1039208a2e74039ec702f2",
+              "0cd4d9868ff82a79ce06b9c0c0a0687fc8aec9a1afbc9267d6a6a9bc13ef931d"
+            ],
+            "action": "6ed26299f183328111f265e266a91164a551c300ee599ab53fd373b5226e6fc4",
+            "alternative": "e45fad8ba3144c26bc64a0beaf52682ce92d271a8f1ed79cb4c8a64760fbee20"
+          }
+        ]
+      },
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "startsMatch": true,
+      "shiftMatch": true,
+      "framesMatch": true,
+      "standardShiftTolerance": 3,
+      "adapterShiftTolerance": 3,
+      "standardConfirmed": [
+        22,
+        38,
+        103,
+        110,
+        167,
+        221
+      ],
+      "adapterConfirmed": [
+        22,
+        38,
+        103,
+        110,
+        167,
+        221
+      ],
+      "standardUsableStarts": 3,
+      "adapterUsableStarts": 3,
+      "standardExcludedStarts": 0,
+      "adapterExcludedStarts": 0,
+      "framesEmulated": {
+        "standard": 1584,
+        "adapter": 1584
+      },
+      "wallClockMs": {
+        "standard": 2228,
+        "adapter": 2620
+      },
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2b",
+      "seed": 200,
+      "pulses": 1,
+      "hold": 4,
+      "release": 0,
+      "frames": 4,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 0,
+      "equivalent": true,
+      "armHashMatch": true,
+      "armFramesMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "scheduleDiffersByDesign": "the standard detector issues one run of 4 frames, the adapter issues 1 runs of 4; the button state is identical frame for frame, which is the point of this series",
+      "framesEmulated": {
+        "standard": 60,
+        "adapter": 60
+      },
+      "wallClockMs": {
+        "standard": 177,
+        "adapter": 183
+      },
+      "standardConfirmed": [
+        17,
+        33,
+        100,
+        177
+      ],
+      "adapterConfirmed": [
+        17,
+        33,
+        100,
+        177
+      ],
+      "pressEdges": 1,
+      "pressEdgesNote": "a train of zero release has ONE press edge, not one per pulse: this series tests the train code path, not cadence",
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 7,
+          "adapterAttributed": 7,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2b",
+      "seed": 200,
+      "pulses": 1,
+      "hold": 4,
+      "release": 0,
+      "frames": 4,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 0,
+      "equivalent": true,
+      "armHashMatch": true,
+      "armFramesMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "scheduleDiffersByDesign": "the standard detector issues one run of 4 frames, the adapter issues 1 runs of 4; the button state is identical frame for frame, which is the point of this series",
+      "framesEmulated": {
+        "standard": 60,
+        "adapter": 60
+      },
+      "wallClockMs": {
+        "standard": 178,
+        "adapter": 178
+      },
+      "standardConfirmed": [
+        22,
+        38,
+        221
+      ],
+      "adapterConfirmed": [
+        22,
+        38,
+        221
+      ],
+      "pressEdges": 1,
+      "pressEdgesNote": "a train of zero release has ONE press edge, not one per pulse: this series tests the train code path, not cadence",
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 3,
+          "adapterAttributed": 3,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2b",
+      "seed": 200,
+      "pulses": 4,
+      "hold": 4,
+      "release": 0,
+      "frames": 16,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 0,
+      "equivalent": true,
+      "armHashMatch": true,
+      "armFramesMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "scheduleDiffersByDesign": "the standard detector issues one run of 16 frames, the adapter issues 4 runs of 4; the button state is identical frame for frame, which is the point of this series",
+      "framesEmulated": {
+        "standard": 240,
+        "adapter": 240
+      },
+      "wallClockMs": {
+        "standard": 391,
+        "adapter": 396
+      },
+      "standardConfirmed": [
+        17,
+        33,
+        100,
+        103,
+        110,
+        167,
+        177
+      ],
+      "adapterConfirmed": [
+        17,
+        33,
+        100,
+        103,
+        110,
+        167,
+        177
+      ],
+      "pressEdges": 1,
+      "pressEdgesNote": "a train of zero release has ONE press edge, not one per pulse: this series tests the train code path, not cadence",
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 8,
+          "adapterAttributed": 8,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 8,
+          "adapterAttributed": 8,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 7,
+          "adapterAttributed": 7,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2b",
+      "seed": 200,
+      "pulses": 4,
+      "hold": 4,
+      "release": 0,
+      "frames": 16,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 0,
+      "equivalent": true,
+      "armHashMatch": true,
+      "armFramesMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "scheduleDiffersByDesign": "the standard detector issues one run of 16 frames, the adapter issues 4 runs of 4; the button state is identical frame for frame, which is the point of this series",
+      "framesEmulated": {
+        "standard": 240,
+        "adapter": 240
+      },
+      "wallClockMs": {
+        "standard": 508,
+        "adapter": 521
+      },
+      "standardConfirmed": [
+        22,
+        38,
+        103,
+        110,
+        167,
+        221
+      ],
+      "adapterConfirmed": [
+        22,
+        38,
+        103,
+        110,
+        167,
+        221
+      ],
+      "pressEdges": 1,
+      "pressEdgesNote": "a train of zero release has ONE press edge, not one per pulse: this series tests the train code path, not cadence",
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 7,
+          "adapterAttributed": 7,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 7,
+          "adapterAttributed": 7,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2b",
+      "seed": 200,
+      "pulses": 12,
+      "hold": 4,
+      "release": 0,
+      "frames": 48,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 0,
+      "equivalent": true,
+      "armHashMatch": true,
+      "armFramesMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "scheduleDiffersByDesign": "the standard detector issues one run of 48 frames, the adapter issues 12 runs of 4; the button state is identical frame for frame, which is the point of this series",
+      "framesEmulated": {
+        "standard": 720,
+        "adapter": 720
+      },
+      "wallClockMs": {
+        "standard": 1296,
+        "adapter": 1097
+      },
+      "standardConfirmed": [
+        17,
+        33,
+        100,
+        103,
+        110,
+        167
+      ],
+      "adapterConfirmed": [
+        17,
+        33,
+        100,
+        103,
+        110,
+        167
+      ],
+      "pressEdges": 1,
+      "pressEdgesNote": "a train of zero release has ONE press edge, not one per pulse: this series tests the train code path, not cadence",
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 7,
+          "adapterAttributed": 7,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2b",
+      "seed": 200,
+      "pulses": 12,
+      "hold": 4,
+      "release": 0,
+      "frames": 48,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 0,
+      "equivalent": true,
+      "armHashMatch": true,
+      "armFramesMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "scheduleDiffersByDesign": "the standard detector issues one run of 48 frames, the adapter issues 12 runs of 4; the button state is identical frame for frame, which is the point of this series",
+      "framesEmulated": {
+        "standard": 720,
+        "adapter": 720
+      },
+      "wallClockMs": {
+        "standard": 984,
+        "adapter": 974
+      },
+      "standardConfirmed": [
+        22,
+        38,
+        103,
+        110,
+        167,
+        221
+      ],
+      "adapterConfirmed": [
+        22,
+        38,
+        103,
+        110,
+        167,
+        221
+      ],
+      "pressEdges": 1,
+      "pressEdgesNote": "a train of zero release has ONE press edge, not one per pulse: this series tests the train code path, not cadence",
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 6,
+          "adapterAttributed": 6,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 1,
+          "adapterNeutralWindows": 1
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2c",
+      "seed": 200,
+      "pulses": 1,
+      "hold": 4,
+      "release": 8,
+      "frames": 12,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "hashMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "armCount": {
+        "adapter": 33,
+        "independent": 33
+      },
+      "framesEmulated": {
+        "adapter": 396,
+        "independent": 396
+      },
+      "reference": "an independent reimplementation in this file; the standard detector cannot express a train",
+      "actionAndNeutralHashes": [
+        {
+          "startIndex": 0,
+          "independentAction": "cdf571b7c55e3609180fbf125df25fb1dcabf25f803f7ffd108993442ec4cab5",
+          "adapterAction": "cdf571b7c55e3609180fbf125df25fb1dcabf25f803f7ffd108993442ec4cab5",
+          "independentNeutral": "165a63627d55ac1b4df85c8477a86d71131aa689e7bddfd557a7ff1dd4e2754c",
+          "adapterNeutral": "165a63627d55ac1b4df85c8477a86d71131aa689e7bddfd557a7ff1dd4e2754c"
+        },
+        {
+          "startIndex": 1,
+          "independentAction": "b68d2f78476c01dee74883fca57a10c561e3a8e5fea304fccf2248993fe58a6b",
+          "adapterAction": "b68d2f78476c01dee74883fca57a10c561e3a8e5fea304fccf2248993fe58a6b",
+          "independentNeutral": "1cdf43e35f1362ce71d9c5f977ef7d4c4a7cf3a0da02322fc269d39dbbc6b73a",
+          "adapterNeutral": "1cdf43e35f1362ce71d9c5f977ef7d4c4a7cf3a0da02322fc269d39dbbc6b73a"
+        },
+        {
+          "startIndex": 2,
+          "independentAction": "063014285a86cd4256e563d3dac7fbbee0a621aa00a66a92dbcfdb8d6f9db86d",
+          "adapterAction": "063014285a86cd4256e563d3dac7fbbee0a621aa00a66a92dbcfdb8d6f9db86d",
+          "independentNeutral": "2b5d27363c70de0be6c4b66fea87b1c68a93c0d7199dd58aeed3710a5dbeb7ba",
+          "adapterNeutral": "2b5d27363c70de0be6c4b66fea87b1c68a93c0d7199dd58aeed3710a5dbeb7ba"
+        }
+      ],
+      "independentConfirmed": [
+        100,
+        177
+      ],
+      "adapterConfirmed": [
+        100,
+        177
+      ],
+      "wallClockMs": {
+        "adapter": 839,
+        "independent": 893
+      },
+      "adapterFramesRun": 36,
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2c",
+      "seed": 200,
+      "pulses": 1,
+      "hold": 4,
+      "release": 8,
+      "frames": 12,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "hashMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "armCount": {
+        "adapter": 33,
+        "independent": 33
+      },
+      "framesEmulated": {
+        "adapter": 396,
+        "independent": 396
+      },
+      "reference": "an independent reimplementation in this file; the standard detector cannot express a train",
+      "actionAndNeutralHashes": [
+        {
+          "startIndex": 0,
+          "independentAction": "f8d41ee509e83063c4f0647150bbf3ec7b9f0d8264bbb89e4c028f498a4f11dd",
+          "adapterAction": "f8d41ee509e83063c4f0647150bbf3ec7b9f0d8264bbb89e4c028f498a4f11dd",
+          "independentNeutral": "165a63627d55ac1b4df85c8477a86d71131aa689e7bddfd557a7ff1dd4e2754c",
+          "adapterNeutral": "165a63627d55ac1b4df85c8477a86d71131aa689e7bddfd557a7ff1dd4e2754c"
+        },
+        {
+          "startIndex": 1,
+          "independentAction": "3231e4e576c3a1e56f3ea65b61593dd52dbf0d927c0363fcac34c79c607fdc0d",
+          "adapterAction": "3231e4e576c3a1e56f3ea65b61593dd52dbf0d927c0363fcac34c79c607fdc0d",
+          "independentNeutral": "1cdf43e35f1362ce71d9c5f977ef7d4c4a7cf3a0da02322fc269d39dbbc6b73a",
+          "adapterNeutral": "1cdf43e35f1362ce71d9c5f977ef7d4c4a7cf3a0da02322fc269d39dbbc6b73a"
+        },
+        {
+          "startIndex": 2,
+          "independentAction": "3d8f4f716cff2a331cc378f200b44fbd0b534a72cc1ee11cfd5b79283db9dfee",
+          "adapterAction": "3d8f4f716cff2a331cc378f200b44fbd0b534a72cc1ee11cfd5b79283db9dfee",
+          "independentNeutral": "2b5d27363c70de0be6c4b66fea87b1c68a93c0d7199dd58aeed3710a5dbeb7ba",
+          "adapterNeutral": "2b5d27363c70de0be6c4b66fea87b1c68a93c0d7199dd58aeed3710a5dbeb7ba"
+        }
+      ],
+      "independentConfirmed": [
+        221
+      ],
+      "adapterConfirmed": [
+        221
+      ],
+      "wallClockMs": {
+        "adapter": 745,
+        "independent": 847
+      },
+      "adapterFramesRun": 36,
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 1,
+          "adapterAttributed": 1,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 1,
+          "adapterAttributed": 1,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 1,
+          "adapterAttributed": 1,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2c",
+      "seed": 200,
+      "pulses": 4,
+      "hold": 4,
+      "release": 8,
+      "frames": 48,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "hashMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "armCount": {
+        "adapter": 33,
+        "independent": 33
+      },
+      "framesEmulated": {
+        "adapter": 1584,
+        "independent": 1584
+      },
+      "reference": "an independent reimplementation in this file; the standard detector cannot express a train",
+      "actionAndNeutralHashes": [
+        {
+          "startIndex": 0,
+          "independentAction": "365cb6aaab4fe23bc49ee9664c2a2e0813a9503f656b66a7e014c3abceb3085e",
+          "adapterAction": "365cb6aaab4fe23bc49ee9664c2a2e0813a9503f656b66a7e014c3abceb3085e",
+          "independentNeutral": "3cd673125a9d439fa5bf183d6969a25e9372cade038225d2240bb5b8c94a943d",
+          "adapterNeutral": "3cd673125a9d439fa5bf183d6969a25e9372cade038225d2240bb5b8c94a943d"
+        },
+        {
+          "startIndex": 1,
+          "independentAction": "6af64bec3832a6361b981406f4e575c3d481e65ea453e3871bc5972ef49c0384",
+          "adapterAction": "6af64bec3832a6361b981406f4e575c3d481e65ea453e3871bc5972ef49c0384",
+          "independentNeutral": "408d48f8bf739e962ebd580859504e0ee4b9a234b3dfa9bc3faa08407a058e40",
+          "adapterNeutral": "408d48f8bf739e962ebd580859504e0ee4b9a234b3dfa9bc3faa08407a058e40"
+        },
+        {
+          "startIndex": 2,
+          "independentAction": "b846bca84448a8d885e932b95f14c2ae358dbcff169bfce99720b791d4754ddb",
+          "adapterAction": "b846bca84448a8d885e932b95f14c2ae358dbcff169bfce99720b791d4754ddb",
+          "independentNeutral": "9ed31d20da6c03ba896344d34480073c693524339bf12facd3a55563dc081dbe",
+          "adapterNeutral": "9ed31d20da6c03ba896344d34480073c693524339bf12facd3a55563dc081dbe"
+        }
+      ],
+      "independentConfirmed": [
+        100,
+        177
+      ],
+      "adapterConfirmed": [
+        100,
+        177
+      ],
+      "wallClockMs": {
+        "adapter": 2890,
+        "independent": 2680
+      },
+      "adapterFramesRun": 144,
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 5,
+          "adapterAttributed": 5,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2c",
+      "seed": 200,
+      "pulses": 4,
+      "hold": 4,
+      "release": 8,
+      "frames": 48,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "hashMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "armCount": {
+        "adapter": 33,
+        "independent": 33
+      },
+      "framesEmulated": {
+        "adapter": 1584,
+        "independent": 1584
+      },
+      "reference": "an independent reimplementation in this file; the standard detector cannot express a train",
+      "actionAndNeutralHashes": [
+        {
+          "startIndex": 0,
+          "independentAction": "b4b5958cde28d1a0c3e982a88e1f316d22233e190e4198df5398bbdf57bd5c45",
+          "adapterAction": "b4b5958cde28d1a0c3e982a88e1f316d22233e190e4198df5398bbdf57bd5c45",
+          "independentNeutral": "3cd673125a9d439fa5bf183d6969a25e9372cade038225d2240bb5b8c94a943d",
+          "adapterNeutral": "3cd673125a9d439fa5bf183d6969a25e9372cade038225d2240bb5b8c94a943d"
+        },
+        {
+          "startIndex": 1,
+          "independentAction": "97f6494e535de21f40727f8ae9ec873ec91d35c66467ec0e5a8264cdbdf4da0d",
+          "adapterAction": "97f6494e535de21f40727f8ae9ec873ec91d35c66467ec0e5a8264cdbdf4da0d",
+          "independentNeutral": "408d48f8bf739e962ebd580859504e0ee4b9a234b3dfa9bc3faa08407a058e40",
+          "adapterNeutral": "408d48f8bf739e962ebd580859504e0ee4b9a234b3dfa9bc3faa08407a058e40"
+        },
+        {
+          "startIndex": 2,
+          "independentAction": "4d94385e8872968a552106aedd181f0067e94116fb624f8b5b123386a5622131",
+          "adapterAction": "4d94385e8872968a552106aedd181f0067e94116fb624f8b5b123386a5622131",
+          "independentNeutral": "9ed31d20da6c03ba896344d34480073c693524339bf12facd3a55563dc081dbe",
+          "adapterNeutral": "9ed31d20da6c03ba896344d34480073c693524339bf12facd3a55563dc081dbe"
+        }
+      ],
+      "independentConfirmed": [
+        221
+      ],
+      "adapterConfirmed": [
+        221
+      ],
+      "wallClockMs": {
+        "adapter": 2228,
+        "independent": 2231
+      },
+      "adapterFramesRun": 144,
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 1,
+          "adapterAttributed": 1,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 1,
+          "adapterAttributed": 1,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 1,
+          "adapterAttributed": 1,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2c",
+      "seed": 200,
+      "pulses": 12,
+      "hold": 4,
+      "release": 8,
+      "frames": 144,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "hashMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "armCount": {
+        "adapter": 33,
+        "independent": 33
+      },
+      "framesEmulated": {
+        "adapter": 4752,
+        "independent": 4752
+      },
+      "reference": "an independent reimplementation in this file; the standard detector cannot express a train",
+      "actionAndNeutralHashes": [
+        {
+          "startIndex": 0,
+          "independentAction": "23ea7f008d541053f96db4ed3cfda83add794df4cd9b7797a6c455188b20e4b6",
+          "adapterAction": "23ea7f008d541053f96db4ed3cfda83add794df4cd9b7797a6c455188b20e4b6",
+          "independentNeutral": "8223da3ab55ba0276112f48f83e3ca6526e05ce41f2b20e01fb801740f6f5731",
+          "adapterNeutral": "8223da3ab55ba0276112f48f83e3ca6526e05ce41f2b20e01fb801740f6f5731"
+        },
+        {
+          "startIndex": 1,
+          "independentAction": "7a5c4e9af2df6586b5255c3869e1601a28653874a1f7c24ce4aca5ea3ed00d8a",
+          "adapterAction": "7a5c4e9af2df6586b5255c3869e1601a28653874a1f7c24ce4aca5ea3ed00d8a",
+          "independentNeutral": "5743ab1f7184f20ddf86b39cac9ea0d9ccb5417f30f26976186498d8df1809de",
+          "adapterNeutral": "5743ab1f7184f20ddf86b39cac9ea0d9ccb5417f30f26976186498d8df1809de"
+        },
+        {
+          "startIndex": 2,
+          "independentAction": "0f1bb0593e494f4a6bf7062140efe26c1563b023a51a81366f1f68be95c998aa",
+          "adapterAction": "0f1bb0593e494f4a6bf7062140efe26c1563b023a51a81366f1f68be95c998aa",
+          "independentNeutral": "73ae5f48d8783ae7bc44d454acdb275a4d33f7966880483fc5bffece0dda6dee",
+          "adapterNeutral": "73ae5f48d8783ae7bc44d454acdb275a4d33f7966880483fc5bffece0dda6dee"
+        }
+      ],
+      "independentConfirmed": [
+        100,
+        177
+      ],
+      "adapterConfirmed": [
+        100,
+        177
+      ],
+      "wallClockMs": {
+        "adapter": 6339,
+        "independent": 6676
+      },
+      "adapterFramesRun": 432,
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2c",
+      "seed": 200,
+      "pulses": 12,
+      "hold": 4,
+      "release": 8,
+      "frames": 144,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "hashMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "armCount": {
+        "adapter": 33,
+        "independent": 33
+      },
+      "framesEmulated": {
+        "adapter": 4752,
+        "independent": 4752
+      },
+      "reference": "an independent reimplementation in this file; the standard detector cannot express a train",
+      "actionAndNeutralHashes": [
+        {
+          "startIndex": 0,
+          "independentAction": "3ce49235976f0db476f5ab9c307fc025565d55e33609a76f3f00d19ed87726d8",
+          "adapterAction": "3ce49235976f0db476f5ab9c307fc025565d55e33609a76f3f00d19ed87726d8",
+          "independentNeutral": "8223da3ab55ba0276112f48f83e3ca6526e05ce41f2b20e01fb801740f6f5731",
+          "adapterNeutral": "8223da3ab55ba0276112f48f83e3ca6526e05ce41f2b20e01fb801740f6f5731"
+        },
+        {
+          "startIndex": 1,
+          "independentAction": "793e131889f3456dcf73f643bcb932c7055286caf672de07ad723ed9d64bde01",
+          "adapterAction": "793e131889f3456dcf73f643bcb932c7055286caf672de07ad723ed9d64bde01",
+          "independentNeutral": "5743ab1f7184f20ddf86b39cac9ea0d9ccb5417f30f26976186498d8df1809de",
+          "adapterNeutral": "5743ab1f7184f20ddf86b39cac9ea0d9ccb5417f30f26976186498d8df1809de"
+        },
+        {
+          "startIndex": 2,
+          "independentAction": "c411f7a70f8abf675f3ac742523859f292d68c04f75ed5f551177298399d4317",
+          "adapterAction": "c411f7a70f8abf675f3ac742523859f292d68c04f75ed5f551177298399d4317",
+          "independentNeutral": "73ae5f48d8783ae7bc44d454acdb275a4d33f7966880483fc5bffece0dda6dee",
+          "adapterNeutral": "73ae5f48d8783ae7bc44d454acdb275a4d33f7966880483fc5bffece0dda6dee"
+        }
+      ],
+      "independentConfirmed": [
+        221
+      ],
+      "adapterConfirmed": [
+        221
+      ],
+      "wallClockMs": {
+        "adapter": 7067,
+        "independent": 6847
+      },
+      "adapterFramesRun": 432,
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 4,
+          "adapterAttributed": 4,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 1,
+          "adapterAttributed": 1,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2c",
+      "seed": 200,
+      "pulses": 30,
+      "hold": 4,
+      "release": 8,
+      "frames": 360,
+      "mask": 2,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "hashMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "armCount": {
+        "adapter": 33,
+        "independent": 33
+      },
+      "framesEmulated": {
+        "adapter": 11880,
+        "independent": 11880
+      },
+      "reference": "an independent reimplementation in this file; the standard detector cannot express a train",
+      "actionAndNeutralHashes": [
+        {
+          "startIndex": 0,
+          "independentAction": "2ef76ec5b3202870cf0ed7a4fe2dd1f174ec011fe41b0689af019a8863104867",
+          "adapterAction": "2ef76ec5b3202870cf0ed7a4fe2dd1f174ec011fe41b0689af019a8863104867",
+          "independentNeutral": "38dd1512d4bfff3a6732c10bf1e6f91b870c164df5296a584f4d1954f17820f2",
+          "adapterNeutral": "38dd1512d4bfff3a6732c10bf1e6f91b870c164df5296a584f4d1954f17820f2"
+        },
+        {
+          "startIndex": 1,
+          "independentAction": "8b57af0945dcb32f3df51034e93bb6cbd5b9837b18df43bbc0bc0376c2826e19",
+          "adapterAction": "8b57af0945dcb32f3df51034e93bb6cbd5b9837b18df43bbc0bc0376c2826e19",
+          "independentNeutral": "dd7b26f518552448d2012bb23fafebd0411e9f1da94acbed4c88e3bde31c462c",
+          "adapterNeutral": "dd7b26f518552448d2012bb23fafebd0411e9f1da94acbed4c88e3bde31c462c"
+        },
+        {
+          "startIndex": 2,
+          "independentAction": "177503136467d34819d45a460bb6ee92692a844ab83a415dd066c4d4a6fe56e8",
+          "adapterAction": "177503136467d34819d45a460bb6ee92692a844ab83a415dd066c4d4a6fe56e8",
+          "independentNeutral": "4e41e3d91ac4a6208e3e3017b3cae34746722368b4787068a8e60aa873d131bf",
+          "adapterNeutral": "4e41e3d91ac4a6208e3e3017b3cae34746722368b4787068a8e60aa873d131bf"
+        }
+      ],
+      "independentConfirmed": [
+        100,
+        177
+      ],
+      "adapterConfirmed": [
+        100,
+        177
+      ],
+      "wallClockMs": {
+        "adapter": 16669,
+        "independent": 18002
+      },
+      "adapterFramesRun": 1080,
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 2,
+          "adapterAttributed": 2,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    },
+    {
+      "series": "T2c",
+      "seed": 200,
+      "pulses": 30,
+      "hold": 4,
+      "release": 8,
+      "frames": 360,
+      "mask": 64,
+      "alternative": 1,
+      "shiftTolerance": 3,
+      "equivalent": true,
+      "hashMatch": true,
+      "confirmedMatch": true,
+      "contradictedMatch": true,
+      "armScheduleMatch": true,
+      "armHashMatch": true,
+      "armCount": {
+        "adapter": 33,
+        "independent": 33
+      },
+      "framesEmulated": {
+        "adapter": 11880,
+        "independent": 11880
+      },
+      "reference": "an independent reimplementation in this file; the standard detector cannot express a train",
+      "actionAndNeutralHashes": [
+        {
+          "startIndex": 0,
+          "independentAction": "3c0901ce44db632b2fa8bcb6055a7ed8e1824eaaf6dbb7bc3a0e567ce6d78a23",
+          "adapterAction": "3c0901ce44db632b2fa8bcb6055a7ed8e1824eaaf6dbb7bc3a0e567ce6d78a23",
+          "independentNeutral": "38dd1512d4bfff3a6732c10bf1e6f91b870c164df5296a584f4d1954f17820f2",
+          "adapterNeutral": "38dd1512d4bfff3a6732c10bf1e6f91b870c164df5296a584f4d1954f17820f2"
+        },
+        {
+          "startIndex": 1,
+          "independentAction": "c3fb67f8bac684f89e839d0ed8c9ec9c6669585c23914e5b432d0b0476c6339f",
+          "adapterAction": "c3fb67f8bac684f89e839d0ed8c9ec9c6669585c23914e5b432d0b0476c6339f",
+          "independentNeutral": "dd7b26f518552448d2012bb23fafebd0411e9f1da94acbed4c88e3bde31c462c",
+          "adapterNeutral": "dd7b26f518552448d2012bb23fafebd0411e9f1da94acbed4c88e3bde31c462c"
+        },
+        {
+          "startIndex": 2,
+          "independentAction": "98e84e75c84ff24748e99dd39fa1995a9748b08b15bd0f0f7f9cd55ee3254bf9",
+          "adapterAction": "98e84e75c84ff24748e99dd39fa1995a9748b08b15bd0f0f7f9cd55ee3254bf9",
+          "independentNeutral": "4e41e3d91ac4a6208e3e3017b3cae34746722368b4787068a8e60aa873d131bf",
+          "adapterNeutral": "4e41e3d91ac4a6208e3e3017b3cae34746722368b4787068a8e60aa873d131bf"
+        }
+      ],
+      "independentConfirmed": [
+        221
+      ],
+      "adapterConfirmed": [
+        221
+      ],
+      "wallClockMs": {
+        "adapter": 16254,
+        "independent": 17663
+      },
+      "adapterFramesRun": 1080,
+      "perStart": [
+        {
+          "startIndex": 0,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 5,
+          "adapterAttributed": 5,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 1,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 5,
+          "adapterAttributed": 5,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        },
+        {
+          "startIndex": 2,
+          "standardStatus": "OBSERVED",
+          "adapterStatus": "OBSERVED",
+          "statusMatch": true,
+          "attributedMatch": true,
+          "standardAttributed": 1,
+          "adapterAttributed": 1,
+          "rawMatch": true,
+          "shiftExplainedMatch": true,
+          "specificMatch": true,
+          "sharedMatch": true,
+          "neutralWindowsMatch": true,
+          "standardNeutralWindows": 7,
+          "adapterNeutralWindows": 7
+        }
+      ],
+      "divergenceDetail": null
+    }
+  ],
+  "recordedLimit": {
+    "refused": true,
+    "error": "SHIFT_EXCEEDS_RELEASE: a tail shift of -3 cannot be absorbed by a release of 2 frames; the window would not be the declared one",
+    "note": "a train whose release is smaller than the shift tolerance cannot carry a negative phase window. The adapter refuses it by name rather than silently shortening the window; this is why T2b runs at shiftTolerance 0."
+  },
+  "totals": {
+    "trials": 36,
+    "equivalent": 36,
+    "divergent": 0,
+    "bySeries": {
+      "T2a": {
+        "trials": 8,
+        "equivalent": 8
+      },
+      "T2b": {
+        "trials": 12,
+        "equivalent": 12
+      },
+      "T2c": {
+        "trials": 16,
+        "equivalent": 16
+      }
+    },
+    "gatePassed": true,
+    "totalFramesEmulated": 86448,
+    "totalWallClockMs": 125190,
+    "verdict": "the adapter and the reference agree on every compared quantity, arm by arm, in all three series: the synthetic trials may start and RECOVERED_BY_CADENCE may be used"
+  }
+}
