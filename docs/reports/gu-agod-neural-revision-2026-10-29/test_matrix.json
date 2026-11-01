@@ -914,9 +914,9 @@
   {
    "command": "AGOD_S11B_OLD=<old> AGOD_S11B_NEW=<new> AGOD_R7_REPORT=<out> node tools/agod_s11b_r7_comparison.cjs",
    "stage": "S11B-R / R7 old and repaired instrument side by side",
-   "status": "PENDING",
-   "log": "logs/s11b_r7_comparison.json",
-   "note": "reads report 29 and the re-run of the same corpus and prints both columns. Historical numbers are not replaced"
+   "status": "COMPLETE",
+   "log": "logs/s11b_r7_comparison.json, logs/s11b_r7_horizon_report_repaired.json",
+   "note": "22 of 22 candidates comparable. A = 0 and B = 0 unchanged; C and PHASE_CONTROL_INSUFFICIENT 16 -> 14; real cartridges still 6 of 6, now with PHASE_ATTESTED = true on all three procedures where report 29 had false. False confirmations of time decoys 34 -> 27, all seven in the train series. Trusted horizons widened for 8 candidates, train series only - the signature of the R1 defect. Cost +45252 frames (+1.8%), the S8-parameter attestation that had not in fact been running; RAM snapshots, bytes read and candidate evaluations unchanged. Historical numbers not replaced."
   }
  ],
  "experimentalChecksNote": "New experimental checks added by this revision. They are standalone Node checks; tools/check.sh and CI were not modified. S11B-R adds the instrument-repair checks R1-R5 and the R7 comparison; the shared host and the run-time provenance record are used by all of them."

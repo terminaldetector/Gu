@@ -1,0 +1,3851 @@
+{
+  "type": "gu-agod-s11b-r7-comparison",
+  "version": 1,
+  "item": "R7 - the old instrument and the repaired one, side by side",
+  "rule": "the historical numbers are NOT replaced. Report 29 stands as published, errors included. A changed number here is the difference between two instruments and supports no claim about any game.",
+  "sources": {
+    "before": "docs/reports/gu-agod-neural-revision-2026-10-29/logs/s11b_horizon_report.json",
+    "after": "/tmp/claude-0/-home-user/f6e72801-3e11-53f6-ae0c-ac8abd48d6c7/scratchpad/s11br.json",
+    "beforeProvenance": {
+      "commit": "a2aad9869b9d0e5d5699a26204b841b4b1b47f22",
+      "workingTreeDirty": true,
+      "node": "v22.22.0",
+      "causalRevision": "agod-causal-e3-2",
+      "adapterRevision": "agod-s11b-adapter-1",
+      "phaseRevision": "agod-phase-evidence-1"
+    },
+    "afterProvenance": {
+      "provenanceRevision": "agod-provenance-1",
+      "recordedAt": "2026-11-01T13:49:25.770Z",
+      "node": "v22.22.0",
+      "platform": "linux",
+      "arch": "x64",
+      "git": {
+        "commit": "093f9c7b76d38a280ed6ef2e0ddf6a63206647d5",
+        "branch": "research/agod-neural-e0-e1",
+        "commitSubject": "S11B-R / R4: slowTime's period was five times the shortest horizon, not an order of magnitude",
+        "commitDate": "2026-11-01T08:31:19+00:00",
+        "workingTreeDirty": true,
+        "modifiedFileCount": 6,
+        "modifiedFiles": [
+          {
+            "status": "M",
+            "path": "ocs/reports/gu-agod-neural-revision-2026-10-29/STATUS.md"
+          },
+          {
+            "status": "M",
+            "path": "docs/reports/gu-agod-neural-revision-2026-10-29/known_limitations.md"
+          },
+          {
+            "status": "M",
+            "path": "docs/reports/gu-agod-neural-revision-2026-10-29/logs/s11b_r1_schedule_test.json"
+          },
+          {
+            "status": "??",
+            "path": "docs/reports/gu-agod-neural-revision-2026-10-29/30_S11B_R_INSTRUMENT_REPAIR_RU.md"
+          },
+          {
+            "status": "??",
+            "path": "docs/reports/gu-agod-neural-revision-2026-10-29/logs/s11b_r4_dual_dependence_test.json"
+          },
+          {
+            "status": "??",
+            "path": "docs/reports/gu-agod-neural-revision-2026-10-29/logs/s11b_r5_transient_test.json"
+          }
+        ]
+      },
+      "sourceFiles": [
+        {
+          "path": "tools/agod_s11b_horizon_check.cjs",
+          "sha256": "35b84687bd18739b073c801a5ecf484303362efcbe15b0d075c0250083b7f00c",
+          "bytes": 29003,
+          "gitBlobAtHead": "bbf98328698f3f65ec0d37843d79bb7f75fc4686",
+          "matchesCommitted": true,
+          "newSinceCommit": false,
+          "error": null
+        },
+        {
+          "path": "tools/agod_s11b_adapter.cjs",
+          "sha256": "346dcce9c1723568bdaf8f4872b3a99a9f378e1215f7ae7792fe30d854c35402",
+          "bytes": 17779,
+          "gitBlobAtHead": "1e7ded631045ef6e8937e4e7ee55212256d1603d",
+          "matchesCommitted": true,
+          "newSinceCommit": false,
+          "error": null
+        },
+        {
+          "path": "tools/agod_s11b_host.cjs",
+          "sha256": "5f3ebfd3e43ab10d3dced4bea420960bf7f29df54556ff116a2865442573e030",
+          "bytes": 5091,
+          "gitBlobAtHead": "bc7580cca3203fd82f5f7756d7cbc08803c26346",
+          "matchesCommitted": true,
+          "newSinceCommit": false,
+          "error": null
+        },
+        {
+          "path": "tools/agod_phase_evidence.cjs",
+          "sha256": "4abbf815aef125fd80508fa2a06c03319e6cdb6f16ba1d505ec2ea609aa92cb9",
+          "bytes": 9397,
+          "gitBlobAtHead": "57250d96b1049f6f0ff79d9140b4b333843a7d66",
+          "matchesCommitted": true,
+          "newSinceCommit": false,
+          "error": null
+        },
+        {
+          "path": "tools/agod_provenance.cjs",
+          "sha256": "335022648aa47d4002801b72f31a56045719d5c8eb2a4f9b5742246f3c3681ec",
+          "bytes": 4892,
+          "gitBlobAtHead": "45220d396c26a6cb426d7542e679086d24265aff",
+          "matchesCommitted": true,
+          "newSinceCommit": false,
+          "error": null
+        },
+        {
+          "path": "app/src/main/assets/lab/agod-causal.js",
+          "sha256": "2b81bac1bcccf9bada5b24d6cb24ec8e1ef30a7b72f828e47a4df139faba2270",
+          "bytes": 11240,
+          "gitBlobAtHead": "c4817a719f2a4b637056e3c474082a6ad4ff1b23",
+          "matchesCommitted": true,
+          "newSinceCommit": false,
+          "error": null
+        },
+        {
+          "path": "tools/make_agod_test_rom.py",
+          "sha256": "7c61d7b32dd533ebc646259ae63533aa7e73b6052c0e230927c053be6fb499fc",
+          "bytes": 12434,
+          "gitBlobAtHead": "eb45fe20da1232f0b7e88b8864a60dbf9f5c6db6",
+          "matchesCommitted": true,
+          "newSinceCommit": false,
+          "error": null
+        },
+        {
+          "path": "tools/make_agod_transition_rom.py",
+          "sha256": "dc941eff9d15edd3712b998b0edb8abac4abb32b45b176139096ecf540c9da4c",
+          "bytes": 14375,
+          "gitBlobAtHead": "d63a2e94498010a858007e9be7958effd4d7fb8b",
+          "matchesCommitted": true,
+          "newSinceCommit": false,
+          "error": null
+        },
+        {
+          "path": "tools/make_agod_sacrifice_rom.py",
+          "sha256": "3032a4bebde7b1f7d847e0f28af9b8044c39d001a5edf6a1835f228354e3caec",
+          "bytes": 14473,
+          "gitBlobAtHead": "b288a00d6e6f28d34d039298c048b031915b2906",
+          "matchesCommitted": true,
+          "newSinceCommit": false,
+          "error": null
+        },
+        {
+          "path": "tools/make_agod_rate_trap_rom.py",
+          "sha256": "5f347c51d2148f7e09cf29e7690e2dada01337322a17133aa52d464031991ac1",
+          "bytes": 13864,
+          "gitBlobAtHead": "8e3fcf148e4d34e0f6e5e33804b22fef22376751",
+          "matchesCommitted": true,
+          "newSinceCommit": false,
+          "error": null
+        }
+      ],
+      "sourceFilesDifferingFromCommit": [],
+      "sourceSetHash": "039394aea138f6699b163e20b4d452d31141ebf5579b6270b3c34a88a34349b3",
+      "reproducibilityNote": "every declared source file matched its committed version at run time",
+      "causalRevision": "agod-causal-e3-2",
+      "adapterRevision": "agod-s11b-adapter-1",
+      "phaseRevision": "agod-phase-evidence-1",
+      "hostRevision": "agod-s11b-host-1"
+    },
+    "beforeStatus": "COMPLETE",
+    "afterStatus": "COMPLETE"
+  },
+  "corpusIdentity": {
+    "candidatesBefore": 22,
+    "candidatesAfter": 22,
+    "comparable": 22,
+    "onlyBefore": [],
+    "onlyAfter": [],
+    "note": "a candidate present on one side only is NOT compared. The corpus must be the same corpus for the comparison to mean anything, and where it is not, that is reported rather than papered over."
+  },
+  "one_trustedHorizons": [
+    {
+      "candidate": "contra 6/300 | 266 | mask 8",
+      "before": {
+        "hold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "changed": false
+    },
+    {
+      "candidate": "contra 6/300 | 480 | mask 2",
+      "before": {
+        "hold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "changed": false
+    },
+    {
+      "candidate": "lifeforce 1/60 | 1629 | mask 8",
+      "before": {
+        "hold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "changed": false
+    },
+    {
+      "candidate": "lifeforce 1/60 | 927 | mask 2",
+      "before": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "changed": false
+    },
+    {
+      "candidate": "lifeforce 6/60 | 114 | mask 16",
+      "before": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "changed": false
+    },
+    {
+      "candidate": "lifeforce 6/60 | 927 | mask 2",
+      "before": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "changed": false
+    },
+    {
+      "candidate": "rate-trap seed 5 | 175 | mask 32",
+      "before": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "changed": false
+    },
+    {
+      "candidate": "rate-trap seed 5 | 182 | mask 2",
+      "before": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48,
+          144
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          360,
+          720
+        ]
+      },
+      "changed": true
+    },
+    {
+      "candidate": "rate-trap seed 5 | 97 | mask 128",
+      "before": {
+        "hold": [
+          12,
+          48
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [
+          12,
+          48
+        ],
+        "train": [
+          12,
+          48,
+          144
+        ],
+        "suspectHold": [
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          360,
+          720
+        ]
+      },
+      "changed": true
+    },
+    {
+      "candidate": "sacrifice seed 3 | 205 | mask 4",
+      "before": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48,
+          144
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48,
+          144
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          360,
+          720
+        ]
+      },
+      "changed": false
+    },
+    {
+      "candidate": "sacrifice seed 3 | 67 | mask 2",
+      "before": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          144
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          48,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          144
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          48,
+          360,
+          720
+        ]
+      },
+      "changed": false
+    },
+    {
+      "candidate": "single-transition arm=1 | 110 | mask 4",
+      "before": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "changed": false
+    },
+    {
+      "candidate": "single-transition arm=1 | 112 | mask 2",
+      "before": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [],
+        "train": [
+          48
+        ],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          144,
+          360,
+          720
+        ]
+      },
+      "changed": true
+    },
+    {
+      "candidate": "single-transition arm=1 | 125 | mask 2",
+      "before": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [],
+        "train": [
+          48
+        ],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          144,
+          360,
+          720
+        ]
+      },
+      "changed": true
+    },
+    {
+      "candidate": "single-transition arm=1 | 167 | mask 2",
+      "before": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [],
+        "train": [
+          48
+        ],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          144,
+          360,
+          720
+        ]
+      },
+      "changed": true
+    },
+    {
+      "candidate": "single-transition arm=4 | 110 | mask 4",
+      "before": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "changed": false
+    },
+    {
+      "candidate": "single-transition arm=4 | 112 | mask 2",
+      "before": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "changed": false
+    },
+    {
+      "candidate": "single-transition arm=4 | 125 | mask 2",
+      "before": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "changed": false
+    },
+    {
+      "candidate": "single-transition arm=4 | 167 | mask 2",
+      "before": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "changed": false
+    },
+    {
+      "candidate": "test seed 0 (lives: a repeatedly decreasing resource) | 169 | mask 2",
+      "before": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": []
+      },
+      "changed": true
+    },
+    {
+      "candidate": "test seed 0 (lives: a repeatedly decreasing resource) | 178 | mask 2",
+      "before": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": []
+      },
+      "changed": true
+    },
+    {
+      "candidate": "test seed 0 (lives: a repeatedly decreasing resource) | 70 | mask 2",
+      "before": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": []
+      },
+      "changed": true
+    }
+  ],
+  "two_falseConfirmationsOfTimeDecoys": {
+    "decoysCompared": 4,
+    "confirmationsBefore": 34,
+    "confirmationsAfter": 27,
+    "perDecoy": [
+      {
+        "candidate": "single-transition arm=1 | 125 | mask 2",
+        "confirmedHoldBefore": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "confirmedHoldAfter": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "confirmedTrainBefore": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedTrainAfter": [
+          12,
+          144,
+          360,
+          720
+        ]
+      },
+      {
+        "candidate": "single-transition arm=4 | 125 | mask 2",
+        "confirmedHoldBefore": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "confirmedHoldAfter": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "confirmedTrainBefore": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedTrainAfter": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      {
+        "candidate": "test seed 0 (lives: a repeatedly decreasing resource) | 169 | mask 2",
+        "confirmedHoldBefore": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "confirmedHoldAfter": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "confirmedTrainBefore": [
+          144,
+          360,
+          720
+        ],
+        "confirmedTrainAfter": []
+      },
+      {
+        "candidate": "test seed 0 (lives: a repeatedly decreasing resource) | 70 | mask 2",
+        "confirmedHoldBefore": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "confirmedHoldAfter": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "confirmedTrainBefore": [
+          144,
+          360,
+          720
+        ],
+        "confirmedTrainAfter": []
+      }
+    ],
+    "note": "a confirmation of a field the oracle labels time-driven and not action-driven is a FALSE confirmation. The count is of confirmations, not of candidates."
+  },
+  "three_trainVersusPairedContinuous": [
+    {
+      "candidate": "contra 6/300 | 266 | mask 8",
+      "before": {
+        "confirmedUnderTrain": [
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [],
+        "confirmedUnderTrainOnly": [
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [],
+        "confirmedUnderTrainOnly": [
+          144,
+          360,
+          720
+        ]
+      }
+    },
+    {
+      "candidate": "contra 6/300 | 480 | mask 2",
+      "before": {
+        "confirmedUnderTrain": [
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [],
+        "confirmedUnderTrainOnly": [
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [],
+        "confirmedUnderTrainOnly": [
+          144,
+          360,
+          720
+        ]
+      }
+    },
+    {
+      "candidate": "lifeforce 1/60 | 1629 | mask 8",
+      "before": {
+        "confirmedUnderTrain": [
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [],
+        "confirmedUnderTrainOnly": [
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          144,
+          360
+        ],
+        "confirmedUnderPairedHold": [],
+        "confirmedUnderTrainOnly": [
+          144,
+          360
+        ]
+      }
+    },
+    {
+      "candidate": "lifeforce 1/60 | 927 | mask 2",
+      "before": {
+        "confirmedUnderTrain": [
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      }
+    },
+    {
+      "candidate": "lifeforce 6/60 | 114 | mask 16",
+      "before": {
+        "confirmedUnderTrain": [
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      }
+    },
+    {
+      "candidate": "lifeforce 6/60 | 927 | mask 2",
+      "before": {
+        "confirmedUnderTrain": [],
+        "confirmedUnderPairedHold": [],
+        "confirmedUnderTrainOnly": []
+      },
+      "after": {
+        "confirmedUnderTrain": [],
+        "confirmedUnderPairedHold": [],
+        "confirmedUnderTrainOnly": []
+      }
+    },
+    {
+      "candidate": "rate-trap seed 5 | 175 | mask 32",
+      "before": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      }
+    },
+    {
+      "candidate": "rate-trap seed 5 | 182 | mask 2",
+      "before": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      }
+    },
+    {
+      "candidate": "rate-trap seed 5 | 97 | mask 128",
+      "before": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      }
+    },
+    {
+      "candidate": "sacrifice seed 3 | 205 | mask 4",
+      "before": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      }
+    },
+    {
+      "candidate": "sacrifice seed 3 | 67 | mask 2",
+      "before": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      }
+    },
+    {
+      "candidate": "single-transition arm=1 | 110 | mask 4",
+      "before": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      }
+    },
+    {
+      "candidate": "single-transition arm=1 | 112 | mask 2",
+      "before": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      }
+    },
+    {
+      "candidate": "single-transition arm=1 | 125 | mask 2",
+      "before": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144
+        ],
+        "confirmedUnderTrainOnly": [
+          360,
+          720
+        ]
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          12,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144
+        ],
+        "confirmedUnderTrainOnly": [
+          360,
+          720
+        ]
+      }
+    },
+    {
+      "candidate": "single-transition arm=1 | 167 | mask 2",
+      "before": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      }
+    },
+    {
+      "candidate": "single-transition arm=4 | 110 | mask 4",
+      "before": {
+        "confirmedUnderTrain": [
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [],
+        "confirmedUnderTrainOnly": [
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [],
+        "confirmedUnderTrainOnly": [
+          48,
+          144,
+          360,
+          720
+        ]
+      }
+    },
+    {
+      "candidate": "single-transition arm=4 | 112 | mask 2",
+      "before": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      }
+    },
+    {
+      "candidate": "single-transition arm=4 | 125 | mask 2",
+      "before": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144
+        ],
+        "confirmedUnderTrainOnly": [
+          360,
+          720
+        ]
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144
+        ],
+        "confirmedUnderTrainOnly": [
+          360,
+          720
+        ]
+      }
+    },
+    {
+      "candidate": "single-transition arm=4 | 167 | mask 2",
+      "before": {
+        "confirmedUnderTrain": [
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [],
+        "confirmedUnderTrainOnly": [
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [],
+        "confirmedUnderTrainOnly": [
+          48,
+          144,
+          360,
+          720
+        ]
+      }
+    },
+    {
+      "candidate": "test seed 0 (lives: a repeatedly decreasing resource) | 169 | mask 2",
+      "before": {
+        "confirmedUnderTrain": [
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      },
+      "after": {
+        "confirmedUnderTrain": [],
+        "confirmedUnderPairedHold": [
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      }
+    },
+    {
+      "candidate": "test seed 0 (lives: a repeatedly decreasing resource) | 178 | mask 2",
+      "before": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      },
+      "after": {
+        "confirmedUnderTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      }
+    },
+    {
+      "candidate": "test seed 0 (lives: a repeatedly decreasing resource) | 70 | mask 2",
+      "before": {
+        "confirmedUnderTrain": [
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderPairedHold": [
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      },
+      "after": {
+        "confirmedUnderTrain": [],
+        "confirmedUnderPairedHold": [
+          48,
+          144,
+          360,
+          720
+        ],
+        "confirmedUnderTrainOnly": []
+      }
+    }
+  ],
+  "four_phaseControlInsufficient": {
+    "before": 16,
+    "after": 14
+  },
+  "five_headline": {
+    "before": {
+      "A_missedForWantOfHorizon": 0,
+      "B_missedForWrongActionStructure": 0,
+      "C_remainingUncertainty": 16,
+      "instrumentArtefacts_PHASE_CONTROL_INSUFFICIENT": 16,
+      "observableAtBaseline": 6,
+      "durationExplainsNotCadence": 0
+    },
+    "after": {
+      "A_missedForWantOfHorizon": 0,
+      "B_missedForWrongActionStructure": 0,
+      "C_remainingUncertainty": 14,
+      "instrumentArtefacts_PHASE_CONTROL_INSUFFICIENT": 14,
+      "observableAtBaseline": 6,
+      "durationExplainsNotCadence": 2
+    },
+    "outcomeTallyBefore": {
+      "OBSERVABLE_AT_BASELINE": 6,
+      "PHASE_CONTROL_INSUFFICIENT": 16
+    },
+    "outcomeTallyAfter": {
+      "OBSERVABLE_AT_BASELINE": 6,
+      "PHASE_CONTROL_INSUFFICIENT": 14,
+      "DURATION_EXPLAINS_NOT_CADENCE": 2
+    },
+    "note": "A and B count candidates whose causal observability was recovered. Neither is a target. A null result is published as a null result."
+  },
+  "six_cost": {
+    "before": {
+      "emulatedFrames": 2483356,
+      "frameBudget": 4000000,
+      "budgetExhausted": false,
+      "ramSnapshots": 142230,
+      "ramBytesRead": 291287040,
+      "cpuWallClockMs": 2810710,
+      "candidateEvaluations": 330
+    },
+    "after": {
+      "emulatedFrames": 2528608,
+      "frameBudget": 4000000,
+      "budgetExhausted": false,
+      "ramSnapshots": 142230,
+      "ramBytesRead": 291287040,
+      "cpuWallClockMs": 4266665,
+      "candidateEvaluations": 330
+    }
+  },
+  "outcomeChanges": [
+    {
+      "candidate": "single-transition arm=1 | 112 | mask 2",
+      "source": "firstThenLater",
+      "before": "PHASE_CONTROL_INSUFFICIENT",
+      "after": "DURATION_EXPLAINS_NOT_CADENCE"
+    },
+    {
+      "candidate": "single-transition arm=1 | 167 | mask 2",
+      "source": "oneShotSwitch",
+      "before": "PHASE_CONTROL_INSUFFICIENT",
+      "after": "DURATION_EXPLAINS_NOT_CADENCE"
+    }
+  ],
+  "outcomesOnlyRenamed": [],
+  "perCandidate": [
+    {
+      "candidate": "contra 6/300 | 266 | mask 8",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "S10B/S11A",
+      "outcomeBefore": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeAfter": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": false,
+      "confirmedHoldBefore": [],
+      "confirmedHoldAfter": [],
+      "confirmedTrainBefore": [
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [],
+      "confirmedPairedAfter": []
+    },
+    {
+      "candidate": "contra 6/300 | 480 | mask 2",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "S10B/S11A",
+      "outcomeBefore": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeAfter": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": false,
+      "confirmedHoldBefore": [],
+      "confirmedHoldAfter": [],
+      "confirmedTrainBefore": [
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [],
+      "confirmedPairedAfter": []
+    },
+    {
+      "candidate": "lifeforce 1/60 | 1629 | mask 8",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "S10B/S11A",
+      "outcomeBefore": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeAfter": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": false,
+      "confirmedHoldBefore": [],
+      "confirmedHoldAfter": [],
+      "confirmedTrainBefore": [
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        144,
+        360
+      ],
+      "confirmedPairedBefore": [],
+      "confirmedPairedAfter": []
+    },
+    {
+      "candidate": "lifeforce 1/60 | 927 | mask 2",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "S10B/S11A",
+      "outcomeBefore": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeAfter": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": false,
+      "confirmedHoldBefore": [],
+      "confirmedHoldAfter": [],
+      "confirmedTrainBefore": [
+        720
+      ],
+      "confirmedTrainAfter": [
+        720
+      ],
+      "confirmedPairedBefore": [
+        720
+      ],
+      "confirmedPairedAfter": [
+        720
+      ]
+    },
+    {
+      "candidate": "lifeforce 6/60 | 114 | mask 16",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "S10B/S11A",
+      "outcomeBefore": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeAfter": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": false,
+      "confirmedHoldBefore": [
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedHoldAfter": [
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedTrainBefore": [
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedAfter": [
+        48,
+        144,
+        360,
+        720
+      ]
+    },
+    {
+      "candidate": "lifeforce 6/60 | 927 | mask 2",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "S10B/S11A",
+      "outcomeBefore": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeAfter": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": false,
+      "confirmedHoldBefore": [
+        480
+      ],
+      "confirmedHoldAfter": [
+        480
+      ],
+      "confirmedTrainBefore": [],
+      "confirmedTrainAfter": [],
+      "confirmedPairedBefore": [],
+      "confirmedPairedAfter": []
+    },
+    {
+      "candidate": "rate-trap seed 5 | 175 | mask 32",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "fickleDecoy",
+      "outcomeBefore": "OBSERVABLE_AT_BASELINE",
+      "outcomeAfter": "OBSERVABLE_AT_BASELINE",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": false,
+      "confirmedHoldBefore": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedHoldAfter": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedTrainBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ]
+    },
+    {
+      "candidate": "rate-trap seed 5 | 182 | mask 2",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "steadyGain",
+      "outcomeBefore": "OBSERVABLE_AT_BASELINE",
+      "outcomeAfter": "OBSERVABLE_AT_BASELINE",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48,
+          144
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": true,
+      "confirmedHoldBefore": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedHoldAfter": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedTrainBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ]
+    },
+    {
+      "candidate": "rate-trap seed 5 | 97 | mask 128",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "fuel",
+      "outcomeBefore": "OBSERVABLE_AT_BASELINE",
+      "outcomeAfter": "OBSERVABLE_AT_BASELINE",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [
+          12,
+          48
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [
+          12,
+          48
+        ],
+        "train": [
+          12,
+          48,
+          144
+        ],
+        "suspectHold": [
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": true,
+      "confirmedHoldBefore": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedHoldAfter": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedTrainBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ]
+    },
+    {
+      "candidate": "sacrifice seed 3 | 205 | mask 4",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "charges",
+      "outcomeBefore": "OBSERVABLE_AT_BASELINE",
+      "outcomeAfter": "OBSERVABLE_AT_BASELINE",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48,
+          144
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48,
+          144
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": false,
+      "confirmedHoldBefore": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedHoldAfter": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedTrainBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ]
+    },
+    {
+      "candidate": "sacrifice seed 3 | 67 | mask 2",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "treasure",
+      "outcomeBefore": "OBSERVABLE_AT_BASELINE",
+      "outcomeAfter": "OBSERVABLE_AT_BASELINE",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          144
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          48,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          144
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          48,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": false,
+      "confirmedHoldBefore": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedHoldAfter": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedTrainBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ]
+    },
+    {
+      "candidate": "single-transition arm=1 | 110 | mask 4",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "singleUnit",
+      "outcomeBefore": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeAfter": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": false,
+      "confirmedHoldBefore": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedHoldAfter": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedTrainBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ]
+    },
+    {
+      "candidate": "single-transition arm=1 | 112 | mask 2",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "firstThenLater",
+      "outcomeBefore": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeAfter": "DURATION_EXPLAINS_NOT_CADENCE",
+      "outcomeChanged": true,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [],
+        "train": [
+          48
+        ],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": true,
+      "confirmedHoldBefore": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedHoldAfter": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedTrainBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ]
+    },
+    {
+      "candidate": "single-transition arm=1 | 125 | mask 2",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "frameCounter (time-driven)",
+      "outcomeBefore": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeAfter": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [],
+        "train": [
+          48
+        ],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": true,
+      "confirmedHoldBefore": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedHoldAfter": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedTrainBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        12,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [
+        12,
+        48,
+        144
+      ],
+      "confirmedPairedAfter": [
+        12,
+        48,
+        144
+      ]
+    },
+    {
+      "candidate": "single-transition arm=1 | 167 | mask 2",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "oneShotSwitch",
+      "outcomeBefore": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeAfter": "DURATION_EXPLAINS_NOT_CADENCE",
+      "outcomeChanged": true,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [],
+        "train": [
+          48
+        ],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": true,
+      "confirmedHoldBefore": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedHoldAfter": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedTrainBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ]
+    },
+    {
+      "candidate": "single-transition arm=4 | 110 | mask 4",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "singleUnit",
+      "outcomeBefore": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeAfter": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": false,
+      "confirmedHoldBefore": [],
+      "confirmedHoldAfter": [],
+      "confirmedTrainBefore": [
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [],
+      "confirmedPairedAfter": []
+    },
+    {
+      "candidate": "single-transition arm=4 | 112 | mask 2",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "firstThenLater",
+      "outcomeBefore": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeAfter": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": false,
+      "confirmedHoldBefore": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedHoldAfter": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedTrainBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ]
+    },
+    {
+      "candidate": "single-transition arm=4 | 125 | mask 2",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "frameCounter (time-driven)",
+      "outcomeBefore": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeAfter": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": false,
+      "confirmedHoldBefore": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedHoldAfter": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedTrainBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [
+        12,
+        48,
+        144
+      ],
+      "confirmedPairedAfter": [
+        12,
+        48,
+        144
+      ]
+    },
+    {
+      "candidate": "single-transition arm=4 | 167 | mask 2",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "oneShotSwitch",
+      "outcomeBefore": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeAfter": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [],
+        "train": [],
+        "suspectHold": [
+          12,
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsChanged": false,
+      "confirmedHoldBefore": [],
+      "confirmedHoldAfter": [],
+      "confirmedTrainBefore": [
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [],
+      "confirmedPairedAfter": []
+    },
+    {
+      "candidate": "test seed 0 (lives: a repeatedly decreasing resource) | 169 | mask 2",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "frameCounter (time-driven)",
+      "outcomeBefore": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeAfter": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": []
+      },
+      "trustedHorizonsChanged": true,
+      "confirmedHoldBefore": [
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedHoldAfter": [
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedTrainBefore": [
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [],
+      "confirmedPairedBefore": [
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedAfter": [
+        48,
+        144,
+        360,
+        720
+      ]
+    },
+    {
+      "candidate": "test seed 0 (lives: a repeatedly decreasing resource) | 178 | mask 2",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "lives",
+      "outcomeBefore": "OBSERVABLE_AT_BASELINE",
+      "outcomeAfter": "OBSERVABLE_AT_BASELINE",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": []
+      },
+      "trustedHorizonsChanged": true,
+      "confirmedHoldBefore": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedHoldAfter": [
+        12,
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedTrainBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedBefore": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedAfter": [
+        12,
+        48,
+        144,
+        360,
+        720
+      ]
+    },
+    {
+      "candidate": "test seed 0 (lives: a repeatedly decreasing resource) | 70 | mask 2",
+      "presentBefore": true,
+      "presentAfter": true,
+      "comparable": true,
+      "source": "timer (time-driven)",
+      "outcomeBefore": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeAfter": "PHASE_CONTROL_INSUFFICIENT",
+      "outcomeChanged": false,
+      "outcomeOnlyRenamed": false,
+      "trustedHorizonsBefore": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": [
+          144,
+          360,
+          720
+        ]
+      },
+      "trustedHorizonsAfter": {
+        "hold": [
+          12
+        ],
+        "train": [
+          12,
+          48,
+          144,
+          360,
+          720
+        ],
+        "suspectHold": [
+          48,
+          120,
+          240,
+          480
+        ],
+        "suspectTrain": []
+      },
+      "trustedHorizonsChanged": true,
+      "confirmedHoldBefore": [
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedHoldAfter": [
+        48,
+        120,
+        240,
+        480
+      ],
+      "confirmedTrainBefore": [
+        144,
+        360,
+        720
+      ],
+      "confirmedTrainAfter": [],
+      "confirmedPairedBefore": [
+        48,
+        144,
+        360,
+        720
+      ],
+      "confirmedPairedAfter": [
+        48,
+        144,
+        360,
+        720
+      ]
+    }
+  ],
+  "provenance": {
+    "provenanceRevision": "agod-provenance-1",
+    "recordedAt": "2026-11-01T15:00:52.617Z",
+    "node": "v22.22.0",
+    "platform": "linux",
+    "arch": "x64",
+    "git": {
+      "commit": "604b01bcaa878f9e19906d964b03636394328c61",
+      "branch": "research/agod-neural-e0-e1",
+      "commitSubject": "S11B-R: reproduction steps, test matrix, and the M5 correction the index never got",
+      "commitDate": "2026-11-01T13:51:53+00:00",
+      "workingTreeDirty": false,
+      "modifiedFileCount": 0,
+      "modifiedFiles": []
+    },
+    "sourceFiles": [
+      {
+        "path": "tools/agod_s11b_r7_comparison.cjs",
+        "sha256": "5b349c81869d67888237c50b7c4458ed912ffd9f4ade814a73b8ce80be30c57b",
+        "bytes": 9300,
+        "gitBlobAtHead": "fbed3c39c55b8b518fa4fcf9f6c72efd4585ca23",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_s11b_adapter.cjs",
+        "sha256": "346dcce9c1723568bdaf8f4872b3a99a9f378e1215f7ae7792fe30d854c35402",
+        "bytes": 17779,
+        "gitBlobAtHead": "1e7ded631045ef6e8937e4e7ee55212256d1603d",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_s11b_host.cjs",
+        "sha256": "5f3ebfd3e43ab10d3dced4bea420960bf7f29df54556ff116a2865442573e030",
+        "bytes": 5091,
+        "gitBlobAtHead": "bc7580cca3203fd82f5f7756d7cbc08803c26346",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_phase_evidence.cjs",
+        "sha256": "4abbf815aef125fd80508fa2a06c03319e6cdb6f16ba1d505ec2ea609aa92cb9",
+        "bytes": 9397,
+        "gitBlobAtHead": "57250d96b1049f6f0ff79d9140b4b333843a7d66",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_provenance.cjs",
+        "sha256": "335022648aa47d4002801b72f31a56045719d5c8eb2a4f9b5742246f3c3681ec",
+        "bytes": 4892,
+        "gitBlobAtHead": "45220d396c26a6cb426d7542e679086d24265aff",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "app/src/main/assets/lab/agod-causal.js",
+        "sha256": "2b81bac1bcccf9bada5b24d6cb24ec8e1ef30a7b72f828e47a4df139faba2270",
+        "bytes": 11240,
+        "gitBlobAtHead": "c4817a719f2a4b637056e3c474082a6ad4ff1b23",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      }
+    ],
+    "sourceFilesDifferingFromCommit": [],
+    "sourceSetHash": "93c47957db0831593cd34514d4b66921f16162adb78337c8b595e42d8d37296d",
+    "reproducibilityNote": "every declared source file matched its committed version at run time"
+  },
+  "status": "COMPLETE"
+}
