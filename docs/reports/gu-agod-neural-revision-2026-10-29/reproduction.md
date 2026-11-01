@@ -177,3 +177,68 @@ bash tools/check_no_private_binaries_test.sh     # 5 случаев, включ�
 
 Результаты зависят от процедуры входа. Любой статус фазы читается только вместе с
 процедурой, при которой он получен.
+
+---
+
+## S11B-R: воспроизведение ремонта прибора
+
+Коммерческие ROM остаются локально и в репозиторий не попадают. `AGOD_PRIVATE_ROMS`
+— каталог с файлами `lifeforce.nes`, `contra.nes`; без него реальная половина
+помечается `BLOCKED` и **не** подменяется синтетикой.
+
+```bash
+# R1. временная геометрия импульсного поезда: 35 окон на реальном эмуляторе
+AGOD_R1_REPORT=/tmp/r1.json node tools/agod_s11b_r1_schedule_test.cjs
+
+# R2. видеоканал фазовой аттестации, параметры S8 180/14/60
+AGOD_PRIVATE_ROMS=<dir> AGOD_R2_REPORT=/tmp/r2.json \
+ node tools/agod_s11b_r2_phase_channel_test.cjs
+#    второй дефект R2: зазор между нажатиями Start решает, доходит ли Contra до игры
+AGOD_PRIVATE_ROMS=<dir> AGOD_TARGETS=contra.nes \
+ AGOD_ENTRY_PULSES=6 AGOD_ENTRY_SETTLE=300 AGOD_ENTRY_GAP=8 \
+ AGOD_ELIGIBILITY_REPORT=/tmp/elig_gap8.json  node tools/agod_rom_eligibility_gate.cjs
+AGOD_PRIVATE_ROMS=<dir> AGOD_TARGETS=contra.nes \
+ AGOD_ENTRY_PULSES=6 AGOD_ENTRY_SETTLE=300 AGOD_ENTRY_GAP=24 \
+ AGOD_ELIGIBILITY_REPORT=/tmp/elig_gap24.json node tools/agod_rom_eligibility_gate.cjs
+
+# R3. шлюз эквивалентности адаптера, версия 2: 36 испытаний, три серии
+AGOD_T2_REPORT=/tmp/t2.json node tools/agod_s11b_t2_equivalence.cjs
+
+# R4. поле, зависящее и от времени, и от действия; контроль каденции
+AGOD_R4_REPORT=/tmp/r4.json node tools/agod_s11b_r4_dual_dependence_test.cjs
+
+# R5. транзиент между соседними снимками RAM
+AGOD_R5_REPORT=/tmp/r5.json node tools/agod_s11b_r5_transient_test.cjs
+
+# R7. повторный прогон предрегистрированного корпуса под исправленным прибором,
+#     с тем же T2-шлюзом, теми же горизонтами, кандидатами и процедурами входа
+AGOD_PRIVATE_ROMS=<dir> \
+ AGOD_T2_GATE=docs/reports/gu-agod-neural-revision-2026-10-29/logs/s11b_r3_t2_equivalence_v2.json \
+ AGOD_S11B_REPORT=/tmp/s11br.json node tools/agod_s11b_horizon_check.cjs
+#     и сравнение со опубликованным отчётом 29, без подмены исторических чисел
+AGOD_S11B_OLD=docs/reports/gu-agod-neural-revision-2026-10-29/logs/s11b_horizon_report.json \
+ AGOD_S11B_NEW=/tmp/s11br.json AGOD_R7_REPORT=/tmp/r7.json \
+ node tools/agod_s11b_r7_comparison.cjs
+```
+
+Отрицательные контроли на сами тесты воспроизводятся возвратом дефекта в код:
+
+- **R1**: в `trainArm` заменить `release+adjust` на `Math.max(0,release+adjust)` —
+  должны упасть 12 окон из 35 и 48 утверждений.
+- **R3**: в `evaluateStart` адаптера перенести `const action=run(plan.mask);` выше
+  построения нейтральной траектории — все сравнения множеств адресов останутся
+  совпадающими, а T2 v2 должна сообщить `DIVERGENT` во всех трёх сериях.
+
+Происхождение пишется внутрь каждого отчёта: SHA256 каждого исходного файла на
+момент старта и перечень отличающихся от HEAD. `workingTreeDirty = true` при пустом
+`sourceFilesDifferingFromCommit` означает неотслеживаемые файлы, а не изменённый
+исходник, — различие, которого прежняя запись не давала.
+
+Пятое семейство фикстур генерируется локально и в репозиторий не попадает:
+
+```bash
+python3 tools/make_agod_dual_dependence_rom.py --seed 1 \
+  --out /tmp/dual.json --oracle-out /tmp/dual_oracle.json
+```
+
+Оракул семейства — только для проверяющего пути; в анализатор он не передаётся.

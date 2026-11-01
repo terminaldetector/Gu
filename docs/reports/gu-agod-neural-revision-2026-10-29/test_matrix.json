@@ -860,7 +860,7 @@
    "stage": "S10 corrected control series",
    "status": "PASS",
    "log": "logs/s10_control_report.json",
-   "note": "selection without HOLDOUT, oracle opened after both arms commit, shared frame budget; both arms right 20/20, V2 cost +41% (the confirmation phase P1 adds)"
+   "note": "selection without HOLDOUT, oracle opened after both arms commit, shared frame budget; both arms right 20/20, V2 cost +27.9% (the confirmation phase P1 adds). The figure read +41% here until S11B-R: that was the development family median, not the single-denominator cost M5 corrected it to"
   },
   {
    "command": "AGOD_PRIVATE_ROMS=<dir> node tools/agod_polarity_audit.cjs",
@@ -875,7 +875,49 @@
    "status": "PASS",
    "log": "logs/pipeline_report.json (baseline for comparison)",
    "note": "development 7/7, held-out 7/7, 1561 paid claims, Q(cost) lowest 21/21 - identical to the published baseline"
+  },
+  {
+   "command": "AGOD_R1_REPORT=<out> node tools/agod_s11b_r1_schedule_test.cjs",
+   "stage": "S11B-R / R1 pulse-train temporal geometry",
+   "status": "PASS",
+   "log": "logs/s11b_r1_schedule_test.json",
+   "note": "35 of 35 windows exact at a real emulator: frame count, press edges, button state frame by frame, adapter report vs emulator. Negative control: re-introducing the defect fails 12 of 35 windows and 48 assertions"
+  },
+  {
+   "command": "AGOD_PRIVATE_ROMS=<dir> AGOD_R2_REPORT=<out> node tools/agod_s11b_r2_phase_channel_test.cjs",
+   "stage": "S11B-R / R2 phase-attestation video channel",
+   "status": "PASS",
+   "log": "logs/s11b_r2_phase_channel_test.json",
+   "note": "Life Force 6/60 PASS (188 px held, 191 after release, 2 bidirectional addresses, 8 of 8 distinct outcomes); Contra 6/300 PASS (598, 373, 27, 8). With the channel off the same state reports VIDEO_UNAVAILABLE at 0 of 4 pictures while the RAM modality is bit-identical. The PASS criteria are unchanged and asserted"
+  },
+  {
+   "command": "AGOD_T2_REPORT=<out> node tools/agod_s11b_t2_equivalence.cjs",
+   "stage": "S11B-R / R3 T2 equivalence v2",
+   "status": "PASS",
+   "log": "logs/s11b_r3_t2_equivalence_v2.json, logs/s11b_r3_t2_negative_control.json",
+   "note": "36 of 36 across three series (T2a 8, T2b 12, T2c 16), compared arm by arm through a recording driver. Negative control: with the adapter's arms reordered every address-set comparison v1 performed still matched, so v1 would have passed on a changed instrument; v2 reports DIVERGENT in all three series"
+  },
+  {
+   "command": "AGOD_R4_REPORT=<out> node tools/agod_s11b_r4_dual_dependence_test.cjs",
+   "stage": "S11B-R / R4 dual dependence on time and action",
+   "status": "PASS",
+   "log": "logs/s11b_r4_dual_dependence_test.json",
+   "note": "24 of 24 checks, two seeds. timeAndAction confirmed at all five horizons while the neutral arm also moves it; pureAction never moved by the neutral arm; pureTime falsely confirmed at 360 and 720 (the tolerance-scaling limit, reproduced on a new family); cadenceOnly confirmed under the train at 48/144/360/720 and under no continuous hold, so the instrument can see action structure. Instrument attestation, reported apart from the corpus"
+  },
+  {
+   "command": "AGOD_R5_REPORT=<out> node tools/agod_s11b_r5_transient_test.cjs",
+   "stage": "S11B-R / R5 a transient between adjacent snapshots",
+   "status": "PASS",
+   "log": "logs/s11b_r5_transient_test.json",
+   "note": "12 of 12 checks. The witness fired 12 times per window and the 12-frame boundaries caught it 0 times; at the declared grid the transient and a byte that never moves give the SAME verdict, and only a 1-frame grid separates them. NO_EVENT_IN_HORIZON would have been a false claim about a real action-caused event"
+  },
+  {
+   "command": "AGOD_S11B_OLD=<old> AGOD_S11B_NEW=<new> AGOD_R7_REPORT=<out> node tools/agod_s11b_r7_comparison.cjs",
+   "stage": "S11B-R / R7 old and repaired instrument side by side",
+   "status": "PENDING",
+   "log": "logs/s11b_r7_comparison.json",
+   "note": "reads report 29 and the re-run of the same corpus and prints both columns. Historical numbers are not replaced"
   }
  ],
- "experimentalChecksNote": "New experimental checks added by this revision. They are standalone Node checks; tools/check.sh and CI were not modified."
+ "experimentalChecksNote": "New experimental checks added by this revision. They are standalone Node checks; tools/check.sh and CI were not modified. S11B-R adds the instrument-repair checks R1-R5 and the R7 comparison; the shared host and the run-time provenance record are used by all of them."
 }
