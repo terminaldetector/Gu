@@ -165,9 +165,19 @@ local function onWrite(address, value)
   end
   -- returns nothing: observation only
 end
+local readsSampled = 0
 local function onRead(address, value)
   reads = reads + 1
-  -- no state sample for reads in this mode: reads are far more numerous
+  -- Reads are sampled too, and BOUNDED for the same reason as writes. Read
+  -- SITES are what might separate a one-unit resource from a latch where read
+  -- COUNTS do not: the same number of reads can come from different consumers.
+  if readsSampled < ${pcSamples} then
+    readsSampled = readsSampled + 1
+    local st = emu.getState()
+    emit({ kind = "read", address = address, value = value,
+           nextInstructionPc = st["cpu.pc"], frameCount = st["frameCount"],
+           atFrameInWindow = frames })
+  end
 end
 local function onEndFrame()
   frames = frames + 1
@@ -177,7 +187,7 @@ local function onEndFrame()
     -- TWO INDEPENDENT COUNTS of the same window, so loss is measurable
     emit({ kind = "totals", callbackWrites = writes, callbackReads = reads,
            counterWrites = wc[${address}], counterReads = rc[${address}],
-           pcSampled = pcSampled,
+           pcSampled = pcSampled, readsSampled = readsSampled,
            firstWriteAtFrame = firstWriteFrame, lastWriteAtFrame = lastWriteFrame })
     flush()
   end
@@ -195,6 +205,7 @@ emu.addEventCallback(onEndFrame, emu.eventType.endFrame)
   ?fs.readFileSync(out,'utf8').split('\n').filter(Boolean).map(l=>JSON.parse(l)):[];
  return {elapsedMs:r.elapsedMs,
   writes:events.filter(e=>e.kind==='write'),
+  reads:events.filter(e=>e.kind==='read'),
   totals:events.find(e=>e.kind==='totals')||null,
   luaErrors:r.luaLog().filter(x=>x.event==='lua_error').length};
 }
@@ -253,6 +264,21 @@ for(const control of controls){
    accessingInstruction:accessing,
    matchesAnOracleWriterSite:!!accessing&&writerPcs.includes(accessing.address)};
  };
+ /* The DISTINCT instructions that read this field, resolved through
+    disassembly. A set of reader sites is a different quantity from a read
+    count, and it is the candidate discriminator where counts coincide. */
+ const readerSitesOf=regime=>{
+  const seen=new Map();
+  for(const e of perRegime[regime].reads){
+   const accessing=resolve(e.nextInstructionPc);
+   if(!accessing)continue;
+   if(!seen.has(accessing.address))
+    seen.set(accessing.address,{address:accessing.address,
+     addressHex:accessing.addressHex,text:accessing.text,length:accessing.length,
+     isAlsoAWriterSite:writerPcs.includes(accessing.address)});
+  }
+  return [...seen.values()].sort((a,b)=>a.address-b.address);
+ };
  const w=regime=>(perRegime[regime].totals||{});
  traceRows.push({control:control.name,address,button,
   groundTruth:{timeDriven:control.truth.timeDriven,
@@ -279,6 +305,8 @@ for(const control of controls){
    [regime,w(regime).firstWriteAtFrame===undefined?null:w(regime).firstWriteAtFrame])),
   sampledSite:{neutral:sampleOf('neutral'),
    continuousHold:sampleOf('continuousHold'),pulseTrain:sampleOf('pulseTrain')},
+  readerSites:{neutral:readerSitesOf('neutral'),
+   continuousHold:readerSitesOf('continuousHold'),pulseTrain:readerSitesOf('pulseTrain')},
   elapsedMs:Object.fromEntries(Object.keys(perRegime).map(r2=>[r2,perRegime[r2].elapsedMs])),
   luaErrors:Object.fromEntries(Object.keys(perRegime).map(r2=>[r2,perRegime[r2].luaErrors]))});
 }
@@ -338,19 +366,28 @@ const latchVersusResource=(()=>{
  const latch=traceRows.find(r=>r.control==='oneShotSwitch');
  if(!unit||!latch)return null;
  const sameWriteSignature=JSON.stringify(unit.writesObserved)===JSON.stringify(latch.writesObserved);
+ const siteSet=row=>[...new Set(Object.values(row.readerSites).flat()
+  .map(s=>s.addressHex))].sort();
+ const unitSites=siteSet(unit),latchSites=siteSet(latch);
  return {question:'does the trace separate a genuine one-unit resource from a latch?',
-  singleUnit:{writes:unit.writesObserved,reads:unit.readsObserved},
-  oneShotSwitch:{writes:latch.writesObserved,reads:latch.readsObserved},
+  singleUnit:{writes:unit.writesObserved,reads:unit.readsObserved,
+   distinctReaderSites:unitSites,readerSiteDetail:unit.readerSites},
+  oneShotSwitch:{writes:latch.writesObserved,reads:latch.readsObserved,
+   distinctReaderSites:latchSites,readerSiteDetail:latch.readerSites},
   writeSignaturesIdentical:sameWriteSignature,
   readCountsDiffer:JSON.stringify(unit.readsObserved)!==JSON.stringify(latch.readsObserved),
+  /* the quantity read counts cannot express */
+  readerSiteCounts:{singleUnit:unitSites.length,oneShotSwitch:latchSites.length},
+  readerSiteCountsDiffer:unitSites.length!==latchSites.length,
   verdict:sameWriteSignature
    ?'NOT SEPARATED BY WRITE BEHAVIOUR. Both are written once under action and no '
     +'number of further edges changes that, which is the S11A limitation reappearing at '
     +'the CPU level rather than a new one.'
    :'the write signatures differ, which would be a new discrimination and needs '
     +'explaining before it is believed',
-  readsAreNotEvidence:'a difference in read counts is a LEAD about consumers, not '
-   +'evidence of a game cost. It is never promoted to GAME_COST_EVIDENCED.'};
+  readsAreNotEvidence:'a difference in read counts or reader sites is a LEAD about '
+   +'consumers, not evidence of a game cost. It is never promoted to '
+   +'GAME_COST_EVIDENCED: HUD code, animation and timers read fields too.'};
 })();
 
 /* ---- review item 1: the cost of each observation mode ----
@@ -366,8 +403,14 @@ const overhead=(()=>{
  const button=M.buttonOf(dual.oracle.dualMask);
  const inputs=M.schedules.train(button,20,4,8,20);
  const state=bootStates.get(dual.nes);
+ /* --timeout is raised explicitly. The first run of this series passed
+    --lua-timeout 60 with the DEFAULT --timeout of 30, and the instrument
+    rejected the invocation outright: {"event":"error","kind":"usage",
+    "message":"Lua timeout cannot exceed the overall timeout"}, exit 2. The mode
+    reported null, which must not be read as "too expensive to measure" - it
+    never ran. The README does state the constraint; I did not honour it. */
  const base=[dual.nes,'--load-state',state,'--frames',String(FRAMES),
-  ...inputs.flatMap(i=>['--input',i])];
+  '--timeout','300',...inputs.flatMap(i=>['--input',i])];
  /* a Lua script that observes but never stops the run, so every mode covers
     the SAME window; the earlier cost rows were not comparable because one
     script called emu.stop() at frame 100 */
@@ -406,12 +449,15 @@ emu.addEventCallback(onEndFrame, emu.eventType.endFrame)
   {tag:'per-access callback, state sampled for the first '+MAX_PC_SAMPLES+' writes',
    args:['--lua',costScript('bounded',MAX_PC_SAMPLES,false),'--lua-allow-io','--lua-timeout','30']},
   {tag:'per-access callback, state sampled on EVERY access',
-   args:['--lua',costScript('every',0,true),'--lua-allow-io','--lua-timeout','60']},
+   args:['--lua',costScript('every',0,true),'--lua-allow-io','--lua-timeout','120']},
   {tag:'full CPU instruction trace',args:['--trace',traceFile]}];
  const measured=modes.map(m=>{
   const t=inst.runTimed([...base,...m.args],{timeoutMs:900000});
   return {mode:m.tag,wallSeconds:t.realSeconds,
-   userSeconds:t.userSeconds,sysSeconds:t.sysSeconds,cpuSeconds:t.cpuSeconds};
+   userSeconds:t.userSeconds,sysSeconds:t.sysSeconds,cpuSeconds:t.cpuSeconds,
+   measured:t.cpuSeconds!==null,
+   note:t.cpuSeconds===null?'NOT MEASURED: the invocation did not report timing. '
+    +'A null here means the run did not happen, never that it was too slow to time.':null};
  });
  const baseline=measured[0];
  const withRatios=measured.map(m=>({...m,
