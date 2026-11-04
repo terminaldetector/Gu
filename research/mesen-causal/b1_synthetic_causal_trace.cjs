@@ -72,15 +72,18 @@ const controls=[
   expectedClass:'WRITTEN_PER_ACTION_EDGE',
   because:'decrements once per press edge for as long as the resource lasts'},
  {name:'singleUnit',    fixture:trans, mask:trans.oracle.spendMask,
+  consumerMask:trans.oracle.playMask,
   truth:trans.oracle.transitionLabels.singleUnit,
   expectedClass:'WRITTEN_ONLY_UNDER_ACTION',
   because:'a genuine resource of exactly ONE unit: it can be written once and no '
    +'number of further edges can write it again'},
  {name:'oneShotSwitch', fixture:trans, mask:trans.oracle.latchMask,
+  consumerMask:trans.oracle.playMask,
   truth:trans.oracle.transitionLabels.oneShotSwitch,
   expectedClass:'WRITTEN_ONLY_UNDER_ACTION',
   because:'a latch: it flips once on a press edge and never moves again'},
  {name:'firstThenLater',fixture:trans, mask:trans.oracle.latchMask,
+  consumerMask:trans.oracle.playMask,
   truth:trans.oracle.transitionLabels.firstThenLater,
   expectedClass:'WRITTEN_ONLY_UNDER_ACTION',
   because:'steps on press edge 1 and again on edge 5, so a bounded two writes'}];
@@ -92,10 +95,32 @@ for(const f of [dual,trans]){
  inst.run([f.nes,'--frames','10','--save-state',state]);
  bootStates.set(f.nes,state);
 }
-const regimes=button=>({
- neutral:M.schedules.neutral(),
- continuousHold:M.schedules.hold(button,240,20),
- pulseTrain:M.schedules.train(button,20,4,8,20)});
+/* THE FOURTH REGIME, added after the first three produced a negative that was a
+   property of the schedule rather than of the instrument.
+
+   singleUnit, a genuine one-unit resource, and oneShotSwitch, a latch, came
+   back identical under neutral / hold / train: one write under action, the same
+   read counts, one distinct reader site each. But all three regimes press only
+   the field's OWN driving button, and singleUnit's consumer is a different
+   routine gated on a DIFFERENT button - the play button. That consumer never
+   ran, so the field that has one and the field that has none could not look
+   different.
+
+   Measured directly: with the play button also held, singleUnit is read twice
+   and oneShotSwitch once. The discrimination exists; the schedule was hiding
+   it. So a regime that exercises a declared consumer is part of the instrument,
+   not an afterthought - and it generalises to B3: an action schedule must drive
+   candidate CONSUMERS, not only the candidate's own driver. */
+const regimes=(button,consumerButton)=>{
+ const out={
+  neutral:M.schedules.neutral(),
+  continuousHold:M.schedules.hold(button,240,20),
+  pulseTrain:M.schedules.train(button,20,4,8,20)};
+ if(consumerButton&&consumerButton!==button)
+  out.trainPlusConsumer=[...M.schedules.train(button,20,4,8,20),
+   ...M.schedules.hold(consumerButton,300,60)];
+ return out;
+};
 
 /* ---- B1-A: access summary over one declared window ---- */
 function accessSummary(fixture,addresses,inputs,tag){
@@ -216,7 +241,7 @@ for(const f of [dual,trans]){
  const fields=Object.entries(f.oracle.fields).map(([name,v])=>({name,address:v.address}));
  const anyControl=controls.find(c=>c.fixture===f);
  const button=M.buttonOf(anyControl.mask);
- const r=regimes(button);
+ const r=regimes(button,anyControl.consumerMask?M.buttonOf(anyControl.consumerMask):null);
  for(const [regime,inputs] of Object.entries(r)){
   const tag=(f===dual?'dual':'trans')+'-'+regime;
   const s=accessSummary(f,fields,inputs,tag);
@@ -238,7 +263,8 @@ const traceRows=[];
 for(const control of controls){
  const address=control.fixture.oracle.fields[control.name].address;
  const button=M.buttonOf(control.mask);
- const r=regimes(button);
+ const consumerButton=control.consumerMask?M.buttonOf(control.consumerMask):null;
+ const r=regimes(button,consumerButton);
  const perRegime={};
  for(const [regime,inputs] of Object.entries(r)){
   const tag=control.name+'-'+regime;
@@ -334,6 +360,9 @@ const discrimination=traceRows.map(row=>{
  const neutral=row.writesObserved.neutral||0;
  const hold=row.writesObserved.continuousHold||0;
  const train=row.writesObserved.pulseTrain||0;
+ /* the consumer regime is NOT used to classify the write behaviour: it exists
+    to exercise readers, and folding it in would confuse "written under action"
+    with "read by a consumer" */
  let observedClass='UNDETERMINED';
  if(neutral===0&&hold===0&&train===0)observedClass='NEVER_WRITTEN_IN_WINDOW';
  else if(neutral>0){
@@ -389,17 +418,42 @@ const latchVersusResource=(()=>{
    'different variables are read by different instructions in any program. A '
    +'difference in site ADDRESS says nothing about whether a field is a resource; '
    +'only a difference in the STRUCTURE of its access could.',
-  verdict:(sameWriteSignature&&unitSites.length===latchSites.length)
-   ?'NOT SEPARATED. Writes are identical, read counts are identical, and each field '
-    +'has the same number of distinct reader sites. The site addresses differ, which is '
-    +'expected of two different variables and is not evidence about kind. This is the '
-    +'S11A limitation reappearing at the CPU level, not solved by it.'
-   :'the structural signatures differ, which would be a new discrimination and needs '
-    +'explaining before it is believed',
-  whatWouldSeparateThem:'evidence about what a consumer DOES with the value - whether '
-   +'it gates play, feeds a terminal check, or only draws a HUD - not that a consumer '
-   +'exists or how often it reads. "A read happened" was never going to be enough, and '
-   +'this measures how far from enough it is.',
+  /* the question asked twice: without a consumer regime, and with one */
+  underTheThreeOwnDriverRegimes:{
+   singleUnitReads:{neutral:unit.readsObserved.neutral,
+    continuousHold:unit.readsObserved.continuousHold,
+    pulseTrain:unit.readsObserved.pulseTrain},
+   oneShotSwitchReads:{neutral:latch.readsObserved.neutral,
+    continuousHold:latch.readsObserved.continuousHold,
+    pulseTrain:latch.readsObserved.pulseTrain},
+   separated:false,
+   why:'all three regimes press only the field own driving button, so a consumer '
+    +'gated on a different button never runs'},
+  underTheConsumerRegime:{
+   singleUnitReads:unit.readsObserved.trainPlusConsumer,
+   oneShotSwitchReads:latch.readsObserved.trainPlusConsumer,
+   separated:unit.readsObserved.trainPlusConsumer!==undefined
+    &&unit.readsObserved.trainPlusConsumer!==latch.readsObserved.trainPlusConsumer,
+   why:'singleUnit is read by the play-gated routine and oneShotSwitch is not, so a '
+    +'schedule that drives that routine separates them'},
+  verdict:(unit.readsObserved.trainPlusConsumer!==undefined
+   &&unit.readsObserved.trainPlusConsumer!==latch.readsObserved.trainPlusConsumer)
+   ?'SEPARATED, BUT ONLY BY A SCHEDULE THAT EXERCISES THE CONSUMER. Under the three '
+    +'regimes that press the field own driver the two are identical in writes, read '
+    +'counts and reader-site count. Adding the play button - which drives a routine '
+    +'that reads singleUnit and never reads oneShotSwitch - separates them. The first '
+    +'negative was a property of my action schedule, not of the instrument.'
+   :'NOT SEPARATED under any regime tried here. Writes, read counts and reader-site '
+    +'counts coincide; differing site ADDRESSES are expected of two different variables '
+    +'and are not evidence about kind.',
+  whatThisStillDoesNotEstablish:'that singleUnit is a game resource. An extra read '
+   +'from a distinct instruction is a LEAD about a consumer; it is not evidence of a '
+   +'game cost and is never promoted to GAME_COST_EVIDENCED. Separating a resource '
+   +'from a latch by KIND needs evidence about what the consumer DOES with the value - '
+   +'gates play, feeds a terminal check, or only draws a HUD.',
+  consequenceForB3:'an action schedule must drive candidate CONSUMERS and not only '
+   +'the candidate own driver, or a field with a consumer and a field with none will '
+   +'look the same. Recorded before B3 rather than discovered during it.',
   readsAreNotEvidence:'a difference in read counts or reader sites is a LEAD about '
    +'consumers, not evidence of a game cost. It is never promoted to '
    +'GAME_COST_EVIDENCED: HUD code, animation and timers read fields too.'};
