@@ -38,21 +38,52 @@ const expect=(c,m)=>c?true:fail(m);
 /* ---- the two fixture families and the seven declared controls ---- */
 const dual=M.fixture(inst.work,'make_agod_dual_dependence_rom.py',1);
 const trans=M.fixture(inst.work,'make_agod_transition_rom.py',1,['--arm-presses','1']);
+/* The expected class of each control, DECLARED HERE from the mechanism its
+   generator documents - not inferred from oracle label fields, because the two
+   fixture families use different label schemas and the first run of this file
+   silently produced "UNDETERMINED" for all three transition-family controls
+   where my mapping read fields that family does not have.
+
+   The five classes:
+     NEVER_WRITTEN_IN_WINDOW        no writes under any regime
+     WRITTEN_REGARDLESS_OF_ACTION   written in neutral play, and the train does
+                                    not add materially
+     WRITTEN_BY_TIME_AND_ACTION     written in neutral play AND materially more
+                                    under the train
+     WRITTEN_PER_ACTION_EDGE        not written in neutral, and the train writes
+                                    it many times more than a single-edge hold
+     WRITTEN_ONLY_UNDER_ACTION      not written in neutral, but a bounded number
+                                    of times however many edges arrive */
 const controls=[
  {name:'cadenceOnly',   fixture:dual, mask:dual.oracle.dualMask,
-  truth:dual.oracle.dependenceLabels.cadenceOnly},
+  truth:dual.oracle.dependenceLabels.cadenceOnly,
+  expectedClass:'WRITTEN_PER_ACTION_EDGE',
+  because:'steps once every K press edges and nothing else moves it'},
  {name:'timeAndAction', fixture:dual, mask:dual.oracle.dualMask,
-  truth:dual.oracle.dependenceLabels.timeAndAction},
+  truth:dual.oracle.dependenceLabels.timeAndAction,
+  expectedClass:'WRITTEN_BY_TIME_AND_ACTION',
+  because:'rises on its own timer AND falls on every press edge'},
  {name:'pureTime',      fixture:dual, mask:dual.oracle.dualMask,
-  truth:dual.oracle.dependenceLabels.pureTime},
+  truth:dual.oracle.dependenceLabels.pureTime,
+  expectedClass:'WRITTEN_REGARDLESS_OF_ACTION',
+  because:'advances on its own timer only'},
  {name:'pureAction',    fixture:dual, mask:dual.oracle.soloMask,
-  truth:dual.oracle.dependenceLabels.pureAction},
+  truth:dual.oracle.dependenceLabels.pureAction,
+  expectedClass:'WRITTEN_PER_ACTION_EDGE',
+  because:'decrements once per press edge for as long as the resource lasts'},
  {name:'singleUnit',    fixture:trans, mask:trans.oracle.spendMask,
-  truth:trans.oracle.transitionLabels.singleUnit},
+  truth:trans.oracle.transitionLabels.singleUnit,
+  expectedClass:'WRITTEN_ONLY_UNDER_ACTION',
+  because:'a genuine resource of exactly ONE unit: it can be written once and no '
+   +'number of further edges can write it again'},
  {name:'oneShotSwitch', fixture:trans, mask:trans.oracle.latchMask,
-  truth:trans.oracle.transitionLabels.oneShotSwitch},
+  truth:trans.oracle.transitionLabels.oneShotSwitch,
+  expectedClass:'WRITTEN_ONLY_UNDER_ACTION',
+  because:'a latch: it flips once on a press edge and never moves again'},
  {name:'firstThenLater',fixture:trans, mask:trans.oracle.latchMask,
-  truth:trans.oracle.transitionLabels.firstThenLater}];
+  truth:trans.oracle.transitionLabels.firstThenLater,
+  expectedClass:'WRITTEN_ONLY_UNDER_ACTION',
+  because:'steps on press edge 1 and again on edge 5, so a bounded two writes'}];
 
 /* one canonical post-boot state per fixture: B0 row 9 showed fresh boots differ */
 const bootStates=new Map();
@@ -252,98 +283,157 @@ for(const control of controls){
   luaErrors:Object.fromEntries(Object.keys(perRegime).map(r2=>[r2,perRegime[r2].luaErrors]))});
 }
 
-/* ---- does the trace discriminate resource / latch / time-driven? ---- */
-const discrimination=traceRows.map(row=>{
- const w=row.writesObserved;
- const neutralWrites=w.neutral||0;
- const trainWrites=w.pulseTrain||0,holdWrites=w.continuousHold||0;
- /* read out of the TRACE alone, before the oracle is consulted */
- let observedClass='UNDETERMINED';
- if(neutralWrites>0&&trainWrites>0&&Math.abs(trainWrites-neutralWrites)<=1)
-  observedClass='WRITTEN_REGARDLESS_OF_ACTION';
- else if(neutralWrites===0&&trainWrites===0&&holdWrites===0)
-  observedClass='NEVER_WRITTEN_IN_THIS_WINDOW';
- else if(trainWrites>holdWrites&&holdWrites<=1)
-  observedClass='WRITTEN_PER_ACTION_EDGE';
- else if(trainWrites>0||holdWrites>0)
-  observedClass='WRITTEN_UNDER_ACTION';
- /* and only now the oracle, to score it */
- const truth=row.groundTruth;
- const expectedClass=truth.timeDriven&&!truth.actionDriven?'WRITTEN_REGARDLESS_OF_ACTION'
-  :(truth.requiresMultipleEdges?'WRITTEN_PER_ACTION_EDGE'
-   :(truth.actionDriven?'WRITTEN_UNDER_ACTION':'UNDETERMINED'));
- return {control:row.control,observedClass,expectedClass,
-  agrees:observedClass===expectedClass
-   ||(observedClass==='WRITTEN_PER_ACTION_EDGE'&&expectedClass==='WRITTEN_UNDER_ACTION'),
-  neutralWrites,holdWrites,trainWrites,
-  note:'the class is read from the trace. The oracle is consulted only to score it.'};
-});
+/* ---- does the trace discriminate resource / latch / time-driven? ----
 
-/* ---- review item 1: the cost of each observation mode ---- */
+   The class is read out of the TRACE first. The declared expectation is
+   compared afterwards, so the classification cannot borrow the answer.
+
+   THE TOLERANCE IS NOT ARBITRARY, and the first version of this file got it
+   wrong. It required the train and neutral write counts to differ by at most
+   ONE, which is meaningless for a field written ~74 times in a window: pureTime
+   came back 74 neutral against 72 under the train and was misclassified as
+   action-driven. The bound is now RELATIVE and grounded in a quantity measured
+   earlier in this programme: holding a button costs the game loop about 6 per
+   cent of its iterations (161 per frame neutral against 151 held, measured on
+   this fixture family in S11B-R), so a purely time-driven field's count moves by
+   a few per cent between regimes. The bound is 25 per cent - four times that
+   drift - and it is a property of the fixture's loop, not a value chosen
+   because it makes a control pass. */
+const NEUTRAL_DRIFT_TOLERANCE=0.25;
+const PER_EDGE_RATIO=3;
+const discrimination=traceRows.map(row=>{
+ const control=controls.find(c=>c.name===row.control);
+ const neutral=row.writesObserved.neutral||0;
+ const hold=row.writesObserved.continuousHold||0;
+ const train=row.writesObserved.pulseTrain||0;
+ let observedClass='UNDETERMINED';
+ if(neutral===0&&hold===0&&train===0)observedClass='NEVER_WRITTEN_IN_WINDOW';
+ else if(neutral>0){
+  const ratio=train/neutral;
+  observedClass=Math.abs(ratio-1)<=NEUTRAL_DRIFT_TOLERANCE
+   ?'WRITTEN_REGARDLESS_OF_ACTION':'WRITTEN_BY_TIME_AND_ACTION';
+ }else{
+  observedClass=train>=PER_EDGE_RATIO*Math.max(hold,1)
+   ?'WRITTEN_PER_ACTION_EDGE':'WRITTEN_ONLY_UNDER_ACTION';
+ }
+ const reads=row.readsObserved||{};
+ return {control:row.control,
+  observedClass,expectedClass:control.expectedClass,
+  expectationBasis:control.because,
+  agrees:observedClass===control.expectedClass,
+  writes:{neutral,continuousHold:hold,pulseTrain:train},
+  trainOverNeutral:neutral>0?Number((train/neutral).toFixed(2)):null,
+  trainOverHold:hold>0?Number((train/hold).toFixed(2)):null,
+  reads:{neutral:reads.neutral,continuousHold:reads.continuousHold,
+   pulseTrain:reads.pulseTrain},
+  note:'the class is read from the trace; the declared expectation is compared afterwards'};
+});
+/* The S11A question, asked again at the CPU level: a one-unit resource and a
+   one-shot latch are both written exactly once under action. Does anything in
+   the trace separate them? Read counts are reported because they are the
+   obvious candidate - and NOT promoted: a field read by HUD code, animation or
+   a timer produces reads too, so a read count is a lead, never a cost. */
+const latchVersusResource=(()=>{
+ const unit=traceRows.find(r=>r.control==='singleUnit');
+ const latch=traceRows.find(r=>r.control==='oneShotSwitch');
+ if(!unit||!latch)return null;
+ const sameWriteSignature=JSON.stringify(unit.writesObserved)===JSON.stringify(latch.writesObserved);
+ return {question:'does the trace separate a genuine one-unit resource from a latch?',
+  singleUnit:{writes:unit.writesObserved,reads:unit.readsObserved},
+  oneShotSwitch:{writes:latch.writesObserved,reads:latch.readsObserved},
+  writeSignaturesIdentical:sameWriteSignature,
+  readCountsDiffer:JSON.stringify(unit.readsObserved)!==JSON.stringify(latch.readsObserved),
+  verdict:sameWriteSignature
+   ?'NOT SEPARATED BY WRITE BEHAVIOUR. Both are written once under action and no '
+    +'number of further edges changes that, which is the S11A limitation reappearing at '
+    +'the CPU level rather than a new one.'
+   :'the write signatures differ, which would be a new discrimination and needs '
+    +'explaining before it is believed',
+  readsAreNotEvidence:'a difference in read counts is a LEAD about consumers, not '
+   +'evidence of a game cost. It is never promoted to GAME_COST_EVIDENCED.'};
+})();
+
+/* ---- review item 1: the cost of each observation mode ----
+
+   MEASURED IN CPU TIME, and the first version of this file could not see the
+   cost at all. Every run is paced at about 17 ms per frame (~59 fps) and
+   --no-max-speed makes no difference, although AgentCli.cpp sets
+   EmulationFlags::MaximumSpeed by default. So wall clock is a PACING FLOOR: a
+   58 MB instruction trace appeared to cost exactly as much as no observation,
+   ratio 1.00. CPU time shows the work the floor was hiding. */
 const overhead=(()=>{
  const address=dual.oracle.fields.cadenceOnly.address;
  const button=M.buttonOf(dual.oracle.dualMask);
  const inputs=M.schedules.train(button,20,4,8,20);
- const base=[dual.nes,'--load-state',bootStates.get(dual.nes),'--frames',String(FRAMES)];
- const timeOf=(args,tag,timeoutMs)=>{
-  const r=inst.run(args,{timeoutMs:timeoutMs||300000});
-  return {tag,elapsedMs:r.elapsedMs,
-   reason:r.summary()?r.summary().reason:null};
- };
- const withInputs=extra=>[...base,...inputs.flatMap(i=>['--input',i]),...extra];
- const noObservation=timeOf(withInputs([]),'no observation at all');
- const cheapCount=(()=>{
-  const r=focusedTrace(dual,address,inputs,'cost-cheap',0);
-  return {tag:'per-access callback, no state sample',elapsedMs:r.elapsedMs,
-   events:r.totals?r.totals.callbackWrites:null};
- })();
- const boundedSample=(()=>{
-  const r=focusedTrace(dual,address,inputs,'cost-bounded',MAX_PC_SAMPLES);
-  return {tag:'per-access callback, state sampled for the first '+MAX_PC_SAMPLES+' writes',
-   elapsedMs:r.elapsedMs,events:r.totals?r.totals.callbackWrites:null};
- })();
- const everySample=(()=>{
-  /* deliberately unbounded, on a SHORT window, only to quantify the warning */
-  const out=path.join(inst.work,'cost-every.jsonl');
+ const state=bootStates.get(dual.nes);
+ const base=[dual.nes,'--load-state',state,'--frames',String(FRAMES),
+  ...inputs.flatMap(i=>['--input',i])];
+ /* a Lua script that observes but never stops the run, so every mode covers
+    the SAME window; the earlier cost rows were not comparable because one
+    script called emu.stop() at frame 100 */
+ const costScript=(tag,pcSamples,everyAccess)=>{
+  const out=path.join(inst.work,'cost-'+tag+'.jsonl');
   const body=M.luaPreamble(out)+`
-local n = 0
+local writes, reads, sampled = 0, 0, 0
 local frames = 0
 local function onWrite(address, value)
-  n = n + 1
-  local st = emu.getState()   -- UNBOUNDED, to measure what the review warned about
-  if n <= 2 then emit({ kind = "write", pc = st["cpu.pc"] }) end
+  writes = writes + 1
+  ${everyAccess
+   ?'local st = emu.getState()   -- UNBOUNDED, to measure the warning'
+   :'if sampled < '+pcSamples+' then sampled = sampled + 1; local st = emu.getState() end'}
 end
 local function onRead(address, value)
-  local st = emu.getState()   -- UNBOUNDED
+  reads = reads + 1
+  ${everyAccess?'local st = emu.getState()   -- UNBOUNDED':''}
 end
 local function onEndFrame()
   frames = frames + 1
-  if frames == 60 then emit({ kind = "totals", writes = n }); flush() end
+  if frames == ${FLUSH_AT} then
+    emit({ kind = "totals", writes = writes, reads = reads, sampled = sampled }); flush()
+  end
 end
 emu.addMemoryCallback(onWrite, emu.callbackType.write, ${address}, ${address}, emu.memType.nesMemory, emu.cpuType.nes)
 emu.addMemoryCallback(onRead,  emu.callbackType.read,  ${address}, ${address}, emu.memType.nesMemory, emu.cpuType.nes)
 emu.addEventCallback(onEndFrame, emu.eventType.endFrame)
 `;
-  const script=M.luaFile(inst.work,'cost-every.lua',body);
-  return timeOf([dual.nes,'--load-state',bootStates.get(dual.nes),'--frames','80',
-   ...inputs.flatMap(i=>['--input',i]),'--lua',script,'--lua-allow-io','--lua-timeout','30'],
-   'per-access callback, state sampled on EVERY access, 80-frame window only');
- })();
- const fullTrace=(()=>{
-  const file=path.join(inst.work,'cost-trace.log');
-  const t=timeOf(withInputs(['--trace',file]),'full CPU instruction trace',600000);
-  const size=fs.existsSync(file)?fs.statSync(file).size:0;
-  return {...t,traceBytes:size,
-   traceLines:size?fs.readFileSync(file,'utf8').split('\n').length:0};
- })();
- const ratio=x=>x.elapsedMs&&noObservation.elapsedMs
-  ?Number((x.elapsedMs/noObservation.elapsedMs).toFixed(2)):null;
- return {baselineFrames:FRAMES,
-  modes:[noObservation,cheapCount,boundedSample,everySample,fullTrace]
-   .map(x=>({...x,timesBaseline:ratio(x)})),
-  note:'the unbounded mode ran a SHORTER window (80 frames against 400), so its ratio '
-   +'understates the cost per frame; it is reported to size the warning, not as a mode '
-   +'to use. A full instruction trace is a separate order of cost again.'};
+  return M.luaFile(inst.work,'cost-'+tag+'.lua',body);
+ };
+ const traceFile=path.join(inst.work,'cost-trace.log');
+ const modes=[
+  {tag:'no observation at all',args:[]},
+  {tag:'per-access callback, no state sample',
+   args:['--lua',costScript('cheap',0,false),'--lua-allow-io','--lua-timeout','30']},
+  {tag:'per-access callback, state sampled for the first '+MAX_PC_SAMPLES+' writes',
+   args:['--lua',costScript('bounded',MAX_PC_SAMPLES,false),'--lua-allow-io','--lua-timeout','30']},
+  {tag:'per-access callback, state sampled on EVERY access',
+   args:['--lua',costScript('every',0,true),'--lua-allow-io','--lua-timeout','60']},
+  {tag:'full CPU instruction trace',args:['--trace',traceFile]}];
+ const measured=modes.map(m=>{
+  const t=inst.runTimed([...base,...m.args],{timeoutMs:900000});
+  return {mode:m.tag,wallSeconds:t.realSeconds,
+   userSeconds:t.userSeconds,sysSeconds:t.sysSeconds,cpuSeconds:t.cpuSeconds};
+ });
+ const baseline=measured[0];
+ const withRatios=measured.map(m=>({...m,
+  cpuTimesBaseline:m.cpuSeconds&&baseline.cpuSeconds
+   ?Number((m.cpuSeconds/baseline.cpuSeconds).toFixed(2)):null,
+  wallTimesBaseline:m.wallSeconds&&baseline.wallSeconds
+   ?Number((m.wallSeconds/baseline.wallSeconds).toFixed(2)):null}));
+ const traceBytes=fs.existsSync(traceFile)?fs.statSync(traceFile).size:0;
+ return {frames:FRAMES,modes:withRatios,
+  traceBytes,traceBytesPerFrame:traceBytes?Math.round(traceBytes/FRAMES):null,
+  pacingFloor:{observedMsPerFrame:baseline.wallSeconds
+    ?Number(((baseline.wallSeconds*1000)/FRAMES).toFixed(2)):null,
+   impliedFramesPerSecond:baseline.wallSeconds
+    ?Number((FRAMES/baseline.wallSeconds).toFixed(1)):null,
+   note:'every mode sits on this floor, so WALL CLOCK RATIOS ARE NOT A COST '
+    +'MEASUREMENT here. --no-max-speed changed nothing when measured directly '
+    +'(6776 ms against 6787 ms over 400 frames), although AgentCli.cpp line 699 '
+    +'sets EmulationFlags::MaximumSpeed by default. Reported as an instrument '
+    +'property, not worked around.'},
+  throughputConsequence:'at this floor a 2.5 million frame campaign - the size of the '
+   +'S11B corpus - would take roughly 12 hours of wall clock against 47 minutes in '
+   +'jsnes. That bounds what stage B can ask of this instrument and belongs in B5.'};
 })();
 
 /* ---- the checks ---- */
@@ -404,6 +494,7 @@ const report={type:'gu-stage-b-b1-synthetic-causal-trace',version:1,
  B1A_accessSummary:summaryRows,
  B1B_focusedTrace:traceRows,
  discrimination,
+ latchVersusResource,
  overhead,
  checks,cost:inst.cost(),
  provenance:Provenance.record({tool:'research/mesen-causal/b1_synthetic_causal_trace.cjs',
@@ -418,9 +509,16 @@ if(process.env.B1_REPORT)
 console.log(JSON.stringify({type:report.type,status:report.status,totals:report.totals,
  checks:checks.map(c=>({check:c.check,pass:c.pass})),
  discrimination:discrimination.map(d=>({control:d.control,observed:d.observedClass,
-  expected:d.expectedClass,agrees:d.agrees,
-  writes:{neutral:d.neutralWrites,hold:d.holdWrites,train:d.trainWrites}})),
- overhead:overhead.modes.map(m=>({mode:m.tag,ms:m.elapsedMs,x:m.timesBaseline,
-  traceBytes:m.traceBytes})),
+  expected:d.expectedClass,agrees:d.agrees,writes:d.writes,
+  trainOverNeutral:d.trainOverNeutral})),
+ latchVersusResource:latchVersusResource?{
+  writeSignaturesIdentical:latchVersusResource.writeSignaturesIdentical,
+  readCountsDiffer:latchVersusResource.readCountsDiffer,
+  verdict:latchVersusResource.verdict.slice(0,120)}:null,
+ overhead:{pacingFloor:overhead.pacingFloor.observedMsPerFrame+' ms/frame, '
+   +overhead.pacingFloor.impliedFramesPerSecond+' fps',
+  traceBytes:overhead.traceBytes,
+  modes:overhead.modes.map(m=>({mode:m.mode,cpuSeconds:m.cpuSeconds,
+   cpuTimesBaseline:m.cpuTimesBaseline,wallTimesBaseline:m.wallTimesBaseline}))},
  cost:report.cost},null,1));
 if(failures.length){for(const f of failures)console.error(' FAIL '+f);process.exitCode=1;}

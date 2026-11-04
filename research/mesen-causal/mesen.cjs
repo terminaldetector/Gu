@@ -40,7 +40,34 @@ function instrument(options){
    summary:()=>records.find(r=>r.event==='summary')||null,
    luaLog:()=>records.filter(r=>r.event==='lua_log'||r.event==='lua_error')};
  };
- return {binary,work,home,run,
+ /* CPU time, not wall clock.
+    Measured in B1: every run is paced at about 17 ms per frame (~59 fps) and
+    --no-max-speed changes nothing, although AgentCli.cpp sets
+    EmulationFlags::MaximumSpeed by default. So wall clock is a PACING FLOOR
+    that hides the cost of instrumentation entirely - a 58 MB instruction trace
+    appeared to cost the same as no observation. CPU time shows the real work:
+    the same trace nearly doubles it. Node exposes no getrusage for children,
+    so the bash `time` builtin reports it. */
+ const runTimed=(args,callOpts)=>{
+  const quote=a=>"'"+String(a).replace(/'/g,"'\\''")+"'";
+  const line=[binary,...args,'--home',home].map(quote).join(' ');
+  const started=Date.now();invocations++;
+  let out='';
+  try{
+   /* the `time` builtin writes to the shell's stderr, which execFileSync
+      discards on success, so the whole group is redirected onto stdout */
+   out=execFileSync('bash',['-c','TIMEFORMAT="%3R %3U %3S"; { time '+line
+    +' >/dev/null 2>&1 ; } 2>&1'],{encoding:'utf8',
+    timeout:(callOpts&&callOpts.timeoutMs)||600000,stdio:['ignore','pipe','pipe']});
+  }catch(problem){out=problem.stderr?problem.stderr.toString():'';}
+  const elapsed=Date.now()-started;wallClockMs+=elapsed;
+  const m=/([\d.]+)\s+([\d.]+)\s+([\d.]+)\s*$/.exec(out.trim());
+  return {wallMs:elapsed,
+   realSeconds:m?Number(m[1]):null,userSeconds:m?Number(m[2]):null,
+   sysSeconds:m?Number(m[3]):null,
+   cpuSeconds:m?Number((Number(m[2])+Number(m[3])).toFixed(3)):null};
+ };
+ return {binary,work,home,run,runTimed,
   binarySha256:sha256(fs.readFileSync(binary)),
   cost:()=>({instrumentInvocations:invocations,instrumentWallClockMs:wallClockMs}),
   /* memory spaces, parsed from the one-record-per-space shape the instrument
