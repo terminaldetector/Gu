@@ -448,7 +448,7 @@ const latchVersusResource=(()=>{
   verdict:unit.readsObserved.trainPlusConsumer===undefined
    ?'NOT ESTABLISHED: the consumer regime produced no data for these controls, so '
     +'this comparison says nothing. A missing measurement is not a coinciding one.'
-   :(unit.readsObserved.trainPlusConsumer!==latch.readsObserved.trainPlusConsumer)
+   :((unit.readsObserved.trainPlusConsumer!==latch.readsObserved.trainPlusConsumer)
    ?'SEPARATED, BUT ONLY BY A SCHEDULE THAT EXERCISES THE CONSUMER. Under the three '
     +'regimes that press the field own driver the two are identical in writes, read '
     +'counts and reader-site count. Adding the play button - which drives a routine '
