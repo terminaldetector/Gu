@@ -414,7 +414,9 @@ const overhead=(()=>{
  /* a Lua script that observes but never stops the run, so every mode covers
     the SAME window; the earlier cost rows were not comparable because one
     script called emu.stop() at frame 100 */
- const costScript=(tag,pcSamples,everyAccess)=>{
+ const costScript=(tag,pcSamples,everyAccess,fromAddr,toAddr)=>{
+  const lo=fromAddr===undefined?address:fromAddr;
+  const hi=toAddr===undefined?address:toAddr;
   const out=path.join(inst.work,'cost-'+tag+'.jsonl');
   const body=M.luaPreamble(out)+`
 local writes, reads, sampled = 0, 0, 0
@@ -435,8 +437,8 @@ local function onEndFrame()
     emit({ kind = "totals", writes = writes, reads = reads, sampled = sampled }); flush()
   end
 end
-emu.addMemoryCallback(onWrite, emu.callbackType.write, ${address}, ${address}, emu.memType.nesMemory, emu.cpuType.nes)
-emu.addMemoryCallback(onRead,  emu.callbackType.read,  ${address}, ${address}, emu.memType.nesMemory, emu.cpuType.nes)
+emu.addMemoryCallback(onWrite, emu.callbackType.write, ${lo}, ${hi}, emu.memType.nesMemory, emu.cpuType.nes)
+emu.addMemoryCallback(onRead,  emu.callbackType.read,  ${lo}, ${hi}, emu.memType.nesMemory, emu.cpuType.nes)
 emu.addEventCallback(onEndFrame, emu.eventType.endFrame)
 `;
   return M.luaFile(inst.work,'cost-'+tag+'.lua',body);
@@ -450,7 +452,18 @@ emu.addEventCallback(onEndFrame, emu.eventType.endFrame)
    args:['--lua',costScript('bounded',MAX_PC_SAMPLES,false),'--lua-allow-io','--lua-timeout','30']},
   {tag:'per-access callback, state sampled on EVERY access',
    args:['--lua',costScript('every',0,true),'--lua-allow-io','--lua-timeout','120']},
-  {tag:'full CPU instruction trace',args:['--trace',traceFile]}];
+  {tag:'full CPU instruction trace',args:['--trace',traceFile]},
+  /* THE RANGE EXPANSION the review asked for. Everything above watches ONE
+     sparse byte - 12 writes and 20 reads in a whole window - so it cannot
+     exercise a warning about calling emu.getState() per access. These two
+     watch the ENTIRE zero page, which this fixture's main loop touches on
+     every iteration, roughly 161 iterations per frame. */
+  {tag:'callback over the whole zero page (0x00-0xFF), no state sample',
+   args:['--lua',costScript('wide-cheap',0,false,0,255),'--lua-allow-io',
+    '--lua-timeout','120']},
+  {tag:'callback over the whole zero page (0x00-0xFF), state sampled on EVERY access',
+   args:['--lua',costScript('wide-every',0,true,0,255),'--lua-allow-io',
+    '--lua-timeout','120']}];
  const measured=modes.map(m=>{
   const t=inst.runTimed([...base,...m.args],{timeoutMs:900000});
   return {mode:m.tag,wallSeconds:t.realSeconds,
@@ -466,7 +479,22 @@ emu.addEventCallback(onEndFrame, emu.eventType.endFrame)
   wallTimesBaseline:m.wallSeconds&&baseline.wallSeconds
    ?Number((m.wallSeconds/baseline.wallSeconds).toFixed(2)):null}));
  const traceBytes=fs.existsSync(traceFile)?fs.statSync(traceFile).size:0;
+ /* how many events each scope actually saw, so a cost has a denominator */
+ const volumeOf=tag=>{
+  const file=path.join(inst.work,'cost-'+tag+'.jsonl');
+  if(!fs.existsSync(file))return null;
+  const lines=fs.readFileSync(file,'utf8').split('\n').filter(Boolean)
+   .map(l=>{try{return JSON.parse(l);}catch(_){return null;}}).filter(Boolean);
+  const totals=lines.find(x=>x.kind==='totals');
+  return totals?{writes:totals.writes,reads:totals.reads}:null;
+ };
  return {frames:FRAMES,modes:withRatios,
+  eventVolume:{singleByteScope:volumeOf('cheap'),
+   wholeZeroPageScope:volumeOf('wide-cheap'),
+   note:'the single-byte scope sees a handful of events per window and the '
+    +'zero-page scope sees them on every loop iteration. A per-access cost is '
+    +'meaningless without this denominator, and the single-byte rows do NOT '
+    +'establish that unbounded state sampling is affordable.'},
   traceBytes,traceBytesPerFrame:traceBytes?Math.round(traceBytes/FRAMES):null,
   pacingFloor:{observedMsPerFrame:baseline.wallSeconds
     ?Number(((baseline.wallSeconds*1000)/FRAMES).toFixed(2)):null,
