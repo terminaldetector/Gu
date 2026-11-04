@@ -1,0 +1,847 @@
+{
+  "type": "gu-stage-b-b1-pc-and-address-semantics",
+  "version": 1,
+  "stage": "B1 prerequisites - review items 2 and 3",
+  "instrument": {
+    "path": "/tmp/claude-0/-home-user/f6e72801-3e11-53f6-ae0c-ac8abd48d6c7/scratchpad/external/mesen-agent/bin/linux-x64/Release/mesen-agent",
+    "binarySha256": "b7eb9b26ae615da90de4840663b93cf2f0b4c47ed088bd91c83d720aae585087",
+    "repository": "https://github.com/atonamy/mesen-agent",
+    "sha": "dbc2c744ad52e1c89a8570d22d7fa92507ad4816",
+    "licence": "GPL-3.0"
+  },
+  "fixture": {
+    "generator": "tools/make_agod_dual_dependence_rom.py",
+    "seed": 1,
+    "romSha256": "0518ddb7a75d838b38a44df7eb05d11c046feb7d7e07294e5c284323ecac22ff",
+    "targetField": "cadenceOnly",
+    "targetAddress": 214
+  },
+  "checks": [
+    {
+      "item": "2. PC provenance: what the sampled PC actually is",
+      "oracleWriterPc": "0x81a8",
+      "oracleWriterInstruction": {
+        "text": "DEC $D6",
+        "bytes": "c6d6",
+        "length": 2
+      },
+      "disassemblyAroundWriterSite": [
+        {
+          "address": "0x81a4",
+          "text": "LDA $D6",
+          "bytes": "a5d6",
+          "length": 2
+        },
+        {
+          "address": "0x81a6",
+          "text": "BEQ $81AA",
+          "bytes": "f002",
+          "length": 2
+        },
+        {
+          "address": "0x81a8",
+          "text": "DEC $D6",
+          "bytes": "c6d6",
+          "length": 2
+        },
+        {
+          "address": "0x81aa",
+          "text": "LDA $14",
+          "bytes": "a514",
+          "length": 2
+        },
+        {
+          "address": "0x81ac",
+          "text": "BNE $81B1",
+          "bytes": "d003",
+          "length": 2
+        },
+        {
+          "address": "0x81ae",
+          "text": "JMP $81BE",
+          "bytes": "4cbe81",
+          "length": 3
+        }
+      ],
+      "disassemblyAroundResetWrite": [
+        {
+          "address": "0x802f",
+          "text": "STA $00C9",
+          "bytes": "8dc900",
+          "length": 3
+        },
+        {
+          "address": "0x8032",
+          "text": "LDA #$00",
+          "bytes": "a900",
+          "length": 2
+        },
+        {
+          "address": "0x8034",
+          "text": "STA $00CA",
+          "bytes": "8dca00",
+          "length": 3
+        },
+        {
+          "address": "0x8037",
+          "text": "LDA #$78",
+          "bytes": "a978",
+          "length": 2
+        },
+        {
+          "address": "0x8039",
+          "text": "STA $00D6",
+          "bytes": "8dd600",
+          "length": 3
+        },
+        {
+          "address": "0x803c",
+          "text": "LDA #$00",
+          "bytes": "a900",
+          "length": 2
+        },
+        {
+          "address": "0x803e",
+          "text": "STA $00FE",
+          "bytes": "8dfe00",
+          "length": 3
+        },
+        {
+          "address": "0x8041",
+          "text": "LDA #$00",
+          "bytes": "a900",
+          "length": 2
+        },
+        {
+          "address": "0x8043",
+          "text": "STA $00D9",
+          "bytes": "8dd900",
+          "length": 3
+        },
+        {
+          "address": "0x8046",
+          "text": "LDA #$00",
+          "bytes": "a900",
+          "length": 2
+        }
+      ],
+      "sampledEvents": [
+        {
+          "kind": "write",
+          "address": 214,
+          "value": 120,
+          "sampledPc": 33194,
+          "sampledPcHex": "0x81aa",
+          "frameCount": 71,
+          "cycleCount": 2082598,
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": true
+        },
+        {
+          "kind": "write",
+          "address": 214,
+          "value": 119,
+          "sampledPc": 33194,
+          "sampledPcHex": "0x81aa",
+          "frameCount": 71,
+          "cycleCount": 2082599,
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": true
+        },
+        {
+          "kind": "write",
+          "address": 214,
+          "value": 119,
+          "sampledPc": 33194,
+          "sampledPcHex": "0x81aa",
+          "frameCount": 131,
+          "cycleCount": 3869456,
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": true
+        },
+        {
+          "kind": "write",
+          "address": 214,
+          "value": 118,
+          "sampledPc": 33194,
+          "sampledPcHex": "0x81aa",
+          "frameCount": 131,
+          "cycleCount": 3869457,
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": true
+        },
+        {
+          "kind": "write",
+          "address": 214,
+          "value": 120,
+          "sampledPc": 32828,
+          "sampledPcHex": "0x803c",
+          "frameCount": 1,
+          "cycleCount": 81,
+          "accessingInstruction": {
+            "address": 32825,
+            "addressHex": "0x8039",
+            "text": "STA $00D6",
+            "length": 3
+          },
+          "offsetFromAccessingInstruction": 3,
+          "isOracleWriterSite": false
+        },
+        {
+          "kind": "write",
+          "address": 214,
+          "value": 120,
+          "sampledPc": 33194,
+          "sampledPcHex": "0x81aa",
+          "frameCount": 61,
+          "cycleCount": 1784691,
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": true
+        },
+        {
+          "kind": "write",
+          "address": 214,
+          "value": 119,
+          "sampledPc": 33194,
+          "sampledPcHex": "0x81aa",
+          "frameCount": 61,
+          "cycleCount": 1784692,
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": true
+        },
+        {
+          "kind": "write",
+          "address": 214,
+          "value": 119,
+          "sampledPc": 33194,
+          "sampledPcHex": "0x81aa",
+          "frameCount": 121,
+          "cycleCount": 3571567,
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": true
+        },
+        {
+          "kind": "write",
+          "address": 214,
+          "value": 118,
+          "sampledPc": 33194,
+          "sampledPcHex": "0x81aa",
+          "frameCount": 121,
+          "cycleCount": 3571568,
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": true
+        },
+        {
+          "kind": "read",
+          "address": 214,
+          "value": 120,
+          "sampledPc": 33190,
+          "sampledPcHex": "0x81a6",
+          "frameCount": 71,
+          "cycleCount": 2082592,
+          "accessingInstruction": {
+            "address": 33188,
+            "addressHex": "0x81a4",
+            "text": "LDA $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": false
+        },
+        {
+          "kind": "read",
+          "address": 214,
+          "value": 120,
+          "sampledPc": 33194,
+          "sampledPcHex": "0x81aa",
+          "frameCount": 71,
+          "cycleCount": 2082597,
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": true
+        },
+        {
+          "kind": "read",
+          "address": 214,
+          "value": 119,
+          "sampledPc": 33190,
+          "sampledPcHex": "0x81a6",
+          "frameCount": 131,
+          "cycleCount": 3869450,
+          "accessingInstruction": {
+            "address": 33188,
+            "addressHex": "0x81a4",
+            "text": "LDA $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": false
+        },
+        {
+          "kind": "read",
+          "address": 214,
+          "value": 119,
+          "sampledPc": 33194,
+          "sampledPcHex": "0x81aa",
+          "frameCount": 131,
+          "cycleCount": 3869455,
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": true
+        },
+        {
+          "kind": "read",
+          "address": 214,
+          "value": 120,
+          "sampledPc": 33190,
+          "sampledPcHex": "0x81a6",
+          "frameCount": 61,
+          "cycleCount": 1784685,
+          "accessingInstruction": {
+            "address": 33188,
+            "addressHex": "0x81a4",
+            "text": "LDA $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": false
+        },
+        {
+          "kind": "read",
+          "address": 214,
+          "value": 120,
+          "sampledPc": 33194,
+          "sampledPcHex": "0x81aa",
+          "frameCount": 61,
+          "cycleCount": 1784690,
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": true
+        },
+        {
+          "kind": "read",
+          "address": 214,
+          "value": 119,
+          "sampledPc": 33190,
+          "sampledPcHex": "0x81a6",
+          "frameCount": 121,
+          "cycleCount": 3571561,
+          "accessingInstruction": {
+            "address": 33188,
+            "addressHex": "0x81a4",
+            "text": "LDA $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": false
+        },
+        {
+          "kind": "read",
+          "address": 214,
+          "value": 119,
+          "sampledPc": 33194,
+          "sampledPcHex": "0x81aa",
+          "frameCount": 121,
+          "cycleCount": 3571566,
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": true
+        }
+      ],
+      "totals": {
+        "postBoot": {
+          "writes": 4,
+          "reads": 4,
+          "kind": "totals",
+          "sampledReads": 4,
+          "sampledWrites": 4
+        },
+        "coldStart": {
+          "writes": 5,
+          "reads": 4,
+          "sampledWrites": 5,
+          "kind": "totals",
+          "sampledReads": 4
+        }
+      },
+      "distinctOffsets": [
+        2,
+        3
+      ],
+      "distinctInstructionLengths": [
+        2,
+        3
+      ],
+      "offsetEqualsInstructionLength": true,
+      "twoByteCase": {
+        "kind": "write",
+        "address": 214,
+        "value": 120,
+        "sampledPc": 33194,
+        "sampledPcHex": "0x81aa",
+        "frameCount": 71,
+        "cycleCount": 2082598,
+        "accessingInstruction": {
+          "address": 33192,
+          "addressHex": "0x81a8",
+          "text": "DEC $D6",
+          "length": 2
+        },
+        "offsetFromAccessingInstruction": 2,
+        "isOracleWriterSite": true
+      },
+      "threeByteCase": {
+        "kind": "write",
+        "address": 214,
+        "value": 120,
+        "sampledPc": 32828,
+        "sampledPcHex": "0x803c",
+        "frameCount": 1,
+        "cycleCount": 81,
+        "accessingInstruction": {
+          "address": 32825,
+          "addressHex": "0x8039",
+          "text": "STA $00D6",
+          "length": 3
+        },
+        "offsetFromAccessingInstruction": 3,
+        "isOracleWriterSite": false
+      },
+      "establishedSemantics": "the sampled PC is the address of the NEXT instruction: the accessing instruction address plus ITS OWN length. The offset therefore varies with the addressing mode and NO FIXED OFFSET recovers the accessing site.",
+      "consequenceForB4": "the sample is recorded as nextInstructionPc. The accessing instruction address is obtained from a breakpoint or from disassembly, never by subtracting a constant from the sample.",
+      "pass": true
+    },
+    {
+      "item": "2b. the read site is resolved too, not only the write site",
+      "readEvents": [
+        {
+          "kind": "read",
+          "address": 214,
+          "value": 120,
+          "sampledPc": 33190,
+          "sampledPcHex": "0x81a6",
+          "frameCount": 71,
+          "cycleCount": 2082592,
+          "accessingInstruction": {
+            "address": 33188,
+            "addressHex": "0x81a4",
+            "text": "LDA $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": false
+        },
+        {
+          "kind": "read",
+          "address": 214,
+          "value": 120,
+          "sampledPc": 33194,
+          "sampledPcHex": "0x81aa",
+          "frameCount": 71,
+          "cycleCount": 2082597,
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": true
+        },
+        {
+          "kind": "read",
+          "address": 214,
+          "value": 119,
+          "sampledPc": 33190,
+          "sampledPcHex": "0x81a6",
+          "frameCount": 131,
+          "cycleCount": 3869450,
+          "accessingInstruction": {
+            "address": 33188,
+            "addressHex": "0x81a4",
+            "text": "LDA $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": false
+        },
+        {
+          "kind": "read",
+          "address": 214,
+          "value": 119,
+          "sampledPc": 33194,
+          "sampledPcHex": "0x81aa",
+          "frameCount": 131,
+          "cycleCount": 3869455,
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": true
+        },
+        {
+          "kind": "read",
+          "address": 214,
+          "value": 120,
+          "sampledPc": 33190,
+          "sampledPcHex": "0x81a6",
+          "frameCount": 61,
+          "cycleCount": 1784685,
+          "accessingInstruction": {
+            "address": 33188,
+            "addressHex": "0x81a4",
+            "text": "LDA $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": false
+        },
+        {
+          "kind": "read",
+          "address": 214,
+          "value": 120,
+          "sampledPc": 33194,
+          "sampledPcHex": "0x81aa",
+          "frameCount": 61,
+          "cycleCount": 1784690,
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": true
+        },
+        {
+          "kind": "read",
+          "address": 214,
+          "value": 119,
+          "sampledPc": 33190,
+          "sampledPcHex": "0x81a6",
+          "frameCount": 121,
+          "cycleCount": 3571561,
+          "accessingInstruction": {
+            "address": 33188,
+            "addressHex": "0x81a4",
+            "text": "LDA $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": false
+        },
+        {
+          "kind": "read",
+          "address": 214,
+          "value": 119,
+          "sampledPc": 33194,
+          "sampledPcHex": "0x81aa",
+          "frameCount": 121,
+          "cycleCount": 3571566,
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "offsetFromAccessingInstruction": 2,
+          "isOracleWriterSite": true
+        }
+      ],
+      "readsAtOracleWriterSite": 4,
+      "note": "DEC is a read-modify-write, so the oracle writer instruction legitimately produces BOTH a read and a write at the same site. A separate read arises from the LDA that tests the field before the decrement.",
+      "distinctReadSites": [
+        "0x81a4",
+        "0x81a8"
+      ],
+      "pass": true
+    },
+    {
+      "item": "2c. the observing callback does not alter the run",
+      "method": "the same trajectory and input with the callback attached, with the callback attached but sampling nothing, and with no callback at all. A Lua memory callback that returned an integer would overwrite the memory operation value, so none of these return anything.",
+      "ramSha256": {
+        "withCallbackAndSampling": "35c3cebde4957b0ebcbb32e8e678ac0356f33b6277377db15470e7e2e66da7e6",
+        "withCallbackNoSampling": "35c3cebde4957b0ebcbb32e8e678ac0356f33b6277377db15470e7e2e66da7e6",
+        "withoutCallback": "35c3cebde4957b0ebcbb32e8e678ac0356f33b6277377db15470e7e2e66da7e6"
+      },
+      "luaErrors": {
+        "sampling": 0,
+        "silent": 0
+      },
+      "identical": true,
+      "pass": true
+    },
+    {
+      "item": "3. address semantics, measured apart",
+      "memorySpaces": [
+        {
+          "type": "NesMemory",
+          "size": 65536
+        },
+        {
+          "type": "NesPpuMemory",
+          "size": 16384
+        },
+        {
+          "type": "NesPrgRom",
+          "size": 16384
+        },
+        {
+          "type": "NesInternalRam",
+          "size": 2048
+        },
+        {
+          "type": "NesWorkRam",
+          "size": 8192
+        },
+        {
+          "type": "NesNametableRam",
+          "size": 2048
+        },
+        {
+          "type": "NesSpriteRam",
+          "size": 256
+        },
+        {
+          "type": "NesSecondarySpriteRam",
+          "size": 32
+        },
+        {
+          "type": "NesPaletteRam",
+          "size": 32
+        },
+        {
+          "type": "NesChrRom",
+          "size": 8192
+        }
+      ],
+      "sixDistinctThings": {
+        "cpuVisibleAddress": "an address in NesMemory, the 64 KiB CPU bus: 0xd6",
+        "physicalRamAddress": "an offset into NesInternalRam, 2048 bytes: 214",
+        "mirroredAddress": "0xd6 and its mirrors at +0x0800, +0x1000, +0x1800",
+        "callbackReportedAddress": "the relative address the Lua callback receives, which depends on the memory type the callback was registered with",
+        "memoryType": "NesMemory and NesInternalRam are different spaces, not aliases",
+        "operation": "read, write and exec are separate callback types; a read-modify-write instruction such as DEC raises BOTH a read and a write at the same site"
+      },
+      "mirrorMapping": {
+        "marker": "0x5a",
+        "writtenVia": {
+          "direct": "0xd6",
+          "mirror1": "0x8d6",
+          "mirror2": "0x10d6",
+          "mirror3": "0x18d6",
+          "outsideMirrorRegion": "0x20d6 (PPU registers, not RAM)"
+        },
+        "observedInPhysicalRam": {
+          "direct": 90,
+          "mirror1": 90,
+          "mirror2": 90,
+          "mirror3": 90,
+          "outsideMirrorRegion": 120
+        },
+        "mirrorsAgree": true,
+        "outsideMirrorDidNotLand": true
+      },
+      "callbackReportedAddresses": {
+        "registeredOnNesMemory": [
+          214,
+          214,
+          214,
+          214
+        ],
+        "registeredOnNesInternalRam": [],
+        "totalsNesMemory": {
+          "writes": 4,
+          "kind": "totals"
+        },
+        "totalsNesInternalRam": null
+      },
+      "callbackMemoryTypeMatters": {
+        "nesMemoryWrites": 4,
+        "conclusion": "register per-access callbacks on nesMemory, the relative CPU-visible space. A callback on nesInternalRam observed nothing here, and an unobserved address is not an unwritten one."
+      },
+      "rule": "addresses are not merged without checking the mapping. A record states its memory type and the address is read only in that space.",
+      "pass": true
+    }
+  ],
+  "cost": {
+    "instrumentInvocations": 15,
+    "instrumentWallClockMs": 35152
+  },
+  "provenance": {
+    "provenanceRevision": "agod-provenance-1",
+    "recordedAt": "2026-11-04T17:50:42.965Z",
+    "node": "v22.22.0",
+    "platform": "linux",
+    "arch": "x64",
+    "git": {
+      "commit": "c77286c5da3400d7f45c0153a8180a34135921c6",
+      "branch": "research/agod-neural-e0-e1",
+      "commitSubject": "Stage B / B0 supplement: the review was right about 4.3, and it was passing for the wrong reason",
+      "commitDate": "2026-11-04T17:46:25+00:00",
+      "workingTreeDirty": true,
+      "modifiedFileCount": 1,
+      "modifiedFiles": [
+        {
+          "status": "??",
+          "path": "research/mesen-causal/b1_pc_and_address_semantics.cjs"
+        }
+      ]
+    },
+    "sourceFiles": [
+      {
+        "path": "research/mesen-causal/b1_pc_and_address_semantics.cjs",
+        "sha256": "062ad363db42350c40c6e9cefe27d15deb2f1214ef422390c1bffb8ba2cb3db7",
+        "bytes": 18925,
+        "gitBlobAtHead": null,
+        "matchesCommitted": null,
+        "newSinceCommit": true,
+        "error": null
+      },
+      {
+        "path": "tools/agod_s11b_adapter.cjs",
+        "sha256": "346dcce9c1723568bdaf8f4872b3a99a9f378e1215f7ae7792fe30d854c35402",
+        "bytes": 17779,
+        "gitBlobAtHead": "1e7ded631045ef6e8937e4e7ee55212256d1603d",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_s11b_host.cjs",
+        "sha256": "5f3ebfd3e43ab10d3dced4bea420960bf7f29df54556ff116a2865442573e030",
+        "bytes": 5091,
+        "gitBlobAtHead": "bc7580cca3203fd82f5f7756d7cbc08803c26346",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_phase_evidence.cjs",
+        "sha256": "4abbf815aef125fd80508fa2a06c03319e6cdb6f16ba1d505ec2ea609aa92cb9",
+        "bytes": 9397,
+        "gitBlobAtHead": "57250d96b1049f6f0ff79d9140b4b333843a7d66",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_provenance.cjs",
+        "sha256": "335022648aa47d4002801b72f31a56045719d5c8eb2a4f9b5742246f3c3681ec",
+        "bytes": 4892,
+        "gitBlobAtHead": "45220d396c26a6cb426d7542e679086d24265aff",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "app/src/main/assets/lab/agod-causal.js",
+        "sha256": "2b81bac1bcccf9bada5b24d6cb24ec8e1ef30a7b72f828e47a4df139faba2270",
+        "bytes": 11240,
+        "gitBlobAtHead": "c4817a719f2a4b637056e3c474082a6ad4ff1b23",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "research/mesen-causal/mesen.cjs",
+        "sha256": "9896469552c1a773cd2594eb26afd8e2658d53fcfa4de1e493a27430f2b62e76",
+        "bytes": 6134,
+        "gitBlobAtHead": "ee0c1da457e1b2f177b00563cb8a7f10e46dcd0e",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/make_agod_dual_dependence_rom.py",
+        "sha256": "de0aaa21e77d2d48ad13a8d59f6879dbdf4d2d59f6c333fdc7451cdbb0f33c5d",
+        "bytes": 30106,
+        "gitBlobAtHead": "3a53c6af0fe441ed6f1ed092780dd261149bcaef",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      }
+    ],
+    "sourceFilesDifferingFromCommit": [],
+    "sourceSetHash": "6d403ffdf6cb1717771153f6076b31080601718f8d0ca99aed6884097cdb4d5d",
+    "reproducibilityNote": "every declared source file matched its committed version at run time"
+  },
+  "totals": {
+    "items": 4,
+    "passing": 4,
+    "failures": 0
+  },
+  "failures": [],
+  "status": "PASS"
+}
