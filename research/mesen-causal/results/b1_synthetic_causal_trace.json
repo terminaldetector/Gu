@@ -1,0 +1,2560 @@
+{
+  "type": "gu-stage-b-b1-synthetic-causal-trace",
+  "version": 1,
+  "stage": "B1 - synthetic causal trace, two observation modes",
+  "rule": "the presence of a CPU read is NOT evidence that a field is a game resource and is never promoted to GAME_COST_EVIDENCED. A field read by HUD code, animation or a timer produces reads too.",
+  "startStateNote": "every run starts from ONE canonical post-boot saved state per fixture, because this instrument randomises power-on RAM (B0 row 9). Runs are therefore comparable within this core; they are NOT comparable with an independent jsnes cold start, which B2 must handle explicitly.",
+  "pcProvenance": "a sampled PC is the NEXT instruction address. The accessing instruction is resolved through disassembly, never by subtracting a constant (B1 prerequisites).",
+  "instrument": {
+    "path": "/tmp/claude-0/-home-user/f6e72801-3e11-53f6-ae0c-ac8abd48d6c7/scratchpad/external/mesen-agent/bin/linux-x64/Release/mesen-agent",
+    "binarySha256": "b7eb9b26ae615da90de4840663b93cf2f0b4c47ed088bd91c83d720aae585087",
+    "repository": "https://github.com/atonamy/mesen-agent",
+    "sha": "dbc2c744ad52e1c89a8570d22d7fa92507ad4816",
+    "licence": "GPL-3.0"
+  },
+  "fixtures": [
+    {
+      "family": "dual-dependence",
+      "generator": "tools/make_agod_dual_dependence_rom.py",
+      "seed": 1,
+      "romSha256": "0518ddb7a75d838b38a44df7eb05d11c046feb7d7e07294e5c284323ecac22ff"
+    },
+    {
+      "family": "single-transition",
+      "generator": "tools/make_agod_transition_rom.py",
+      "seed": 1,
+      "armPresses": 1,
+      "romSha256": "e4f48eec49ad2f86ae086ac9f2d3fdab1269112d1036814b90e139b572286648"
+    }
+  ],
+  "parameters": {
+    "frames": 400,
+    "flushAtFrame": 380,
+    "maxPcSamplesPerRun": 16,
+    "regimes": {
+      "neutral": "no input",
+      "continuousHold": "one press edge held 240 frames",
+      "pulseTrain": "20 pulses of 4 frames held, 8 frames apart"
+    }
+  },
+  "B1A_accessSummary": [
+    {
+      "family": "dual-dependence",
+      "regime": "neutral",
+      "button": "select",
+      "inputs": [],
+      "elapsedMs": 6791,
+      "window": {
+        "kind": "window",
+        "cycleCount": 11611958,
+        "frameCount": 390,
+        "frames": 380
+      },
+      "luaErrors": 0,
+      "perField": [
+        {
+          "field": "timeAndAction",
+          "address": 225,
+          "readCount": 74,
+          "writeCount": 74,
+          "execCount": 0,
+          "lastReadClock": 11487407,
+          "lastWriteClock": 11487409
+        },
+        {
+          "field": "pureTime",
+          "address": 244,
+          "readCount": 74,
+          "writeCount": 74,
+          "execCount": 0,
+          "lastReadClock": 11487417,
+          "lastWriteClock": 11487419
+        },
+        {
+          "field": "pureAction",
+          "address": 216,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "slowTime",
+          "address": 213,
+          "readCount": 2,
+          "writeCount": 2,
+          "execCount": 0,
+          "lastReadClock": 10349049,
+          "lastWriteClock": 10349051
+        },
+        {
+          "field": "fastTick",
+          "address": 247,
+          "readCount": 55976,
+          "writeCount": 111952,
+          "execCount": 0,
+          "lastReadClock": 11611914,
+          "lastWriteClock": 11611916
+        },
+        {
+          "field": "slowTick",
+          "address": 204,
+          "readCount": 55976,
+          "writeCount": 111952,
+          "execCount": 0,
+          "lastReadClock": 11611922,
+          "lastWriteClock": 11611924
+        },
+        {
+          "field": "frameCounter",
+          "address": 201,
+          "readCount": 55975,
+          "writeCount": 111950,
+          "execCount": 0,
+          "lastReadClock": 11611906,
+          "lastWriteClock": 11611908
+        },
+        {
+          "field": "cadenceOnly",
+          "address": 214,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "edgeCount",
+          "address": 254,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "transientPulse",
+          "address": 217,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "transientTimer",
+          "address": 220,
+          "readCount": 55976,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 11611938,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "transientWitness",
+          "address": 222,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        }
+      ]
+    },
+    {
+      "family": "dual-dependence",
+      "regime": "continuousHold",
+      "button": "select",
+      "inputs": [
+        "0:select@20-259"
+      ],
+      "elapsedMs": 6839,
+      "window": {
+        "cycleCount": 11611958,
+        "frameCount": 390,
+        "kind": "window",
+        "frames": 380
+      },
+      "luaErrors": 0,
+      "perField": [
+        {
+          "field": "timeAndAction",
+          "address": 225,
+          "readCount": 74,
+          "writeCount": 76,
+          "execCount": 0,
+          "lastReadClock": 11456282,
+          "lastWriteClock": 11456284
+        },
+        {
+          "field": "pureTime",
+          "address": 244,
+          "readCount": 70,
+          "writeCount": 70,
+          "execCount": 0,
+          "lastReadClock": 11456292,
+          "lastWriteClock": 11456294
+        },
+        {
+          "field": "pureAction",
+          "address": 216,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "slowTime",
+          "address": 213,
+          "readCount": 2,
+          "writeCount": 2,
+          "execCount": 0,
+          "lastReadClock": 10938858,
+          "lastWriteClock": 10938860
+        },
+        {
+          "field": "fastTick",
+          "address": 247,
+          "readCount": 53058,
+          "writeCount": 106116,
+          "execCount": 0,
+          "lastReadClock": 11611925,
+          "lastWriteClock": 11611927
+        },
+        {
+          "field": "slowTick",
+          "address": 204,
+          "readCount": 53058,
+          "writeCount": 106116,
+          "execCount": 0,
+          "lastReadClock": 11611933,
+          "lastWriteClock": 11611935
+        },
+        {
+          "field": "frameCounter",
+          "address": 201,
+          "readCount": 53057,
+          "writeCount": 106114,
+          "execCount": 0,
+          "lastReadClock": 11611917,
+          "lastWriteClock": 11611919
+        },
+        {
+          "field": "cadenceOnly",
+          "address": 214,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "edgeCount",
+          "address": 254,
+          "readCount": 2,
+          "writeCount": 2,
+          "execCount": 0,
+          "lastReadClock": 891393,
+          "lastWriteClock": 891390
+        },
+        {
+          "field": "transientPulse",
+          "address": 217,
+          "readCount": 0,
+          "writeCount": 2,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 1002836
+        },
+        {
+          "field": "transientTimer",
+          "address": 220,
+          "readCount": 54498,
+          "writeCount": 961,
+          "execCount": 0,
+          "lastReadClock": 11611949,
+          "lastWriteClock": 1002820
+        },
+        {
+          "field": "transientWitness",
+          "address": 222,
+          "readCount": 1,
+          "writeCount": 2,
+          "execCount": 0,
+          "lastReadClock": 891371,
+          "lastWriteClock": 891373
+        }
+      ]
+    },
+    {
+      "family": "dual-dependence",
+      "regime": "pulseTrain",
+      "button": "select",
+      "inputs": [
+        "0:select@20-23",
+        "0:select@32-35",
+        "0:select@44-47",
+        "0:select@56-59",
+        "0:select@68-71",
+        "0:select@80-83",
+        "0:select@92-95",
+        "0:select@104-107",
+        "0:select@116-119",
+        "0:select@128-131",
+        "0:select@140-143",
+        "0:select@152-155",
+        "0:select@164-167",
+        "0:select@176-179",
+        "0:select@188-191",
+        "0:select@200-203",
+        "0:select@212-215",
+        "0:select@224-227",
+        "0:select@236-239",
+        "0:select@248-251"
+      ],
+      "elapsedMs": 6784,
+      "window": {
+        "kind": "window",
+        "cycleCount": 11611958,
+        "frameCount": 390,
+        "frames": 380
+      },
+      "luaErrors": 0,
+      "perField": [
+        {
+          "field": "timeAndAction",
+          "address": 225,
+          "readCount": 152,
+          "writeCount": 192,
+          "execCount": 0,
+          "lastReadClock": 11479076,
+          "lastWriteClock": 11479078
+        },
+        {
+          "field": "pureTime",
+          "address": 244,
+          "readCount": 72,
+          "writeCount": 72,
+          "execCount": 0,
+          "lastReadClock": 11479086,
+          "lastWriteClock": 11479088
+        },
+        {
+          "field": "pureAction",
+          "address": 216,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "slowTime",
+          "address": 213,
+          "readCount": 2,
+          "writeCount": 2,
+          "execCount": 0,
+          "lastReadClock": 10651185,
+          "lastWriteClock": 10651187
+        },
+        {
+          "field": "fastTick",
+          "address": 247,
+          "readCount": 54481,
+          "writeCount": 108962,
+          "execCount": 0,
+          "lastReadClock": 11611865,
+          "lastWriteClock": 11611867
+        },
+        {
+          "field": "slowTick",
+          "address": 204,
+          "readCount": 54481,
+          "writeCount": 108962,
+          "execCount": 0,
+          "lastReadClock": 11611873,
+          "lastWriteClock": 11611875
+        },
+        {
+          "field": "frameCounter",
+          "address": 201,
+          "readCount": 54480,
+          "writeCount": 108960,
+          "execCount": 0,
+          "lastReadClock": 11611857,
+          "lastWriteClock": 11611859
+        },
+        {
+          "field": "cadenceOnly",
+          "address": 214,
+          "readCount": 12,
+          "writeCount": 12,
+          "execCount": 0,
+          "lastReadClock": 6966656,
+          "lastWriteClock": 6966658
+        },
+        {
+          "field": "edgeCount",
+          "address": 254,
+          "readCount": 40,
+          "writeCount": 46,
+          "execCount": 0,
+          "lastReadClock": 7681235,
+          "lastWriteClock": 7681232
+        },
+        {
+          "field": "transientPulse",
+          "address": 217,
+          "readCount": 0,
+          "writeCount": 40,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 7792678
+        },
+        {
+          "field": "transientTimer",
+          "address": 220,
+          "readCount": 83281,
+          "writeCount": 19220,
+          "execCount": 0,
+          "lastReadClock": 11611889,
+          "lastWriteClock": 7792662
+        },
+        {
+          "field": "transientWitness",
+          "address": 222,
+          "readCount": 20,
+          "writeCount": 40,
+          "execCount": 0,
+          "lastReadClock": 7681213,
+          "lastWriteClock": 7681215
+        }
+      ]
+    },
+    {
+      "family": "single-transition",
+      "regime": "neutral",
+      "button": "select",
+      "inputs": [],
+      "elapsedMs": 6806,
+      "window": {
+        "frameCount": 390,
+        "kind": "window",
+        "frames": 380,
+        "cycleCount": 11611958
+      },
+      "luaErrors": 0,
+      "perField": [
+        {
+          "field": "oneShotSwitch",
+          "address": 167,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "singleUnit",
+          "address": 110,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "score",
+          "address": 105,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "frameCounter",
+          "address": 125,
+          "readCount": 67743,
+          "writeCount": 135486,
+          "execCount": 0,
+          "lastReadClock": 11611870,
+          "lastWriteClock": 11611872
+        },
+        {
+          "field": "noise",
+          "address": 153,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "pressCount",
+          "address": 97,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "firstThenLater",
+          "address": 112,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        }
+      ]
+    },
+    {
+      "family": "single-transition",
+      "regime": "continuousHold",
+      "button": "select",
+      "inputs": [
+        "0:select@20-259"
+      ],
+      "elapsedMs": 6786,
+      "window": {
+        "cycleCount": 11611958,
+        "kind": "window",
+        "frameCount": 390,
+        "frames": 380
+      },
+      "luaErrors": 0,
+      "perField": [
+        {
+          "field": "oneShotSwitch",
+          "address": 167,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "singleUnit",
+          "address": 110,
+          "readCount": 1,
+          "writeCount": 1,
+          "execCount": 0,
+          "lastReadClock": 891176,
+          "lastWriteClock": 891184
+        },
+        {
+          "field": "score",
+          "address": 105,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "frameCounter",
+          "address": 125,
+          "readCount": 66259,
+          "writeCount": 132518,
+          "execCount": 0,
+          "lastReadClock": 11611905,
+          "lastWriteClock": 11611907
+        },
+        {
+          "field": "noise",
+          "address": 153,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "pressCount",
+          "address": 97,
+          "readCount": 2,
+          "writeCount": 2,
+          "execCount": 0,
+          "lastReadClock": 891169,
+          "lastWriteClock": 891166
+        },
+        {
+          "field": "firstThenLater",
+          "address": 112,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        }
+      ]
+    },
+    {
+      "family": "single-transition",
+      "regime": "pulseTrain",
+      "button": "select",
+      "inputs": [
+        "0:select@20-23",
+        "0:select@32-35",
+        "0:select@44-47",
+        "0:select@56-59",
+        "0:select@68-71",
+        "0:select@80-83",
+        "0:select@92-95",
+        "0:select@104-107",
+        "0:select@116-119",
+        "0:select@128-131",
+        "0:select@140-143",
+        "0:select@152-155",
+        "0:select@164-167",
+        "0:select@176-179",
+        "0:select@188-191",
+        "0:select@200-203",
+        "0:select@212-215",
+        "0:select@224-227",
+        "0:select@236-239",
+        "0:select@248-251"
+      ],
+      "elapsedMs": 6787,
+      "window": {
+        "kind": "window",
+        "cycleCount": 11611958,
+        "frames": 380,
+        "frameCount": 390
+      },
+      "luaErrors": 0,
+      "perField": [
+        {
+          "field": "oneShotSwitch",
+          "address": 167,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "singleUnit",
+          "address": 110,
+          "readCount": 20,
+          "writeCount": 1,
+          "execCount": 0,
+          "lastReadClock": 7681142,
+          "lastWriteClock": 891184
+        },
+        {
+          "field": "score",
+          "address": 105,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "frameCounter",
+          "address": 125,
+          "readCount": 67247,
+          "writeCount": 134493,
+          "execCount": 0,
+          "lastReadClock": 11611957,
+          "lastWriteClock": 11611958
+        },
+        {
+          "field": "noise",
+          "address": 153,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "pressCount",
+          "address": 97,
+          "readCount": 40,
+          "writeCount": 40,
+          "execCount": 0,
+          "lastReadClock": 7681135,
+          "lastWriteClock": 7681132
+        },
+        {
+          "field": "firstThenLater",
+          "address": 112,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        }
+      ]
+    },
+    {
+      "family": "single-transition",
+      "regime": "trainPlusConsumer",
+      "button": "select",
+      "inputs": [
+        "0:select@20-23",
+        "0:select@32-35",
+        "0:select@44-47",
+        "0:select@56-59",
+        "0:select@68-71",
+        "0:select@80-83",
+        "0:select@92-95",
+        "0:select@104-107",
+        "0:select@116-119",
+        "0:select@128-131",
+        "0:select@140-143",
+        "0:select@152-155",
+        "0:select@164-167",
+        "0:select@176-179",
+        "0:select@188-191",
+        "0:select@200-203",
+        "0:select@212-215",
+        "0:select@224-227",
+        "0:select@236-239",
+        "0:select@248-251",
+        "0:up@60-359"
+      ],
+      "elapsedMs": 6783,
+      "window": {
+        "cycleCount": 11611958,
+        "frames": 380,
+        "frameCount": 390,
+        "kind": "window"
+      },
+      "luaErrors": 0,
+      "perField": [
+        {
+          "field": "oneShotSwitch",
+          "address": 167,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "singleUnit",
+          "address": 110,
+          "readCount": 21,
+          "writeCount": 1,
+          "execCount": 0,
+          "lastReadClock": 7681277,
+          "lastWriteClock": 891184
+        },
+        {
+          "field": "score",
+          "address": 105,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "frameCounter",
+          "address": 125,
+          "readCount": 65418,
+          "writeCount": 130836,
+          "execCount": 0,
+          "lastReadClock": 11611902,
+          "lastWriteClock": 11611904
+        },
+        {
+          "field": "noise",
+          "address": 153,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        },
+        {
+          "field": "pressCount",
+          "address": 97,
+          "readCount": 40,
+          "writeCount": 40,
+          "execCount": 0,
+          "lastReadClock": 7681270,
+          "lastWriteClock": 7681267
+        },
+        {
+          "field": "firstThenLater",
+          "address": 112,
+          "readCount": 0,
+          "writeCount": 0,
+          "execCount": 0,
+          "lastReadClock": 0,
+          "lastWriteClock": 0
+        }
+      ]
+    }
+  ],
+  "B1B_focusedTrace": [
+    {
+      "control": "cadenceOnly",
+      "address": 214,
+      "button": "select",
+      "groundTruth": {
+        "timeDriven": false,
+        "actionDriven": true,
+        "neutralArmMoves": false,
+        "movesUnderContinuousHold": false,
+        "requiresMultipleEdges": 3
+      },
+      "writerPcsFromOracle": [
+        "0x81a8"
+      ],
+      "writesObserved": {
+        "neutral": 0,
+        "continuousHold": 0,
+        "pulseTrain": 12
+      },
+      "readsObserved": {
+        "neutral": 0,
+        "continuousHold": 0,
+        "pulseTrain": 12
+      },
+      "regimesRun": [
+        "neutral",
+        "continuousHold",
+        "pulseTrain"
+      ],
+      "eventLossCheck": {
+        "neutral": {
+          "callbackWrites": 0,
+          "counterWrites": 0,
+          "callbackReads": 0,
+          "counterReads": 0,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "continuousHold": {
+          "callbackWrites": 0,
+          "counterWrites": 0,
+          "callbackReads": 0,
+          "counterReads": 0,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "pulseTrain": {
+          "callbackWrites": 12,
+          "counterWrites": 12,
+          "callbackReads": 12,
+          "counterReads": 12,
+          "writesAgree": true,
+          "readsAgree": true
+        }
+      },
+      "firstWriteAtFrame": {
+        "neutral": null,
+        "continuousHold": null,
+        "pulseTrain": 44
+      },
+      "sampledSite": {
+        "neutral": null,
+        "continuousHold": null,
+        "pulseTrain": {
+          "value": 120,
+          "atFrameInWindow": 44,
+          "nextInstructionPc": "0x81aa",
+          "accessingInstruction": {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2
+          },
+          "matchesAnOracleWriterSite": true
+        }
+      },
+      "readerSites": {
+        "neutral": [],
+        "continuousHold": [],
+        "pulseTrain": [
+          {
+            "address": 33188,
+            "addressHex": "0x81a4",
+            "text": "LDA $D6",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          },
+          {
+            "address": 33192,
+            "addressHex": "0x81a8",
+            "text": "DEC $D6",
+            "length": 2,
+            "isAlsoAWriterSite": true
+          }
+        ]
+      },
+      "elapsedMs": {
+        "neutral": 6773,
+        "continuousHold": 6790,
+        "pulseTrain": 6783
+      },
+      "luaErrors": {
+        "neutral": 0,
+        "continuousHold": 0,
+        "pulseTrain": 0
+      }
+    },
+    {
+      "control": "timeAndAction",
+      "address": 225,
+      "button": "select",
+      "groundTruth": {
+        "timeDriven": true,
+        "actionDriven": true,
+        "neutralArmMoves": true,
+        "requiresMultipleEdges": null
+      },
+      "writerPcsFromOracle": [
+        "0x8114",
+        "0x8147"
+      ],
+      "writesObserved": {
+        "neutral": 74,
+        "continuousHold": 76,
+        "pulseTrain": 192
+      },
+      "readsObserved": {
+        "neutral": 74,
+        "continuousHold": 74,
+        "pulseTrain": 152
+      },
+      "regimesRun": [
+        "neutral",
+        "continuousHold",
+        "pulseTrain"
+      ],
+      "eventLossCheck": {
+        "neutral": {
+          "callbackWrites": 74,
+          "counterWrites": 74,
+          "callbackReads": 74,
+          "counterReads": 74,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "continuousHold": {
+          "callbackWrites": 76,
+          "counterWrites": 76,
+          "callbackReads": 74,
+          "counterReads": 74,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "pulseTrain": {
+          "callbackWrites": 192,
+          "counterWrites": 192,
+          "callbackReads": 152,
+          "counterReads": 152,
+          "writesAgree": true,
+          "readsAgree": true
+        }
+      },
+      "firstWriteAtFrame": {
+        "neutral": 0,
+        "continuousHold": 0,
+        "pulseTrain": 0
+      },
+      "sampledSite": {
+        "neutral": {
+          "value": 120,
+          "atFrameInWindow": 0,
+          "nextInstructionPc": "0x8116",
+          "accessingInstruction": {
+            "address": 33044,
+            "addressHex": "0x8114",
+            "text": "INC $E1",
+            "length": 2
+          },
+          "matchesAnOracleWriterSite": true
+        },
+        "continuousHold": {
+          "value": 120,
+          "atFrameInWindow": 0,
+          "nextInstructionPc": "0x8116",
+          "accessingInstruction": {
+            "address": 33044,
+            "addressHex": "0x8114",
+            "text": "INC $E1",
+            "length": 2
+          },
+          "matchesAnOracleWriterSite": true
+        },
+        "pulseTrain": {
+          "value": 120,
+          "atFrameInWindow": 0,
+          "nextInstructionPc": "0x8116",
+          "accessingInstruction": {
+            "address": 33044,
+            "addressHex": "0x8114",
+            "text": "INC $E1",
+            "length": 2
+          },
+          "matchesAnOracleWriterSite": true
+        }
+      },
+      "readerSites": {
+        "neutral": [
+          {
+            "address": 33038,
+            "addressHex": "0x810e",
+            "text": "LDA $E1",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          },
+          {
+            "address": 33044,
+            "addressHex": "0x8114",
+            "text": "INC $E1",
+            "length": 2,
+            "isAlsoAWriterSite": true
+          }
+        ],
+        "continuousHold": [
+          {
+            "address": 33038,
+            "addressHex": "0x810e",
+            "text": "LDA $E1",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          },
+          {
+            "address": 33044,
+            "addressHex": "0x8114",
+            "text": "INC $E1",
+            "length": 2,
+            "isAlsoAWriterSite": true
+          },
+          {
+            "address": 33089,
+            "addressHex": "0x8141",
+            "text": "LDA $E1",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          },
+          {
+            "address": 33095,
+            "addressHex": "0x8147",
+            "text": "DEC $E1",
+            "length": 2,
+            "isAlsoAWriterSite": true
+          },
+          {
+            "address": 33097,
+            "addressHex": "0x8149",
+            "text": "DEC $E1",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          },
+          {
+            "address": 33099,
+            "addressHex": "0x814b",
+            "text": "DEC $E1",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          }
+        ],
+        "pulseTrain": [
+          {
+            "address": 33038,
+            "addressHex": "0x810e",
+            "text": "LDA $E1",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          },
+          {
+            "address": 33044,
+            "addressHex": "0x8114",
+            "text": "INC $E1",
+            "length": 2,
+            "isAlsoAWriterSite": true
+          },
+          {
+            "address": 33089,
+            "addressHex": "0x8141",
+            "text": "LDA $E1",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          },
+          {
+            "address": 33095,
+            "addressHex": "0x8147",
+            "text": "DEC $E1",
+            "length": 2,
+            "isAlsoAWriterSite": true
+          },
+          {
+            "address": 33097,
+            "addressHex": "0x8149",
+            "text": "DEC $E1",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          },
+          {
+            "address": 33099,
+            "addressHex": "0x814b",
+            "text": "DEC $E1",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          }
+        ]
+      },
+      "elapsedMs": {
+        "neutral": 6782,
+        "continuousHold": 6783,
+        "pulseTrain": 6793
+      },
+      "luaErrors": {
+        "neutral": 0,
+        "continuousHold": 0,
+        "pulseTrain": 0
+      }
+    },
+    {
+      "control": "pureTime",
+      "address": 244,
+      "button": "select",
+      "groundTruth": {
+        "timeDriven": true,
+        "actionDriven": false,
+        "neutralArmMoves": true,
+        "requiresMultipleEdges": null
+      },
+      "writerPcsFromOracle": [
+        "0x811a"
+      ],
+      "writesObserved": {
+        "neutral": 74,
+        "continuousHold": 70,
+        "pulseTrain": 72
+      },
+      "readsObserved": {
+        "neutral": 74,
+        "continuousHold": 70,
+        "pulseTrain": 72
+      },
+      "regimesRun": [
+        "neutral",
+        "continuousHold",
+        "pulseTrain"
+      ],
+      "eventLossCheck": {
+        "neutral": {
+          "callbackWrites": 74,
+          "counterWrites": 74,
+          "callbackReads": 74,
+          "counterReads": 74,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "continuousHold": {
+          "callbackWrites": 70,
+          "counterWrites": 70,
+          "callbackReads": 70,
+          "counterReads": 70,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "pulseTrain": {
+          "callbackWrites": 72,
+          "counterWrites": 72,
+          "callbackReads": 72,
+          "counterReads": 72,
+          "writesAgree": true,
+          "readsAgree": true
+        }
+      },
+      "firstWriteAtFrame": {
+        "neutral": 0,
+        "continuousHold": 0,
+        "pulseTrain": 0
+      },
+      "sampledSite": {
+        "neutral": {
+          "value": 120,
+          "atFrameInWindow": 0,
+          "nextInstructionPc": "0x811c",
+          "accessingInstruction": {
+            "address": 33050,
+            "addressHex": "0x811a",
+            "text": "DEC $F4",
+            "length": 2
+          },
+          "matchesAnOracleWriterSite": true
+        },
+        "continuousHold": {
+          "value": 120,
+          "atFrameInWindow": 0,
+          "nextInstructionPc": "0x811c",
+          "accessingInstruction": {
+            "address": 33050,
+            "addressHex": "0x811a",
+            "text": "DEC $F4",
+            "length": 2
+          },
+          "matchesAnOracleWriterSite": true
+        },
+        "pulseTrain": {
+          "value": 120,
+          "atFrameInWindow": 0,
+          "nextInstructionPc": "0x811c",
+          "accessingInstruction": {
+            "address": 33050,
+            "addressHex": "0x811a",
+            "text": "DEC $F4",
+            "length": 2
+          },
+          "matchesAnOracleWriterSite": true
+        }
+      },
+      "readerSites": {
+        "neutral": [
+          {
+            "address": 33046,
+            "addressHex": "0x8116",
+            "text": "LDA $F4",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          },
+          {
+            "address": 33050,
+            "addressHex": "0x811a",
+            "text": "DEC $F4",
+            "length": 2,
+            "isAlsoAWriterSite": true
+          }
+        ],
+        "continuousHold": [
+          {
+            "address": 33046,
+            "addressHex": "0x8116",
+            "text": "LDA $F4",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          },
+          {
+            "address": 33050,
+            "addressHex": "0x811a",
+            "text": "DEC $F4",
+            "length": 2,
+            "isAlsoAWriterSite": true
+          }
+        ],
+        "pulseTrain": [
+          {
+            "address": 33046,
+            "addressHex": "0x8116",
+            "text": "LDA $F4",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          },
+          {
+            "address": 33050,
+            "addressHex": "0x811a",
+            "text": "DEC $F4",
+            "length": 2,
+            "isAlsoAWriterSite": true
+          }
+        ]
+      },
+      "elapsedMs": {
+        "neutral": 6779,
+        "continuousHold": 6867,
+        "pulseTrain": 6781
+      },
+      "luaErrors": {
+        "neutral": 0,
+        "continuousHold": 0,
+        "pulseTrain": 0
+      }
+    },
+    {
+      "control": "pureAction",
+      "address": 216,
+      "button": "up",
+      "groundTruth": {
+        "timeDriven": false,
+        "actionDriven": true,
+        "neutralArmMoves": false,
+        "requiresMultipleEdges": null
+      },
+      "writerPcsFromOracle": [
+        "0x81bc"
+      ],
+      "writesObserved": {
+        "neutral": 0,
+        "continuousHold": 2,
+        "pulseTrain": 40
+      },
+      "readsObserved": {
+        "neutral": 0,
+        "continuousHold": 2,
+        "pulseTrain": 40
+      },
+      "regimesRun": [
+        "neutral",
+        "continuousHold",
+        "pulseTrain"
+      ],
+      "eventLossCheck": {
+        "neutral": {
+          "callbackWrites": 0,
+          "counterWrites": 0,
+          "callbackReads": 0,
+          "counterReads": 0,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "continuousHold": {
+          "callbackWrites": 2,
+          "counterWrites": 2,
+          "callbackReads": 2,
+          "counterReads": 2,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "pulseTrain": {
+          "callbackWrites": 40,
+          "counterWrites": 40,
+          "callbackReads": 40,
+          "counterReads": 40,
+          "writesAgree": true,
+          "readsAgree": true
+        }
+      },
+      "firstWriteAtFrame": {
+        "neutral": null,
+        "continuousHold": 20,
+        "pulseTrain": 20
+      },
+      "sampledSite": {
+        "neutral": null,
+        "continuousHold": {
+          "value": 120,
+          "atFrameInWindow": 20,
+          "nextInstructionPc": "0x81be",
+          "accessingInstruction": {
+            "address": 33212,
+            "addressHex": "0x81bc",
+            "text": "DEC $D8",
+            "length": 2
+          },
+          "matchesAnOracleWriterSite": true
+        },
+        "pulseTrain": {
+          "value": 120,
+          "atFrameInWindow": 20,
+          "nextInstructionPc": "0x81be",
+          "accessingInstruction": {
+            "address": 33212,
+            "addressHex": "0x81bc",
+            "text": "DEC $D8",
+            "length": 2
+          },
+          "matchesAnOracleWriterSite": true
+        }
+      },
+      "readerSites": {
+        "neutral": [],
+        "continuousHold": [
+          {
+            "address": 33208,
+            "addressHex": "0x81b8",
+            "text": "LDA $D8",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          },
+          {
+            "address": 33212,
+            "addressHex": "0x81bc",
+            "text": "DEC $D8",
+            "length": 2,
+            "isAlsoAWriterSite": true
+          }
+        ],
+        "pulseTrain": [
+          {
+            "address": 33208,
+            "addressHex": "0x81b8",
+            "text": "LDA $D8",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          },
+          {
+            "address": 33212,
+            "addressHex": "0x81bc",
+            "text": "DEC $D8",
+            "length": 2,
+            "isAlsoAWriterSite": true
+          }
+        ]
+      },
+      "elapsedMs": {
+        "neutral": 6819,
+        "continuousHold": 6786,
+        "pulseTrain": 6786
+      },
+      "luaErrors": {
+        "neutral": 0,
+        "continuousHold": 0,
+        "pulseTrain": 0
+      }
+    },
+    {
+      "control": "singleUnit",
+      "address": 110,
+      "button": "select",
+      "groundTruth": {
+        "isResource": true,
+        "requiresMultipleEdges": null
+      },
+      "writerPcsFromOracle": [
+        "0x811e"
+      ],
+      "writesObserved": {
+        "neutral": 0,
+        "continuousHold": 1,
+        "pulseTrain": 1,
+        "trainPlusConsumer": 1
+      },
+      "readsObserved": {
+        "neutral": 0,
+        "continuousHold": 1,
+        "pulseTrain": 20,
+        "trainPlusConsumer": 21
+      },
+      "regimesRun": [
+        "neutral",
+        "continuousHold",
+        "pulseTrain",
+        "trainPlusConsumer"
+      ],
+      "eventLossCheck": {
+        "neutral": {
+          "callbackWrites": 0,
+          "counterWrites": 0,
+          "callbackReads": 0,
+          "counterReads": 0,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "continuousHold": {
+          "callbackWrites": 1,
+          "counterWrites": 1,
+          "callbackReads": 1,
+          "counterReads": 1,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "pulseTrain": {
+          "callbackWrites": 1,
+          "counterWrites": 1,
+          "callbackReads": 20,
+          "counterReads": 20,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "trainPlusConsumer": {
+          "callbackWrites": 1,
+          "counterWrites": 1,
+          "callbackReads": 21,
+          "counterReads": 21,
+          "writesAgree": true,
+          "readsAgree": true
+        }
+      },
+      "firstWriteAtFrame": {
+        "neutral": null,
+        "continuousHold": 20,
+        "pulseTrain": 20,
+        "trainPlusConsumer": 20
+      },
+      "sampledSite": {
+        "neutral": null,
+        "continuousHold": {
+          "value": 0,
+          "atFrameInWindow": 20,
+          "nextInstructionPc": "0x8123",
+          "accessingInstruction": {
+            "address": 33056,
+            "addressHex": "0x8120",
+            "text": "STA $006E",
+            "length": 3
+          },
+          "matchesAnOracleWriterSite": false
+        },
+        "pulseTrain": {
+          "value": 0,
+          "atFrameInWindow": 20,
+          "nextInstructionPc": "0x8123",
+          "accessingInstruction": {
+            "address": 33056,
+            "addressHex": "0x8120",
+            "text": "STA $006E",
+            "length": 3
+          },
+          "matchesAnOracleWriterSite": false
+        },
+        "trainPlusConsumer": {
+          "value": 0,
+          "atFrameInWindow": 20,
+          "nextInstructionPc": "0x8123",
+          "accessingInstruction": {
+            "address": 33056,
+            "addressHex": "0x8120",
+            "text": "STA $006E",
+            "length": 3
+          },
+          "matchesAnOracleWriterSite": false
+        }
+      },
+      "readerSites": {
+        "neutral": [],
+        "continuousHold": [
+          {
+            "address": 33050,
+            "addressHex": "0x811a",
+            "text": "LDA $6E",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          }
+        ],
+        "pulseTrain": [
+          {
+            "address": 33050,
+            "addressHex": "0x811a",
+            "text": "LDA $6E",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          }
+        ],
+        "trainPlusConsumer": [
+          {
+            "address": 33050,
+            "addressHex": "0x811a",
+            "text": "LDA $6E",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          },
+          {
+            "address": 33073,
+            "addressHex": "0x8131",
+            "text": "LDA $6E",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          }
+        ]
+      },
+      "elapsedMs": {
+        "neutral": 6786,
+        "continuousHold": 6784,
+        "pulseTrain": 6784,
+        "trainPlusConsumer": 6781
+      },
+      "luaErrors": {
+        "neutral": 0,
+        "continuousHold": 0,
+        "pulseTrain": 0,
+        "trainPlusConsumer": 0
+      }
+    },
+    {
+      "control": "oneShotSwitch",
+      "address": 167,
+      "button": "b",
+      "groundTruth": {
+        "isResource": false,
+        "requiresMultipleEdges": null
+      },
+      "writerPcsFromOracle": [
+        "0x80ff"
+      ],
+      "writesObserved": {
+        "neutral": 0,
+        "continuousHold": 1,
+        "pulseTrain": 1,
+        "trainPlusConsumer": 1
+      },
+      "readsObserved": {
+        "neutral": 0,
+        "continuousHold": 1,
+        "pulseTrain": 20,
+        "trainPlusConsumer": 20
+      },
+      "regimesRun": [
+        "neutral",
+        "continuousHold",
+        "pulseTrain",
+        "trainPlusConsumer"
+      ],
+      "eventLossCheck": {
+        "neutral": {
+          "callbackWrites": 0,
+          "counterWrites": 0,
+          "callbackReads": 0,
+          "counterReads": 0,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "continuousHold": {
+          "callbackWrites": 1,
+          "counterWrites": 1,
+          "callbackReads": 1,
+          "counterReads": 1,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "pulseTrain": {
+          "callbackWrites": 1,
+          "counterWrites": 1,
+          "callbackReads": 20,
+          "counterReads": 20,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "trainPlusConsumer": {
+          "callbackWrites": 1,
+          "counterWrites": 1,
+          "callbackReads": 20,
+          "counterReads": 20,
+          "writesAgree": true,
+          "readsAgree": true
+        }
+      },
+      "firstWriteAtFrame": {
+        "neutral": null,
+        "continuousHold": 20,
+        "pulseTrain": 20,
+        "trainPlusConsumer": 20
+      },
+      "sampledSite": {
+        "neutral": null,
+        "continuousHold": {
+          "value": 19,
+          "atFrameInWindow": 20,
+          "nextInstructionPc": "0x8104",
+          "accessingInstruction": {
+            "address": 33025,
+            "addressHex": "0x8101",
+            "text": "STA $00A7",
+            "length": 3
+          },
+          "matchesAnOracleWriterSite": false
+        },
+        "pulseTrain": {
+          "value": 19,
+          "atFrameInWindow": 20,
+          "nextInstructionPc": "0x8104",
+          "accessingInstruction": {
+            "address": 33025,
+            "addressHex": "0x8101",
+            "text": "STA $00A7",
+            "length": 3
+          },
+          "matchesAnOracleWriterSite": false
+        },
+        "trainPlusConsumer": {
+          "value": 19,
+          "atFrameInWindow": 20,
+          "nextInstructionPc": "0x8104",
+          "accessingInstruction": {
+            "address": 33025,
+            "addressHex": "0x8101",
+            "text": "STA $00A7",
+            "length": 3
+          },
+          "matchesAnOracleWriterSite": false
+        }
+      },
+      "readerSites": {
+        "neutral": [],
+        "continuousHold": [
+          {
+            "address": 33017,
+            "addressHex": "0x80f9",
+            "text": "LDA $A7",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          }
+        ],
+        "pulseTrain": [
+          {
+            "address": 33017,
+            "addressHex": "0x80f9",
+            "text": "LDA $A7",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          }
+        ],
+        "trainPlusConsumer": [
+          {
+            "address": 33017,
+            "addressHex": "0x80f9",
+            "text": "LDA $A7",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          }
+        ]
+      },
+      "elapsedMs": {
+        "neutral": 6787,
+        "continuousHold": 6783,
+        "pulseTrain": 6788,
+        "trainPlusConsumer": 6781
+      },
+      "luaErrors": {
+        "neutral": 0,
+        "continuousHold": 0,
+        "pulseTrain": 0,
+        "trainPlusConsumer": 0
+      }
+    },
+    {
+      "control": "firstThenLater",
+      "address": 112,
+      "button": "b",
+      "groundTruth": {
+        "isResource": null,
+        "requiresMultipleEdges": null
+      },
+      "writerPcsFromOracle": [
+        "0x80f1"
+      ],
+      "writesObserved": {
+        "neutral": 0,
+        "continuousHold": 2,
+        "pulseTrain": 4,
+        "trainPlusConsumer": 4
+      },
+      "readsObserved": {
+        "neutral": 0,
+        "continuousHold": 1,
+        "pulseTrain": 2,
+        "trainPlusConsumer": 2
+      },
+      "regimesRun": [
+        "neutral",
+        "continuousHold",
+        "pulseTrain",
+        "trainPlusConsumer"
+      ],
+      "eventLossCheck": {
+        "neutral": {
+          "callbackWrites": 0,
+          "counterWrites": 0,
+          "callbackReads": 0,
+          "counterReads": 0,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "continuousHold": {
+          "callbackWrites": 2,
+          "counterWrites": 2,
+          "callbackReads": 1,
+          "counterReads": 1,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "pulseTrain": {
+          "callbackWrites": 4,
+          "counterWrites": 4,
+          "callbackReads": 2,
+          "counterReads": 2,
+          "writesAgree": true,
+          "readsAgree": true
+        },
+        "trainPlusConsumer": {
+          "callbackWrites": 4,
+          "counterWrites": 4,
+          "callbackReads": 2,
+          "counterReads": 2,
+          "writesAgree": true,
+          "readsAgree": true
+        }
+      },
+      "firstWriteAtFrame": {
+        "neutral": null,
+        "continuousHold": 20,
+        "pulseTrain": 20,
+        "trainPlusConsumer": 20
+      },
+      "sampledSite": {
+        "neutral": null,
+        "continuousHold": {
+          "value": 9,
+          "atFrameInWindow": 20,
+          "nextInstructionPc": "0x80f3",
+          "accessingInstruction": {
+            "address": 33009,
+            "addressHex": "0x80f1",
+            "text": "DEC $70",
+            "length": 2
+          },
+          "matchesAnOracleWriterSite": true
+        },
+        "pulseTrain": {
+          "value": 9,
+          "atFrameInWindow": 20,
+          "nextInstructionPc": "0x80f3",
+          "accessingInstruction": {
+            "address": 33009,
+            "addressHex": "0x80f1",
+            "text": "DEC $70",
+            "length": 2
+          },
+          "matchesAnOracleWriterSite": true
+        },
+        "trainPlusConsumer": {
+          "value": 9,
+          "atFrameInWindow": 20,
+          "nextInstructionPc": "0x80f3",
+          "accessingInstruction": {
+            "address": 33009,
+            "addressHex": "0x80f1",
+            "text": "DEC $70",
+            "length": 2
+          },
+          "matchesAnOracleWriterSite": true
+        }
+      },
+      "readerSites": {
+        "neutral": [],
+        "continuousHold": [
+          {
+            "address": 33009,
+            "addressHex": "0x80f1",
+            "text": "DEC $70",
+            "length": 2,
+            "isAlsoAWriterSite": true
+          }
+        ],
+        "pulseTrain": [
+          {
+            "address": 33009,
+            "addressHex": "0x80f1",
+            "text": "DEC $70",
+            "length": 2,
+            "isAlsoAWriterSite": true
+          }
+        ],
+        "trainPlusConsumer": [
+          {
+            "address": 33009,
+            "addressHex": "0x80f1",
+            "text": "DEC $70",
+            "length": 2,
+            "isAlsoAWriterSite": true
+          }
+        ]
+      },
+      "elapsedMs": {
+        "neutral": 6791,
+        "continuousHold": 6783,
+        "pulseTrain": 6786,
+        "trainPlusConsumer": 6784
+      },
+      "luaErrors": {
+        "neutral": 0,
+        "continuousHold": 0,
+        "pulseTrain": 0,
+        "trainPlusConsumer": 0
+      }
+    }
+  ],
+  "discrimination": [
+    {
+      "control": "cadenceOnly",
+      "observedClass": "WRITTEN_PER_ACTION_EDGE",
+      "expectedClass": "WRITTEN_PER_ACTION_EDGE",
+      "expectationBasis": "steps once every K press edges and nothing else moves it",
+      "agrees": true,
+      "writes": {
+        "neutral": 0,
+        "continuousHold": 0,
+        "pulseTrain": 12
+      },
+      "trainOverNeutral": null,
+      "trainOverHold": null,
+      "reads": {
+        "neutral": 0,
+        "continuousHold": 0,
+        "pulseTrain": 12
+      },
+      "note": "the class is read from the trace; the declared expectation is compared afterwards"
+    },
+    {
+      "control": "timeAndAction",
+      "observedClass": "WRITTEN_BY_TIME_AND_ACTION",
+      "expectedClass": "WRITTEN_BY_TIME_AND_ACTION",
+      "expectationBasis": "rises on its own timer AND falls on every press edge",
+      "agrees": true,
+      "writes": {
+        "neutral": 74,
+        "continuousHold": 76,
+        "pulseTrain": 192
+      },
+      "trainOverNeutral": 2.59,
+      "trainOverHold": 2.53,
+      "reads": {
+        "neutral": 74,
+        "continuousHold": 74,
+        "pulseTrain": 152
+      },
+      "note": "the class is read from the trace; the declared expectation is compared afterwards"
+    },
+    {
+      "control": "pureTime",
+      "observedClass": "WRITTEN_REGARDLESS_OF_ACTION",
+      "expectedClass": "WRITTEN_REGARDLESS_OF_ACTION",
+      "expectationBasis": "advances on its own timer only",
+      "agrees": true,
+      "writes": {
+        "neutral": 74,
+        "continuousHold": 70,
+        "pulseTrain": 72
+      },
+      "trainOverNeutral": 0.97,
+      "trainOverHold": 1.03,
+      "reads": {
+        "neutral": 74,
+        "continuousHold": 70,
+        "pulseTrain": 72
+      },
+      "note": "the class is read from the trace; the declared expectation is compared afterwards"
+    },
+    {
+      "control": "pureAction",
+      "observedClass": "WRITTEN_PER_ACTION_EDGE",
+      "expectedClass": "WRITTEN_PER_ACTION_EDGE",
+      "expectationBasis": "decrements once per press edge for as long as the resource lasts",
+      "agrees": true,
+      "writes": {
+        "neutral": 0,
+        "continuousHold": 2,
+        "pulseTrain": 40
+      },
+      "trainOverNeutral": null,
+      "trainOverHold": 20,
+      "reads": {
+        "neutral": 0,
+        "continuousHold": 2,
+        "pulseTrain": 40
+      },
+      "note": "the class is read from the trace; the declared expectation is compared afterwards"
+    },
+    {
+      "control": "singleUnit",
+      "observedClass": "WRITTEN_ONLY_UNDER_ACTION",
+      "expectedClass": "WRITTEN_ONLY_UNDER_ACTION",
+      "expectationBasis": "a genuine resource of exactly ONE unit: it can be written once and no number of further edges can write it again",
+      "agrees": true,
+      "writes": {
+        "neutral": 0,
+        "continuousHold": 1,
+        "pulseTrain": 1
+      },
+      "trainOverNeutral": null,
+      "trainOverHold": 1,
+      "reads": {
+        "neutral": 0,
+        "continuousHold": 1,
+        "pulseTrain": 20
+      },
+      "note": "the class is read from the trace; the declared expectation is compared afterwards"
+    },
+    {
+      "control": "oneShotSwitch",
+      "observedClass": "WRITTEN_ONLY_UNDER_ACTION",
+      "expectedClass": "WRITTEN_ONLY_UNDER_ACTION",
+      "expectationBasis": "a latch: it flips once on a press edge and never moves again",
+      "agrees": true,
+      "writes": {
+        "neutral": 0,
+        "continuousHold": 1,
+        "pulseTrain": 1
+      },
+      "trainOverNeutral": null,
+      "trainOverHold": 1,
+      "reads": {
+        "neutral": 0,
+        "continuousHold": 1,
+        "pulseTrain": 20
+      },
+      "note": "the class is read from the trace; the declared expectation is compared afterwards"
+    },
+    {
+      "control": "firstThenLater",
+      "observedClass": "WRITTEN_ONLY_UNDER_ACTION",
+      "expectedClass": "WRITTEN_ONLY_UNDER_ACTION",
+      "expectationBasis": "steps on press edge 1 and again on edge 5, so a bounded two writes",
+      "agrees": true,
+      "writes": {
+        "neutral": 0,
+        "continuousHold": 2,
+        "pulseTrain": 4
+      },
+      "trainOverNeutral": null,
+      "trainOverHold": 2,
+      "reads": {
+        "neutral": 0,
+        "continuousHold": 1,
+        "pulseTrain": 2
+      },
+      "note": "the class is read from the trace; the declared expectation is compared afterwards"
+    }
+  ],
+  "latchVersusResource": {
+    "question": "does the trace separate a genuine one-unit resource from a latch?",
+    "singleUnit": {
+      "writes": {
+        "neutral": 0,
+        "continuousHold": 1,
+        "pulseTrain": 1,
+        "trainPlusConsumer": 1
+      },
+      "reads": {
+        "neutral": 0,
+        "continuousHold": 1,
+        "pulseTrain": 20,
+        "trainPlusConsumer": 21
+      },
+      "distinctReaderSites": [
+        "0x811a",
+        "0x8131"
+      ],
+      "readerSiteDetail": {
+        "neutral": [],
+        "continuousHold": [
+          {
+            "address": 33050,
+            "addressHex": "0x811a",
+            "text": "LDA $6E",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          }
+        ],
+        "pulseTrain": [
+          {
+            "address": 33050,
+            "addressHex": "0x811a",
+            "text": "LDA $6E",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          }
+        ],
+        "trainPlusConsumer": [
+          {
+            "address": 33050,
+            "addressHex": "0x811a",
+            "text": "LDA $6E",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          },
+          {
+            "address": 33073,
+            "addressHex": "0x8131",
+            "text": "LDA $6E",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          }
+        ]
+      }
+    },
+    "oneShotSwitch": {
+      "writes": {
+        "neutral": 0,
+        "continuousHold": 1,
+        "pulseTrain": 1,
+        "trainPlusConsumer": 1
+      },
+      "reads": {
+        "neutral": 0,
+        "continuousHold": 1,
+        "pulseTrain": 20,
+        "trainPlusConsumer": 20
+      },
+      "distinctReaderSites": [
+        "0x80f9"
+      ],
+      "readerSiteDetail": {
+        "neutral": [],
+        "continuousHold": [
+          {
+            "address": 33017,
+            "addressHex": "0x80f9",
+            "text": "LDA $A7",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          }
+        ],
+        "pulseTrain": [
+          {
+            "address": 33017,
+            "addressHex": "0x80f9",
+            "text": "LDA $A7",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          }
+        ],
+        "trainPlusConsumer": [
+          {
+            "address": 33017,
+            "addressHex": "0x80f9",
+            "text": "LDA $A7",
+            "length": 2,
+            "isAlsoAWriterSite": false
+          }
+        ]
+      }
+    },
+    "writeSignaturesIdentical": true,
+    "readCountsDiffer": true,
+    "readerSiteCounts": {
+      "singleUnit": 2,
+      "oneShotSwitch": 1
+    },
+    "readerSiteCountsDiffer": true,
+    "addressesDifferButThatIsNotADiscrimination": "different variables are read by different instructions in any program. A difference in site ADDRESS says nothing about whether a field is a resource; only a difference in the STRUCTURE of its access could.",
+    "underTheThreeOwnDriverRegimes": {
+      "singleUnitReads": {
+        "neutral": 0,
+        "continuousHold": 1,
+        "pulseTrain": 20
+      },
+      "oneShotSwitchReads": {
+        "neutral": 0,
+        "continuousHold": 1,
+        "pulseTrain": 20
+      },
+      "separated": false,
+      "why": "all three regimes press only the field own driving button, so a consumer gated on a different button never runs"
+    },
+    "underTheConsumerRegime": {
+      "regimePresent": true,
+      "singleUnitReads": 21,
+      "oneShotSwitchReads": 20,
+      "singleUnitReaderSites": [
+        "0x811a",
+        "0x8131"
+      ],
+      "oneShotSwitchReaderSites": [
+        "0x80f9"
+      ],
+      "separated": true,
+      "why": "singleUnit is read by the play-gated routine and oneShotSwitch is not, so a schedule that drives that routine separates them"
+    },
+    "verdict": "SEPARATED, BUT ONLY BY A SCHEDULE THAT EXERCISES THE CONSUMER. Under the three regimes that press the field own driver the two are identical in writes, read counts and reader-site count. Adding the play button - which drives a routine that reads singleUnit and never reads oneShotSwitch - separates them. The first negative was a property of my action schedule, not of the instrument.",
+    "whatThisStillDoesNotEstablish": "that singleUnit is a game resource. An extra read from a distinct instruction is a LEAD about a consumer; it is not evidence of a game cost and is never promoted to GAME_COST_EVIDENCED. Separating a resource from a latch by KIND needs evidence about what the consumer DOES with the value - gates play, feeds a terminal check, or only draws a HUD.",
+    "consequenceForB3": "an action schedule must drive candidate CONSUMERS and not only the candidate own driver, or a field with a consumer and a field with none will look the same. Recorded before B3 rather than discovered during it.",
+    "readsAreNotEvidence": "a difference in read counts or reader sites is a LEAD about consumers, not evidence of a game cost. It is never promoted to GAME_COST_EVIDENCED: HUD code, animation and timers read fields too."
+  },
+  "overhead": {
+    "frames": 400,
+    "modes": [
+      {
+        "mode": "no observation at all",
+        "wallSeconds": 6.788,
+        "userSeconds": 1.588,
+        "sysSeconds": 0.086,
+        "cpuSeconds": 1.674,
+        "measured": true,
+        "note": null,
+        "cpuTimesBaseline": 1,
+        "wallTimesBaseline": 1
+      },
+      {
+        "mode": "per-access callback, no state sample",
+        "wallSeconds": 6.78,
+        "userSeconds": 1.646,
+        "sysSeconds": 0.047,
+        "cpuSeconds": 1.693,
+        "measured": true,
+        "note": null,
+        "cpuTimesBaseline": 1.01,
+        "wallTimesBaseline": 1
+      },
+      {
+        "mode": "per-access callback, state sampled for the first 16 writes",
+        "wallSeconds": 6.78,
+        "userSeconds": 1.546,
+        "sysSeconds": 0.068,
+        "cpuSeconds": 1.614,
+        "measured": true,
+        "note": null,
+        "cpuTimesBaseline": 0.96,
+        "wallTimesBaseline": 1
+      },
+      {
+        "mode": "per-access callback, state sampled on EVERY access",
+        "wallSeconds": 6.801,
+        "userSeconds": 1.729,
+        "sysSeconds": 0.033,
+        "cpuSeconds": 1.762,
+        "measured": true,
+        "note": null,
+        "cpuTimesBaseline": 1.05,
+        "wallTimesBaseline": 1
+      },
+      {
+        "mode": "full CPU instruction trace",
+        "wallSeconds": 6.779,
+        "userSeconds": 2.615,
+        "sysSeconds": 0.159,
+        "cpuSeconds": 2.774,
+        "measured": true,
+        "note": null,
+        "cpuTimesBaseline": 1.66,
+        "wallTimesBaseline": 1
+      },
+      {
+        "mode": "callback over the whole zero page (0x00-0xFF), no state sample",
+        "wallSeconds": 6.778,
+        "userSeconds": 1.876,
+        "sysSeconds": 0.069,
+        "cpuSeconds": 1.945,
+        "measured": true,
+        "note": null,
+        "cpuTimesBaseline": 1.16,
+        "wallTimesBaseline": 1
+      },
+      {
+        "mode": "callback over the whole zero page (0x00-0xFF), state sampled on EVERY access",
+        "wallSeconds": 254.629,
+        "userSeconds": 251.39,
+        "sysSeconds": 1.066,
+        "cpuSeconds": 252.456,
+        "measured": true,
+        "note": null,
+        "cpuTimesBaseline": 150.81,
+        "wallTimesBaseline": 37.51
+      }
+    ],
+    "ratioNoise": {
+      "observedBaselineCpuSecondsAcrossRuns": [
+        1.749,
+        2.018,
+        2.045
+      ],
+      "approximateRelativeSpread": "15%",
+      "consequence": "rows between about 0.9x and 1.15x are NOT distinguishable from each other or from 1.00. Only the trace row and the whole-zero-page state-sampling row are outside the noise."
+    },
+    "eventVolume": {
+      "singleByteScope": {
+        "writes": 12,
+        "reads": 12
+      },
+      "wholeZeroPageScope": {
+        "writes": 1219568,
+        "reads": 977708
+      },
+      "note": "the single-byte scope sees a handful of events per window and the zero-page scope sees them on every loop iteration. A per-access cost is meaningless without this denominator, and the single-byte rows do NOT establish that unbounded state sampling is affordable."
+    },
+    "traceBytes": 58601050,
+    "traceBytesPerFrame": 146503,
+    "pacingFloor": {
+      "observedMsPerFrame": 16.97,
+      "impliedFramesPerSecond": 58.9,
+      "note": "every mode sits on this floor, so WALL CLOCK RATIOS ARE NOT A COST MEASUREMENT here. --no-max-speed changed nothing when measured directly (6776 ms against 6787 ms over 400 frames), although AgentCli.cpp line 699 sets EmulationFlags::MaximumSpeed by default. Reported as an instrument property, not worked around."
+    },
+    "perEventStateSampleCost": {
+      "events": 2197276,
+      "extraCpuSeconds": 250.51,
+      "microsecondsPerStateSample": 114,
+      "conclusion": "emu.getState() serialises the whole console, so its cost is per CALL and independent of how little of the result is used. The two-stage scheme is mandatory, not a refinement: cheap aggregated counters for scope, and a bounded number of state samples only for a short causal episode."
+    },
+    "throughputConsequence": "at this floor a 2.5 million frame campaign - the size of the S11B corpus - would take roughly 12 hours of wall clock against 47 minutes in jsnes. That bounds what stage B can ask of this instrument and belongs in B5."
+  },
+  "checks": [
+    {
+      "check": "B1-A access counters populate over a declared window",
+      "countersPopulated": true,
+      "pass": true
+    },
+    {
+      "check": "B1-B the callback count and the access-counter count agree",
+      "comparisons": 24,
+      "disagreements": [],
+      "pass": true
+    },
+    {
+      "check": "B1-B a sampled write resolves to an instruction the oracle recorded",
+      "sitesResolved": 18,
+      "atOracleWriterSite": 12,
+      "pass": true
+    },
+    {
+      "check": "B1-B the trace discriminates the control classes",
+      "perControl": [
+        {
+          "control": "cadenceOnly",
+          "observedClass": "WRITTEN_PER_ACTION_EDGE",
+          "expectedClass": "WRITTEN_PER_ACTION_EDGE",
+          "expectationBasis": "steps once every K press edges and nothing else moves it",
+          "agrees": true,
+          "writes": {
+            "neutral": 0,
+            "continuousHold": 0,
+            "pulseTrain": 12
+          },
+          "trainOverNeutral": null,
+          "trainOverHold": null,
+          "reads": {
+            "neutral": 0,
+            "continuousHold": 0,
+            "pulseTrain": 12
+          },
+          "note": "the class is read from the trace; the declared expectation is compared afterwards"
+        },
+        {
+          "control": "timeAndAction",
+          "observedClass": "WRITTEN_BY_TIME_AND_ACTION",
+          "expectedClass": "WRITTEN_BY_TIME_AND_ACTION",
+          "expectationBasis": "rises on its own timer AND falls on every press edge",
+          "agrees": true,
+          "writes": {
+            "neutral": 74,
+            "continuousHold": 76,
+            "pulseTrain": 192
+          },
+          "trainOverNeutral": 2.59,
+          "trainOverHold": 2.53,
+          "reads": {
+            "neutral": 74,
+            "continuousHold": 74,
+            "pulseTrain": 152
+          },
+          "note": "the class is read from the trace; the declared expectation is compared afterwards"
+        },
+        {
+          "control": "pureTime",
+          "observedClass": "WRITTEN_REGARDLESS_OF_ACTION",
+          "expectedClass": "WRITTEN_REGARDLESS_OF_ACTION",
+          "expectationBasis": "advances on its own timer only",
+          "agrees": true,
+          "writes": {
+            "neutral": 74,
+            "continuousHold": 70,
+            "pulseTrain": 72
+          },
+          "trainOverNeutral": 0.97,
+          "trainOverHold": 1.03,
+          "reads": {
+            "neutral": 74,
+            "continuousHold": 70,
+            "pulseTrain": 72
+          },
+          "note": "the class is read from the trace; the declared expectation is compared afterwards"
+        },
+        {
+          "control": "pureAction",
+          "observedClass": "WRITTEN_PER_ACTION_EDGE",
+          "expectedClass": "WRITTEN_PER_ACTION_EDGE",
+          "expectationBasis": "decrements once per press edge for as long as the resource lasts",
+          "agrees": true,
+          "writes": {
+            "neutral": 0,
+            "continuousHold": 2,
+            "pulseTrain": 40
+          },
+          "trainOverNeutral": null,
+          "trainOverHold": 20,
+          "reads": {
+            "neutral": 0,
+            "continuousHold": 2,
+            "pulseTrain": 40
+          },
+          "note": "the class is read from the trace; the declared expectation is compared afterwards"
+        },
+        {
+          "control": "singleUnit",
+          "observedClass": "WRITTEN_ONLY_UNDER_ACTION",
+          "expectedClass": "WRITTEN_ONLY_UNDER_ACTION",
+          "expectationBasis": "a genuine resource of exactly ONE unit: it can be written once and no number of further edges can write it again",
+          "agrees": true,
+          "writes": {
+            "neutral": 0,
+            "continuousHold": 1,
+            "pulseTrain": 1
+          },
+          "trainOverNeutral": null,
+          "trainOverHold": 1,
+          "reads": {
+            "neutral": 0,
+            "continuousHold": 1,
+            "pulseTrain": 20
+          },
+          "note": "the class is read from the trace; the declared expectation is compared afterwards"
+        },
+        {
+          "control": "oneShotSwitch",
+          "observedClass": "WRITTEN_ONLY_UNDER_ACTION",
+          "expectedClass": "WRITTEN_ONLY_UNDER_ACTION",
+          "expectationBasis": "a latch: it flips once on a press edge and never moves again",
+          "agrees": true,
+          "writes": {
+            "neutral": 0,
+            "continuousHold": 1,
+            "pulseTrain": 1
+          },
+          "trainOverNeutral": null,
+          "trainOverHold": 1,
+          "reads": {
+            "neutral": 0,
+            "continuousHold": 1,
+            "pulseTrain": 20
+          },
+          "note": "the class is read from the trace; the declared expectation is compared afterwards"
+        },
+        {
+          "control": "firstThenLater",
+          "observedClass": "WRITTEN_ONLY_UNDER_ACTION",
+          "expectedClass": "WRITTEN_ONLY_UNDER_ACTION",
+          "expectationBasis": "steps on press edge 1 and again on edge 5, so a bounded two writes",
+          "agrees": true,
+          "writes": {
+            "neutral": 0,
+            "continuousHold": 2,
+            "pulseTrain": 4
+          },
+          "trainOverNeutral": null,
+          "trainOverHold": 2,
+          "reads": {
+            "neutral": 0,
+            "continuousHold": 1,
+            "pulseTrain": 2
+          },
+          "note": "the class is read from the trace; the declared expectation is compared afterwards"
+        }
+      ],
+      "agreeing": 7,
+      "of": 7,
+      "pass": true,
+      "note": "reported, not asserted. A control the trace cannot classify is a measured limit of this observation mode, published as one."
+    },
+    {
+      "check": "no Lua errors in any observation run",
+      "pass": true
+    }
+  ],
+  "cost": {
+    "instrumentInvocations": 255,
+    "instrumentWallClockMs": 552096
+  },
+  "provenance": {
+    "provenanceRevision": "agod-provenance-1",
+    "recordedAt": "2026-11-04T18:54:00.017Z",
+    "node": "v22.22.0",
+    "platform": "linux",
+    "arch": "x64",
+    "git": {
+      "commit": "4b125eb9565443a077e8fe38af0a22e3219155d7",
+      "branch": "research/agod-neural-e0-e1",
+      "commitSubject": "Stage B / B1: fix the unbalanced ternary that stopped the previous commit from parsing",
+      "commitDate": "2026-11-04T18:45:24+00:00",
+      "workingTreeDirty": false,
+      "modifiedFileCount": 0,
+      "modifiedFiles": []
+    },
+    "sourceFiles": [
+      {
+        "path": "research/mesen-causal/b1_synthetic_causal_trace.cjs",
+        "sha256": "cca19e7ae5f7634139737471f2065a02f6d06decf646fda114f0b8545f669512",
+        "bytes": 38648,
+        "gitBlobAtHead": "0396294aa10c329703bffb85214cccf69d8ca830",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_s11b_adapter.cjs",
+        "sha256": "346dcce9c1723568bdaf8f4872b3a99a9f378e1215f7ae7792fe30d854c35402",
+        "bytes": 17779,
+        "gitBlobAtHead": "1e7ded631045ef6e8937e4e7ee55212256d1603d",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_s11b_host.cjs",
+        "sha256": "5f3ebfd3e43ab10d3dced4bea420960bf7f29df54556ff116a2865442573e030",
+        "bytes": 5091,
+        "gitBlobAtHead": "bc7580cca3203fd82f5f7756d7cbc08803c26346",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_phase_evidence.cjs",
+        "sha256": "4abbf815aef125fd80508fa2a06c03319e6cdb6f16ba1d505ec2ea609aa92cb9",
+        "bytes": 9397,
+        "gitBlobAtHead": "57250d96b1049f6f0ff79d9140b4b333843a7d66",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_provenance.cjs",
+        "sha256": "335022648aa47d4002801b72f31a56045719d5c8eb2a4f9b5742246f3c3681ec",
+        "bytes": 4892,
+        "gitBlobAtHead": "45220d396c26a6cb426d7542e679086d24265aff",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "app/src/main/assets/lab/agod-causal.js",
+        "sha256": "2b81bac1bcccf9bada5b24d6cb24ec8e1ef30a7b72f828e47a4df139faba2270",
+        "bytes": 11240,
+        "gitBlobAtHead": "c4817a719f2a4b637056e3c474082a6ad4ff1b23",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "research/mesen-causal/mesen.cjs",
+        "sha256": "67acefbd1ce7a00d8a188657cc703ca028c6afc1b59e6786ba0d2af5ac8e8596",
+        "bytes": 7649,
+        "gitBlobAtHead": "9fe78b10992e73b9bfcb96bef2b3a17d20524930",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/make_agod_dual_dependence_rom.py",
+        "sha256": "de0aaa21e77d2d48ad13a8d59f6879dbdf4d2d59f6c333fdc7451cdbb0f33c5d",
+        "bytes": 30106,
+        "gitBlobAtHead": "3a53c6af0fe441ed6f1ed092780dd261149bcaef",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/make_agod_transition_rom.py",
+        "sha256": "dc941eff9d15edd3712b998b0edb8abac4abb32b45b176139096ecf540c9da4c",
+        "bytes": 14375,
+        "gitBlobAtHead": "d63a2e94498010a858007e9be7958effd4d7fb8b",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      }
+    ],
+    "sourceFilesDifferingFromCommit": [],
+    "sourceSetHash": "1c6494f08ab2d67e8a6cb385d097d840963a2730abc7ea81703ab23d2a684bfb",
+    "reproducibilityNote": "every declared source file matched its committed version at run time"
+  },
+  "totals": {
+    "checks": 5,
+    "passing": 5,
+    "failures": 0
+  },
+  "failures": [],
+  "status": "PASS"
+}
