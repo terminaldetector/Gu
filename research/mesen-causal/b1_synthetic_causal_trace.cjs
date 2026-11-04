@@ -379,12 +379,27 @@ const latchVersusResource=(()=>{
   /* the quantity read counts cannot express */
   readerSiteCounts:{singleUnit:unitSites.length,oneShotSwitch:latchSites.length},
   readerSiteCountsDiffer:unitSites.length!==latchSites.length,
-  verdict:sameWriteSignature
-   ?'NOT SEPARATED BY WRITE BEHAVIOUR. Both are written once under action and no '
-    +'number of further edges changes that, which is the S11A limitation reappearing at '
-    +'the CPU level rather than a new one.'
-   :'the write signatures differ, which would be a new discrimination and needs '
+  /* The reader site ADDRESSES differ - 0x811A against 0x80F9 - and that is not a
+     discrimination of KIND. Two different variables read by two different
+     instructions is what any program does; it carries no information about
+     whether either field is a resource. The structural signature is what could
+     separate them, and it is identical: one write under action, one distinct
+     reader site, the same read counts. */
+  addressesDifferButThatIsNotADiscrimination:
+   'different variables are read by different instructions in any program. A '
+   +'difference in site ADDRESS says nothing about whether a field is a resource; '
+   +'only a difference in the STRUCTURE of its access could.',
+  verdict:(sameWriteSignature&&unitSites.length===latchSites.length)
+   ?'NOT SEPARATED. Writes are identical, read counts are identical, and each field '
+    +'has the same number of distinct reader sites. The site addresses differ, which is '
+    +'expected of two different variables and is not evidence about kind. This is the '
+    +'S11A limitation reappearing at the CPU level, not solved by it.'
+   :'the structural signatures differ, which would be a new discrimination and needs '
     +'explaining before it is believed',
+  whatWouldSeparateThem:'evidence about what a consumer DOES with the value - whether '
+   +'it gates play, feeds a terminal check, or only draws a HUD - not that a consumer '
+   +'exists or how often it reads. "A read happened" was never going to be enough, and '
+   +'this measures how far from enough it is.',
   readsAreNotEvidence:'a difference in read counts or reader sites is a LEAD about '
    +'consumers, not evidence of a game cost. It is never promoted to '
    +'GAME_COST_EVIDENCED: HUD code, animation and timers read fields too.'};
@@ -488,7 +503,17 @@ emu.addEventCallback(onEndFrame, emu.eventType.endFrame)
   const totals=lines.find(x=>x.kind==='totals');
   return totals?{writes:totals.writes,reads:totals.reads}:null;
  };
+ /* Baseline CPU varied between runs of this file - 1.75 s, 2.02 s, 2.05 s for
+    the same no-observation mode - so ratios near 1 carry roughly 15 per cent of
+    noise and rows between about 0.9x and 1.15x are not distinguishable from one
+    another. The 139x row is far outside that and the 1.6-2.0x trace row is
+    comfortably outside it. */
  return {frames:FRAMES,modes:withRatios,
+  ratioNoise:{observedBaselineCpuSecondsAcrossRuns:[1.749,2.018,2.045],
+   approximateRelativeSpread:'15%',
+   consequence:'rows between about 0.9x and 1.15x are NOT distinguishable from '
+    +'each other or from 1.00. Only the trace row and the whole-zero-page '
+    +'state-sampling row are outside the noise.'},
   eventVolume:{singleByteScope:volumeOf('cheap'),
    wholeZeroPageScope:volumeOf('wide-cheap'),
    note:'the single-byte scope sees a handful of events per window and the '
@@ -505,6 +530,21 @@ emu.addEventCallback(onEndFrame, emu.eventType.endFrame)
     +'(6776 ms against 6787 ms over 400 frames), although AgentCli.cpp line 699 '
     +'sets EmulationFlags::MaximumSpeed by default. Reported as an instrument '
     +'property, not worked around.'},
+  perEventStateSampleCost:(()=>{
+   const wide=withRatios.find(m=>/whole zero page.*EVERY/.test(m.mode));
+   const wideCheap=withRatios.find(m=>/whole zero page.*no state/.test(m.mode));
+   const volume=volumeOf('wide-every')||volumeOf('wide-cheap');
+   if(!wide||!wideCheap||!volume||!wide.cpuSeconds)return null;
+   const events=(volume.writes||0)+(volume.reads||0);
+   return {events,
+    extraCpuSeconds:Number((wide.cpuSeconds-wideCheap.cpuSeconds).toFixed(2)),
+    microsecondsPerStateSample:events
+     ?Number((((wide.cpuSeconds-wideCheap.cpuSeconds)*1e6)/events).toFixed(1)):null,
+    conclusion:'emu.getState() serialises the whole console, so its cost is per CALL '
+     +'and independent of how little of the result is used. The two-stage scheme is '
+     +'mandatory, not a refinement: cheap aggregated counters for scope, and a bounded '
+     +'number of state samples only for a short causal episode.'};
+  })(),
   throughputConsequence:'at this floor a 2.5 million frame campaign - the size of the '
    +'S11B corpus - would take roughly 12 hours of wall clock against 47 minutes in '
    +'jsnes. That bounds what stage B can ask of this instrument and belongs in B5.'};
