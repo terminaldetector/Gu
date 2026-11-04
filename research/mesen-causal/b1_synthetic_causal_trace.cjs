@@ -314,12 +314,16 @@ for(const control of controls){
    movesUnderContinuousHold:control.truth.movesUnderContinuousHold,
    requiresMultipleEdges:control.truth.requiresMultipleEdges||null},
   writerPcsFromOracle:writerPcs.map(p=>'0x'+p.toString(16)),
-  writesObserved:{neutral:w('neutral').callbackWrites,
-   continuousHold:w('continuousHold').callbackWrites,
-   pulseTrain:w('pulseTrain').callbackWrites},
-  readsObserved:{neutral:w('neutral').callbackReads,
-   continuousHold:w('continuousHold').callbackReads,
-   pulseTrain:w('pulseTrain').callbackReads},
+  /* built from the regimes that actually ran. These were hardcoded to the
+     original three, so when a fourth consumer regime was added it executed and
+     its totals were silently dropped before they reached the row - the
+     comparison then reported "not separated" from missing data rather than from
+     coinciding data, which is the worse of the two failures. */
+  writesObserved:Object.fromEntries(Object.keys(perRegime)
+   .map(k=>[k,w(k).callbackWrites])),
+  readsObserved:Object.fromEntries(Object.keys(perRegime)
+   .map(k=>[k,w(k).callbackReads])),
+  regimesRun:Object.keys(perRegime),
   eventLossCheck:Object.fromEntries(Object.keys(perRegime).map(regime=>{
    const t=w(regime);
    return [regime,{callbackWrites:t.callbackWrites,counterWrites:t.counterWrites,
@@ -329,10 +333,8 @@ for(const control of controls){
   })),
   firstWriteAtFrame:Object.fromEntries(Object.keys(perRegime).map(regime=>
    [regime,w(regime).firstWriteAtFrame===undefined?null:w(regime).firstWriteAtFrame])),
-  sampledSite:{neutral:sampleOf('neutral'),
-   continuousHold:sampleOf('continuousHold'),pulseTrain:sampleOf('pulseTrain')},
-  readerSites:{neutral:readerSitesOf('neutral'),
-   continuousHold:readerSitesOf('continuousHold'),pulseTrain:readerSitesOf('pulseTrain')},
+  sampledSite:Object.fromEntries(Object.keys(perRegime).map(k=>[k,sampleOf(k)])),
+  readerSites:Object.fromEntries(Object.keys(perRegime).map(k=>[k,readerSitesOf(k)])),
   elapsedMs:Object.fromEntries(Object.keys(perRegime).map(r2=>[r2,perRegime[r2].elapsedMs])),
   luaErrors:Object.fromEntries(Object.keys(perRegime).map(r2=>[r2,perRegime[r2].luaErrors]))});
 }
@@ -430,14 +432,23 @@ const latchVersusResource=(()=>{
    why:'all three regimes press only the field own driving button, so a consumer '
     +'gated on a different button never runs'},
   underTheConsumerRegime:{
-   singleUnitReads:unit.readsObserved.trainPlusConsumer,
-   oneShotSwitchReads:latch.readsObserved.trainPlusConsumer,
+   regimePresent:unit.readsObserved.trainPlusConsumer!==undefined
+    &&latch.readsObserved.trainPlusConsumer!==undefined,
+   singleUnitReads:unit.readsObserved.trainPlusConsumer===undefined?null
+    :unit.readsObserved.trainPlusConsumer,
+   oneShotSwitchReads:latch.readsObserved.trainPlusConsumer===undefined?null
+    :latch.readsObserved.trainPlusConsumer,
+   singleUnitReaderSites:(unit.readerSites.trainPlusConsumer||[]).map(x=>x.addressHex),
+   oneShotSwitchReaderSites:(latch.readerSites.trainPlusConsumer||[]).map(x=>x.addressHex),
    separated:unit.readsObserved.trainPlusConsumer!==undefined
+    &&latch.readsObserved.trainPlusConsumer!==undefined
     &&unit.readsObserved.trainPlusConsumer!==latch.readsObserved.trainPlusConsumer,
    why:'singleUnit is read by the play-gated routine and oneShotSwitch is not, so a '
     +'schedule that drives that routine separates them'},
-  verdict:(unit.readsObserved.trainPlusConsumer!==undefined
-   &&unit.readsObserved.trainPlusConsumer!==latch.readsObserved.trainPlusConsumer)
+  verdict:unit.readsObserved.trainPlusConsumer===undefined
+   ?'NOT ESTABLISHED: the consumer regime produced no data for these controls, so '
+    +'this comparison says nothing. A missing measurement is not a coinciding one.'
+   :(unit.readsObserved.trainPlusConsumer!==latch.readsObserved.trainPlusConsumer)
    ?'SEPARATED, BUT ONLY BY A SCHEDULE THAT EXERCISES THE CONSUMER. Under the three '
     +'regimes that press the field own driver the two are identical in writes, read '
     +'counts and reader-site count. Adding the play button - which drives a routine '
@@ -445,7 +456,7 @@ const latchVersusResource=(()=>{
     +'negative was a property of my action schedule, not of the instrument.'
    :'NOT SEPARATED under any regime tried here. Writes, read counts and reader-site '
     +'counts coincide; differing site ADDRESSES are expected of two different variables '
-    +'and are not evidence about kind.',
+    +'and are not evidence about kind.'),
   whatThisStillDoesNotEstablish:'that singleUnit is a game resource. An extra read '
    +'from a distinct instruction is a LEAD about a consumer; it is not evidence of a '
    +'game cost and is never promoted to GAME_COST_EVIDENCED. Separating a resource '
