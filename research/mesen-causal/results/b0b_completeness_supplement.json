@@ -1,0 +1,287 @@
+{
+  "type": "gu-stage-b-b0-completeness-supplement",
+  "version": 1,
+  "stage": "B0 supplement - the three completeness gaps named in review",
+  "doesNotRewrite": "results/b0_capability_audit.json stands as published, errors included",
+  "instrument": {
+    "path": "/tmp/claude-0/-home-user/f6e72801-3e11-53f6-ae0c-ac8abd48d6c7/scratchpad/external/mesen-agent/bin/linux-x64/Release/mesen-agent",
+    "binarySha256": "b7eb9b26ae615da90de4840663b93cf2f0b4c47ed088bd91c83d720aae585087",
+    "repository": "https://github.com/atonamy/mesen-agent",
+    "sha": "dbc2c744ad52e1c89a8570d22d7fa92507ad4816",
+    "licence": "GPL-3.0"
+  },
+  "fixture": {
+    "generator": "tools/make_agod_dual_dependence_rom.py",
+    "seed": 1,
+    "romSha256": "0518ddb7a75d838b38a44df7eb05d11c046feb7d7e07294e5c284323ecac22ff",
+    "targetField": "cadenceOnly",
+    "targetAddress": 214,
+    "writerPcsFromOracle": [
+      "0x81a8"
+    ]
+  },
+  "checks": [
+    {
+      "item": "4.1 read breakpoint is a mandatory condition",
+      "changesFromB0": "B0 recorded the read breakpoint but did not assert it",
+      "readUnderPresses": {
+        "rwx": "r",
+        "pc": 33188,
+        "pcHex": "0x81a4",
+        "stopped": true,
+        "reason": "debugger_break",
+        "atWriterPc": true
+      },
+      "readUnderNeutral": {
+        "rwx": "r",
+        "pc": 32937,
+        "pcHex": "0x80a9",
+        "stopped": false,
+        "reason": "frame_limit",
+        "atWriterPc": false
+      },
+      "writeUnderPresses": {
+        "rwx": "w",
+        "pc": 33192,
+        "pcHex": "0x81a8",
+        "stopped": true,
+        "reason": "debugger_break",
+        "atWriterPc": true
+      },
+      "pass": true
+    },
+    {
+      "item": "4.2 --list-memory",
+      "changesFromB0": "B0 reported memorySpacesListed:false. That was my parser looking for a plural record with an array; the instrument emits one memory_space record per space. The capability was never broken.",
+      "spacesListed": 10,
+      "spaces": [
+        {
+          "type": "NesMemory",
+          "size": 65536
+        },
+        {
+          "type": "NesPpuMemory",
+          "size": 16384
+        },
+        {
+          "type": "NesPrgRom",
+          "size": 16384
+        },
+        {
+          "type": "NesInternalRam",
+          "size": 2048
+        },
+        {
+          "type": "NesWorkRam",
+          "size": 8192
+        },
+        {
+          "type": "NesNametableRam",
+          "size": 2048
+        },
+        {
+          "type": "NesSpriteRam",
+          "size": 256
+        },
+        {
+          "type": "NesSecondarySpriteRam",
+          "size": 32
+        },
+        {
+          "type": "NesPaletteRam",
+          "size": 32
+        },
+        {
+          "type": "NesChrRom",
+          "size": 8192
+        }
+      ],
+      "sizesCheckedAgainstTheNesItself": {
+        "NesInternalRam": 2048,
+        "NesMemory": 65536,
+        "NesPrgRom": 16384
+      },
+      "mismatches": [],
+      "pass": true
+    },
+    {
+      "item": "4.3a two frames from one saved state on one declared trajectory, synthetic fixture",
+      "changesFromB0": "B0 compared frame 30 of one run with frame 400 of another. On this instrument two independent runs also have different power-on RAM, so \"the images differ\" had more than one possible cause - and on ONE trajectory they do not differ at all.",
+      "trajectory": "post-boot saved state, no input, frames 30 and 300 of the same trajectory",
+      "early": {
+        "frames": 30,
+        "size": 804,
+        "isPng": true,
+        "width": 256,
+        "height": 240,
+        "sha256": "3087857085cee8d59ba990fdf3015d53bd602532445885d268ce08f7a521263e"
+      },
+      "late": {
+        "frames": 300,
+        "size": 804,
+        "isPng": true,
+        "width": 256,
+        "height": 240,
+        "sha256": "3087857085cee8d59ba990fdf3015d53bd602532445885d268ce08f7a521263e"
+      },
+      "repeatEarly": {
+        "frames": 30,
+        "size": 804,
+        "isPng": true,
+        "width": 256,
+        "height": 240,
+        "sha256": "3087857085cee8d59ba990fdf3015d53bd602532445885d268ce08f7a521263e"
+      },
+      "sameTrajectoryFramesDiffer": false,
+      "samePointReproducible": true,
+      "whyTheyDoNotDiffer": "this fixture ROM programs no background or sprites, so the rendered picture is constant along the trajectory. A constant picture is the correct output here, and it means this fixture CANNOT establish that the video channel follows the trajectory.",
+      "claimWithdrawn": "B0 row 8 \"two points of the run differ\" is not evidence from this fixture. The capability is a valid PNG of the right dimensions, reproducible at the same point.",
+      "pass": true
+    },
+    {
+      "item": "4.3b the same trajectory check on a cartridge that renders",
+      "corpusClass": "private user-supplied real-game ROM, local only; no ROM bytes in this artefact",
+      "trajectory": "one saved state after the S8 Life Force entry procedure (6 Start presses, 24-frame gap, from frame 240), no further input, frames 30 and 300 of the same trajectory",
+      "early": {
+        "frames": 30,
+        "size": 2985,
+        "isPng": true,
+        "width": 256,
+        "height": 240,
+        "sha256": "94af8126ab7ce48262df76800667e1c61ebdf72036d585fcf183df0ed9da8bf0"
+      },
+      "late": {
+        "frames": 300,
+        "size": 3713,
+        "isPng": true,
+        "width": 256,
+        "height": 240,
+        "sha256": "6eec42de86f0ff885f0a2c466542963520fa654dde4009ade9c87e5af4969f91"
+      },
+      "repeatEarly": {
+        "frames": 30,
+        "size": 2985,
+        "isPng": true,
+        "width": 256,
+        "height": 240,
+        "sha256": "94af8126ab7ce48262df76800667e1c61ebdf72036d585fcf183df0ed9da8bf0"
+      },
+      "sameTrajectoryFramesDiffer": true,
+      "samePointReproducible": true,
+      "pass": true
+    }
+  ],
+  "cost": {
+    "instrumentInvocations": 12,
+    "instrumentWallClockMs": 29217
+  },
+  "provenance": {
+    "provenanceRevision": "agod-provenance-1",
+    "recordedAt": "2026-11-04T17:46:04.073Z",
+    "node": "v22.22.0",
+    "platform": "linux",
+    "arch": "x64",
+    "git": {
+      "commit": "7af6cbc2b1cb95ae6259c3d60999aabf7c26291e",
+      "branch": "research/agod-neural-e0-e1",
+      "commitSubject": "Stage B / B0: the external instrument finds the writing instruction, and randomises RAM on every boot",
+      "commitDate": "2026-11-01T20:48:44+00:00",
+      "workingTreeDirty": true,
+      "modifiedFileCount": 2,
+      "modifiedFiles": [
+        {
+          "status": "??",
+          "path": "research/mesen-causal/b0b_completeness_supplement.cjs"
+        },
+        {
+          "status": "??",
+          "path": "research/mesen-causal/mesen.cjs"
+        }
+      ]
+    },
+    "sourceFiles": [
+      {
+        "path": "research/mesen-causal/b0b_completeness_supplement.cjs",
+        "sha256": "b5b41de33f0b1ae0ff2f11a7fcf5b1358aca75474b7f1343178b728ffa1c2de7",
+        "bytes": 11779,
+        "gitBlobAtHead": null,
+        "matchesCommitted": null,
+        "newSinceCommit": true,
+        "error": null
+      },
+      {
+        "path": "tools/agod_s11b_adapter.cjs",
+        "sha256": "346dcce9c1723568bdaf8f4872b3a99a9f378e1215f7ae7792fe30d854c35402",
+        "bytes": 17779,
+        "gitBlobAtHead": "1e7ded631045ef6e8937e4e7ee55212256d1603d",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_s11b_host.cjs",
+        "sha256": "5f3ebfd3e43ab10d3dced4bea420960bf7f29df54556ff116a2865442573e030",
+        "bytes": 5091,
+        "gitBlobAtHead": "bc7580cca3203fd82f5f7756d7cbc08803c26346",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_phase_evidence.cjs",
+        "sha256": "4abbf815aef125fd80508fa2a06c03319e6cdb6f16ba1d505ec2ea609aa92cb9",
+        "bytes": 9397,
+        "gitBlobAtHead": "57250d96b1049f6f0ff79d9140b4b333843a7d66",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "tools/agod_provenance.cjs",
+        "sha256": "335022648aa47d4002801b72f31a56045719d5c8eb2a4f9b5742246f3c3681ec",
+        "bytes": 4892,
+        "gitBlobAtHead": "45220d396c26a6cb426d7542e679086d24265aff",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "app/src/main/assets/lab/agod-causal.js",
+        "sha256": "2b81bac1bcccf9bada5b24d6cb24ec8e1ef30a7b72f828e47a4df139faba2270",
+        "bytes": 11240,
+        "gitBlobAtHead": "c4817a719f2a4b637056e3c474082a6ad4ff1b23",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      },
+      {
+        "path": "research/mesen-causal/mesen.cjs",
+        "sha256": "9896469552c1a773cd2594eb26afd8e2658d53fcfa4de1e493a27430f2b62e76",
+        "bytes": 6134,
+        "gitBlobAtHead": null,
+        "matchesCommitted": null,
+        "newSinceCommit": true,
+        "error": null
+      },
+      {
+        "path": "tools/make_agod_dual_dependence_rom.py",
+        "sha256": "de0aaa21e77d2d48ad13a8d59f6879dbdf4d2d59f6c333fdc7451cdbb0f33c5d",
+        "bytes": 30106,
+        "gitBlobAtHead": "3a53c6af0fe441ed6f1ed092780dd261149bcaef",
+        "matchesCommitted": true,
+        "newSinceCommit": false,
+        "error": null
+      }
+    ],
+    "sourceFilesDifferingFromCommit": [],
+    "sourceSetHash": "5f1de2d95a775d20153b7ab9fc84f942512cef14be20f75c28f9780042c54e37",
+    "reproducibilityNote": "every declared source file matched its committed version at run time"
+  },
+  "totals": {
+    "items": 4,
+    "passing": 4,
+    "failures": 0
+  },
+  "failures": [],
+  "status": "PASS"
+}
