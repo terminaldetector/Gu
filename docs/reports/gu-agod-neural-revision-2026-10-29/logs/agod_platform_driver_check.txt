@@ -1,0 +1,56 @@
+=== describe() for all four, before building anything ===
+  nes    core=JSNES             buttons=8   ram=2048 write=true  snapshot=jsnes-json-string
+  sega   core=Genesis Plus GX   buttons=12  ram=65536 write=false snapshot=sega-state-object
+  gb     core=Gambatte          buttons=8   ram=null write=false snapshot=retro-state-object
+  snes   core=Snes9x            buttons=12  ram=null write=false snapshot=retro-state-object
+
+=== NES, real jsnes core ===
+
+=== Sega, real Genesis Plus GX core ===
+  sega status: READY  ""
+
+=== GB and SNES: the cores are not in this checkout ===
+  gb -> CORE_UNAVAILABLE | the Gambatte WASM factory is not available | missing: window.GambatteFactory (lab/gb/core.js)
+  snes -> CORE_UNAVAILABLE | the Snes9x WASM factory is not available | missing: window.Snes9xFactory (lab/snes/core.js)
+
+  ok   NES declares 8 buttons
+  ok   Sega declares 12 buttons
+  ok   SNES declares 12 buttons
+  ok   GB declares 8 buttons
+  ok   Sega declares a 64 KiB window
+  ok   memory write is claimed for NES only
+  ok   an unknown platform is not supported
+  ok   NES driver is READY (got READY )
+  ok   the pipeline contract is complete
+  ok   NES exposes poke
+  ok   NES reports memoryWrite true
+  ok   NES observed RAM is 2048
+  ok   readRam returns 2048 bytes
+  ok   snapshot/restore is exact and frames change state
+  ok   the NES region is writable
+  ok   a disposed NES driver refuses
+  ok   SegaConsole wrapper loads
+  ok   GenPlusFactory is callable from this checkout
+  ok   Sega driver is READY (got READY )
+  ok   the pipeline contract is complete on Sega
+  ok   Sega reports NO memory write
+  ok   Sega exposes no poke
+  ok   Sega observed RAM is 65536
+  ok   Sega readRam returns 65536 bytes
+  ok   the Sega region is not writable
+  ok   the Sega snapshot is a state object
+  ok   Sega snapshot/restore is exact
+  ok   Sega frames under Right change the observed state
+  ok   the moving byte is at work-RAM offset 1 ($FF0001), observed at 1
+  ok   a button this cartridge ignores (A) moves nothing
+  ok   this cartridge writes 1 byte(s) of its 64 KiB window under Right
+  ok   Sega metered 180 frames
+  ok   the frame budget is enforced on Sega too
+  ok   gb reports CORE_UNAVAILABLE
+  ok   gb produced no driver
+  ok   gb names the repository reason
+  ok   snes reports CORE_UNAVAILABLE
+  ok   snes produced no driver
+  ok   snes names the repository reason
+
+PASS — 39/39

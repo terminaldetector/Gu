@@ -33,9 +33,9 @@
 const WORKER_REVISION='agod-worker-1';
 /* The pipeline module resolves its dependencies off the global when it loads,
    so this order is the dependency order and is not cosmetic. */
-const MODULES=['jsnes.min.js','agod-ram.js','agod-causal.js','agod-goals.js',
- 'agod-reward.js','agod-evidence.js','agod-pipeline.js','agod-nes-driver.js',
- 'agod-goal-dto.js'];
+const MODULES=['jsnes.min.js','platforms.js','agod-ram.js','agod-causal.js',
+ 'agod-goals.js','agod-reward.js','agod-evidence.js','agod-pipeline.js',
+ 'agod-platform-driver.js','agod-goal-dto.js'];
 
 let loaded=false,loadError=null;
 let currentSession=null,cancelledBeforeStart=new Set();
@@ -46,7 +46,7 @@ function load(){
  try{
   for(const file of MODULES)self.importScripts(file);
   const missing=['FlyAgodRam','FlyAgodCausal','FlyAgodGoals','FlyAgodReward',
-   'FlyAgodEvidence','FlyAgodPipeline','FlyAgodNesDriver','FlyAgodGoalDto']
+   'FlyAgodEvidence','FlyAgodPipeline','FlyAgodPlatformDriver','FlyAgodGoalDto']
    .filter(name=>!self[name]);
   if(missing.length)
    throw new Error('modules loaded but did not register: '+missing.join(', '));
@@ -66,7 +66,7 @@ function describeError(error){
   stack:error&&error.stack?String(error.stack).split('\n').slice(0,4).join('\n'):null};
 }
 
-function runSession(request){
+async function runSession(request){
  const sessionId=request.sessionId;
  const started=Date.now();
  if(cancelledBeforeStart.has(sessionId)){
@@ -88,11 +88,15 @@ function runSession(request){
   const progressEvery=Number.isInteger(request.progressEveryFrames)
    ?request.progressEveryFrames:2000;
   let sinceReport=0;
-  host=self.FlyAgodNesDriver.create({
+  /* One contract for every platform. The worker does not know which core it
+     is driving beyond passing the platform through; a core that cannot be
+     built answers with a status rather than throwing. */
+  const platform=request.platform||'nes';
+  const built=await self.FlyAgodPlatformDriver.create({
+   platform,
    romBase64:request.romBase64,romBinaryString:request.romBinaryString,
    jsnes:self.jsnes,frameBudget,
-   startSnapshot:request.startSnapshot||null,
-   entry:request.entry||{bootFrames:60,startPulses:0},
+   platforms:self.FlyPlatforms,
    onFrames(count){
     sinceReport+=count;
     if(sinceReport>=progressEvery){
@@ -104,8 +108,30 @@ function runSession(request){
       elapsedMs:Date.now()-started});
     }
    }});
+  if(built.status!=='READY'){
+   post({type:'error',sessionId,workerRevision:WORKER_REVISION,phase:'driver',
+    error:{message:built.reason||built.status,budgetExceeded:false,stack:null},
+    platform,driverStatus:built.status,
+    missing:built.missing||null,repositoryNote:built.repositoryNote||null});
+   return;
+  }
+  host=built;
+  /* The start snapshot is adopted BY VALUE after the core exists, through the
+     same restore() the pipeline uses, so no platform needs a bespoke path. */
+  if(request.startSnapshot){
+   try{host.driver.restore(request.startSnapshot);}
+   catch(error){
+    post({type:'error',sessionId,workerRevision:WORKER_REVISION,phase:'restore',
+     error:{message:'the live state could not be adopted: '
+      +(error&&error.message||error),budgetExceeded:false,stack:null},platform});
+    return;
+   }
+  }
   post({type:'started',sessionId,workerRevision:WORKER_REVISION,
-   driverRevision:self.FlyAgodNesDriver.DRIVER_REVISION,
+   platform,
+   driverRevision:built.driverRevision,
+   coreName:built.coreName,
+   capabilities:built.capabilities,
    pipelineRevision:self.FlyAgodPipeline.PIPELINE_REVISION,
    frameBudget,
    framesAfterEntryProcedure:host.framesRun(),
@@ -124,8 +150,8 @@ function runSession(request){
    romHash:config.romHash||null,coreRevision:config.coreRevision||null,
    profileRevision:config.profileRevision||null,
    contextKey:config.contextKey===undefined?null:config.contextKey,
-   platform:request.platform||'nes',
-   driverRevision:self.FlyAgodNesDriver.DRIVER_REVISION,
+   platform,
+   driverRevision:built.driverRevision,
    producedAtMs:Date.now()});
   /* Checked HERE, before posting, so a transport bug is caught in the context
      that can still describe it rather than becoming a silent DataCloneError. */

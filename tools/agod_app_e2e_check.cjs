@@ -145,6 +145,10 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
    window.__agodEvents.find(e=>e.type==='started'));
   step('6. the worker started the real pipeline',
    {driverRevision:startedMessage.driverRevision,
+    platform:startedMessage.platform,coreName:startedMessage.coreName,
+    observedRamBytes:(startedMessage.capabilities||{}).observedRamBytes,
+    buttonCount:((startedMessage.capabilities||{}).actionSpec||{}).buttonCount,
+    memoryWrite:((startedMessage.capabilities||{}).supports||{}).memoryWrite,
     pipelineRevision:startedMessage.pipelineRevision,
     frameBudget:startedMessage.frameBudget,
     startedFrom:startedMessage.startedFrom,
@@ -152,8 +156,23 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
   expect(startedMessage.pipelineRevision&&/^agod-pipeline-/.test(startedMessage.pipelineRevision),
    'the worker did not report a real FlyAgodPipeline revision: '
    +JSON.stringify(startedMessage.pipelineRevision));
-  expect(startedMessage.driverRevision==='agod-nes-driver-1',
-   'the worker did not use the app driver: '+startedMessage.driverRevision);
+  /* the driver is now the common platform driver, so the revision is asserted
+     by prefix and the CAPABILITY surface is what gets checked - that the
+     worker knows which platform and core it drove, and what that core can do */
+  expect(/^agod-(platform|nes)-driver-/.test(startedMessage.driverRevision||''),
+   'the worker did not use an app driver: '+startedMessage.driverRevision);
+  expect(startedMessage.platform==='nes'&&startedMessage.coreName==='JSNES',
+   'the worker did not report the platform and core it drove: '
+   +startedMessage.platform+' / '+startedMessage.coreName);
+  const caps=startedMessage.capabilities||{};
+  expect(caps.observedRamBytes===2048,
+   'the NES capability surface reports the wrong observed RAM width: '
+   +caps.observedRamBytes);
+  expect(caps.supports&&caps.supports.memoryWrite===true,
+   'the NES capability surface should allow a memory write');
+  expect(caps.actionSpec&&caps.actionSpec.buttonCount===8,
+   'the NES action specification should declare 8 buttons, got '
+   +(caps.actionSpec&&caps.actionSpec.buttonCount));
   expect(workerUrls.some(url=>/agod-worker\.js/.test(url)),
    'no agod-worker.js worker was created, so the pipeline did not run off the UI thread');
 

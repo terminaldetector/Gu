@@ -126,6 +126,7 @@ function runInWorker(request){
   finish();
  };
  worker.postMessage({type:'run',sessionId,
+  platform:options.platform||'nes',
   romBase64:options.romBase64||null,romBinaryString:options.romBinaryString||null,
   startSnapshot:options.startSnapshot||null,
   entry:options.entry||null,

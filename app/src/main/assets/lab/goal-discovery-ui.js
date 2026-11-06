@@ -262,9 +262,11 @@
  const liveStateHash=()=>{
   try{
    if(typeof nes==='undefined'||!nes||!nes.cpu||!nes.cpu.mem)return null;
-   return window.FlyAgodNesDriver
-    ?window.FlyAgodNesDriver.ramHash(nes.cpu.mem.slice(0,0x800))
-    :null;
+   const api=window.FlyAgodPlatformDriver||window.FlyAgodNesDriver;
+   if(!api)return null;
+   const width=(window.FlyPlatforms&&window.FlyPlatforms[labPlatform]
+    &&window.FlyPlatforms[labPlatform].ram)||0x800;
+   return api.ramHash(nes.cpu.mem.slice(0,Math.min(width,nes.cpu.mem.length||width)));
   }catch(_){return null;}
  };
 
@@ -366,8 +368,11 @@
   if(typeof loaded==='undefined'||!loaded||typeof romLoading!=='undefined'&&romLoading){
    set(phase,'AGOD не запущен: картридж не загружен');return;
   }
-  if(typeof labPlatform!=='undefined'&&labPlatform!=='nes'){
-   set(phase,'AGOD не запущен: исполняемый контур реализован только для NES');return;
+  const supported=window.FlyAgodPlatformDriver
+   ?window.FlyAgodPlatformDriver.SUPPORTED:['nes'];
+  if(typeof labPlatform!=='undefined'&&!supported.includes(labPlatform)){
+   set(phase,'AGOD не запущен: платформа '+labPlatform+' не поддерживается контуром');
+   return;
   }
   if(!window.FlyAgodExperimental||typeof window.FlyAgodExperimental.runInWorker!=='function'){
    set(phase,'AGOD не запущен: мост FlyAgodExperimental недоступен');return;
@@ -382,6 +387,7 @@
   let startSnapshot=null;
   try{startSnapshot=JSON.stringify(nes.toJSON());}catch(_){startSnapshot=null;}
   const started=window.FlyAgodExperimental.runInWorker({
+   platform:typeof labPlatform!=='undefined'?labPlatform:'nes',
    romBinaryString:rom,
    startSnapshot,
    frameBudget:(window.GU_AGOD_FRAME_BUDGET|0)||2000000,
