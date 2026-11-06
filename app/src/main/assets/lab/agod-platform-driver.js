@@ -100,7 +100,16 @@ const romBytesOf=options=>{
    simply has no exclusive group. */
 const OPPOSED_PAIRS=[['\u2191','\u2193'],['\u2190','\u2192']];
 const popcount=value=>{let n=value,c=0;while(n){n&=n-1;c++;}return c;};
-function actionSpecFor(platform,platforms){
+/* `availableButtons` is the number of buttons the HARDWARE ACTUALLY HAS in the
+   configuration the core is in, which is not always the number the platform
+   declares. Measured on Genesis Plus GX: after loadROM() the pad type the core
+   reports is 3, not 6 - FlyPlatforms declares twelve Sega buttons, but on a
+   three-button pad X, Y, Z and Mode (bits 8..11) do not exist on the wire, and
+   SegaConsole.buttonDown accepts index 11 on such a pad without complaint. So
+   a probe of mask 256..2048 there would drive nothing and attribute whatever
+   the frames happened to produce. The declared count is kept and REPORTED
+   beside the available one; the action set is the available buttons. */
+function actionSpecFor(platform,platforms,availableButtons){
  const entry=platforms&&platforms[platform];
  if(!entry||!Array.isArray(entry.buttons)){
   const why='no action specification: FlyPlatforms does not describe '+platform;
@@ -109,7 +118,11 @@ function actionSpecFor(platform,platforms){
    maskAllowed:()=>({allowed:false,reason:why}),
    note:why};
  }
- const buttons=entry.buttons.map((name,index)=>({index,name,mask:1<<index}));
+ const declared=entry.buttons.map((name,index)=>({index,name,mask:1<<index}));
+ const available=Number.isInteger(availableButtons)
+  ?Math.max(0,Math.min(availableButtons,declared.length)):declared.length;
+ const buttons=declared.slice(0,available);
+ const withheld=declared.slice(available);
  const byName=new Map(buttons.map(button=>[button.name,button]));
  const exclusiveGroups=OPPOSED_PAIRS
   .filter(pair=>pair.every(name=>byName.has(name)))
@@ -121,20 +134,39 @@ function actionSpecFor(platform,platforms){
   if(!Number.isInteger(mask)||mask<0)
    return {allowed:false,reason:'a mask must be a non-negative integer'};
   const stray=mask&~maxMask;
-  if(stray)return {allowed:false,
-   reason:'mask '+mask+' sets bit(s) 0x'+stray.toString(16)+', which occupy no '
-    +platform+' button: this controller has '+buttons.length};
+  if(stray){
+   const named=withheld.filter(button=>stray&button.mask);
+   return {allowed:false,
+    reason:named.length
+     ?'mask '+mask+' asks for '+named.map(b=>b.name).join('/')+', which the '
+      +platform+' pad the core is configured for does not have ('
+      +buttons.length+' of '+declared.length+' declared buttons are present)'
+     :'mask '+mask+' sets bit(s) 0x'+stray.toString(16)+', which occupy no '
+      +platform+' button: this controller has '+buttons.length};
+  }
   for(const group of exclusiveGroups)
    if(popcount(mask&group.mask)>1)return {allowed:false,reason:group.reason};
   return {allowed:true};
  };
  return {buttonCount:buttons.length,
   buttons,
+  /* stated apart, so "this platform has twelve buttons" and "this pad can
+     press eight of them right now" are never the same claim */
+  declaredButtonCount:declared.length,
+  availableButtonCount:buttons.length,
+  withheldButtons:withheld.map(button=>({index:button.index,name:button.name,
+   mask:button.mask,
+   reason:'declared by the platform but not present on the pad the core is '
+    +'configured for'})),
   ports:entry.ports||1,
   singleButtonMasks:buttons.map(button=>button.mask),
   exclusiveGroups,maxMask,maskAllowed,
   declaredRamBytes:entry.ram||null,
-  note:'button indices are bit positions in the mask the pipeline drives'};
+  note:withheld.length
+   ?'button indices are bit positions in the mask the pipeline drives; '
+    +withheld.length+' declared button(s) are NOT on the configured pad and are '
+    +'excluded from the action set'
+   :'button indices are bit positions in the mask the pipeline drives'};
 }
 
 /* ---- the shared wrapper ----
@@ -143,7 +175,7 @@ function actionSpecFor(platform,platforms){
 function wrap(spec){
  const {platform,core,coreName,coreRevision,readRam,readRamSparse,snapshot,
   restore,press,poke,memoryRegions,snapshotFormat,actionSpec,ramBytes,
-  frameBudget,notes,bulkReadVia}=spec;
+  frameBudget,notes,bulkReadVia,padType,padTypeRequested}=spec;
  let framesRun=0,disposed=false;
  const guard=()=>{if(disposed)throw new Error('this research driver has been disposed');};
  const run=(mask,frames)=>{
@@ -205,6 +237,10 @@ function wrap(spec){
    memoryRegions:Object.freeze(memoryRegions.map(Object.freeze)),
    snapshotFormat,
    bulkReadVia:bulkReadVia||null,
+   /* the controller the core is really configured for, where that is a choice;
+      null on a platform with one pad layout */
+   padType:padType===undefined?null:padType,
+   padTypeRequested:padTypeRequested===undefined?null:padTypeRequested,
    /* CAPABILITIES CROSS postMessage; THE DRIVER DOES NOT. The action
       specification carries maskAllowed, a function, and a function cannot be
       structured-cloned: agod-worker.js posts this object to the page, so a
@@ -217,6 +253,11 @@ function wrap(spec){
     snapshot:true,restore:true,readRam:true,stateHash:true,
     frameBudget:frameBudget!==null,
     selectiveRead:typeof readRamSparse==='function',
+    /* false when the pad the core is configured for has fewer buttons than the
+       platform declares - said as a capability, not discovered by a probe that
+       drives a button the wire does not carry */
+    allDeclaredButtons:actionSpec.declaredButtonCount===undefined
+     ?true:actionSpec.availableButtonCount===actionSpec.declaredButtonCount,
     physicalAddressMapping:memoryRegions.some(r=>Number.isInteger(r.base)),
     memoryWrite:typeof poke==='function',
     /* said explicitly: the pipeline's consumer counterfactual needs a write */
@@ -298,7 +339,28 @@ async function createSega(options){
     Proxy because cpu.mem is the documented surface, and it turned every
     typing pass into seconds of overhead. Measured, not guessed. */
  const ramBytes=Number.isInteger(options.ramBytes)?options.ramBytes:0x10000;
- const segaActions=actionSpecFor('sega',options.platforms||root.FlyPlatforms);
+ /* THE PAD TYPE IS ASKED FOR, NOT ASSUMED. loadROM() has already run
+    configurePads(padTypes), and padTypes defaults to [0,0] - "auto", which
+    Genesis Plus GX resolves to a THREE-button pad, not a detected one. So the
+    core reports controllerTypes [3,3] and bits 8..11 (X/Y/Z/Mode) are absent
+    from the wire even though FlyPlatforms declares twelve buttons.
+
+    `padType` lets a caller ask for the six-button pad and really get it
+    (measured: configurePads([6,6]) moves the raw type from 0 to 1 and
+    controllerTypes to [6,6]). It is NOT the default, because changing the pad
+    type changes the input environment the game sees, and a research driver
+    should start in the configuration the player's core would be in. Whatever
+    the pad turns out to be, the action set follows it. */
+ const requestedPad=[3,6].includes(Number(options.padType))?Number(options.padType):null;
+ if(requestedPad!==null){
+  core.configurePads([requestedPad,requestedPad]);
+  core.loadROM(bytes);   /* configurePads zeroes the masks; re-seat the cartridge */
+ }
+ let padTypeObserved=null;
+ try{padTypeObserved=core.controllerTypes[0];}catch(error){padTypeObserved=null;}
+ const availableButtons=padTypeObserved===6?12:(padTypeObserved===3?8:null);
+ const segaActions=actionSpecFor('sega',options.platforms||root.FlyPlatforms,
+  availableButtons);
  const read=core.g&&typeof core.g._lab_read_ram==='function'
   ?core.g._lab_read_ram.bind(core.g):null;
  const readRam=read
@@ -330,12 +392,17 @@ async function createSega(options){
     (mask&(1<<b)?core.buttonDown:core.buttonUp).call(core,1,b);
    for(let i=0;i<frames;i++)core.frame();
   },
+  padType:padTypeObserved,padTypeRequested:requestedPad,
   notes:['cpu.mem is a read-only Proxy on this core, so there is no memory '
    +'write and the pipeline consumer counterfactual reports NOT-SUPPORTED',
    'the window is read through the core _lab_read_ram, not through the cpu.mem '
    +'Proxy: identical bytes at 0.35 ms instead of 12.40 ms for 64 KiB',
-   'twelve button indices, and 3/6-button pad selection is a core setting '
-   +'(configurePads) rather than part of the driver surface',
+   'the pad the core reports is '+(padTypeObserved===null?'unknown':padTypeObserved
+    +'-button')+', so the action set has '
+    +(availableButtons===null?'the declared':String(availableButtons))
+    +' of the 12 buttons FlyPlatforms declares'
+    +(padTypeObserved===3?'; pass padType:6 to reach X/Y/Z/Mode, which changes '
+     +'the input environment the game sees and is therefore not the default':''),
    'the snapshot is an object carrying base64 state, not a JSON string']});
 }
 

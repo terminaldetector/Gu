@@ -250,6 +250,75 @@ console.log('=== 9. the pipeline refuses an action set the platform cannot produ
   'a caller-supplied mask the platform rejects stops the run and is named');
 }
 
+console.log('=== 10. a truncated report must not read as an absence of causality ===');
+{
+ /* The directive's scenario, built to be unambiguous: ONE action changes 2048
+    low addresses and one high address, and the high one is the 2049th entry of
+    the attributed list. The report bound used to be applied BEFORE the starts
+    were compared with each other, so the 2049th address was gone before
+    aggregation ran - and a probe whose agreeing address sat past the bound came
+    back NO-EFFECT. A truncation had become an absence of causality. */
+ const effects=[];
+ for(let a=0;a<2048;a++)effects.push({bit:0,address:a});
+ effects.push({bit:0,address:3000});
+ const d=known({ramBytes:4096,effects});
+ const starts=startsOf(d);
+ const base={starts,mask:1,neutralMask:0,frames:12,shiftTolerance:3};
+
+ /* with the DEFAULT bound of 64 the report is a prefix, and that is allowed -
+    what is not allowed is the status and the totals being wrong because of it */
+ const bounded=Causal.probeAction(d,{...base,limits:{maxRamBytes:4096}});
+ console.log('  bound=64    status=%s  confirmed shown=%d of %d  truncated=%s',
+  bounded.causalStatus,bounded.confirmed.length,bounded.confirmedTotal,
+  bounded.confirmedTruncated);
+ ok(bounded.causalStatus==='CAUSAL-EVIDENCE',
+  'a bounded report still reports CAUSAL-EVIDENCE, not NO-EFFECT');
+ ok(bounded.confirmedTotal===2049,
+  'the complete confirmed count is 2049, whatever the report shows (got '
+  +bounded.confirmedTotal+')');
+ ok(bounded.confirmed.length===64&&bounded.confirmedTruncated===true,
+  'the report is bounded at 64 and says so');
+ ok(bounded.perStart[0].attributedTotal===2049
+  &&bounded.perStart[0].attributedTruncated===true,
+  'each start states how many addresses it attributed and that the list is cut');
+
+ /* and a caller that asks for the whole space gets the high address itself */
+ const whole=Causal.probeAction(d,{...base,
+  limits:{maxRamBytes:4096,maxAddressesReported:4096}});
+ const has3000=whole.confirmed.some(e=>e.address===3000);
+ console.log('  bound=4096  status=%s  confirmed=%d  contains 3000=%s  truncated=%s',
+  whole.causalStatus,whole.confirmed.length,has3000,whole.confirmedTruncated);
+ ok(whole.causalStatus==='CAUSAL-EVIDENCE'&&has3000,
+  'asking for the whole space returns the address past the old bound');
+ ok(whole.confirmedTruncated===false&&whole.confirmedTotal===whole.confirmed.length,
+  'and reports no truncation when none happened');
+
+ /* the pipeline is the caller that needs completeness, because its candidate
+    set comes from this list. It must ask for the whole width. */
+ const spec={buttonCount:8,buttons:null,
+  singleButtonMasks:[1,2,4,8,16,32,64,128],ports:1};
+ const dp=known({ramBytes:4096,effects,actionSpec:spec});
+ const r=Pipeline.run(dp,{typeEvents:8,starts:2});
+ const act=r.trace.filter(t=>t.stage==='actions')[0]||{};
+ console.log('  pipeline asks for maxAddressesReported=%s over width %s; stage=%s',
+  act.maxAddressesReported,act.comparisonWidth,r.stage||r.status);
+ ok(act.maxAddressesReported===4096,
+  'the pipeline asks for a complete address list, not a 64-address prefix');
+ ok(r.stage!=='attribute',
+  'and the run gets past stage 1 with the effect at 3000 attributed');
+
+ /* THE NEGATIVE CONTROL. The same geometry with no action effect at all must
+    still be NO-EFFECT: the fix must not turn truncation into evidence either. */
+ const quiet=known({ramBytes:4096,effects:[{bit:3,address:3000}]});
+ const qs=startsOf(quiet);
+ const none=Causal.probeAction(quiet,{starts:qs,mask:1,neutralMask:0,frames:12,
+  shiftTolerance:3,limits:{maxRamBytes:4096,maxAddressesReported:4096}});
+ console.log('  negative control (mask 1 drives nothing): status=%s confirmedTotal=%d',
+  none.causalStatus,none.confirmedTotal);
+ ok(none.causalStatus==='NO-EFFECT'&&none.confirmedTotal===0,
+  'an action that really changes nothing is still NO-EFFECT');
+}
+
 console.log('');
 for(const line of out)console.log(line);
 console.log('\n%d/%d assertions passed',out.length-fail.length,out.length);

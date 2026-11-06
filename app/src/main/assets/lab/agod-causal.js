@@ -21,7 +21,12 @@ const SCHEMA_VERSION=2,DETECTOR_REVISION='agod-causal-e3-2';
    before; its cap is 4095, the widest single pad GU describes. A wider action
    than that is a deliberate decision and has to raise the cap on purpose. */
 const DEFAULT_LIMITS=Object.freeze({maxStarts:8,maxArmsPerStart:16,maxFramesPerArm:120,maxRamBytes:2048,maxAddressesReported:64,maxTotalFrames:40000,maxShiftTolerance:4,maxMask:255});
-const CAPS=Object.freeze({maxStarts:32,maxArmsPerStart:32,maxFramesPerArm:600,maxRamBytes:131072,maxAddressesReported:4096,maxTotalFrames:400000,maxShiftTolerance:12,maxMask:4095});
+/* maxAddressesReported reaches the widest RAM GU declares, so a caller that
+   needs a complete list - agod-pipeline.js, which derives its candidates from
+   it - can ask for one instead of silently receiving a prefix. Measured before
+   raising it: across 48 probes on six NES fixtures the worst start attributed
+   8 addresses, so no NES result can move. */
+const CAPS=Object.freeze({maxStarts:32,maxArmsPerStart:32,maxFramesPerArm:600,maxRamBytes:131072,maxAddressesReported:131072,maxTotalFrames:400000,maxShiftTolerance:12,maxMask:4095});
 
 const frozen=value=>Object.freeze(value);
 function clampLimits(requested){
@@ -98,15 +103,36 @@ function neutralTrajectory(driver,start,plan,limits){
  return windows;
 }
 
+/* G3. THE REPORT BOUND IS NOT THE EVIDENCE.
+   maxAddressesReported bounds what a record SHOWS. It used to bound what the
+   aggregation COUNTED as well, because evaluateStart returned the already
+   truncated list and aggregate() counted over that - so an action that changed
+   more addresses than the bound had its later addresses dropped before a single
+   start was compared with another, and a probe whose only agreeing address sat
+   past the bound came back NO-EFFECT. A truncated report had become an absence
+   of causality, which is the one inference this module exists to prevent.
+
+   So evaluateStart now returns the record AND the full lists beside it: the
+   record stays bounded and says how much it is hiding, and the aggregation runs
+   over everything that was observed. The full lists are deliberately NOT put in
+   the returned result - on a 128 KiB platform they would be a copy of the
+   address space per start - they are handed to probeAction and dropped. */
 function evaluateStart(driver,start,plan,limits){
+ const bound=limits.maxAddressesReported;
+ const shown=list=>({list:list.slice(0,bound),total:list.length,
+  truncated:list.length>bound});
  const neutralA=runArm(driver,start,plan.neutralMask,plan.frames);
  const neutralB=runArm(driver,start,plan.neutralMask,plan.frames);
  const shamStable=neutralA.after.every((value,address)=>value===neutralB.after[address]);
  if(!shamStable){
-  return frozen({startId:start.id,stateHash:start.stateHash,status:'INCONCLUSIVE',
+  const diverged=shown(diffAddresses(neutralA.after,neutralB.after,limits.maxRamBytes));
+  return {full:{attributed:[],specificToMask:[]},
+   record:frozen({startId:start.id,stateHash:start.stateHash,status:'INCONCLUSIVE',
    reason:'non-deterministic replay: the two neutral arms diverged',
-   shamDivergedAt:diffAddresses(neutralA.after,neutralB.after,limits.maxRamBytes).slice(0,limits.maxAddressesReported),
-   attributed:[],rawAttributed:[],alternativeAttributed:[],sharedWithAlternative:[],specificToMask:[]});
+   shamDivergedAt:diverged.list,
+   shamDivergedTotal:diverged.total,shamDivergedTruncated:diverged.truncated,
+   attributed:[],rawAttributed:[],alternativeAttributed:[],sharedWithAlternative:[],specificToMask:[],
+   attributedTotal:0,attributedTruncated:false})};
  }
  const trajectory=neutralTrajectory(driver,start,plan,limits);
  const onTrajectory=(address,value)=>trajectory.some(window=>window.after[address]===value);
@@ -122,16 +148,28 @@ function evaluateStart(driver,start,plan,limits){
   const alternativeSet=new Set(alternativeAttributed);
   shared=attributed.filter(address=>alternativeSet.has(address));
  }
- const specific=attributed.filter(address=>!shared.includes(address));
- return frozen({startId:start.id,stateHash:start.stateHash,status:'OBSERVED',
-  attributed:attributed.slice(0,limits.maxAddressesReported),
-  rawAttributed:rawAttributed.slice(0,limits.maxAddressesReported),
-  shiftExplainedAddresses:shiftExplained.slice(0,limits.maxAddressesReported),
-  alternativeAttributed:alternativeAttributed.slice(0,limits.maxAddressesReported),
-  sharedWithAlternative:shared.slice(0,limits.maxAddressesReported),
-  specificToMask:specific.slice(0,limits.maxAddressesReported),
+ /* `shared` is a list, so membership here was a linear scan inside a filter -
+    quadratic in the number of attributed addresses, which is 2048 or more on a
+    wide platform. A set, because this path now really does run over thousands
+    of addresses instead of the five or six a NES probe produces. */
+ const sharedSet=new Set(shared);
+ const specific=attributed.filter(address=>!sharedSet.has(address));
+ const attr=shown(attributed),drift=shown(diffAddresses(neutralA.before,neutralA.after,limits.maxRamBytes));
+ return {full:{attributed,specificToMask:specific},
+  record:frozen({startId:start.id,stateHash:start.stateHash,status:'OBSERVED',
+  attributed:attr.list,
+  attributedTotal:attr.total,attributedTruncated:attr.truncated,
+  rawAttributed:rawAttributed.slice(0,bound),
+  rawAttributedTotalThisStart:rawAttributed.length,
+  shiftExplainedAddresses:shiftExplained.slice(0,bound),
+  shiftExplainedTotalThisStart:shiftExplained.length,
+  alternativeAttributed:alternativeAttributed.slice(0,bound),
+  sharedWithAlternative:shared.slice(0,bound),
+  specificToMask:specific.slice(0,bound),
+  specificToMaskTotal:specific.length,
   neutralWindows:trajectory.length,
-  neutralDriftAddresses:diffAddresses(neutralA.before,neutralA.after,limits.maxRamBytes).slice(0,limits.maxAddressesReported)});
+  neutralDriftAddresses:drift.list,
+  neutralDriftTotal:drift.total})};
 }
 
 /* Cross-start aggregation.
@@ -139,21 +177,28 @@ function evaluateStart(driver,start,plan,limits){
    Agreement across independent starts is what turns a single observation into a
    causal claim. An address seen in some starts and absent in others is recorded
    as a contradiction, not quietly averaged away. */
-function aggregate(perStart,limits){
- const usable=perStart.filter(entry=>entry.status==='OBSERVED');
+function aggregate(evaluated,limits){
+ /* counted over the FULL per-start lists, never over the bounded records */
+ const usable=evaluated.filter(entry=>entry.record.status==='OBSERVED');
  const counts=new Map(),specificCounts=new Map();
  for(const entry of usable){
-  for(const address of entry.attributed)counts.set(address,(counts.get(address)||0)+1);
-  for(const address of entry.specificToMask)specificCounts.set(address,(specificCounts.get(address)||0)+1);
+  for(const address of entry.full.attributed)counts.set(address,(counts.get(address)||0)+1);
+  for(const address of entry.full.specificToMask)specificCounts.set(address,(specificCounts.get(address)||0)+1);
  }
  const confirmed=[],contradicted=[];
  for(const [address,count] of [...counts.entries()].sort((a,b)=>a[0]-b[0])){
   const record={address,starts:count,ofStarts:usable.length,specificStarts:specificCounts.get(address)||0};
   if(count===usable.length&&usable.length>0)confirmed.push(record);else contradicted.push(record);
  }
+ /* The STATUS is decided by the complete count, so a bounded report can no
+    longer read as no effect; the bound still applies to what is shown, and how
+    much is hidden is stated rather than left to be noticed. */
  return {confirmed:confirmed.slice(0,limits.maxAddressesReported),
   contradicted:contradicted.slice(0,limits.maxAddressesReported),
-  usableStarts:usable.length,excludedStarts:perStart.length-usable.length};
+  confirmedTotal:confirmed.length,contradictedTotal:contradicted.length,
+  confirmedTruncated:confirmed.length>limits.maxAddressesReported,
+  contradictedTruncated:contradicted.length>limits.maxAddressesReported,
+  usableStarts:usable.length,excludedStarts:evaluated.length-usable.length};
 }
 
 /* driver: { restore(snapshot), run(mask, frames), readRam() -> array-like }
@@ -180,26 +225,41 @@ function probeAction(driver,options){
  if(armsPerStart>limits.maxArmsPerStart)throw new Error('too many arms per start');
  if(totalFrames>limits.maxTotalFrames)throw new Error('causal probe exceeds the total frame budget');
  const plan={mask,neutralMask,alternativeMask,frames,shiftTolerance};
- const perStart=starts.map(start=>evaluateStart(driver,start,plan,limits));
- const summary=aggregate(perStart,limits);
+ const evaluated=starts.map(start=>evaluateStart(driver,start,plan,limits));
+ const summary=aggregate(evaluated,limits);
+ /* the full lists stay here and are dropped; only the bounded records travel */
+ const perStart=evaluated.map(entry=>entry.record);
  const independentStarts=starts.filter(start=>start.independent).length;
  /* Reported so the phase-shift confound stays visible instead of being silently
     absorbed: how many addresses a naive difference would have claimed, and how
     many of those were explained by the neutral trajectory alone. */
- const rawAttributedTotal=perStart.reduce((sum,entry)=>sum+(entry.rawAttributed?entry.rawAttributed.length:0),0);
- const shiftExplainedTotal=perStart.reduce((sum,entry)=>sum+(entry.shiftExplainedAddresses?entry.shiftExplainedAddresses.length:0),0);
+ /* These two are the phase-shift confound made visible, so they must count the
+    WHOLE list and not the bounded view of it - summing the truncated arrays
+    understated exactly the quantity they exist to expose. */
+ const rawAttributedTotal=perStart.reduce((sum,entry)=>
+  sum+(Number.isInteger(entry.rawAttributedTotalThisStart)?entry.rawAttributedTotalThisStart
+   :(entry.rawAttributed?entry.rawAttributed.length:0)),0);
+ const shiftExplainedTotal=perStart.reduce((sum,entry)=>
+  sum+(Number.isInteger(entry.shiftExplainedTotalThisStart)?entry.shiftExplainedTotalThisStart
+   :(entry.shiftExplainedAddresses?entry.shiftExplainedAddresses.length:0)),0);
  return frozen({schemaVersion:SCHEMA_VERSION,detectorRevision:DETECTOR_REVISION,
   plan:frozen({...plan,armsPerStart,totalFrames}),
   starts:starts.map(start=>frozen({id:start.id,stateHash:start.stateHash,independent:start.independent,duplicateOf:start.duplicateOf})),
   independentStarts,
   perStart,
   confirmed:summary.confirmed,contradicted:summary.contradicted,
+  /* what the two lists would have held without the report bound, so a caller
+     that needs completeness can see that it is not getting it */
+  confirmedTotal:summary.confirmedTotal,contradictedTotal:summary.contradictedTotal,
+  confirmedTruncated:summary.confirmedTruncated,
+  contradictedTruncated:summary.contradictedTruncated,
   usableStarts:summary.usableStarts,excludedStarts:summary.excludedStarts,
   rawAttributedTotal,shiftExplainedTotal,
   /* Deliberately absent: polarity, role, reward, confidence. AGOD-05 establishes
      that an action changes an address, nothing about what the change means. */
   polarity:'unknown',role:'unknown',rewardStatus:'UNKNOWN',
-  causalStatus:summary.usableStarts===0?'INCONCLUSIVE':(summary.confirmed.length?'CAUSAL-EVIDENCE':'NO-EFFECT'),
+  /* confirmedTotal, NOT confirmed.length: the bounded array is a view */
+  causalStatus:summary.usableStarts===0?'INCONCLUSIVE':(summary.confirmedTotal?'CAUSAL-EVIDENCE':'NO-EFFECT'),
   limits});
 }
 

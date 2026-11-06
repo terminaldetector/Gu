@@ -36,8 +36,12 @@ for(const p of PD.SUPPORTED){
   String(d.actionSpec.buttonCount).padEnd(3),
   String(d.observedRamBytesDefault),String(d.memoryWrite).padEnd(5),d.snapshotFormat);
 }
+/* describe() has no core, so these are DECLARATIONS. What a pad can actually
+   press is asserted against the built core further down, because on Sega the
+   two differ. */
 ok(PD.describe('nes').actionSpec.buttonCount===8,'NES declares 8 buttons');
-ok(PD.describe('sega').actionSpec.buttonCount===12,'Sega declares 12 buttons');
+ok(PD.describe('sega').actionSpec.buttonCount===12,
+ 'Sega declares 12 buttons (a declaration, not an availability claim)');
 ok(PD.describe('snes').actionSpec.buttonCount===12,'SNES declares 12 buttons');
 ok(PD.describe('gb').actionSpec.buttonCount===8,'GB declares 8 buttons');
 ok(PD.describe('sega').observedRamBytesDefault===65536,'Sega declares a 64 KiB window');
@@ -122,6 +126,46 @@ ok(PD.describe('gameboyadvance').supported===false,'an unknown platform is not s
   ok(nonzero>=1&&nonzero<=4,
    'this cartridge writes '+nonzero+' byte(s) of its 64 KiB window under Right');
   ok(sd.readRam().length===65536&&sega.framesRun()>=60,'Sega metered '+sega.framesRun()+' frames');
+  /* THE PAD, MEASURED. FlyPlatforms declares twelve Sega buttons; the pad the
+     core is configured for after loadROM() is a THREE-button one, on which
+     X/Y/Z/Mode do not exist on the wire - and SegaConsole.buttonDown accepts
+     index 11 there without complaint, so nothing downstream would have noticed.
+     The action set must follow the pad, not the declaration. */
+  const sc=sega.capabilities,ss2=sc.actionSpec;
+  console.log('  pad: reported=%s requested=%s  available=%d of declared=%d  set=%j',
+   sc.padType,sc.padTypeRequested,ss2.availableButtonCount,ss2.declaredButtonCount,
+   ss2.singleButtonMasks);
+  ok(sc.padType===3,'the pad the core reports after loadROM is 3-button, got '+sc.padType);
+  ok(ss2.declaredButtonCount===12&&ss2.availableButtonCount===8,
+   'the Sega spec states 12 declared and 8 available, got '
+   +ss2.declaredButtonCount+'/'+ss2.availableButtonCount);
+  ok(ss2.singleButtonMasks.join(',')==='1,2,4,8,16,32,64,128',
+   'the default Sega action set is the eight buttons the 3-button pad has');
+  ok(sc.supports.allDeclaredButtons===false,
+   'and the capability surface says not all declared buttons are reachable');
+  ok(ss2.withheldButtons.map(b=>b.name).join(',')==='X,Y,Z,Mode',
+   'the four withheld buttons are named: '+ss2.withheldButtons.map(b=>b.name).join(','));
+  const verdict=sega.driver.actionSpec.maskAllowed(2048);
+  ok(verdict.allowed===false&&/Mode/.test(verdict.reason),
+   'mask 2048 is refused with a reason naming the missing button: '+verdict.reason);
+  /* and asking for the six-button pad really gets it - measured, so the
+     withholding above is a fact about the configuration and not a ceiling */
+  const six=await PD.create({platform:'sega',romBytes:segaRom,SegaConsole,factory,
+   moduleOptions:{locateFile:f=>path.join(A,'sega',f)},padType:6});
+  if(ok(six.status==='READY','a 6-button Sega driver builds')){
+   const s6=six.capabilities.actionSpec;
+   console.log('  padType:6 -> reported=%s available=%d set=%j',
+    six.capabilities.padType,s6.availableButtonCount,s6.singleButtonMasks);
+   ok(six.capabilities.padType===6&&s6.availableButtonCount===12,
+    'padType:6 yields a 6-button pad with all twelve buttons');
+   ok(s6.singleButtonMasks.join(',')==='1,2,4,8,16,32,64,128,256,512,1024,2048',
+    'and the action set is all twelve masks');
+   ok(six.driver.actionSpec.maskAllowed(2048).allowed===true,
+    'mask 2048 is allowed on a 6-button pad');
+   ok(six.capabilities.supports.allDeclaredButtons===true,
+    'and the capability surface says every declared button is reachable');
+   six.dispose();
+  }
   let segaBudget=false;
   const small=await PD.create({platform:'sega',romBytes:segaRom,SegaConsole,factory,
    moduleOptions:{locateFile:f=>path.join(A,'sega',f)},frameBudget:20});
@@ -131,14 +175,86 @@ ok(PD.describe('gameboyadvance').supported===false,'an unknown platform is not s
   sega.dispose();
  }
 
- console.log('\n=== GB and SNES: the cores are not in this checkout ===');
- for(const p of ['gb','snes']){
-  const r=await PD.create({platform:p,romBytes:bytes,
-   RetroConsole:require(path.join(A,'retro-core.js'))});
-  console.log('  %s -> %s | %s | missing: %s',p,r.status,r.reason,r.missing||'');
-  ok(r.status==='CORE_UNAVAILABLE','%s reports CORE_UNAVAILABLE'.replace('%s',p));
-  ok(r.driver===null,p+' produced no driver');
-  ok(/gitignore/.test(r.repositoryNote||''),p+' names the repository reason');
+ /* ---- GB / GBC / SNES ----
+    lab/gb/ and lab/snes/ are gitignored, so whether a core is here depends on
+    whether tools/build_retro.py has been run in this checkout. BOTH outcomes
+    are asserted, never skipped: with a core present the adapter is exercised
+    against it, and with none the adapter must say CORE_UNAVAILABLE and name
+    what is missing. A silently absent platform is how a gap becomes a false
+    claim, and a silently present one is how an untested platform gets called
+    verified. */
+ const RetroConsole=require(path.join(A,'retro-core.js'));
+ for(const [p,file] of [['gb','demo-gb.json'],['gb','demo-gbc.json'],
+  ['snes','demo-snes.json']]){
+  let factory=null,why=null;
+  try{factory=require(path.join(A,p,'core.js'));}catch(error){why=error.message;}
+  if(!factory){
+   console.log('\n=== %s: no core in this checkout ===',p);
+   const r=await PD.create({platform:p,romBytes:bytes,RetroConsole});
+   console.log('  %s -> %s | %s | missing: %s',p,r.status,r.reason,r.missing||'');
+   ok(r.status==='CORE_UNAVAILABLE',p+' reports CORE_UNAVAILABLE');
+   ok(r.driver===null,p+' produced no driver');
+   ok(/gitignore/.test(r.repositoryNote||''),p+' names the repository reason');
+   continue;
+  }
+  console.log('\n=== %s / %s, against the built core ===',p,file);
+  const meta=JSON.parse(fs.readFileSync(path.join(A,p,'source.json')));
+  console.log('  core=%s revision=%s transport=%s emscripten=%s',
+   meta.core,meta.revision.slice(0,7),meta.source_transport,
+   String(meta.emscripten_version).replace(/^emcc[^)]*\) /,'').slice(0,40)||meta.emscripten_version);
+  ok(meta.revision.length===40&&/^[0-9a-f]+$/.test(meta.revision),
+   p+' records the exact upstream revision it was built from');
+  const rom=Buffer.from(JSON.parse(fs.readFileSync(path.join(A,file))).base64,'base64');
+  /* the wasm bytes are handed over directly: the Emscripten loader resolves
+     locateFile through fetch() under Node, which cannot take a filesystem path */
+  const r=await PD.create({platform:p,romBytes:rom,RetroConsole,factory,
+   moduleOptions:{wasmBinary:fs.readFileSync(path.join(A,p,'core.wasm')),
+    locateFile:f=>path.join(A,p,f)},frameBudget:100000});
+  if(!ok(r.status==='READY',p+' ('+file+') driver is READY, got '+r.status+' '+(r.reason||'')))
+   continue;
+  const d=r.driver,c=r.capabilities,spec=c.actionSpec;
+  const declaredRam=globalThis.FlyPlatforms[p].ram;
+  console.log('  observedRamBytes=%d (FlyPlatforms declares %d)  buttons=%d/%d  write=%s  via=%s',
+   c.observedRamBytes,declaredRam,spec.availableButtonCount,spec.declaredButtonCount,
+   c.supports.memoryWrite,c.bulkReadVia);
+  ok(d.readRam().length===c.observedRamBytes&&c.observedRamBytes>0,
+   p+' reads '+c.observedRamBytes+' bytes, the width the core itself reports');
+  ok(c.supports.memoryWrite===false&&typeof d.poke!=='function',
+   p+' reports no memory write and offers no poke');
+  ok(spec.availableButtonCount===(p==='snes'?12:8),
+   p+' drives '+spec.availableButtonCount+' buttons');
+  for(let i=0;i<60;i++)r.core.frame();
+  const snap=d.snapshot(),h0=d.stateHash();
+  d.run(0,90);
+  d.restore(snap);
+  ok(d.stateHash()===h0,p+' snapshot/restore is exact');
+  d.restore(snap);d.run(0,90);
+  const idle=d.stateHash();
+  ok(idle!==h0,p+' 90 frames of idle advance the observed state');
+  /* A SMOKE TEST, not causal evidence: the idle trajectory moves too, so
+     "differs from idle" only shows the button reaches the core. Attribution is
+     agod-causal.js's job and needs the neutral-trajectory control. */
+  let drivable=0;
+  for(const mask of spec.singleButtonMasks){
+   d.restore(snap);d.run(mask,90);
+   if(d.stateHash()!==idle)drivable++;
+  }
+  console.log('  masks whose hold differs from the idle trajectory: %d of %d'
+   +' (reachability, NOT attribution)',drivable,spec.singleButtonMasks.length);
+  ok(drivable>0,p+' has at least one mask the core responds to');
+  let budget=false;
+  const small=await PD.create({platform:p,romBytes:rom,RetroConsole,factory,
+   moduleOptions:{wasmBinary:fs.readFileSync(path.join(A,p,'core.wasm')),
+    locateFile:f=>path.join(A,p,f)},frameBudget:20});
+  if(small.status==='READY'){
+   try{small.driver.run(0,50);}catch(e){budget=/FRAME_BUDGET_EXCEEDED/.test(e.message);}
+   small.dispose();
+  }
+  ok(budget,'the frame budget is enforced on '+p);
+  r.dispose();
+  let refused=false;
+  try{d.readRam();}catch(e){refused=true;}
+  ok(refused,p+' refuses after dispose');
  }
 
  /* G3. The driver publishes its action specification and its observed width, so

@@ -138,20 +138,22 @@ function run(driver,options){
  if(maskCeiling>Causal.CAPS.maxMask)
   return refuse('actions','action mask '+Math.max(...masks)+' is wider than the '
    +'causal detector hard cap of '+Causal.CAPS.maxMask);
- /* The report limit scales with the space, and ONLY with a space wider than the
-    NES one: 64 of 2048 addresses is 3 per cent and 64 of 65536 is a tenth of
-    one, so leaving it fixed would reintroduce the truncation at the reporting
-    end. At 2048 and below it is the historical 64, untouched. */
- const causalLimits={maxRamBytes:observedWidth,maxMask:maskCeiling};
- if(observedWidth>2048)
-  causalLimits.maxAddressesReported=Math.min(Causal.CAPS.maxAddressesReported,
-   Math.ceil(64*observedWidth/2048));
+ /* THE REPORT BOUND. This pipeline derives its candidate set from the probe's
+    `confirmed` list, so a bounded list is a narrowed search and not just a
+    shorter printout: it asks for the whole address space. The default of 64 is
+    left to callers that only want a summary. Measured before raising it -
+    across 48 probes on six NES fixtures the worst start attributed 8 addresses
+    - so this cannot move a NES result, and agod-causal.js now decides
+    CAUSAL-EVIDENCE from the complete count rather than from the bounded view,
+    which is what let a truncation read as NO-EFFECT. */
+ const causalLimits={maxRamBytes:observedWidth,maxMask:maskCeiling,
+  maxAddressesReported:Math.min(Causal.CAPS.maxAddressesReported,observedWidth)};
  note('actions',{masks,source:maskSource,
   buttonCount:actionSpec?actionSpec.buttonCount:null,
   comparisonWidth:observedWidth,declaredWidth,
   widthAgrees:declaredWidth===null?null:declaredWidth===observedWidth,
   maxMask:maskCeiling,
-  maxAddressesReported:causalLimits.maxAddressesReported||64,
+  maxAddressesReported:causalLimits.maxAddressesReported,
   exclusiveGroups:actionSpec&&actionSpec.exclusiveGroups
    ?actionSpec.exclusiveGroups.map(group=>group.names.join('+')):null});
 
