@@ -292,6 +292,11 @@
  /* The worker sends a GoalEvidenceDTO, not the pipeline result: a VERIFIED
     result carries readResource, broker and registry, which structuredClone
     refuses. The DTO is validated HERE before anything is called a goal. */
+ /* The platform's own shape, as the worker reported it; '' until it does.
+    Declared above showResult because all three writers of the budget line
+    append it. */
+ let platformShape='';
+
  function showResult(message){
   const dto=message.dto||null;
   const summary=message.summary||{};
@@ -323,8 +328,14 @@
   lastRecord={dto,validated,cost:message.cost||null};
 
   const cost=message.cost||{};
+  /* platformShape is appended here too: this is the THIRD writer of this line
+     (started, progress, and the final cost line), and the first version of the
+     G3 panel change only covered the first two - so the platform shape was on
+     screen during the run and gone the moment the result arrived, which is
+     exactly when an operator reads it. The E2E check caught that. */
   set(budget,'бюджет: '+(cost.framesRun||0)+' из '+(cost.frameBudget||0)+' кадров'
    +' · время '+Math.round((cost.wallClockMs||0)/100)/10+' с'
+   +platformShape
    +' · '+liveComparison());
  }
 
@@ -333,8 +344,6 @@
   if(label)set(phase,label);
  }
 
- /* the platform's own shape, as the worker reported it; '' until it does */
- let platformShape='';
  function onEvent(message){
   if(!message||typeof message!=='object')return;
   if(message.type==='started'){
