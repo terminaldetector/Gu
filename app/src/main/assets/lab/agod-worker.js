@@ -34,7 +34,8 @@ const WORKER_REVISION='agod-worker-1';
 /* The pipeline module resolves its dependencies off the global when it loads,
    so this order is the dependency order and is not cosmetic. */
 const MODULES=['jsnes.min.js','agod-ram.js','agod-causal.js','agod-goals.js',
- 'agod-reward.js','agod-evidence.js','agod-pipeline.js','agod-nes-driver.js'];
+ 'agod-reward.js','agod-evidence.js','agod-pipeline.js','agod-nes-driver.js',
+ 'agod-goal-dto.js'];
 
 let loaded=false,loadError=null;
 let currentSession=null,cancelledBeforeStart=new Set();
@@ -45,7 +46,7 @@ function load(){
  try{
   for(const file of MODULES)self.importScripts(file);
   const missing=['FlyAgodRam','FlyAgodCausal','FlyAgodGoals','FlyAgodReward',
-   'FlyAgodEvidence','FlyAgodPipeline','FlyAgodNesDriver']
+   'FlyAgodEvidence','FlyAgodPipeline','FlyAgodNesDriver','FlyAgodGoalDto']
    .filter(name=>!self[name]);
   if(missing.length)
    throw new Error('modules loaded but did not register: '+missing.join(', '));
@@ -114,8 +115,31 @@ function runSession(request){
   /* THE REAL PIPELINE. No stub, no mock, no substitute. */
   const result=self.FlyAgodPipeline.run(host.driver,request.config||{});
 
+  /* A VERIFIED result carries readResource (a function) and broker and
+     registry (objects with methods). Posting it verbatim throws
+     DataCloneError, which is why the positive branch had never crossed this
+     boundary. Only the DTO crosses; the mechanism stays here. */
+  const config=request.config||{};
+  const dto=self.FlyAgodGoalDto.fromPipelineResult(result,{
+   romHash:config.romHash||null,coreRevision:config.coreRevision||null,
+   profileRevision:config.profileRevision||null,
+   contextKey:config.contextKey===undefined?null:config.contextKey,
+   platform:request.platform||'nes',
+   driverRevision:self.FlyAgodNesDriver.DRIVER_REVISION,
+   producedAtMs:Date.now()});
+  /* Checked HERE, before posting, so a transport bug is caught in the context
+     that can still describe it rather than becoming a silent DataCloneError. */
+  let cloneable=true,cloneError=null;
+  try{if(typeof structuredClone==='function')structuredClone(dto);}
+  catch(error){cloneable=false;cloneError=String(error&&error.message||error).slice(0,200);}
+
   post({type:'result',sessionId,workerRevision:WORKER_REVISION,
-   result,
+   dto,dtoRevision:self.FlyAgodGoalDto.DTO_REVISION,
+   dtoCloneable:cloneable,dtoCloneError:cloneError,
+   /* kept so the interface can show status/stage/reason without reaching into
+      the DTO, and so nothing here depends on the full result surviving */
+   summary:{status:result.status||null,stage:result.stage||null,
+    reason:result.reason===undefined?null:result.reason},
    cost:{framesRun:host.framesRun(),frameBudget,
     budgetRemaining:host.budgetRemaining(),
     wallClockMs:Date.now()-started},

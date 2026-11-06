@@ -60,6 +60,10 @@
       "reason": "the resource did not produce an evidenced NEGATIVE polarity",
       "schemaVersion": 1,
       "pipelineRevision": "agod-pipeline-s10-5",
+      "dtoRevision": "agod-goal-dto-1",
+      "dtoCloneable": true,
+      "dtoCloneError": null,
+      "rewardMechanismExcluded": true,
       "discoveredKeys": [
         "resource",
         "effect",
@@ -86,7 +90,7 @@
         "framesRun": 12347,
         "frameBudget": 2000000,
         "budgetRemaining": 1987653,
-        "wallClockMs": 20626
+        "wallClockMs": 19822
       },
       "progressMessages": 6,
       "error": null
@@ -94,9 +98,14 @@
     {
       "name": "9. the interface displays the result",
       "status": "AGOD завершён",
-      "result": "итог pipeline: REFUSED · стадия: induce · причина: the resource did not produce an evidenced NEGATIVE polarity",
-      "budget": "бюджет: 12347 из 2000000 кадров · время 20.6 с · живая игра: не изменена",
-      "candidates": "ресурс: адрес 1 · маска 16\nрастущие поля: 4\nадресов, двигавшихся без действия: 1"
+      "result": "итог pipeline: REFUSED · стадия: induce · причина: the resource did not produce an evidenced NEGATIVE polarity · запись цели: проверена",
+      "budget": "бюджет: 12347 из 2000000 кадров · время 19.8 с · живая игра: не изменена при остановленном эмуляторе",
+      "candidates": "ресурс: адрес 1 · маска 16\nрастущие поля: 4\nадресов, двигавшихся без действия: 1",
+      "record": {
+        "status": "REFUSED",
+        "validated": true,
+        "problems": []
+      }
     },
     {
       "name": "10. the live game state is unchanged by the research run",
@@ -104,7 +113,9 @@
       "ramHashAfter": "06bc9b53201ef200",
       "fullStateShaBefore": "1a8dfc4c7d24c370342f1c93c4433c0de9ab12dd43b5c0999d92907f43091a20",
       "fullStateShaAfter": "1a8dfc4c7d24c370342f1c93c4433c0de9ab12dd43b5c0999d92907f43091a20",
-      "identical": true
+      "identical": true,
+      "panelWording": "бюджет: 12347 из 2000000 кадров · время 19.8 с · живая игра: не изменена при остановленном эмуляторе",
+      "note": "this page is not running the emulator loop, so the live core does not advance and the two states ARE comparable. The panel states that condition rather than claiming interference whenever a hash differs."
     },
     {
       "name": "11. stopping terminates the worker and releases the controls",
@@ -119,7 +130,62 @@
       "noFurtherMessages": true
     },
     {
-      "name": "12. negative control: session(null) still refuses",
+      "name": "12a. the app refuses to swap a committed cartridge",
+      "returned": false,
+      "romHashStillFirst": "e2e-a4262fa1570f4d7c4a034baa629dd7a9",
+      "note": "recorded, not worked around. The positive path therefore runs on a fresh page with the fixture as the first cartridge."
+    },
+    {
+      "name": "12. the positive path: a real VERIFIED reaches the interface as a validated goal record",
+      "pipelineStatus": "VERIFIED",
+      "romHashInPage": "e2e-positive-63e38086d08124a6b76a7342",
+      "romBytesInPage": 24592,
+      "dtoCloneable": true,
+      "dtoCloneError": null,
+      "goalId": "goal-resource-2-178",
+      "lifecycle": "VERIFIED",
+      "polarity": "NEGATIVE",
+      "addressSpec": {
+        "address": 178,
+        "width": 1,
+        "endian": "n/a",
+        "encoding": "undetermined",
+        "encodingDetermined": false,
+        "mask": 2,
+        "memoryRegion": null,
+        "bank": null,
+        "physicalAddress": null
+      },
+      "evidenceRecords": 6,
+      "evidenceRefs": 6,
+      "provenance": {
+        "romHash": "e2e-positive-63e38086d08124a6b76a7342",
+        "coreRevision": "jsnes-sha256:84946f0dae4bcf3b2dfebe84ad3bfeb1dbcb413bd9b1a69e1f45910a95fd7b41",
+        "profileRevision": "agod-app-1",
+        "detectorRevision": null,
+        "platform": "nes",
+        "driverRevision": "agod-nes-driver-1",
+        "pipelineRevision": "agod-pipeline-s10-5",
+        "dtoRevision": "agod-goal-dto-1",
+        "producedAtMs": 1793964339797
+      },
+      "rewardMechanismExcluded": true,
+      "recordValidated": true,
+      "recordProblems": [],
+      "panelResult": "итог pipeline: VERIFIED · стадия: complete · цель: NEGATIVE · запись цели: проверена · VERIFIED получен от FlyAgodPipeline и доказательства сохранены",
+      "panelBudget": "бюджет: 12371 из 2000000 кадров · время 18.6 с · живая игра: не изменена при остановленном эмуляторе",
+      "cost": {
+        "framesRun": 12371,
+        "frameBudget": 2000000,
+        "budgetRemaining": 1987629,
+        "wallClockMs": 18565
+      },
+      "liveRamBefore": "88983f4293e3926f",
+      "liveRamAfter": "88983f4293e3926f",
+      "error": null
+    },
+    {
+      "name": "13. negative control: session(null) still refuses",
       "status": "DISABLED",
       "reason": "the experimental AGOD and neural contour is off; a research session is not available",
       "note": "kept as a control. This alone was the previous check and is NOT evidence that AGOD runs; steps 5 to 11 are."
@@ -128,7 +194,7 @@
   "status": "PASS",
   "pageErrors": [],
   "totals": {
-    "steps": 12,
+    "steps": 14,
     "failures": 0
   },
   "failures": []

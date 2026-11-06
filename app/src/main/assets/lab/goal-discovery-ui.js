@@ -237,9 +237,28 @@
  let session=null,liveHashBefore=null;
  const set=(element,text)=>{element.textContent=text||'';};
 
- /* The live core's identity before the run, so the panel itself can show that
-    the research run did not disturb it. The end-to-end test asserts the same
-    thing independently. */
+ /* THE LIVE-GAME DIAGNOSTIC, CORRECTED.
+    The first version hashed the live RAM before and after the run and printed
+    «ИЗМЕНЕНА» on any difference. That was wrong: a running emulator advances
+    on its own, so a changed hash is the game playing, not the research worker
+    reaching into it. The comparison is only meaningful when the live core did
+    NOT advance, so the frame counter is recorded too and the panel says
+    plainly when the two states are not comparable. */
+ const liveFrame=()=>{try{return typeof frame==='undefined'?null:frame;}catch(_){return null;}};
+ let liveFrameBefore=null,lastRecord=null;
+ function liveComparison(){
+  const after=liveStateHash(),frameAfter=liveFrame();
+  if(liveHashBefore===null||after===null)return 'живая игра: состояние не прочитано';
+  if(liveFrameBefore===null||frameAfter===null)
+   return 'живая игра: сравнение невозможно, счётчик кадров недоступен';
+  if(frameAfter!==liveFrameBefore)
+   return 'живая игра: продвинулась на '+(frameAfter-liveFrameBefore)
+    +' кадров, состояния несопоставимы (изоляция обеспечена отдельным ядром в worker)';
+  return 'живая игра: не изменена при остановленном эмуляторе';
+ }
+
+ /* The live core's RAM identity. Used only for the comparison above, which is
+    reported only when the live core did not advance. */
  const liveStateHash=()=>{
   try{
    if(typeof nes==='undefined'||!nes||!nes.cpu||!nes.cpu.mem)return null;
@@ -249,8 +268,8 @@
   }catch(_){return null;}
  };
 
- function describeCandidates(result){
-  const found=result&&result.discovered?result.discovered:null;
+ function describeCandidates(dto){
+  const found=dto&&dto.discovered?dto.discovered:null;
   if(!found)return 'кандидаты: не сформированы';
   const lines=[];
   if(found.resource){
@@ -268,24 +287,43 @@
   return lines.length?lines.join('\n'):'кандидаты: сформированы, без деталей';
  }
 
+ /* The worker sends a GoalEvidenceDTO, not the pipeline result: a VERIFIED
+    result carries readResource, broker and registry, which structuredClone
+    refuses. The DTO is validated HERE before anything is called a goal. */
  function showResult(message){
-  const result=message.result||{};
-  const status=result.status||'(без статуса)';
+  const dto=message.dto||null;
+  const summary=message.summary||{};
+  const status=(dto&&dto.status)||summary.status||'(без статуса)';
   const parts=['итог pipeline: '+status];
-  if(result.stage)parts.push('стадия: '+result.stage);
-  if(result.reason)parts.push('причина: '+result.reason);
-  if(result.goal&&result.goal.polarity)parts.push('цель: '+result.goal.polarity);
-  /* VERIFIED is the pipeline's word, not ours */
-  if(status==='VERIFIED')parts.push('VERIFIED получен от FlyAgodPipeline');
+  if(dto&&dto.stage||summary.stage)parts.push('стадия: '+((dto&&dto.stage)||summary.stage));
+  const reason=(dto&&dto.reason)||summary.reason;
+  if(reason)parts.push('причина: '+reason);
+  if(dto&&dto.goal&&dto.goal.polarity)parts.push('цель: '+dto.goal.polarity);
+
+  /* The validated goal record. VERIFIED is the pipeline's word AND must
+     survive validation against this ROM, core and profile; a DTO that does
+     not validate is reported as such and grants nothing. */
+  let validated=null;
+  if(dto&&window.FlyAgodGoalDto){
+   validated=window.FlyAgodGoalDto.validate(dto,{
+    romHash:(typeof romHash!=='undefined'&&romHash)||undefined,
+    coreRevision:window.labCoreIdentity||undefined,
+    profileRevision:'agod-app-1'});
+   parts.push('запись цели: '+(validated.valid?'проверена'
+    :'НЕ проверена — '+validated.problems.slice(0,2).join('; ')));
+   if(status==='VERIFIED'&&validated.valid)
+    parts.push('VERIFIED получен от FlyAgodPipeline и доказательства сохранены');
+  }else if(message.dtoCloneable===false){
+   parts.push('результат не сериализуется: '+(message.dtoCloneError||''));
+  }
   set(outcome,parts.join(' · '));
-  set(candidates,describeCandidates(result));
+  set(candidates,describeCandidates(dto));
+  lastRecord={dto,validated,cost:message.cost||null};
+
   const cost=message.cost||{};
-  const after=liveStateHash();
   set(budget,'бюджет: '+(cost.framesRun||0)+' из '+(cost.frameBudget||0)+' кадров'
    +' · время '+Math.round((cost.wallClockMs||0)/100)/10+' с'
-   +' · живая игра: '+(liveHashBefore&&after
-     ?(liveHashBefore===after?'не изменена':'ИЗМЕНЕНА')
-     :'состояние не проверено'));
+   +' · '+liveComparison());
  }
 
  function finished(label){
@@ -336,7 +374,7 @@
   }
   const rom=(typeof nes!=='undefined'&&nes&&nes.romData)?nes.romData:null;
   if(!rom){set(phase,'AGOD не запущен: байты картриджа недоступны');return;}
-  liveHashBefore=liveStateHash();
+  liveHashBefore=liveStateHash();liveFrameBefore=liveFrame();
   set(outcome,'');set(candidates,'');
   set(phase,'AGOD запускается…');
   /* The live state is passed BY VALUE as a serialised snapshot, so the research
@@ -377,5 +415,8 @@
  window.agodRunPanel={status:()=>phase.textContent,
   result:()=>outcome.textContent,budget:()=>budget.textContent,
   candidates:()=>candidates.textContent,
-  running:()=>!!session};
+  running:()=>!!session,
+  /* the validated goal record, as data, for the learning contour (G5) and for
+     the functional test - never the mechanism, which stays in the worker */
+  record:()=>lastRecord};
 })();

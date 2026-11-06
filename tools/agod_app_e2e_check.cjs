@@ -18,7 +18,8 @@
 // ISOLATION IS ASSERTED, not assumed: the live core's RAM and full serialised
 // state are hashed before and after the research run and must be unchanged.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),
-      crypto=require('node:crypto');
+      os=require('node:os'),crypto=require('node:crypto'),
+      {execFileSync}=require('node:child_process');
 const {chromium}=require('playwright');
 const assets=path.resolve('app/src/main/assets');
 const demo=JSON.parse(fs.readFileSync(path.join(assets,'lab/demo-rom.json')));
@@ -42,28 +43,49 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
  const browser=await chromium.launch({headless:true,
   executablePath:process.env.CHROMIUM_EXECUTABLE||'/opt/pw-browsers/chromium',
   args:['--no-sandbox']});
- const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
  const pageErrors=[],workerUrls=[];
- page.on('pageerror',error=>pageErrors.push(error.message));
- page.on('worker',worker=>workerUrls.push(worker.url()));
- await page.route('https://flyconsole.local/**',async route=>{
-  const file=path.join(assets,new URL(route.request().url()).pathname.slice(1));
-  if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
-  const type=file.endsWith('.js')?'application/javascript'
-   :file.endsWith('.json')?'application/json'
-   :file.endsWith('.css')?'text/css':'text/html';
-  await route.fulfill({contentType:type,body:fs.readFileSync(file)});
- });
+ const openPage=async()=>{
+  const fresh=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
+  fresh.on('pageerror',error=>pageErrors.push(error.message));
+  fresh.on('worker',worker=>workerUrls.push(worker.url()));
+  await fresh.route('https://flyconsole.local/**',async route=>{
+   const file=path.join(assets,new URL(route.request().url()).pathname.slice(1));
+   if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
+   const type=file.endsWith('.js')?'application/javascript'
+    :file.endsWith('.json')?'application/json'
+    :file.endsWith('.css')?'text/css':'text/html';
+   await route.fulfill({contentType:type,body:fs.readFileSync(file)});
+  });
+  await fresh.goto('https://flyconsole.local/lab/index.html');
+  return fresh;
+ };
+ /* Reaches the control the way a person does, and installs the event tap. */
+ const prepare=async(target,rom,label,shaTag)=>{
+  await target.evaluate(data=>window.labLoadRom(data),
+   {base64:rom,name:label,sha256:shaTag});
+  await target.waitForFunction(()=>loaded===true,null,{timeout:60000});
+  await target.evaluate(()=>{
+   window.consoleNavigation.go('legacy-learning');
+   const section=document.getElementById('trainingResearch');
+   if(section&&!section.open)section.open=true;
+  });
+  await target.waitForSelector('#agodRunButton',{state:'visible',timeout:30000});
+  await target.evaluate(()=>{
+   window.__agodEvents=[];
+   const original=window.FlyAgodExperimental.runInWorker;
+   window.FlyAgodExperimental.runInWorker=request=>original({...request,
+    onEvent(message){window.__agodEvents.push(message);
+     if(request&&typeof request.onEvent==='function')request.onEvent(message);}});
+  });
+ };
+ const page=await openPage();
 
  try{
   /* ---- 1. the real interface ---- */
-  await page.goto('https://flyconsole.local/lab/index.html');
   step('1. the real GU interface loads',{pageErrors:pageErrors.slice()});
 
   /* ---- 2. the embedded synthetic cartridge ---- */
-  await page.evaluate(data=>window.labLoadRom(data),
-   {base64:demo.base64,name:demo.name,sha256:'e2e-'+sha(demo.base64).slice(0,32)});
-  await page.waitForFunction(()=>loaded===true,null,{timeout:30000});
+  await prepare(page,demo.base64,demo.name,'e2e-'+sha(demo.base64).slice(0,32));
   const cartridge=await page.evaluate(()=>({
    loaded,platform:typeof labPlatform!=='undefined'?labPlatform:null,
    romBytes:(typeof nes!=='undefined'&&nes&&nes.romData)?nes.romData.length:0,
@@ -89,18 +111,6 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
      person opens that tab and expands the section. The first run of this test
      clicked a button that existed but was not visible, and Playwright was
      right to refuse: an invisible control is not a usable one. */
-  await page.evaluate(()=>{
-   /* The route a person takes. Two things had to be established by looking
-      rather than guessing: showTab() alone leaves the console-home shell in
-      place so the enclosing <section class="panel tab-panel"> stays hidden,
-      and <details id="trainingResearch"> is on the LEARNING page, not the
-      research one, despite its name - which is also where the existing
-      passive-observer toggle lives. */
-   window.consoleNavigation.go('legacy-learning');
-   const section=document.getElementById('trainingResearch');
-   if(section&&!section.open)section.open=true;
-  });
-  await page.waitForSelector('#agodRunButton',{state:'visible',timeout:30000});
   const control=await page.evaluate(()=>{
    const run=document.getElementById('agodRunButton');
    const stop=document.getElementById('agodStopButton');
@@ -117,15 +127,8 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
   expect(control.separateFromObserver,
    'the passive observer toggle is gone, so the two were merged rather than kept apart');
 
-  /* Collect the worker's own messages, so the test reads what the worker said
-     rather than only what the panel rendered. */
-  await page.evaluate(()=>{
-   window.__agodEvents=[];
-   const original=window.FlyAgodExperimental.runInWorker;
-   window.FlyAgodExperimental.runInWorker=request=>original({...request,
-    onEvent(message){window.__agodEvents.push(message);
-     if(request&&typeof request.onEvent==='function')request.onEvent(message);}});
-  });
+  /* the event tap was installed by prepare(), so the test reads what the
+     worker said and not only what the panel rendered */
   await page.click('#agodRunButton');
   const afterClick=await page.evaluate(()=>({
    status:document.getElementById('agodRunStatus').textContent,
@@ -174,18 +177,23 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
   const progressCount=await page.evaluate(()=>
    window.__agodEvents.filter(e=>e.type==='progress').length);
   const VALID=['VERIFIED','REFUSED','INDUCED','NOT-SUPPORTED','INCONCLUSIVE'];
-  const pipelineStatus=terminal.type==='result'&&terminal.result
-   ?terminal.result.status:null;
+  const pipelineStatus=terminal.type==='result'
+   ?((terminal.dto&&terminal.dto.status)
+     ||(terminal.summary&&terminal.summary.status)||null):null;
   step('8. a valid pipeline result came back',
    {terminalType:terminal.type,pipelineStatus,
-    stage:terminal.result?terminal.result.stage:null,
-    reason:terminal.result?String(terminal.result.reason||'').slice(0,200):null,
-    schemaVersion:terminal.result?terminal.result.schemaVersion:null,
+    stage:terminal.dto?terminal.dto.stage:null,
+    reason:terminal.dto?String(terminal.dto.reason||'').slice(0,200):null,
+    schemaVersion:terminal.dto?terminal.dto.schemaVersion:null,
     pipelineRevision:terminal.pipelineRevision||null,
-    discoveredKeys:terminal.result&&terminal.result.discovered
-     ?Object.keys(terminal.result.discovered):null,
-    traceStages:terminal.result&&terminal.result.trace
-     ?terminal.result.trace.map(t=>t.stage):null,
+    dtoRevision:terminal.dtoRevision||null,
+    dtoCloneable:terminal.dtoCloneable,
+    dtoCloneError:terminal.dtoCloneError||null,
+    rewardMechanismExcluded:terminal.dto?terminal.dto.rewardMechanismExcluded:null,
+    discoveredKeys:terminal.dto&&terminal.dto.discovered
+     ?Object.keys(terminal.dto.discovered):null,
+    traceStages:terminal.dto&&terminal.dto.trace
+     ?terminal.dto.trace.map(t=>t.stage):null,
     cost:terminal.cost||null,
     progressMessages:progressCount,
     error:terminal.error||null});
@@ -193,26 +201,40 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
    'the run did not produce a pipeline result: '+JSON.stringify(terminal.error||terminal));
   expect(VALID.includes(pipelineStatus),
    'the pipeline status is not one of the declared outcomes: '+pipelineStatus);
-  expect(terminal.result&&terminal.result.pipelineRevision
-   &&/^agod-pipeline-/.test(terminal.result.pipelineRevision),
-   'the result does not carry a real pipeline revision');
-  expect(terminal.result&&Array.isArray(terminal.result.trace)&&terminal.result.trace.length>0,
-   'the result has no pipeline trace, so no stage actually ran');
+  expect(terminal.dto&&terminal.dto.pipelineRevision
+   &&/^agod-pipeline-/.test(terminal.dto.pipelineRevision),
+   'the DTO does not carry a real pipeline revision');
+  expect(terminal.dto&&Array.isArray(terminal.dto.trace)&&terminal.dto.trace.length>0,
+   'the DTO has no pipeline trace, so no stage actually ran');
+  /* the defect this guards: a function anywhere would have thrown DataCloneError */
+  expect(terminal.dtoCloneable!==false,
+   'the worker reported its own payload as unclonable: '+terminal.dtoCloneError);
+  expect(terminal.dto&&terminal.dto.rewardMechanismExcluded===true,
+   'the DTO does not declare the reward mechanism excluded');
+  expect(terminal.dto&&!('broker' in terminal.dto)&&!('registry' in terminal.dto)
+   &&!('readResource' in terminal.dto),
+   'the DTO carried the executable mechanism across the worker boundary');
   expect(terminal.cost&&terminal.cost.framesRun>1000,
    'too few frames were emulated for a real run: '
    +JSON.stringify(terminal.cost&&terminal.cost.framesRun));
   expect(progressCount>0,'no progress was reported, so the budget could not be shown');
   /* VERIFIED must come from the pipeline, never from the interface */
   if(pipelineStatus==='VERIFIED')
-   expect(!!(terminal.result.goal&&terminal.result.actions),
-    'VERIFIED was reported without a goal and actions, which the pipeline always supplies');
+   expect(!!(terminal.dto.goal&&terminal.dto.goal.id&&terminal.dto.actions),
+    'VERIFIED was reported without a goal identity and actions');
 
   /* ---- 9. the panel shows it ---- */
   const panel=await page.evaluate(()=>({
    status:document.getElementById('agodRunStatus').textContent,
    result:document.getElementById('agodRunResult').textContent,
    budget:document.getElementById('agodRunBudget').textContent,
-   candidates:document.getElementById('agodRunCandidates').textContent}));
+   candidates:document.getElementById('agodRunCandidates').textContent,
+   record:window.agodRunPanel.record()?{
+    status:window.agodRunPanel.record().dto?window.agodRunPanel.record().dto.status:null,
+    validated:window.agodRunPanel.record().validated
+     ?window.agodRunPanel.record().validated.valid:null,
+    problems:window.agodRunPanel.record().validated
+     ?window.agodRunPanel.record().validated.problems:null}:null}));
   step('9. the interface displays the result',panel);
   expect(panel.result.includes(pipelineStatus),
    'the panel does not show the pipeline status "'+pipelineStatus+'": '+panel.result);
@@ -220,17 +242,30 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
    'the panel does not show the frame budget spend: '+panel.budget);
   expect(!/VERIFIED/.test(panel.result)||pipelineStatus==='VERIFIED',
    'the panel showed VERIFIED when the pipeline did not return it');
+  expect(/запись цели/.test(panel.result),
+   'the panel does not report whether the goal record validated: '+panel.result);
+  expect(panel.record&&panel.record.validated===true,
+   'the panel holds no validated goal record: '+JSON.stringify(panel.record));
 
   /* ---- 10. the live game is untouched ---- */
   const liveAfter=await page.evaluate(()=>({
    ram:window.FlyAgodNesDriver.ramHash(nes.cpu.mem.slice(0,0x800)),
    fullState:JSON.stringify(nes.toJSON())}));
+  const panelLive=await page.evaluate(()=>
+   document.getElementById('agodRunBudget').textContent);
   step('10. the live game state is unchanged by the research run',
    {ramHashBefore:liveBefore.ram,ramHashAfter:liveAfter.ram,
     fullStateShaBefore:sha(liveBefore.fullState),
     fullStateShaAfter:sha(liveAfter.fullState),
     identical:liveBefore.ram===liveAfter.ram
-     &&sha(liveBefore.fullState)===sha(liveAfter.fullState)});
+     &&sha(liveBefore.fullState)===sha(liveAfter.fullState),
+    panelWording:panelLive,
+    note:'this page is not running the emulator loop, so the live core does not '
+     +'advance and the two states ARE comparable. The panel states that '
+     +'condition rather than claiming interference whenever a hash differs.'});
+  /* the corrected diagnostic must never say «ИЗМЕНЕНА» on its own */
+  expect(!/ИЗМЕНЕНА/.test(panelLive),
+   'the panel still reports the live game as changed: '+panelLive);
   expect(liveBefore.ram===liveAfter.ram,
    'the research run changed the live RAM: '+liveBefore.ram+' -> '+liveAfter.ram);
   expect(sha(liveBefore.fullState)===sha(liveAfter.fullState),
@@ -262,12 +297,123 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
   expect(before===after,
    'the worker kept sending messages after being stopped: '+before+' -> '+after);
 
-  /* ---- 12. the negative control, kept as a control only ---- */
+  /* ---- 12. THE POSITIVE PATH: Real Pipeline -> VERIFIED -> Worker -> UI ----
+     The embedded cartridge is a UI diagnostic fixture and can only ever
+     produce REFUSED, so the branch that carries functions across the worker
+     boundary had never been exercised in the app. An MIT AGOD fixture with a
+     real decreasing resource is generated locally for this step.
+
+     It runs on a FRESH PAGE rather than by swapping cartridges: labLoadRom
+     returns false for a second call once a cartridge is committed, which is
+     the app's own behaviour and not something a test should work around. An
+     earlier version of this step ignored that - `loaded` was already true, so
+     the wait returned at once and the run used the PREVIOUS ROM, reporting
+     REFUSED with the previous cartridge's exact frame count. A positive claim
+     about the wrong cartridge is precisely the kind of pass this directive
+     forbids, so the swap attempt is kept below as its own observation. */
+  const swapRefused=await page.evaluate(async data=>{
+   const out=await window.labLoadRom(data);
+   return {returned:out,romHashStillFirst:romHash};
+  },{base64:demo.base64,name:'swap attempt',sha256:'swap-attempt'});
+  step('12a. the app refuses to swap a committed cartridge',
+   {...swapRefused,
+    note:'recorded, not worked around. The positive path therefore runs on a '
+     +'fresh page with the fixture as the first cartridge.'});
+
+  const work=fs.mkdtempSync(path.join(os.tmpdir(),'gu-e2e-'));
+  const fixtureJson=path.join(work,'fixture.json');
+  execFileSync(process.env.PYTHON||'python3',
+   ['tools/make_agod_test_rom.py','--seed','0','--out',fixtureJson]);
+  const fixture=JSON.parse(fs.readFileSync(fixtureJson));
+  const fixtureSha='e2e-positive-'+sha(fixture.base64).slice(0,24);
+  const positivePage=await openPage();
+  await prepare(positivePage,fixture.base64,
+   'AGOD positive fixture (MIT, generated locally)',fixtureSha);
+  const loadedFixture=await positivePage.evaluate(()=>({romHash,
+   romBytes:nes&&nes.romData?nes.romData.length:0}));
+  expect(loadedFixture.romHash===fixtureSha,
+   'the fixture is not the cartridge in the page: '+loadedFixture.romHash);
+  const liveBeforePositive=await positivePage.evaluate(()=>
+   window.FlyAgodNesDriver.ramHash(nes.cpu.mem.slice(0,0x800)));
+  await positivePage.click('#agodRunButton');
+  await positivePage.waitForFunction(
+   ()=>window.__agodEvents.some(e=>e.type==='result'||e.type==='error'),
+   null,{timeout:900000});
+  const positive=await positivePage.evaluate(()=>
+   window.__agodEvents.find(e=>e.type==='result'||e.type==='error'));
+  const positivePanel=await positivePage.evaluate(()=>({
+   result:document.getElementById('agodRunResult').textContent,
+   budget:document.getElementById('agodRunBudget').textContent,
+   candidates:document.getElementById('agodRunCandidates').textContent,
+   record:window.agodRunPanel.record()}));
+  const positiveStatus=positive.type==='result'
+   ?((positive.dto&&positive.dto.status)||null):null;
+  const liveAfterPositive=await positivePage.evaluate(()=>
+   window.FlyAgodNesDriver.ramHash(nes.cpu.mem.slice(0,0x800)));
+  step('12. the positive path: a real VERIFIED reaches the interface as a validated goal record',
+   {pipelineStatus:positiveStatus,
+    romHashInPage:loadedFixture.romHash,romBytesInPage:loadedFixture.romBytes,
+    dtoCloneable:positive.dtoCloneable,dtoCloneError:positive.dtoCloneError||null,
+    goalId:positive.dto&&positive.dto.goal?positive.dto.goal.id:null,
+    lifecycle:positive.dto&&positive.dto.goal?positive.dto.goal.lifecycle:null,
+    polarity:positive.dto&&positive.dto.goal?positive.dto.goal.polarity:null,
+    addressSpec:positive.dto?positive.dto.resource:null,
+    evidenceRecords:positive.dto&&positive.dto.evidence&&positive.dto.evidence.registryState
+     ?positive.dto.evidence.registryState.records.length:null,
+    evidenceRefs:positive.dto&&positive.dto.evidence
+     ?positive.dto.evidence.evidenceRefs.length:null,
+    provenance:positive.dto?positive.dto.provenance:null,
+    rewardMechanismExcluded:positive.dto?positive.dto.rewardMechanismExcluded:null,
+    recordValidated:positivePanel.record&&positivePanel.record.validated
+     ?positivePanel.record.validated.valid:null,
+    recordProblems:positivePanel.record&&positivePanel.record.validated
+     ?positivePanel.record.validated.problems:null,
+    panelResult:positivePanel.result,panelBudget:positivePanel.budget,
+    cost:positive.cost||null,
+    liveRamBefore:liveBeforePositive,liveRamAfter:liveAfterPositive,
+    error:positive.error||null});
+  expect(positive.type==='result',
+   'the positive run failed: '+JSON.stringify(positive.error||positive));
+  expect(positiveStatus==='VERIFIED',
+   'the AGOD fixture did not reach VERIFIED through the app: '+positiveStatus
+   +' / '+String((positive.dto&&positive.dto.reason)||'').slice(0,160));
+  expect(positive.dtoCloneable!==false,
+   'the VERIFIED payload did not survive structuredClone: '+positive.dtoCloneError);
+  expect(!!(positive.dto&&positive.dto.goal&&positive.dto.goal.id
+   &&positive.dto.goal.lifecycle==='VERIFIED'
+   &&['POSITIVE','NEGATIVE'].includes(positive.dto.goal.polarity)),
+   'the VERIFIED DTO lacks a complete goal identity: '
+   +JSON.stringify(positive.dto&&positive.dto.goal));
+  expect(!!(positive.dto&&positive.dto.resource
+   &&Number.isInteger(positive.dto.resource.address)
+   &&Number.isInteger(positive.dto.resource.width)),
+   'the VERIFIED DTO lacks an address specification');
+  expect(!!(positive.dto&&positive.dto.resource
+   &&positive.dto.resource.encodingDetermined!==null),
+   'the VERIFIED DTO does not say whether the field encoding was determined');
+  expect(!!(positive.dto&&positive.dto.evidence
+   &&positive.dto.evidence.registryState
+   &&positive.dto.evidence.registryState.records.length>0
+   &&positive.dto.evidence.evidenceRefs.length>0),
+   'the VERIFIED DTO carries no evidence source');
+  expect(!!(positive.dto&&!('broker' in positive.dto)&&!('registry' in positive.dto)
+   &&!('readResource' in positive.dto)),
+   'the VERIFIED DTO carried the executable mechanism across the boundary');
+  expect(!!(positivePanel.record&&positivePanel.record.validated
+   &&positivePanel.record.validated.valid===true),
+   'the interface did not validate the VERIFIED goal record: '
+   +JSON.stringify(positivePanel.record&&positivePanel.record.validated));
+  expect(/VERIFIED/.test(positivePanel.result),
+   'the panel does not show VERIFIED: '+positivePanel.result);
+  expect(liveBeforePositive===liveAfterPositive,
+   'the positive run changed the live RAM: '+liveBeforePositive+' -> '+liveAfterPositive);
+
+  /* ---- 13. the negative control, kept as a control only ---- */
   const negative=await page.evaluate(()=>{
    const out=window.FlyAgodExperimental.session(null);
    return {status:out.status,reason:String(out.reason||'').slice(0,120)};
   });
-  step('12. negative control: session(null) still refuses',
+  step('13. negative control: session(null) still refuses',
    {...negative,
     note:'kept as a control. This alone was the previous check and is NOT evidence '
      +'that AGOD runs; steps 5 to 11 are.'});
@@ -292,6 +438,13 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
   totals:report.totals,
   steps:steps.map(s=>s.name),
   pipelineStatus:(steps.find(s=>/valid pipeline result/.test(s.name))||{}).pipelineStatus||null,
+  positivePath:(()=>{const p=steps.find(s=>/positive path/.test(s.name))||{};
+   return {pipelineStatus:p.pipelineStatus||null,goalId:p.goalId||null,
+    lifecycle:p.lifecycle||null,polarity:p.polarity||null,
+    addressSpec:p.addressSpec||null,evidenceRecords:p.evidenceRecords||null,
+    recordValidated:p.recordValidated===undefined?null:p.recordValidated,
+    dtoCloneable:p.dtoCloneable===undefined?null:p.dtoCloneable,
+    cost:p.cost||null};})(),
   cost:(steps.find(s=>/valid pipeline result/.test(s.name))||{}).cost||null,
   liveStateIdentical:(steps.find(s=>/live game state is unchanged/.test(s.name))||{}).identical,
   failures},null,1));
