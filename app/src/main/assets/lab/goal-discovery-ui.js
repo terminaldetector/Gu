@@ -191,3 +191,191 @@
  document.addEventListener('click',event=>{if(['resetKeys','unbindKey','bindKey'].includes(event.target?.id))stopTrace(active,'controls-change');},true);
  render();if(loaded&&!romLoading)start();
 })();
+
+/* ---------------------------------------------------------------------------
+   «Запустить AGOD» — the executable research action.
+
+   SEPARATE FROM THE PASSIVE OBSERVER ABOVE, deliberately. That observer watches
+   frames of the live game as they happen and never writes anything. This runs
+   the whole FlyAgodPipeline on an INDEPENDENT emulator in a worker thread, on
+   explicit request, and can take tens of seconds. Mixing the two into one
+   control would make it impossible to tell which produced a given statement.
+
+   The live game is never handed to the research contour: the worker gets the
+   cartridge and, optionally, a snapshot of the current state BY VALUE, and
+   builds its own core from those bytes in its own thread.
+
+   VERIFIED is displayed only when FlyAgodPipeline returns it. Nothing here
+   synthesises an outcome, and a REFUSED is shown with the stage and the reason
+   the pipeline gave. */
+(()=>{
+ const host=document.getElementById('trainingResearch');
+ if(!host)return;
+ const box=document.createElement('div');
+ box.id='agodRunPanel';
+ const title=document.createElement('p');
+ title.className='note';
+ title.textContent='AGOD: исполняемый поиск цели (отдельный поток, независимый эмулятор)';
+ const runButton=document.createElement('button');
+ runButton.id='agodRunButton';runButton.type='button';
+ runButton.textContent='Запустить AGOD';
+ const stopButton=document.createElement('button');
+ stopButton.id='agodStopButton';stopButton.type='button';
+ stopButton.textContent='Остановить';stopButton.disabled=true;
+ const phase=document.createElement('p');
+ phase.id='agodRunStatus';phase.className='note';phase.setAttribute('role','status');
+ phase.textContent='AGOD не запущен';
+ const budget=document.createElement('p');
+ budget.id='agodRunBudget';budget.className='note';
+ const outcome=document.createElement('p');
+ outcome.id='agodRunResult';outcome.className='note';
+ const candidates=document.createElement('pre');
+ candidates.id='agodRunCandidates';candidates.className='note';
+ box.append(title,runButton,stopButton,phase,budget,outcome,candidates);
+ host.append(box);
+
+ let session=null,liveHashBefore=null;
+ const set=(element,text)=>{element.textContent=text||'';};
+
+ /* The live core's identity before the run, so the panel itself can show that
+    the research run did not disturb it. The end-to-end test asserts the same
+    thing independently. */
+ const liveStateHash=()=>{
+  try{
+   if(typeof nes==='undefined'||!nes||!nes.cpu||!nes.cpu.mem)return null;
+   return window.FlyAgodNesDriver
+    ?window.FlyAgodNesDriver.ramHash(nes.cpu.mem.slice(0,0x800))
+    :null;
+  }catch(_){return null;}
+ };
+
+ function describeCandidates(result){
+  const found=result&&result.discovered?result.discovered:null;
+  if(!found)return 'кандидаты: не сформированы';
+  const lines=[];
+  if(found.resource){
+   const r=found.resource;
+   lines.push('ресурс: адрес '+(r.field?r.field.address:r.address)
+    +(r.mask!==undefined?' · маска '+r.mask:'')
+    +(r.field&&r.field.width?' · ширина '+r.field.width:''));
+  }
+  if(Array.isArray(found.increasingFields)&&found.increasingFields.length)
+   lines.push('растущие поля: '+found.increasingFields.length);
+  if(Array.isArray(found.neutralMovedAddresses))
+   lines.push('адресов, двигавшихся без действия: '+found.neutralMovedAddresses.length);
+  if(found.effect&&found.effect.polarity)
+   lines.push('полярность: '+found.effect.polarity);
+  return lines.length?lines.join('\n'):'кандидаты: сформированы, без деталей';
+ }
+
+ function showResult(message){
+  const result=message.result||{};
+  const status=result.status||'(без статуса)';
+  const parts=['итог pipeline: '+status];
+  if(result.stage)parts.push('стадия: '+result.stage);
+  if(result.reason)parts.push('причина: '+result.reason);
+  if(result.goal&&result.goal.polarity)parts.push('цель: '+result.goal.polarity);
+  /* VERIFIED is the pipeline's word, not ours */
+  if(status==='VERIFIED')parts.push('VERIFIED получен от FlyAgodPipeline');
+  set(outcome,parts.join(' · '));
+  set(candidates,describeCandidates(result));
+  const cost=message.cost||{};
+  const after=liveStateHash();
+  set(budget,'бюджет: '+(cost.framesRun||0)+' из '+(cost.frameBudget||0)+' кадров'
+   +' · время '+Math.round((cost.wallClockMs||0)/100)/10+' с'
+   +' · живая игра: '+(liveHashBefore&&after
+     ?(liveHashBefore===after?'не изменена':'ИЗМЕНЕНА')
+     :'состояние не проверено'));
+ }
+
+ function finished(label){
+  session=null;runButton.disabled=false;stopButton.disabled=true;
+  if(label)set(phase,label);
+ }
+
+ function onEvent(message){
+  if(!message||typeof message!=='object')return;
+  if(message.type==='started'){
+   set(phase,'AGOD выполняется · driver '+(message.driverRevision||'?')
+    +' · pipeline '+(message.pipelineRevision||'?'));
+   set(budget,'бюджет: 0 из '+(message.frameBudget||0)+' кадров'
+    +' · старт: '+(message.startedFrom||''));
+   return;
+  }
+  if(message.type==='progress'){
+   set(budget,'бюджет: '+(message.framesRun||0)+' из '+(message.frameBudget||0)
+    +' кадров · '+Math.round((message.elapsedMs||0)/100)/10+' с');
+   return;
+  }
+  if(message.type==='result'){showResult(message);finished('AGOD завершён');return;}
+  if(message.type==='error'){
+   const error=message.error||{};
+   set(outcome,(error.budgetExceeded?'бюджет исчерпан: ':'ошибка: ')
+    +(error.message||'неизвестная ошибка')+(message.phase?' (фаза '+message.phase+')':''));
+   finished('AGOD остановлен с ошибкой');
+   return;
+  }
+  if(message.type==='cancelled'){finished('AGOD отменён до запуска');return;}
+  if(message.type==='stopped'){
+   set(outcome,'остановлено оператором; worker завершён, результата нет');
+   finished('AGOD остановлен');
+   return;
+  }
+ }
+
+ runButton.onclick=()=>{
+  if(session)return;
+  if(typeof loaded==='undefined'||!loaded||typeof romLoading!=='undefined'&&romLoading){
+   set(phase,'AGOD не запущен: картридж не загружен');return;
+  }
+  if(typeof labPlatform!=='undefined'&&labPlatform!=='nes'){
+   set(phase,'AGOD не запущен: исполняемый контур реализован только для NES');return;
+  }
+  if(!window.FlyAgodExperimental||typeof window.FlyAgodExperimental.runInWorker!=='function'){
+   set(phase,'AGOD не запущен: мост FlyAgodExperimental недоступен');return;
+  }
+  const rom=(typeof nes!=='undefined'&&nes&&nes.romData)?nes.romData:null;
+  if(!rom){set(phase,'AGOD не запущен: байты картриджа недоступны');return;}
+  liveHashBefore=liveStateHash();
+  set(outcome,'');set(candidates,'');
+  set(phase,'AGOD запускается…');
+  /* The live state is passed BY VALUE as a serialised snapshot, so the research
+     core starts where the player is without the live instance being shared. */
+  let startSnapshot=null;
+  try{startSnapshot=JSON.stringify(nes.toJSON());}catch(_){startSnapshot=null;}
+  const started=window.FlyAgodExperimental.runInWorker({
+   romBinaryString:rom,
+   startSnapshot,
+   frameBudget:(window.GU_AGOD_FRAME_BUDGET|0)||2000000,
+   config:{romHash:(typeof romHash!=='undefined'&&romHash)||'unknown-rom',
+    coreRevision:window.labCoreIdentity||'unknown-core',
+    profileRevision:'agod-app-1',
+    ...(window.GU_AGOD_CONFIG||{})},
+   onEvent});
+  if(!started||started.status!=='RUNNING'){
+   set(phase,'AGOD не запущен: '+((started&&started.reason)||'мост отказал'));
+   return;
+  }
+  session=started;runButton.disabled=true;stopButton.disabled=false;
+ };
+
+ stopButton.onclick=()=>{
+  if(!session)return;
+  try{session.stop();}catch(_){}
+  finished('AGOD остановлен');
+ };
+
+ /* Changing the cartridge or leaving the page must not leave a worker running
+    on the previous ROM. */
+ const abandon=reason=>{
+  if(!session)return;
+  try{session.stop();}catch(_){}
+  finished(reason);
+ };
+ window.addEventListener('lab-rom-loaded',()=>abandon('AGOD остановлен: загружен другой картридж'));
+ window.addEventListener('pagehide',()=>abandon('AGOD остановлен: страница закрыта'));
+ window.agodRunPanel={status:()=>phase.textContent,
+  result:()=>outcome.textContent,budget:()=>budget.textContent,
+  candidates:()=>candidates.textContent,
+  running:()=>!!session};
+})();

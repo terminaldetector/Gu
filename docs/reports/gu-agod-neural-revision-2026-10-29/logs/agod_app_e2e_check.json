@@ -1,0 +1,135 @@
+{
+  "type": "gu-agod-app-e2e-check",
+  "version": 1,
+  "claim": "A person presses «Запустить AGOD» in the real GU interface, the real FlyAgodPipeline runs on an independent emulator off the UI thread, a valid pipeline result is displayed, the live game state is untouched, and stopping releases the worker.",
+  "notEvidence": "module loading, a refusal from session(null), or any synthesised outcome",
+  "steps": [
+    {
+      "name": "1. the real GU interface loads",
+      "pageErrors": []
+    },
+    {
+      "name": "2. the embedded synthetic NES ROM is loaded",
+      "loaded": true,
+      "platform": "nes",
+      "romBytes": 24592,
+      "driverPresent": true,
+      "bridgePresent": true
+    },
+    {
+      "name": "3. the live game state is recorded before the run",
+      "ramHash": "06bc9b53201ef200",
+      "serialisedBytes": 1370363,
+      "fullStateSha256": "1a8dfc4c7d24c370342f1c93c4433c0de9ab12dd43b5c0999d92907f43091a20"
+    },
+    {
+      "name": "4. the «Запустить AGOD» control exists and is distinct from the passive observer",
+      "runExists": true,
+      "runText": "Запустить AGOD",
+      "stopExists": true,
+      "stopDisabled": true,
+      "panelExists": true,
+      "runVisible": true,
+      "separateFromObserver": true
+    },
+    {
+      "name": "5. pressing it starts a run",
+      "status": "AGOD запускается…",
+      "runDisabled": true,
+      "stopDisabled": false
+    },
+    {
+      "name": "6. the worker started the real pipeline",
+      "driverRevision": "agod-nes-driver-1",
+      "pipelineRevision": "agod-pipeline-s10-5",
+      "frameBudget": 2000000,
+      "startedFrom": "a snapshot of the live game state, by value",
+      "workerUrls": [
+        "https://flyconsole.local/lab/agod-worker.js"
+      ]
+    },
+    {
+      "name": "7. the UI thread answers while the pipeline runs",
+      "animationFrameLatencyMs": 12
+    },
+    {
+      "name": "8. a valid pipeline result came back",
+      "terminalType": "result",
+      "pipelineStatus": "REFUSED",
+      "stage": "induce",
+      "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+      "schemaVersion": 1,
+      "pipelineRevision": "agod-pipeline-s10-5",
+      "discoveredKeys": [
+        "resource",
+        "effect",
+        "increasingFields",
+        "persistingByMask",
+        "neutralMovedAddresses"
+      ],
+      "traceStages": [
+        "type",
+        "type",
+        "type",
+        "type",
+        "type",
+        "type",
+        "type",
+        "type",
+        "reverse",
+        "judge",
+        "induce",
+        "induce",
+        "induce"
+      ],
+      "cost": {
+        "framesRun": 12347,
+        "frameBudget": 2000000,
+        "budgetRemaining": 1987653,
+        "wallClockMs": 20626
+      },
+      "progressMessages": 6,
+      "error": null
+    },
+    {
+      "name": "9. the interface displays the result",
+      "status": "AGOD завершён",
+      "result": "итог pipeline: REFUSED · стадия: induce · причина: the resource did not produce an evidenced NEGATIVE polarity",
+      "budget": "бюджет: 12347 из 2000000 кадров · время 20.6 с · живая игра: не изменена",
+      "candidates": "ресурс: адрес 1 · маска 16\nрастущие поля: 4\nадресов, двигавшихся без действия: 1"
+    },
+    {
+      "name": "10. the live game state is unchanged by the research run",
+      "ramHashBefore": "06bc9b53201ef200",
+      "ramHashAfter": "06bc9b53201ef200",
+      "fullStateShaBefore": "1a8dfc4c7d24c370342f1c93c4433c0de9ab12dd43b5c0999d92907f43091a20",
+      "fullStateShaAfter": "1a8dfc4c7d24c370342f1c93c4433c0de9ab12dd43b5c0999d92907f43091a20",
+      "identical": true
+    },
+    {
+      "name": "11. stopping terminates the worker and releases the controls",
+      "status": "AGOD остановлен",
+      "result": "остановлено оператором; worker завершён, результата нет",
+      "runDisabled": false,
+      "stopDisabled": true,
+      "running": false,
+      "workersCreated": 2,
+      "messagesAtStop": 2,
+      "messagesThreeSecondsLater": 2,
+      "noFurtherMessages": true
+    },
+    {
+      "name": "12. negative control: session(null) still refuses",
+      "status": "DISABLED",
+      "reason": "the experimental AGOD and neural contour is off; a research session is not available",
+      "note": "kept as a control. This alone was the previous check and is NOT evidence that AGOD runs; steps 5 to 11 are."
+    }
+  ],
+  "status": "PASS",
+  "pageErrors": [],
+  "totals": {
+    "steps": 12,
+    "failures": 0
+  },
+  "failures": []
+}
