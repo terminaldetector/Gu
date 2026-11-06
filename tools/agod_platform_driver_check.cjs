@@ -141,6 +141,38 @@ ok(PD.describe('gameboyadvance').supported===false,'an unknown platform is not s
   ok(/gitignore/.test(r.repositoryNote||''),p+' names the repository reason');
  }
 
+ /* G3. The driver publishes its action specification and its observed width, so
+    agod-pipeline.js can ask instead of assuming a NES pad and 2 KiB. The
+    specification can also judge a mask, and that judgement is a FUNCTION - so
+    it must be on the driver and NOT on the capabilities object, which
+    agod-worker.js posts across a postMessage boundary. A function there is a
+    DataCloneError that kills the whole `started` message. */
+ console.log('\n=== the action specification, on the driver and in the report ===');
+ {
+  const nes2=PD.createNesSync({romBytes:bytes,jsnes});
+  const d=nes2.driver,spec=d.actionSpec;
+  console.log('  driver.actionSpec: buttons=%s maxMask=%s groups=%j',
+   spec&&spec.buttonCount,spec&&spec.maxMask,
+   spec&&spec.exclusiveGroups?spec.exclusiveGroups.map(g=>g.names.join('+')):null);
+  ok(!!spec&&spec.buttonCount===8&&spec.maxMask===255,
+   'the driver publishes the NES action specification');
+  ok(d.observedRamBytes===0x800,'the driver publishes its observed RAM width');
+  ok(typeof spec.maskAllowed==='function','the driver can judge a mask');
+  ok(spec.maskAllowed(48).allowed===false&&spec.maskAllowed(3).allowed===true,
+   'and judges opposed directions apart from two face buttons');
+  let capsClone=null;
+  try{structuredClone(nes2.capabilities);}catch(e){capsClone=e.constructor.name;}
+  console.log('  structuredClone(capabilities): %s',capsClone||'OK');
+  ok(capsClone===null,
+   'capabilities survive postMessage: no function reaches the reported copy');
+  ok(typeof nes2.capabilities.actionSpec.maskAllowed==='undefined'
+   &&nes2.capabilities.actionSpec.combinationRuleAvailable===true,
+   'the report says the combination rule exists without carrying the function');
+  ok(nes2.capabilities.actionSpec.singleButtonMasks.join(',')==='1,2,4,8,16,32,64,128',
+   'the reported single-button masks are the eight NES ones');
+  nes2.dispose();
+ }
+
  console.log('\n'+out.join('\n'));
  console.log('\n'+(fail.length?'FAIL ('+fail.length+')':'PASS')+' — '
   +(out.length-fail.length)+'/'+out.length);

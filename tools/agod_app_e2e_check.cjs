@@ -173,6 +173,23 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
   expect(caps.actionSpec&&caps.actionSpec.buttonCount===8,
    'the NES action specification should declare 8 buttons, got '
    +(caps.actionSpec&&caps.actionSpec.buttonCount));
+  /* G3. The pipeline now ASKS the driver for the action set, and the driver's
+     own copy of the specification carries maskAllowed, a function. The copy
+     that crosses postMessage must not, or the whole `started` message dies as
+     a DataCloneError. The worker checks before posting and names the loss, so
+     a null here is the assertion that nothing was lost. */
+  expect(startedMessage.capabilitiesCloneError===null
+   ||startedMessage.capabilitiesCloneError===undefined,
+   'the capability surface did not survive postMessage: '
+   +startedMessage.capabilitiesCloneError);
+  expect(caps.actionSpec&&typeof caps.actionSpec.maskAllowed==='undefined'
+   &&caps.actionSpec.combinationRuleAvailable===true,
+   'the reported action specification should name the combination rule without '
+   +'carrying the function');
+  expect(caps.actionSpec&&Array.isArray(caps.actionSpec.singleButtonMasks)
+   &&caps.actionSpec.singleButtonMasks.join(',')==='1,2,4,8,16,32,64,128',
+   'the reported single-button masks are not the eight NES ones: '
+   +JSON.stringify(caps.actionSpec&&caps.actionSpec.singleButtonMasks));
   expect(workerUrls.some(url=>/agod-worker\.js/.test(url)),
    'no agod-worker.js worker was created, so the pipeline did not run off the UI thread');
 
@@ -259,6 +276,10 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
    'the panel does not show the pipeline status "'+pipelineStatus+'": '+panel.result);
   expect(/\d+\s+из\s+\d+\s+кадров/.test(panel.budget),
    'the panel does not show the frame budget spend: '+panel.budget);
+  /* G3: the operator can see WHAT was driven and read, from the platform
+     rather than from a NES-shaped default baked into the pipeline */
+  expect(/8 кнопок/.test(panel.budget)&&/RAM 2048 Б/.test(panel.budget),
+   'the panel does not state the platform action set and RAM width: '+panel.budget);
   expect(!/VERIFIED/.test(panel.result)||pipelineStatus==='VERIFIED',
    'the panel showed VERIFIED when the pipeline did not return it');
   expect(/запись цели/.test(panel.result),

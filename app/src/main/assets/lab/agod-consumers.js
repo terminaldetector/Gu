@@ -85,7 +85,12 @@ function downstreamConsumer(driver,options){
  const field=options.field,pristine=options.pristine;
  const hold=options.hold===undefined?4:options.hold;
  const release=options.release===undefined?8:options.release;
+ /* G3. The caller owns the action set: agod-pipeline.js passes the platform's
+    own masks, so this eight-button list is only what a direct caller gets when
+    it declares nothing, and which of the two happened is reported rather than
+    left to be inferred. */
  const masks=options.masks||[1,2,4,8,16,32,64,128];
+ const maskSource=options.masks?'caller':'consumers-default-8';
  const steps=options.steps===undefined?24:options.steps;
  const excluded=new Set(spanOf(field));
  for(const address of options.alsoExcluded||[])excluded.add(address);
@@ -100,7 +105,7 @@ function downstreamConsumer(driver,options){
  const driven=decode(driver.readRam(),field);
  if(driven===base)
   return frozen({schemaVersion:SCHEMA_VERSION,probeRevision:PROBE_REVISION,
-   status:'INCONCLUSIVE',hasConsumer:null,
+   status:'INCONCLUSIVE',hasConsumer:null,actionSetSource:maskSource,
    reason:'the field did not reach a second value, so there is nothing to contrast'});
 
  const arm=value=>{
@@ -118,12 +123,15 @@ function downstreamConsumer(driver,options){
  const lowAgain=arm(base);
  if(low!==lowAgain)
   return frozen({schemaVersion:SCHEMA_VERSION,probeRevision:PROBE_REVISION,
-   status:'INCONCLUSIVE',hasConsumer:null,
+   status:'INCONCLUSIVE',hasConsumer:null,actionSetSource:maskSource,
    reason:'the schedule is not deterministic for this cartridge, so a divergence would prove nothing'});
  return frozen({schemaVersion:SCHEMA_VERSION,probeRevision:PROBE_REVISION,
   status:'OBSERVED',hasConsumer:low!==high,
   values:frozen({base,driven}),signatures:frozen({low,high}),
   excludedBytes:excluded.size,steps,
+  /* which action set drove the contrast: the platform's, or this module's
+     eight-button fallback */
+  actionSetSource:maskSource,actionsDriven:masks.length,
   /* A null result is a statement about the trajectories that were run, never
      about the cartridge. Substituting a value cannot rule out a read that has
      no visible effect in these trajectories, and the lives field of the

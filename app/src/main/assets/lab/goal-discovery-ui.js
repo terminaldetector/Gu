@@ -333,18 +333,33 @@
   if(label)set(phase,label);
  }
 
+ /* the platform's own shape, as the worker reported it; '' until it does */
+ let platformShape='';
  function onEvent(message){
   if(!message||typeof message!=='object')return;
   if(message.type==='started'){
    set(phase,'AGOD выполняется · driver '+(message.driverRevision||'?')
     +' · pipeline '+(message.pipelineRevision||'?'));
+   /* What the run will actually drive and read, from the platform rather than
+      from a NES-shaped default: shown so the operator can see the action set
+      and the observed RAM width instead of inferring them. Held, because the
+      progress messages overwrite this line several times a second and the
+      platform shape has to survive them. */
+   const caps=message.capabilities||null;
+   const spec=caps&&caps.actionSpec?caps.actionSpec:null;
+   platformShape=caps
+    ?' · '+(spec&&spec.buttonCount?spec.buttonCount+' кнопок':'кнопки не описаны')
+     +' · RAM '+(caps.observedRamBytes||'?')+' Б'
+     +(caps.bulkReadVia?' · чтение: '+caps.bulkReadVia:'')
+    :(message.capabilitiesCloneError
+      ?' · возможности ядра не переданы: '+message.capabilitiesCloneError:'');
    set(budget,'бюджет: 0 из '+(message.frameBudget||0)+' кадров'
-    +' · старт: '+(message.startedFrom||''));
+    +' · старт: '+(message.startedFrom||'')+platformShape);
    return;
   }
   if(message.type==='progress'){
    set(budget,'бюджет: '+(message.framesRun||0)+' из '+(message.frameBudget||0)
-    +' кадров · '+Math.round((message.elapsedMs||0)/100)/10+' с');
+    +' кадров · '+Math.round((message.elapsedMs||0)/100)/10+' с'+platformShape);
    return;
   }
   if(message.type==='result'){showResult(message);finished('AGOD завершён');return;}
@@ -381,6 +396,9 @@
   if(!rom){set(phase,'AGOD не запущен: байты картриджа недоступны');return;}
   liveHashBefore=liveStateHash();liveFrameBefore=liveFrame();
   set(outcome,'');set(candidates,'');
+  /* cleared per run: a shape left over from the previous cartridge would be a
+     claim about this one */
+  platformShape='';
   set(phase,'AGOD запускается…');
   /* The live state is passed BY VALUE as a serialised snapshot, so the research
      core starts where the player is without the live instance being shared. */

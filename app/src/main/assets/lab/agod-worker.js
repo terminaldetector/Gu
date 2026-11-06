@@ -127,11 +127,23 @@ async function runSession(request){
     return;
    }
   }
+  /* The same transport check the result gets, on the FIRST message that
+     carries driver data. capabilities is a plain object by construction - the
+     action specification's maskAllowed stays on the driver, not here - but
+     "by construction" is what the result path also believed before G1, so it
+     is checked rather than trusted. A payload that cannot cross is reported as
+     a named capability loss instead of killing the message. */
+  let caps=built.capabilities,capsError=null;
+  try{if(typeof structuredClone==='function')structuredClone(caps);}
+  catch(error){
+   capsError=String(error&&error.message||error).slice(0,200);
+   caps=null;
+  }
   post({type:'started',sessionId,workerRevision:WORKER_REVISION,
    platform,
    driverRevision:built.driverRevision,
    coreName:built.coreName,
-   capabilities:built.capabilities,
+   capabilities:caps,capabilitiesCloneError:capsError,
    pipelineRevision:self.FlyAgodPipeline.PIPELINE_REVISION,
    frameBudget,
    framesAfterEntryProcedure:host.framesRun(),

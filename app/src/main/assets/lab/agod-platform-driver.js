@@ -87,16 +87,52 @@ const romBytesOf=options=>{
 /* The button list per platform comes from FlyPlatforms, which is the one place
    GU already states it. Falling back to a NES layout would be exactly the
    assumption this file exists to remove, so an unknown platform has no action
-   specification rather than a guessed one. */
+   specification rather than a guessed one.
+
+   ALLOWED COMBINATIONS, not just a button count. A d-pad is one physical
+   stick: up and down cannot be held at the same time, and neither can left and
+   right. A mask that asks for both is not a hard action - it is a request the
+   controller cannot express, and what the core does with it is undefined
+   behaviour rather than an experiment. So the specification can judge a mask,
+   and the pipeline refuses one the platform cannot produce instead of driving
+   it and attributing whatever comes back. The group is derived from the button
+   NAMES FlyPlatforms already uses, so a platform that lists no directions
+   simply has no exclusive group. */
+const OPPOSED_PAIRS=[['\u2191','\u2193'],['\u2190','\u2192']];
+const popcount=value=>{let n=value,c=0;while(n){n&=n-1;c++;}return c;};
 function actionSpecFor(platform,platforms){
  const entry=platforms&&platforms[platform];
- if(!entry||!Array.isArray(entry.buttons))
-  return {buttonCount:null,buttons:null,ports:null,
-   note:'no action specification: FlyPlatforms does not describe '+platform};
- return {buttonCount:entry.buttons.length,
-  buttons:entry.buttons.map((name,index)=>({index,name,mask:1<<index})),
+ if(!entry||!Array.isArray(entry.buttons)){
+  const why='no action specification: FlyPlatforms does not describe '+platform;
+  return {buttonCount:null,buttons:null,ports:null,singleButtonMasks:null,
+   exclusiveGroups:null,maxMask:0,
+   maskAllowed:()=>({allowed:false,reason:why}),
+   note:why};
+ }
+ const buttons=entry.buttons.map((name,index)=>({index,name,mask:1<<index}));
+ const byName=new Map(buttons.map(button=>[button.name,button]));
+ const exclusiveGroups=OPPOSED_PAIRS
+  .filter(pair=>pair.every(name=>byName.has(name)))
+  .map(pair=>Object.freeze({names:pair.slice(),
+   mask:pair.reduce((mask,name)=>mask|byName.get(name).mask,0),
+   reason:'a d-pad cannot hold '+pair[0]+' and '+pair[1]+' at once'}));
+ const maxMask=(1<<buttons.length)-1;
+ const maskAllowed=mask=>{
+  if(!Number.isInteger(mask)||mask<0)
+   return {allowed:false,reason:'a mask must be a non-negative integer'};
+  const stray=mask&~maxMask;
+  if(stray)return {allowed:false,
+   reason:'mask '+mask+' sets bit(s) 0x'+stray.toString(16)+', which occupy no '
+    +platform+' button: this controller has '+buttons.length};
+  for(const group of exclusiveGroups)
+   if(popcount(mask&group.mask)>1)return {allowed:false,reason:group.reason};
+  return {allowed:true};
+ };
+ return {buttonCount:buttons.length,
+  buttons,
   ports:entry.ports||1,
-  singleButtonMasks:entry.buttons.map((_,index)=>1<<index),
+  singleButtonMasks:buttons.map(button=>button.mask),
+  exclusiveGroups,maxMask,maskAllowed,
   declaredRamBytes:entry.ram||null,
   note:'button indices are bit positions in the mask the pipeline drives'};
 }
@@ -105,8 +141,9 @@ function actionSpecFor(platform,platforms){
    Every adapter hands this the few platform-specific operations; the frame
    budget, the metering, the dispose guard and the driver surface are common. */
 function wrap(spec){
- const {platform,core,coreName,coreRevision,readRam,snapshot,restore,press,
-  poke,memoryRegions,snapshotFormat,actionSpec,ramBytes,frameBudget,notes}=spec;
+ const {platform,core,coreName,coreRevision,readRam,readRamSparse,snapshot,
+  restore,press,poke,memoryRegions,snapshotFormat,actionSpec,ramBytes,
+  frameBudget,notes,bulkReadVia}=spec;
  let framesRun=0,disposed=false;
  const guard=()=>{if(disposed)throw new Error('this research driver has been disposed');};
  const run=(mask,frames)=>{
@@ -118,16 +155,46 @@ function wrap(spec){
   framesRun+=frames;
   if(spec.onFrames)spec.onFrames(frames);
  };
+ /* THE PIPELINE ASKS THE DRIVER. agod-pipeline.js used to carry its own frozen
+    action set - [1,2,4,8,16,32,64,128], eight buttons, which is NES - so the
+    four extra buttons on Sega and SNES were never probed and the comparison
+    was truncated at the NES RAM width. Both facts belong to the platform, so
+    both are published on the driver surface itself rather than guessed by the
+    stage that uses them. */
  const driver={
   restore(state){guard();restore(state);},
   run,
   readRam(){guard();return readRam();},
   snapshot(){guard();return snapshot();},
-  stateHash(){guard();return ramHash(readRam());}};
+  stateHash(){guard();return ramHash(readRam());},
+  actionSpec:Object.freeze(actionSpec),
+  observedRamBytes:ramBytes};
+ /* SELECTIVE SCANNING, for a caller that has an independent reason to narrow -
+    a region hint, or a candidate set already confirmed by the causality stage.
+    It is offered, never imposed: the pipeline's own full-width scan stays
+    lossless, and narrowing it from a coarse pass would drop a field that only
+    moves late in a long play. */
+ if(typeof readRamSparse==='function')
+  driver.readRamSparse=addresses=>{guard();return readRamSparse(addresses);};
+ /* A LOGICAL offset is not a PHYSICAL address. The region declares its base, so
+    the two can be reported apart instead of being silently conflated. */
+ driver.physicalAddressOf=(logical,regionName)=>{
+  const region=memoryRegions.find(entry=>!regionName||entry.name===regionName)
+   ||memoryRegions[0];
+  if(!region||!Number.isInteger(logical))return null;
+  return {logicalAddress:logical,memoryRegion:region.name,
+   regionBase:region.base,
+   physicalAddress:Number.isInteger(region.base)?region.base+logical:null,
+   withinRegion:logical>=0&&logical<region.size};
+ };
  /* poke exists ONLY where the core really accepts a write. Its absence is a
     reported capability, and agod-pipeline.js answers NOT-SUPPORTED for its
     consumer stage rather than guessing. */
  if(typeof poke==='function')driver.poke=(address,value)=>{guard();poke(address,value);};
+ const reportableActionSpec={};
+ for(const key of Object.keys(actionSpec))
+  if(typeof actionSpec[key]!=='function')reportableActionSpec[key]=actionSpec[key];
+ reportableActionSpec.combinationRuleAvailable=typeof actionSpec.maskAllowed==='function';
  return Object.freeze({status:'READY',
   platform,core,coreName,coreRevision,
   driverRevision:PLATFORM_DRIVER_REVISION,
@@ -137,10 +204,20 @@ function wrap(spec){
    observedRamBytes:ramBytes,
    memoryRegions:Object.freeze(memoryRegions.map(Object.freeze)),
    snapshotFormat,
-   actionSpec:Object.freeze(actionSpec),
+   bulkReadVia:bulkReadVia||null,
+   /* CAPABILITIES CROSS postMessage; THE DRIVER DOES NOT. The action
+      specification carries maskAllowed, a function, and a function cannot be
+      structured-cloned: agod-worker.js posts this object to the page, so a
+      function on it would turn the whole `started` message into a
+      DataCloneError - the same defect G1 fixed on the result path. The
+      reported copy is therefore the data only, and the judgement stays on the
+      driver, which never leaves the context that built it. */
+   actionSpec:Object.freeze(reportableActionSpec),
    supports:Object.freeze({
     snapshot:true,restore:true,readRam:true,stateHash:true,
     frameBudget:frameBudget!==null,
+    selectiveRead:typeof readRamSparse==='function',
+    physicalAddressMapping:memoryRegions.some(r=>Number.isInteger(r.base)),
     memoryWrite:typeof poke==='function',
     /* said explicitly: the pipeline's consumer counterfactual needs a write */
     consumerCounterfactual:typeof poke==='function'}),
@@ -168,18 +245,26 @@ function createNes(options){
  const ramBytes=Number.isInteger(options.ramBytes)?options.ramBytes:0x800;
  const core=new jsnes.NES({onFrame(){},onAudioSample(){}});
  core.loadROM(toBinaryString(bytes));
+ const actionSpec=actionSpecFor('nes',options.platforms||root.FlyPlatforms);
  return wrap({platform:'nes',core,coreName:'JSNES',
   coreRevision:options.coreRevision||'jsnes',
   ramBytes,frameBudget:Number.isInteger(options.frameBudget)?options.frameBudget:null,
   onFrames:options.onFrames,
   snapshotFormat:'jsnes-json-string',
   memoryRegions:[{name:'NesInternalRam',size:ramBytes,base:0,readable:true,writable:true}],
-  actionSpec:actionSpecFor('nes',options.platforms||root.FlyPlatforms),
+  actionSpec,
   readRam:()=>core.cpu.mem.slice(0,ramBytes),
+  readRamSparse:addresses=>{
+   const out=new Uint8Array(addresses.length);
+   for(let i=0;i<addresses.length;i++)out[i]=core.cpu.mem[addresses[i]]||0;
+   return out;
+  },
+  bulkReadVia:'cpu.mem typed array slice',
   snapshot:()=>JSON.stringify(core.toJSON()),
   restore:state=>core.fromJSON(typeof state==='string'?JSON.parse(state):state),
   press:(mask,frames)=>{
-   for(let b=0;b<8;b++)(mask&(1<<b)?core.buttonDown:core.buttonUp).call(core,1,b);
+   for(let b=0;b<actionSpec.buttonCount;b++)
+    (mask&(1<<b)?core.buttonDown:core.buttonUp).call(core,1,b);
    for(let i=0;i<frames;i++)core.frame();
   },
   poke:(address,value)=>{core.cpu.mem[address]=value&255;},
@@ -203,29 +288,52 @@ async function createSega(options){
   options.moduleOptions||{locateFile:file=>'sega/'+file});
  core.loadROM(bytes);
  /* The Sega wrapper exposes a 64 KiB read window over work RAM through a Proxy
-    with a getter and NO setter, so a write is impossible and poke is omitted. */
+    with a getter and NO setter, so a write is impossible and poke is omitted.
+
+    THE PROXY IS NOT THE WAY TO READ IT IN BULK. Going through cpu.mem costs
+    12.40 ms for the 64 KiB window - 17.7 times a whole emulated frame - and
+    that is the Proxy's get trap, not the core: calling the core's own
+    _lab_read_ram directly gives byte-identical results in 0.35 ms, a 97 per
+    cent saving and half a frame. The first version of this adapter used the
+    Proxy because cpu.mem is the documented surface, and it turned every
+    typing pass into seconds of overhead. Measured, not guessed. */
  const ramBytes=Number.isInteger(options.ramBytes)?options.ramBytes:0x10000;
- const readRam=()=>{
-  const out=new Uint8Array(ramBytes);
-  for(let i=0;i<ramBytes;i++)out[i]=core.cpu.mem[i]||0;
-  return out;
- };
+ const segaActions=actionSpecFor('sega',options.platforms||root.FlyPlatforms);
+ const read=core.g&&typeof core.g._lab_read_ram==='function'
+  ?core.g._lab_read_ram.bind(core.g):null;
+ const readRam=read
+  ?()=>{const out=new Uint8Array(ramBytes);
+    for(let i=0;i<ramBytes;i++)out[i]=read(i);return out;}
+  :()=>{const out=new Uint8Array(ramBytes);
+    for(let i=0;i<ramBytes;i++)out[i]=core.cpu.mem[i]||0;return out;};
+ const readRamSparse=read
+  ?addresses=>{const out=new Uint8Array(addresses.length);
+    for(let i=0;i<addresses.length;i++)out[i]=read(addresses[i]);return out;}
+  :addresses=>{const out=new Uint8Array(addresses.length);
+    for(let i=0;i<addresses.length;i++)out[i]=core.cpu.mem[addresses[i]]||0;return out;};
  return wrap({platform:'sega',core,coreName:'Genesis Plus GX',
   coreRevision:options.coreRevision||'genplus',
   ramBytes,frameBudget:Number.isInteger(options.frameBudget)?options.frameBudget:null,
   onFrames:options.onFrames,
   snapshotFormat:'sega-state-object',
-  memoryRegions:[{name:'SegaWorkRam',size:ramBytes,base:0,readable:true,writable:false}],
-  actionSpec:actionSpecFor('sega',options.platforms||root.FlyPlatforms),
-  readRam,
+  memoryRegions:[{name:'SegaWorkRam',size:ramBytes,base:0xff0000,readable:true,
+   writable:false,
+   note:'logical offset 0 is physical $FF0000, the start of Mega Drive work RAM. '
+    +'A logical offset is NOT a physical address and the two are reported apart'}],
+  actionSpec:segaActions,
+  readRam,readRamSparse,
+  bulkReadVia:read?'core _lab_read_ram':'cpu.mem Proxy (slow fallback)',
   snapshot:()=>core.toJSON(),
   restore:state=>core.fromJSON(state),
   press:(mask,frames)=>{
-   for(let b=0;b<12;b++)(mask&(1<<b)?core.buttonDown:core.buttonUp).call(core,1,b);
+   for(let b=0;b<segaActions.buttonCount;b++)
+    (mask&(1<<b)?core.buttonDown:core.buttonUp).call(core,1,b);
    for(let i=0;i<frames;i++)core.frame();
   },
   notes:['cpu.mem is a read-only Proxy on this core, so there is no memory '
    +'write and the pipeline consumer counterfactual reports NOT-SUPPORTED',
+   'the window is read through the core _lab_read_ram, not through the cpu.mem '
+   +'Proxy: identical bytes at 0.35 ms instead of 12.40 ms for 64 KiB',
    'twelve button indices, and 3/6-button pad selection is a core setting '
    +'(configurePads) rather than part of the driver surface',
    'the snapshot is an object carrying base64 state, not a JSON string']});
@@ -259,12 +367,25 @@ async function createRetro(platform,options){
  /* ASKED FOR, not assumed: the core reports its own RAM width, which differs
     between Game Boy, Game Boy Color and SNES cartridges. */
  const ramBytes=Number.isInteger(options.ramBytes)?options.ramBytes:core.ramSize;
- const buttonCount=platform==='snes'?12:8;
- const readRam=()=>{
-  const out=new Uint8Array(ramBytes);
-  for(let i=0;i<ramBytes;i++)out[i]=core.cpu.mem[i]||0;
-  return out;
- };
+ /* The button count is the action specification's, not a second copy of it:
+    the 12-versus-8 constant that used to live here was a third place where a
+    controller layout was written down. */
+ const retroActions=actionSpecFor(platform,options.platforms||root.FlyPlatforms);
+ const buttonCount=retroActions.buttonCount;
+ /* The same Proxy cost applies here, so the core's own reader is used; see the
+    note in the Sega adapter for the measurement. */
+ const read=core.g&&typeof core.g._lab_read_ram==='function'
+  ?core.g._lab_read_ram.bind(core.g):null;
+ const readRam=read
+  ?()=>{const out=new Uint8Array(ramBytes);
+    for(let i=0;i<ramBytes;i++)out[i]=read(i);return out;}
+  :()=>{const out=new Uint8Array(ramBytes);
+    for(let i=0;i<ramBytes;i++)out[i]=core.cpu.mem[i]||0;return out;};
+ const readRamSparse=read
+  ?addresses=>{const out=new Uint8Array(addresses.length);
+    for(let i=0;i<addresses.length;i++)out[i]=read(addresses[i]);return out;}
+  :addresses=>{const out=new Uint8Array(addresses.length);
+    for(let i=0;i<addresses.length;i++)out[i]=core.cpu.mem[addresses[i]]||0;return out;};
  return wrap({platform,core,
   coreName:platform==='gb'?'Gambatte':'Snes9x',
   coreRevision:options.coreRevision||platform,
@@ -276,8 +397,9 @@ async function createRetro(platform,options){
    note:'a flat read window reported by the core. Bank structure is NOT '
     +'described by this interface, so a logical address here is not a bank '
     +'address and must not be treated as one'}],
-  actionSpec:actionSpecFor(platform,options.platforms||root.FlyPlatforms),
-  readRam,
+  actionSpec:retroActions,
+  readRam,readRamSparse,
+  bulkReadVia:read?'core _lab_read_ram':'cpu.mem Proxy (slow fallback)',
   snapshot:()=>core.toJSON(),
   restore:state=>core.fromJSON(state),
   press:(mask,frames)=>{

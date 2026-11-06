@@ -70,7 +70,11 @@ function evaluateFactors(driver,options){
  const settle=options.settle===undefined?30:options.settle;
  const pristine=options.pristine;
  const neutralMoved=options.neutralMoved||new Set();
+ /* G3. Same rule as agod-consumers.js: an undeclared action set falls back to
+    eight buttons, which is NES and Game Boy, and the fallback is named in the
+    result so a twelve-button platform cannot be read as having been swept. */
  const masks=options.masks||[1,2,4,8,16,32,64,128];
+ const maskSource=options.masks?'caller':'positive-default-8';
  const read=field=>readField(driver.readRam(),field);
  const pulse=(mask,times,gap)=>{for(let i=0;i<(times||1);i++){driver.run(mask,hold);driver.run(0,gap===undefined?release:gap);}};
  const span=field=>{const out=[];for(let i=0;i<field.width;i++)out.push(field.address+i);return out;};
@@ -174,7 +178,11 @@ function evaluateFactors(driver,options){
   contextDependentRate,changesAvailableActions,reachesStatesNeutralPlayDoesNot,
   detail:frozen({baseStep,advancedStep,floorCandidate,reversalMask,reversalCandidate,
    actionsBefore,actionsAfter,actionsAfterDriving,actionsAfterWaiting,unlockedMasks:gained,
-   attributedModulators,modulatorTrials})});
+   attributedModulators,modulatorTrials,
+   /* G3: whether the actions swept here were the platform's or this module's
+      eight-button fallback. "changesAvailableActions" over eight masks on a
+      twelve-button pad is a statement about eight masks. */
+   actionSetSource:maskSource,actionsSwept:masks.length})});
 }
 
 function proposePositive(driver,options){

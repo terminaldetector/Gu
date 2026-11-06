@@ -69,6 +69,92 @@ function run(driver,options){
  if(!driver||['restore','run','readRam','snapshot','stateHash'].some(key=>typeof driver[key]!=='function'))
   return refuse('wiring','driver must provide restore, run, readRam, snapshot and stateHash');
 
+ /* G3. THE ACTION SET AND THE COMPARISON WIDTH BELONG TO THE PLATFORM.
+    DEFAULTS.masks is eight single-button masks, which is a NES pad. Sega and
+    SNES declare twelve buttons, so bits 8..11 - Sega's X/Y/Z/Mode, SNES's
+    X/L/R/Select - were never pressed by this pipeline, and agod-causal.js
+    rejected their masks outright as "not an 8-bit integer". The same shape of
+    assumption sat in the comparison: the causal detector compares
+    limits.maxRamBytes bytes and that default is 2048, the NES internal RAM, so
+    on Sega's 64 KiB work-RAM window every address above 2047 was invisible and
+    the pipeline reported "no action was shown to cause any RAM change" - an
+    instrument limit presented as an absent game event, which is the one thing
+    this programme is not allowed to do.
+
+    Neither fact is the pipeline's to know, so it asks the driver. Precedence,
+    recorded in the trace rather than inferred from it:
+
+      'caller'           options.masks, verbatim. Every pre-registered run
+                         declares its own set and has to reproduce exactly.
+      'driver'           driver.actionSpec.singleButtonMasks.
+      'pipeline-default' a driver that publishes NO action specification, which
+                         is every synthetic fixture in tools/: the declared
+                         eight-button default, unchanged.
+
+    A driver that publishes a specification but declares no buttons - what
+    agod-platform-driver.js produces for a platform FlyPlatforms does not
+    describe - is REFUSED. Substituting eight buttons there would drive a NES
+    pad at an unknown console and call whatever came back a causal result. */
+ const actionSpec=driver.actionSpec||null;
+ let masks,maskSource;
+ if(options&&Array.isArray(options.masks)){masks=options.masks.slice();maskSource='caller';}
+ else if(actionSpec&&Array.isArray(actionSpec.singleButtonMasks)&&actionSpec.singleButtonMasks.length){
+  masks=actionSpec.singleButtonMasks.slice();maskSource='driver';
+ }else if(actionSpec){
+  return refuse('actions','the driver declares no action specification, and this '
+   +'pipeline will not substitute a NES pad for one'
+   +(actionSpec.note?' ('+actionSpec.note+')':''));
+ }else{masks=DEFAULTS.masks.slice();maskSource='pipeline-default';}
+ if(!masks.length)return refuse('actions','the action set is empty');
+ /* A combination the controller cannot express is not an experiment. What a
+    core does when a d-pad is told to hold up and down at once is undefined,
+    not measured, so such a mask is refused rather than driven. */
+ if(actionSpec&&typeof actionSpec.maskAllowed==='function')
+  for(const mask of masks){
+   const verdict=actionSpec.maskAllowed(mask);
+   if(verdict&&verdict.allowed===false)
+    return refuse('actions','action mask '+mask+' is not one this platform can '
+     +'produce: '+verdict.reason,{mask});
+  }
+ config.masks=masks;
+
+ /* The width the detector compares is the width the driver exposes, MEASURED
+    from a read rather than taken from a declaration, because the declaration
+    is what was wrong before. Above the detector's own hard cap the run refuses:
+    quietly comparing the first 131072 bytes of a wider space would be the same
+    silent truncation under a new number. */
+ let observedWidth=null;
+ try{observedWidth=driver.readRam().length;}catch(error){
+  return refuse('actions','the driver could not be read: '+(error&&error.message||error));
+ }
+ if(!Number.isInteger(observedWidth)||observedWidth<1)
+  return refuse('actions','the driver exposes no readable RAM width');
+ if(observedWidth>Causal.CAPS.maxRamBytes)
+  return refuse('actions','the driver exposes '+observedWidth+' bytes, above the '
+   +'causal detector hard cap of '+Causal.CAPS.maxRamBytes+'; comparing only part '
+   +'of it would hide addresses rather than report them');
+ const declaredWidth=Number.isInteger(driver.observedRamBytes)?driver.observedRamBytes:null;
+ const maskCeiling=Math.max(255,...masks);
+ if(maskCeiling>Causal.CAPS.maxMask)
+  return refuse('actions','action mask '+Math.max(...masks)+' is wider than the '
+   +'causal detector hard cap of '+Causal.CAPS.maxMask);
+ /* The report limit scales with the space, and ONLY with a space wider than the
+    NES one: 64 of 2048 addresses is 3 per cent and 64 of 65536 is a tenth of
+    one, so leaving it fixed would reintroduce the truncation at the reporting
+    end. At 2048 and below it is the historical 64, untouched. */
+ const causalLimits={maxRamBytes:observedWidth,maxMask:maskCeiling};
+ if(observedWidth>2048)
+  causalLimits.maxAddressesReported=Math.min(Causal.CAPS.maxAddressesReported,
+   Math.ceil(64*observedWidth/2048));
+ note('actions',{masks,source:maskSource,
+  buttonCount:actionSpec?actionSpec.buttonCount:null,
+  comparisonWidth:observedWidth,declaredWidth,
+  widthAgrees:declaredWidth===null?null:declaredWidth===observedWidth,
+  maxMask:maskCeiling,
+  maxAddressesReported:causalLimits.maxAddressesReported||64,
+  exclusiveGroups:actionSpec&&actionSpec.exclusiveGroups
+   ?actionSpec.exclusiveGroups.map(group=>group.names.join('+')):null});
+
  /* M3 (S10B protocol fix). The budget has to cover EVERYTHING the ranked
     search runs. The previous meter wrapped only the inventory and the consumer
     probes, while evaluateResource called the raw driver and spent frames the
@@ -96,8 +182,18 @@ function run(driver,options){
   for(let i=0;i<count;i++){driver.run(0,offset+i*7);out.push({id:tag+'-'+i,stateHash:driver.stateHash(),snapshot:driver.snapshot()});}
   return out;
  };
+ /* The alternative arm is a DIFFERENT action from the same start, which is how
+    an effect shared by every button is told apart from one specific to this
+    one. It used to be hardcoded as "2, or 1 if the mask is 1" - correct only
+    while the first two masks are 1 and 2, i.e. on a NES-shaped set. It is now
+    the first declared action that is not the one under test. */
+ const alternativeFor=mask=>{
+  const other=config.masks.find(candidate=>candidate!==mask&&candidate!==0);
+  return other===undefined?null:other;
+ };
  const probe=(starts,mask)=>Causal.probeAction(driver,{starts,mask,neutralMask:0,
-  alternativeMask:mask===1?2:1,frames:config.frames,shiftTolerance:config.shiftTolerance});
+  alternativeMask:alternativeFor(mask),frames:config.frames,
+  shiftTolerance:config.shiftTolerance,limits:causalLimits});
  const play=(mask,events)=>{
   const samples=[];
   for(let e=0;e<events;e++){driver.run(mask,config.hold);driver.run(0,config.release);samples.push(driver.readRam());}

@@ -19,8 +19,13 @@
 const fs=require('fs'),os=require('os'),path=require('path'),{execFileSync}=require('child_process');
 const A=path.resolve('app/src/main/assets/lab');
 const jsnes=require(path.join(A,'jsnes.min.js'));globalThis.jsnes=jsnes;
+globalThis.FlyPlatforms=require(path.join(A,'platforms.js'));
+/* agod-platform-driver.js has to be loaded before agod-nes-driver.js, which is
+   a shim over it since G2. This require was missing after that change and the
+   check died on the shim's own guard; found while re-running the suite for G3. */
 for(const f of ['agod-ram.js','agod-causal.js','agod-goals.js','agod-reward.js',
- 'agod-evidence.js','agod-pipeline.js','agod-goal-dto.js'])require(path.join(A,f));
+ 'agod-evidence.js','agod-platform-driver.js','agod-pipeline.js',
+ 'agod-goal-dto.js'])require(path.join(A,f));
 const Driver=require(path.join(A,'agod-nes-driver.js'));
 const Dto=globalThis.FlyAgodGoalDto,Ev=globalThis.FlyAgodEvidence,
       Rw=globalThis.FlyAgodReward,Ram=globalThis.FlyAgodRam;

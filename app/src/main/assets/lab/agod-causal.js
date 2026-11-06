@@ -6,8 +6,22 @@
    here infers polarity, reward or a goal. Not wired into any production screen. */
 (function(root){'use strict';
 const SCHEMA_VERSION=2,DETECTOR_REVISION='agod-causal-e3-2';
-const DEFAULT_LIMITS=Object.freeze({maxStarts:8,maxArmsPerStart:16,maxFramesPerArm:120,maxRamBytes:2048,maxAddressesReported:64,maxTotalFrames:40000,maxShiftTolerance:4});
-const CAPS=Object.freeze({maxStarts:32,maxArmsPerStart:32,maxFramesPerArm:600,maxRamBytes:65536,maxAddressesReported:256,maxTotalFrames:400000,maxShiftTolerance:12});
+/* G3. maxRamBytes is the width of the comparison, and its default is the NES
+   internal RAM. It was also the hard cap at 65536, which is exactly Sega's
+   work-RAM window and BELOW the RAM GU declares for SNES (131072), so on the
+   wider platforms an address above the cap could not be compared at all and a
+   real effect read as NO-EFFECT. The default is unchanged - every historical
+   run declared nothing and must reproduce - and the cap now reaches the widest
+   width GU declares.
+
+   maxMask is new and is the width of the ACTION, for the same reason: the mask
+   check here was a literal 255, so the four extra buttons on a Sega or SNES pad
+   (bits 8..11) were rejected before they were ever pressed. Its default is 255,
+   so a caller that declares nothing still gets the eight-button check it got
+   before; its cap is 4095, the widest single pad GU describes. A wider action
+   than that is a deliberate decision and has to raise the cap on purpose. */
+const DEFAULT_LIMITS=Object.freeze({maxStarts:8,maxArmsPerStart:16,maxFramesPerArm:120,maxRamBytes:2048,maxAddressesReported:64,maxTotalFrames:40000,maxShiftTolerance:4,maxMask:255});
+const CAPS=Object.freeze({maxStarts:32,maxArmsPerStart:32,maxFramesPerArm:600,maxRamBytes:131072,maxAddressesReported:4096,maxTotalFrames:400000,maxShiftTolerance:12,maxMask:4095});
 
 const frozen=value=>Object.freeze(value);
 function clampLimits(requested){
@@ -152,7 +166,9 @@ function probeAction(driver,options){
  const frames=options&&options.frames;
  if(!Number.isInteger(frames)||frames<1||frames>limits.maxFramesPerArm)throw new Error('frames must be 1..'+limits.maxFramesPerArm);
  const mask=options.mask;
- if(!Number.isInteger(mask)||mask<0||mask>255)throw new Error('mask must be an 8-bit integer');
+ if(!Number.isInteger(mask)||mask<0||mask>limits.maxMask)
+  throw new Error('mask must be an integer 0..'+limits.maxMask
+   +' (the declared action width); got '+mask);
  const neutralMask=Number.isInteger(options.neutralMask)?options.neutralMask:0;
  if(mask===neutralMask)throw new Error('the probed mask must differ from the neutral mask');
  const alternativeMask=Number.isInteger(options.alternativeMask)?options.alternativeMask:null;
