@@ -292,6 +292,8 @@
  /* The worker sends a GoalEvidenceDTO, not the pipeline result: a VERIFIED
     result carries readResource, broker and registry, which structuredClone
     refuses. The DTO is validated HERE before anything is called a goal. */
+ /* the `started` message of the current run: the identity an objective is bound to */
+ let lastStarted=null;
  /* The platform's own shape, as the worker reported it; '' until it does.
     Declared above showResult because all three writers of the budget line
     append it. */
@@ -320,6 +322,19 @@
     :'НЕ проверена — '+validated.problems.slice(0,2).join('; ')));
    if(status==='VERIFIED'&&validated.valid)
     parts.push('VERIFIED получен от FlyAgodPipeline и доказательства сохранены');
+   /* HAND THE RESULT TO THE LIVE OBJECTIVE. Only a VERIFIED, validated record
+      can become one; anything else leaves the game without a reward source,
+      and says so. The reward mode is switched to AGOD only from "manual" - a
+      source the user configured by hand is not overridden. */
+   if(window.agodObjective){
+    const live=window.agodObjective.adopt(validated.valid?dto:null,lastStarted);
+    if(live.state==='VERIFIED'){
+     parts.push('источник награды: подтверждён автоматически (ресурс @'+live.resourceAddress+', '+live.polarity+')');
+     const mode=document.getElementById('rewardMode');
+     if(mode&&mode.value==='manual'){mode.value='agod';
+      try{mode.dispatchEvent(new Event('change'));}catch(_){}}
+    }else parts.push('источник награды: не подтверждён — обучение по игре не начнётся');
+   }
   }else if(message.dtoCloneable===false){
    parts.push('результат не сериализуется: '+(message.dtoCloneError||''));
   }
@@ -347,6 +362,9 @@
  function onEvent(message){
   if(!message||typeof message!=='object')return;
   if(message.type==='started'){
+   lastStarted=message;
+   /* this build's detector revision settles any objective restored from storage */
+   if(window.agodObjective)window.agodObjective.detector(message);
    set(phase,'AGOD выполняется · driver '+(message.driverRevision||'?')
     +' · pipeline '+(message.pipelineRevision||'?'));
    /* What the run will actually drive and read, from the platform rather than
@@ -371,7 +389,10 @@
     +' кадров · '+Math.round((message.elapsedMs||0)/100)/10+' с'+platformShape);
    return;
   }
-  if(message.type==='result'){showResult(message);finished('AGOD завершён');return;}
+  if(message.type==='result'){showResult(message);
+   const live=window.agodObjective?window.agodObjective.status():null;
+   finished(live&&live.state==='VERIFIED'?'Подтверждено · AGOD завершён'
+    :'Недостаточно данных · AGOD завершён');return;}
   if(message.type==='error'){
    const error=message.error||{};
    set(outcome,(error.budgetExceeded?'бюджет исчерпан: ':'ошибка: ')
@@ -387,6 +408,7 @@
   }
  }
 
+ let autoTimer=null;
  runButton.onclick=()=>{
   if(session)return;
   if(typeof loaded==='undefined'||!loaded||typeof romLoading!=='undefined'&&romLoading){
@@ -408,7 +430,7 @@
   /* cleared per run: a shape left over from the previous cartridge would be a
      claim about this one */
   platformShape='';
-  set(phase,'AGOD запускается…');
+  set(phase,'Ищет · AGOD запускается…');
   /* The live state is passed BY VALUE as a serialised snapshot, so the research
      core starts where the player is without the live instance being shared. */
   let startSnapshot=null;
@@ -443,7 +465,21 @@
   try{session.stop();}catch(_){}
   finished(reason);
  };
- window.addEventListener('lab-rom-loaded',()=>abandon('AGOD остановлен: загружен другой картридж'));
+ window.addEventListener('lab-rom-loaded',()=>{
+  abandon('AGOD остановлен: загружен другой картридж');
+  /* BACKGROUND DISCOVERY. The game is playable at once; discovery runs in the
+     worker on its own core. On by default inside the Android app, where the
+     native bridge exists; a page without it (the host test bench) starts a run
+     only when asked, or when GU_AGOD_AUTOSTART is set. */
+  const auto=window.GU_AGOD_AUTOSTART===true
+   ||(window.GU_AGOD_AUTOSTART!==false&&!!window.FlyBridge);
+  if(!auto)return;
+  clearTimeout(autoTimer);
+  autoTimer=setTimeout(()=>{
+   if(session||(window.agodObjective&&window.agodObjective.active()))return;
+   runButton.onclick();
+  },1500);
+ });
  window.addEventListener('pagehide',()=>abandon('AGOD остановлен: страница закрыта'));
  window.agodRunPanel={status:()=>phase.textContent,
   result:()=>outcome.textContent,budget:()=>budget.textContent,

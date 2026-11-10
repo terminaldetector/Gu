@@ -12,6 +12,7 @@
  async function ready(r){const until=performance.now()+45000;while(true){valid(r);const current=!configuring&&connected?requireDurableCurrent():null;if(current&&playing&&!window.labCurrentPending&&window.fdbAgent?.isBound(current)&&window.curriculumSessions.assignment())return;if(performance.now()>until)throw Error('Агент не подтвердил готовность отрезка');await delay(20);}}
  function feedback(){const p=profileValues();if(p.rewardMode==='diagnostic'){if(labPlatform!=='nes'||romHash!==diagnosticHash)throw Error('Диагностический источник относится к другому ROM');}
   else if(p.rewardMode==='score')FlyScoreSearch.validate(p.scoreSource,p,labPlatform,romHash,ramLimit);
+  else if(p.rewardMode==='agod'){if(!window.agodObjective?.active())throw Error('Цель AGOD для этой игры не подтверждена; обучение не запускается');}
   else if(p.rewardMode!=='ram'&&!(p.winEnabled||p.deathEnabled))throw Error('Нет достоверного источника результата; обучение не запускается');return p;
  }
  async function launch(r,kind){valid(r);window.learningUI.choose(kind);await window.learningUI.start();if(kind==='eval'){$('clock').value='lockstep';window.learningUI.rate(1);}await ready(r);valid(r);}

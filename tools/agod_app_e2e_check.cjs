@@ -365,7 +365,10 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
   execFileSync(process.env.PYTHON||'python3',
    ['tools/make_agod_test_rom.py','--seed','0','--out',fixtureJson]);
   const fixture=JSON.parse(fs.readFileSync(fixtureJson));
-  const fixtureSha='e2e-positive-'+sha(fixture.base64).slice(0,24);
+  /* the cartridge's REAL SHA-256, as the app computes it for an imported ROM.
+     An objective profile binds to it and refuses anything that is not one. */
+  const fixtureSha=crypto.createHash('sha256')
+   .update(Buffer.from(fixture.base64,'base64')).digest('hex');
   const positivePage=await openPage();
   await prepare(positivePage,fixture.base64,
    'AGOD positive fixture (MIT, generated locally)',fixtureSha);
@@ -447,6 +450,51 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
    'the panel does not show VERIFIED: '+positivePanel.result);
   expect(liveBeforePositive===liveAfterPositive,
    'the positive run changed the live RAM: '+liveBeforePositive+' -> '+liveAfterPositive);
+
+  /* ---- 14. L1 in the app: the verified result becomes the reward source ----
+     The same functions lab.js runs on every decision are called here on the
+     page's own live core: fdbRewardSnapshot before and after a real button
+     press, then fdbOutcomeReward. No RAM address is typed anywhere. */
+  const l1=await positivePage.evaluate(async()=>{
+   const objective=window.agodObjective.status();
+   const mode=document.getElementById('rewardMode').value;
+   const dto=window.agodRunPanel.record().dto;
+   const cost=dto.actions.cost,press=mask=>{
+    for(let b=0;b<8;b++)(mask&(1<<b)?nes.buttonDown:nes.buttonUp).call(nes,1,b);
+    for(let i=0;i<4;i++)nes.frame();
+    for(let b=0;b<8;b++)nes.buttonUp(1,b);
+    for(let i=0;i<8;i++)nes.frame();};
+   const snap=()=>fdbRewardSnapshot(sampleRewardMemory());
+   const interval=(mask,valid)=>{const rewardStart=snap();press(mask);frame+=12;
+    return {rewardStart,rewardEnd:snap(),mask,frames:12,valid};};
+   const loss=interval(cost,true);
+   const paid=fdbOutcomeReward(loss,0);
+   const again=fdbOutcomeReward(loss,0);
+   const idle=fdbOutcomeReward(interval(0,true),0);
+   const overridden=fdbOutcomeReward(interval(cost,false),0);
+   const before=window.agodObjective.status().counts;
+   window.agodObjective.revoke('e2e: withdrawn');
+   const afterRevoke=fdbOutcomeReward(interval(cost,true),0);
+   let autonomous=null;
+   try{document.getElementById('rewardMode').value='agod';}catch(_){}
+   return {objective,mode,cost,resourceBefore:loss.rewardStart.value,resourceAfter:loss.rewardEnd.value,
+    paid,again,idle,overridden,afterRevoke,counts:before,
+    stored:Object.keys(localStorage).filter(k=>k.startsWith('gu.agod.objective')).length,
+    panel:document.getElementById('agodRunResult').textContent,
+    status:document.getElementById('agodRunStatus').textContent};
+  });
+  step('14. L1 in the app: a verified objective pays through the app reward path',l1);
+  expect(l1.objective.state==='VERIFIED','the live objective is not VERIFIED: '+JSON.stringify(l1.objective));
+  expect(l1.mode==='agod','the reward source was not switched from manual to agod: '+l1.mode);
+  expect(/Подтверждено/.test(l1.status),'the indicator does not say Подтверждено: '+l1.status);
+  expect(l1.resourceAfter===l1.resourceBefore-1,'the cost action did not lower the discovered resource on the live core: '
+   +l1.resourceBefore+' -> '+l1.resourceAfter);
+  expect(l1.paid.valid===true&&l1.paid.reward===-1,'the verified loss did not pay -1: '+JSON.stringify(l1.paid));
+  expect(l1.again.valid===false&&l1.again.reward===0,'the same event paid twice: '+JSON.stringify(l1.again));
+  expect(l1.idle.valid===false,'an interval with no event was reported as known: '+JSON.stringify(l1.idle));
+  expect(l1.overridden.valid===false,'an invalid (interrupted) interval was paid: '+JSON.stringify(l1.overridden));
+  expect(l1.afterRevoke.valid===false,'a revoked objective still paid: '+JSON.stringify(l1.afterRevoke));
+  expect(l1.stored===1,'the objective was not stored for this cartridge: '+l1.stored);
 
   /* ---- 13. the negative control, kept as a control only ---- */
   const negative=await page.evaluate(()=>{

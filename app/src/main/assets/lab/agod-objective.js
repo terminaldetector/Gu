@@ -142,9 +142,16 @@ function createLiveReward(profile,modules,options){
   const s=sample||{};
   if(revoked)return packet('INVALIDATED','the objective was revoked: '+revoked);
   if(!Number.isInteger(s.endFrame))return packet('UNKNOWN','no end frame for the interval');
+  /* either the two RAM images, or the two values already decoded from them
+     through this same profile (lab.js samples reward bytes sparsely at the
+     moment the retina is captured, so the images no longer exist) */
   let before,after;
-  try{before=read(s.ramBefore);after=read(s.ramAfter);}
-  catch(error){return packet('UNKNOWN','the resource could not be read');}
+  if(Number.isFinite(s.valueBefore)&&Number.isFinite(s.valueAfter)){
+   before=s.valueBefore;after=s.valueAfter;
+  }else{
+   try{before=read(s.ramBefore);after=read(s.ramAfter);}
+   catch(error){return packet('UNKNOWN','the resource could not be read');}
+  }
   if(!Number.isFinite(before)||!Number.isFinite(after))
    return packet('UNKNOWN','the resource read was not a number');
   const delta=after-before;

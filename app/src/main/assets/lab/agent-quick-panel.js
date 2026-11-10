@@ -12,6 +12,7 @@
  const buttons=()=>[...panel.querySelectorAll('button:not(:disabled)')];
  function feedback(){
   if($('rewardMode').value==='diagnostic'&&labPlatform==='nes'&&romHash===diagnosticHash)return 'Обратная связь: встроенный тест NES.';
+  if($('rewardMode').value==='agod')return window.agodObjective?.active()?'Обратная связь: цель подтверждена AGOD автоматически.':'Обратная связь: AGOD не подтвердил цель; обучение ждёт.';
   if($('rewardMode').value==='ram')return 'Обратная связь: настроенный RAM-профиль. Достоверность зависит от профиля.';
   if($('rewardMode').value==='score'){
    try{const p=profileValues();FlyScoreSearch.validate(p.scoreSource,p,labPlatform,romHash,ramLimit);return 'Обратная связь: подтверждённый источник счёта.';}catch(_){}

@@ -57,7 +57,7 @@ function trainingView(){
  $('trainingStatus').textContent=(connected&&playing?'Работает':connected?'Связь включена, игра на паузе':'На паузе')+' · '+labels[mode]+' · '+$('clock').value+' · '+($('runMode').value==='continuous'?'непрерывная игра':'эпизодический опыт');
  const badge=$('trainingBadge');if(badge){badge.textContent=(mode==='teach'?'ПОКАЗ':mode==='train'?'AUTO':mode==='eval'?'ПРОВЕРКА':'ИГРА')+' · '+(connected&&playing?'LIVE':'ПАУЗА');badge.className=connected&&playing?'hud-live':'hud-idle';}
  let f=null;try{f=fdbConfiguration();}catch(_){}const c=f&&f.learningState;if($('trainingBase'))$('trainingBase').checked=!f?.learning||f.learning.trainBase!==false;if($('trainingPlasticity'))$('trainingPlasticity').value=f?.learning?.plasticityMode||'base';if($('trainingCredit'))$('trainingCredit').value=f?.learning?.creditProfile||'single-v1';
- let evidence=source==='ram'||source==='diagnostic'&&labPlatform==='nes'&&typeof diagnosticHash!=='undefined'&&romHash===diagnosticHash||source==='manual'&&($('winEnabled').checked||$('deathEnabled').checked);
+ let evidence=source==='agod'&&!!window.agodObjective?.active()||source==='ram'||source==='diagnostic'&&labPlatform==='nes'&&typeof diagnosticHash!=='undefined'&&romHash===diagnosticHash||source==='manual'&&($('winEnabled').checked||$('deathEnabled').checked);
  if(source==='score')try{FlyScoreSearch.validate(profileValues().scoreSource,profileValues(),labPlatform,romHash,ramLimit);evidence=true;}catch(_){}
  $('trainingFdbStatus').textContent=(f&&f.learning&&f.learning.enabled?(['teach','train'].includes(mode)&&!$('freeze').checked&&connected&&playing?(mode==='train'&&!evidence?'Агент действует; достоверная награда не настроена, FDB ждёт обратной связи':'FDB принимает опыт'):'FDB подключён · обучение на паузе'):'Обучение FDB выключено')+' · примеров '+(c?c.observations:0)+' (человек '+(c?c.human:0)+', auto '+(c?c.automatic:0)+') · обновлений ΔW '+(c&&c.baseUpdates||0)+' · исходных связей в обучении '+(c&&c.baseCandidates||0)+' · порогов '+(f?.neuronDynamics?.thresholdOffsets?.length||0)+' / обновлений '+(c?.neuronUpdates||0)+' · бюджет '+Number(c?.lastBudget||0).toFixed(3)+' · ограничений '+(c?.budgetClips||0)+' · создано '+(c&&c.born||0)+' · удалено '+(c&&c.pruned||0)+' · отклонено '+(c&&c.rejected||0)+' · очередь '+fdbExperience.length;
 }
@@ -71,14 +71,22 @@ function learningStats(){ trainingView();$('learningStats').textContent='Обн�
 function fdbRewardSnapshot(memory){
  const source=$('rewardMode').value,diagnostic=source==='diagnostic';
  const spec={address:Number($('rewardAddress').value),width:Number($('ramWidth').value),format:$('ramFormat').value,endian:$('ramEndian').value};
- const value=diagnostic?-Math.abs(200-memory[0])-Math.abs(100-memory[1]):['ram','score'].includes(source)?FlyGameTools.readRam(memory,spec,ramLimit):0;
+ const value=diagnostic?-Math.abs(200-memory[0])-Math.abs(100-memory[1]):['ram','score'].includes(source)?FlyGameTools.readRam(memory,spec,ramLimit):source==='agod'&&window.agodObjective?window.agodObjective.read(memory):0;
  const success=diagnostic?memory[0]>=200&&Math.abs(memory[1]-100)<=4:$('winEnabled').checked&&FlyGameTools.predicate(memory,$('winAddress').value,$('winValue').value,ramLimit);
  const death=$('deathEnabled').checked&&FlyGameTools.predicate(memory,$('deathAddress').value,$('deathValue').value,ramLimit);
- return {context:JSON.stringify({system:labPlatform,romHash,graph:graphIdentity&&graphIdentity.sha256,inputs:ids('inputIds'),outputs:ids('outputIds'),gmode:gmodeMode,profile:profileValues()}),source,diagnostic,value,success:Boolean(success),death:Boolean(death),spec,wrap:$('ramWrap').checked,scale:Number($('rewardScale').value),bonus:diagnostic?2:Number($('winReward').value),penalty:Number($('deathReward').value)};
+ return {context:JSON.stringify({system:labPlatform,romHash,graph:graphIdentity&&graphIdentity.sha256,inputs:ids('inputIds'),outputs:ids('outputIds'),gmode:gmodeMode,profile:profileValues()}),source,diagnostic,value,frame,success:Boolean(success),death:Boolean(death),spec,wrap:$('ramWrap').checked,scale:Number($('rewardScale').value),bonus:diagnostic?2:Number($('winReward').value),penalty:Number($('deathReward').value)};
 }
 function fdbOutcomeReward(outcome,manualReward){
  const start=outcome&&outcome.rewardStart,end=outcome&&outcome.rewardEnd;
  if(!start||!end||start.context!==end.context)return {reward:0,valid:false};
+ // AGOD: the number comes from the verified broker or not at all. UNKNOWN and
+ // INVALIDATED return valid:false, which settle() answers with a native boundary
+ // and no reward call - never a numeric zero.
+ if(start.source==='agod'){
+  if(!window.agodObjective||start.value===null||end.value===null)return {reward:0,valid:false};
+  const packet=window.agodObjective.settle({valueBefore:start.value,valueAfter:end.value,endFrame:end.frame,requestedMask:outcome.mask,executed:{mask:outcome.mask,frames:outcome.frames,complete:outcome.valid===true,manualOverride:outcome.valid!==true},phase:'PLAYING'});
+  return packet.status==='VERIFIED'&&Number.isFinite(packet.value)?{reward:Math.max(-10,Math.min(10,packet.value)),valid:true,agod:packet.eventId}:{reward:0,valid:false};
+ }
  if(!['manual','ram','score','diagnostic'].includes(start.source))return {reward:0,valid:false};
  if(start.diagnostic&&(labPlatform!=='nes'||typeof diagnosticHash==='undefined'||romHash!==diagnosticHash))return {reward:0,valid:false};
  if(start.source==='score'){try{FlyScoreSearch.validate(profileValues().scoreSource,profileValues(),labPlatform,romHash,ramLimit);}catch(_){return {reward:0,valid:false};}}
@@ -579,6 +587,8 @@ function sampleRewardMemory(){
  const mem=nes.cpu.mem,result={0:mem[0],1:mem[1]};
  if(['ram','score'].includes($('rewardMode').value)){const a=Number($('rewardAddress').value),n=Number($('ramWidth').value);for(let i=0;i<n;i++)result[a+i]=mem[a+i];}
  for(const name of ['win','death'])if($(name+'Enabled').checked){const a=Number($(name+'Address').value);result[a]=mem[a];}
+ // The verified AGOD objective reads its own resource bytes, sampled at the same capture time.
+ if($('rewardMode').value==='agod'&&window.agodObjective)for(const a of window.agodObjective.addresses())result[a]=mem[a];
  return result;
 }
 let durableCurrentGate=null;
@@ -908,7 +918,7 @@ function profileValues(){const values={};for(const id of profileFields){const el
 function updateStartInfo(){$('startInfo').textContent=startSnapshot?'Старт: снимок текущего ROM, кадр '+startSnapshot.frame:'Старт: перезапуск ROM с начала.';}
 function validateProfile(p){
  if(p.rewardMode==='score')FlyScoreSearch.validate(p.scoreSource,p,labPlatform,romHash,ramLimit);
- if(labPlatform!=='nes'&&p.rewardMode==='diagnostic')throw Error('Выберите RAM или ручную награду для этой платформы');FlyGameTools.actions(p.actionMasks,(labPlatform==='sega'||labPlatform==='snes')?4095:255);if(!['diagnostic','ram','score','manual'].includes(p.rewardMode))throw Error('Неверная награда');
+ if(labPlatform!=='nes'&&p.rewardMode==='diagnostic')throw Error('Выберите RAM или ручную награду для этой платформы');FlyGameTools.actions(p.actionMasks,(labPlatform==='sega'||labPlatform==='snes')?4095:255);if(!['diagnostic','ram','score','manual','agod'].includes(p.rewardMode))throw Error('Неверная награда');
  FlyGameTools.readRam(new Uint8Array(ramLimit),{address:p.rewardAddress,width:p.ramWidth,format:p.ramFormat,endian:p.ramEndian},ramLimit);
  for(const [id,min,max] of [['rewardScale',-10,10],['epsilon',0,1],['alpha',.001,.2],['episodeLength',10,2000],['deathReward',-10,10],['winReward',-10,10]]){const n=Number(p[id]);if(!Number.isFinite(n)||n<min||n>max||p[id].trim()===''||(id==='episodeLength'&&!Number.isInteger(n)))throw Error('Параметр профиля вне границ: '+id);}
  for(const name of ['death','win'])FlyGameTools.predicate(new Uint8Array(ramLimit),p[name+'Address'],p[name+'Value'],ramLimit);
