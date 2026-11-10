@@ -17,7 +17,7 @@ kept apart in every row.
 | UX | **PARTIAL** | host E2E: status line, stop, cartridge change, live game untouched. Background autostart only runs where the native bridge exists — not exercised on host |
 | APK | **BUILT, NOT LAUNCHED** | Gradle `assembleDebug` exit 0; all AGOD assets, three cores and both connectomes verified inside the APK; no INTERNET permission. Launch smoke **BLOCKED**: no KVM, and the software emulator's system server dies on every install (see `BUILD_MANIFEST.md`) |
 | RELEASE | **PARTIAL** | debug APK + SHA-256 + manifest. No release signature. |
-| regression | **PASS** | `bash tools/check.sh` exit 0, 134 PASS lines |
+| regression | **PASS** | `bash tools/check.sh` exit 0, 134 PASS lines (before the AGOD gates were added to it); GitHub Actions run 229 on `fd8adec` - the whole workflow, including `check.sh` WITH the AGOD gates, `check_full_dual.sh` and both APK builds - concluded `success` |
 | `agod_phase_detector_regression` | **BLOCKED** | `AGOD_PRIVATE_ROMS` absent; no fixture substituted |
 | physical Android | **DEVICE-PENDING** | no device attached to this environment |
 
