@@ -1,0 +1,173 @@
+{
+ "type": "gu-agod-blind-homebrew",
+ "version": 1,
+ "recordedAtUtc": "2026-11-10T05:52:22.680Z",
+ "romSha256": "0d0165d1f23c262a861533d664f925baec5d707a5d7c244e14259f7e2e0d4237",
+ "romBytes": 24592,
+ "label": "openNES-Snake @66cc333, AFTER the selector fix; not the frozen record",
+ "discipline": "no source, address or rule of this game was available to the search; this record was written before any inspection of the game",
+ "entry": "180 frames from power-on, no input",
+ "results": {
+  "pipeline": {
+   "status": "REFUSED",
+   "stage": "induce",
+   "reason": "the resource did not produce an evidenced NEGATIVE polarity",
+   "goal": null,
+   "discoveredResource": {
+    "address": 25,
+    "width": 1,
+    "step": -10,
+    "direction": "decreasing"
+   },
+   "frames": 9131,
+   "wallMs": 13101
+  },
+  "frontier": {
+   "status": "CONFIRMED",
+   "completeness": "INCOMPLETE: 6 state class(es) were not extended by the beam, so a dependency this search did not find may still exist",
+   "outcomes": {
+    "NO_VISIBLE_EFFECT": 3,
+    "NOT_REPRODUCED": 28,
+    "CONFIRMED": 4,
+    "EXPLAINED_BY_PART": 37
+   },
+   "search": {
+    "expansions": 72,
+    "perDepth": [
+     {
+      "depth": 1,
+      "expanded": 8,
+      "classes": 6,
+      "kept": 4
+     },
+     {
+      "depth": 2,
+      "expanded": 32,
+      "classes": 8,
+      "kept": 4
+     },
+     {
+      "depth": 3,
+      "expanded": 32,
+      "classes": 4,
+      "kept": 0
+     }
+    ],
+    "droppedClasses": 6,
+    "exhaustiveSequences": 584,
+    "judgedSequences": 72
+   },
+   "deepestConfirmed": 1,
+   "multiStepConfirmed": 0,
+   "timeDrivenAddressCount": 7,
+   "confirmed": [
+    {
+     "steps": [
+      "PRESS(16)"
+     ],
+     "orderSensitive": null,
+     "startsAgreeing": 3,
+     "startsTried": 3,
+     "effects": [
+      {
+       "address": 1806,
+       "from": 0,
+       "to": 1,
+       "delta": 1,
+       "transient": false,
+       "firstHorizon": 0,
+       "delayInterval": null
+      }
+     ],
+     "windows": []
+    },
+    {
+     "steps": [
+      "PRESS(32)"
+     ],
+     "orderSensitive": null,
+     "startsAgreeing": 3,
+     "startsTried": 3,
+     "effects": [
+      {
+       "address": 1806,
+       "from": 0,
+       "to": 2,
+       "delta": 2,
+       "transient": false,
+       "firstHorizon": 0,
+       "delayInterval": null
+      }
+     ],
+     "windows": []
+    },
+    {
+     "steps": [
+      "PRESS(64)"
+     ],
+     "orderSensitive": null,
+     "startsAgreeing": 3,
+     "startsTried": 3,
+     "effects": [
+      {
+       "address": 1806,
+       "from": 0,
+       "to": 3,
+       "delta": 3,
+       "transient": false,
+       "firstHorizon": 0,
+       "delayInterval": null
+      }
+     ],
+     "windows": []
+    },
+    {
+     "steps": [
+      "PRESS(128)"
+     ],
+     "orderSensitive": null,
+     "startsAgreeing": 3,
+     "startsTried": 3,
+     "effects": [
+      {
+       "address": 1806,
+       "from": 0,
+       "to": 4,
+       "delta": 4,
+       "transient": false,
+       "firstHorizon": 0,
+       "delayInterval": null
+      }
+     ],
+     "windows": []
+    }
+   ],
+   "fields": [
+    {
+     "address": 1806,
+     "role": "STATE_SELECTOR",
+     "depletion": null,
+     "restoredBy": null
+    }
+   ],
+   "cost": {
+    "frames": 14934,
+    "experiments": 175,
+    "restores": 178,
+    "wallMs": 22757,
+    "heapPeakBytes": 395793248,
+    "exhausted": null
+   }
+  },
+  "graph": {
+   "digest": "c83cebe96ae31f8f",
+   "nodes": 19,
+   "edges": 72,
+   "proofs": 4
+  },
+  "replay": {
+   "proofs": 4,
+   "reproduced": 4
+  }
+ }
+}

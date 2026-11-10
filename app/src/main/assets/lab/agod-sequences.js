@@ -887,6 +887,27 @@ function frontier(driver,options){
    why='specific sequences raise it and it stays raised; whether a higher value '
     +'is BETTER is not established by that';}
   else{role='MIXED';why='moved both ways by different sequences';}
+  /* ACCUMULATING OR SELECTING? One application cannot tell a counter from a
+     switch: "raised and stayed raised" is true of a score and equally true of
+     a direction variable set to 3. On the first blind homebrew run a
+     moving_direction byte (1/2/3/4 for the four directions, confirmed against
+     the game's headers afterwards) was labelled ACCUMULATOR_CANDIDATE for
+     exactly that reason. Repetition decides: a quantity keeps moving when the
+     same sequence is applied again, a selector does not. */
+  if((role==='ACCUMULATOR_CANDIDATE'||role==='RESOURCE_CANDIDATE')&&!exhausted()){
+   const mover=confirmed.find(r=>r.attributed.some(e=>e.address===field.address&&!e.transient));
+   budget.experiments++;
+   metered.restore(root.snapshot);
+   const repeated=[metered.readRam()[field.address]];
+   for(let i=0;i<3;i++){run(metered,mover.steps);metered.run(0,config.release);
+    repeated.push(metered.readRam()[field.address]);}
+   const keepsMoving=repeated[2]!==repeated[1];
+   if(!keepsMoving){
+    role='STATE_SELECTOR';
+    why='the sequence sets it to a value and applying it again changes nothing ('
+     +repeated.join(' -> ')+'): a selector, not a quantity';
+   }
+  }
   const entry={address:field.address,role,why,movers:field.movers};
   /* a resource candidate is characterised: does it have a floor, and does any
      single action restore it from there? */

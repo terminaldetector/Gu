@@ -74,7 +74,7 @@ function fdbRewardSnapshot(memory){
  const value=diagnostic?-Math.abs(200-memory[0])-Math.abs(100-memory[1]):['ram','score'].includes(source)?FlyGameTools.readRam(memory,spec,ramLimit):source==='agod'&&window.agodObjective?window.agodObjective.read(memory):0;
  const success=diagnostic?memory[0]>=200&&Math.abs(memory[1]-100)<=4:$('winEnabled').checked&&FlyGameTools.predicate(memory,$('winAddress').value,$('winValue').value,ramLimit);
  const death=$('deathEnabled').checked&&FlyGameTools.predicate(memory,$('deathAddress').value,$('deathValue').value,ramLimit);
- return {context:JSON.stringify({system:labPlatform,romHash,graph:graphIdentity&&graphIdentity.sha256,inputs:ids('inputIds'),outputs:ids('outputIds'),gmode:gmodeMode,profile:profileValues()}),source,diagnostic,value,frame,success:Boolean(success),death:Boolean(death),spec,wrap:$('ramWrap').checked,scale:Number($('rewardScale').value),bonus:diagnostic?2:Number($('winReward').value),penalty:Number($('deathReward').value)};
+ return {context:JSON.stringify({system:labPlatform,romHash,graph:graphIdentity&&graphIdentity.sha256,inputs:ids('inputIds'),outputs:ids('outputIds'),gmode:gmodeMode,profile:profileValues()}),source,diagnostic,value,frame:typeof frame==='number'?frame:null,success:Boolean(success),death:Boolean(death),spec,wrap:$('ramWrap').checked,scale:Number($('rewardScale').value),bonus:diagnostic?2:Number($('winReward').value),penalty:Number($('deathReward').value)};
 }
 function fdbOutcomeReward(outcome,manualReward){
  const start=outcome&&outcome.rewardStart,end=outcome&&outcome.rewardEnd;
