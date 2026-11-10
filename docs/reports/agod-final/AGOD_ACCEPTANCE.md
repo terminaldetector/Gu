@@ -15,7 +15,7 @@ kept apart in every row.
 | L-IMPROVEMENT | **PASS for the bridge; NEGATIVE for the one L2 ablation** | frozen A/B below; "measured zero" tried and reverted |
 | PLATFORM | **PASS** (host) | `agod_platform_driver_check.cjs` 81/81; `agod_g4_platform_scenarios.cjs` 68/68, 0 blocked; `agod_g3_…` 36/36 |
 | UX | **PARTIAL** | host E2E: status line, stop, cartridge change, live game untouched. Background autostart only runs where the native bridge exists — not exercised on host |
-| APK | see `BUILD_MANIFEST.md` | built, assets verified inside the APK; launch smoke status recorded there |
+| APK | **BUILT, NOT LAUNCHED** | Gradle `assembleDebug` exit 0; all AGOD assets, three cores and both connectomes verified inside the APK; no INTERNET permission. Launch smoke **BLOCKED**: no KVM, and the software emulator's system server dies on every install (see `BUILD_MANIFEST.md`) |
 | RELEASE | **PARTIAL** | debug APK + SHA-256 + manifest. No release signature. |
 | regression | **PASS** | `bash tools/check.sh` exit 0, 134 PASS lines |
 | `agod_phase_detector_regression` | **BLOCKED** | `AGOD_PRIVATE_ROMS` absent; no fixture substituted |
@@ -58,7 +58,7 @@ kept apart in every row.
 
 ## Open, in order
 
-1. Launch and run the chain on a physical device (A1/A2), including background discovery under load.
+1. **Install and launch the APK at all** — it has not been started anywhere — then run the chain on a physical device (A1/A2), including background discovery under load.
 2. The learner's saturation limit, with ablations, on a task whose screen depends on state.
 3. D2 deception fixtures (score↑ at defeat, false win after reset) and live contradiction → revoke.
 4. Phase detection beyond RESPONSIVE/UNKNOWN; private-ROM corpus for the blocked regression.

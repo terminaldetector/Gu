@@ -1,11 +1,11 @@
 # BUILD_MANIFEST
 
-- Commit: `b46c946abf0c8fde0f07e368884424047330de72` on `research/agod-neural-e0-e1` (worktree dirty)
+- Commit: `82b1141c5dafe4bfd710295779e5cda352489661` on `research/agod-neural-e0-e1`
 - APK: `FlyConsole-AGOD-2.2.0-debug.apk` — 208279425 bytes
 - APK SHA-256: `7e015295b9c31c15d360351194543ec3c120f86de3832e1a04bf89120e5301fe`
 - Variant: debug, signed with the Android debug key. **Not a release-signed APK.**
 - Package: `package: name='org.node.flyconsole.nes' versionCode='42' versionName='2.2.0-agod' platformBuildVersionName='15' platformBuildVersionCode='35' compileSdkVersion='35' compileSdkVersionCodename='15'`
-- Launch smoke: PENDING
+- Launch smoke: BLOCKED - no /dev/kvm in this environment. The software emulator (android-30 x86_64, -accel off) boots in 255-339 s, but its system_server dies during every APK install: the full 208 MB APK by streamed install and by push + pm install ('Failure calling service package: Broken pipe'; logcat: 'Zygote failed to write to system_server FD'), and a reduced 59 MB build without the connectomes as well (pm install exit 20, then 'Unable to connect to activity manager'). The APK was therefore NOT launched anywhere. Physical device: DEVICE-PENDING.
 
 ## Assets inside the APK
 

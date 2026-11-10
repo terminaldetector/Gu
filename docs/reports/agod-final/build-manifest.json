@@ -2,9 +2,9 @@
  "type": "gu-agod-build-manifest",
  "version": 1,
  "git": {
-  "commit": "b46c946abf0c8fde0f07e368884424047330de72",
+  "commit": "82b1141c5dafe4bfd710295779e5cda352489661",
   "branch": "research/agod-neural-e0-e1",
-  "dirty": true
+  "dirty": false
  },
  "apk": {
   "file": "FlyConsole-AGOD-2.2.0-debug.apk",
@@ -100,5 +100,5 @@
   "cc65": "n/a",
   "node": "v22.22.0"
  },
- "smoke": "PENDING"
+ "smoke": "BLOCKED - no /dev/kvm in this environment. The software emulator (android-30 x86_64, -accel off) boots in 255-339 s, but its system_server dies during every APK install: the full 208 MB APK by streamed install and by push + pm install ('Failure calling service package: Broken pipe'; logcat: 'Zygote failed to write to system_server FD'), and a reduced 59 MB build without the connectomes as well (pm install exit 20, then 'Unable to connect to activity manager'). The APK was therefore NOT launched anywhere. Physical device: DEVICE-PENDING."
 }
