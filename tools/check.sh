@@ -122,6 +122,16 @@ node tools/fdb_diagnostics_check.cjs
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/DualAgentContext.java app/src/main/java/org/node/flyconsole/DualLayerStore.java app/src/main/java/org/node/flyconsole/DualRequestGuard.java tools/DualAgentCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.DualAgentCheck
 CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/fdb_game_check.cjs
+# AGOD gates: platform independence, four-console scenarios, temporal discovery,
+# the three-step frontier search, and the verified-reward bridge to the
+# production learner. Each prints its own PASS/FAIL count and exits non-zero on
+# a failure; a core that is not built is reported BLOCKED by the gate itself.
+node tools/agod_g3_platform_independence_test.cjs
+node tools/agod_platform_driver_check.cjs
+node tools/agod_g4_platform_scenarios.cjs
+node tools/agod_g5_sequence_check.cjs
+node tools/agod_d1_frontier_check.cjs
+CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/agod_l1_bridge_check.cjs
 FDB_EXPANDED_FIXTURE=1 CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/expanded_game_check.cjs
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/TrainingSessionStore.java tools/TrainingSessionStoreCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.TrainingSessionStoreCheck
