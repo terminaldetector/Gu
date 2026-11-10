@@ -53,7 +53,7 @@ function trainingView(){
  const mode=$('learnMode').value,labels={off:'Обычная игра / Lab',teach:'Показываю сам',train:$('liveHints').checked?'Подсказки в потоке':'Автоматика',eval:'Проверка'};
  $('trainingGuide').textContent=mode==='teach'?'Вы управляете P1. Система учится соответствию экрана и ваших игровых кнопок. Награда для подражания не нужна. Потом выберите Automode или проверку.':mode==='train'?'Агент выбирает игровые действия. Награда сообщает, какие действия полезны. Без награды агент исследует, но не получает критерий успеха.':mode==='eval'?'Агент использует сохранённое поведение. Веса подражания, SARSA и FDB не меняются.': 'Ручная игра доступна сразу. Подключённая сеть выдаёт исходные нейронные кнопки; параметры этого контура находятся в Lab.';
  const source=$('rewardMode').value;
- $('rewardGuide').textContent=source==='manual'?($('liveHints').checked?'Отмечайте полезные действия и ошибки. Нажатия модели и подсказки человека имеют раздельный credit.':'Чистая автоматика без ручных наград. Выберите «Поиск scores» или RAM-профиль; без награды модель исследует без критерия успеха.'):source==='score'?'Награда по подтверждённому счёту игры. Рост очков поощряется; сброс счёта не наказывает.':source==='ram'?'Автооценка по RAM: проверьте адрес, формат и знак изменения на вашей игре.': 'Автооценка относится только к встроенному тесту NES; для внешней игры выберите ручную оценку или RAM.';
+ $('rewardGuide').textContent=source==='agod'?(window.agodObjective?.active()?'Цель найдена и подтверждена автоматически. Ничего настраивать не нужно: агент получает награду за подтверждённые события игры.':'AGOD ищет цель в фоне, пока идёт игра. До подтверждения обучение по игре не начинается — это не ошибка.'):source==='manual'?($('liveHints').checked?'Отмечайте полезные действия и ошибки. Нажатия модели и подсказки человека имеют раздельный credit.':'Чистая автоматика без ручных наград. Выберите «Поиск scores» или RAM-профиль; без награды модель исследует без критерия успеха.'):source==='score'?'Награда по подтверждённому счёту игры. Рост очков поощряется; сброс счёта не наказывает.':source==='ram'?'Автооценка по RAM: проверьте адрес, формат и знак изменения на вашей игре.': 'Автооценка относится только к встроенному тесту NES; для внешней игры выберите ручную оценку или RAM.';
  $('trainingStatus').textContent=(connected&&playing?'Работает':connected?'Связь включена, игра на паузе':'На паузе')+' · '+labels[mode]+' · '+$('clock').value+' · '+($('runMode').value==='continuous'?'непрерывная игра':'эпизодический опыт');
  const badge=$('trainingBadge');if(badge){badge.textContent=(mode==='teach'?'ПОКАЗ':mode==='train'?'AUTO':mode==='eval'?'ПРОВЕРКА':'ИГРА')+' · '+(connected&&playing?'LIVE':'ПАУЗА');badge.className=connected&&playing?'hud-live':'hud-idle';}
  let f=null;try{f=fdbConfiguration();}catch(_){}const c=f&&f.learningState;if($('trainingBase'))$('trainingBase').checked=!f?.learning||f.learning.trainBase!==false;if($('trainingPlasticity'))$('trainingPlasticity').value=f?.learning?.plasticityMode||'base';if($('trainingCredit'))$('trainingCredit').value=f?.learning?.creditProfile||'single-v1';
@@ -74,7 +74,7 @@ function fdbRewardSnapshot(memory){
  const value=diagnostic?-Math.abs(200-memory[0])-Math.abs(100-memory[1]):['ram','score'].includes(source)?FlyGameTools.readRam(memory,spec,ramLimit):source==='agod'&&window.agodObjective?window.agodObjective.read(memory):0;
  const success=diagnostic?memory[0]>=200&&Math.abs(memory[1]-100)<=4:$('winEnabled').checked&&FlyGameTools.predicate(memory,$('winAddress').value,$('winValue').value,ramLimit);
  const death=$('deathEnabled').checked&&FlyGameTools.predicate(memory,$('deathAddress').value,$('deathValue').value,ramLimit);
- return {context:JSON.stringify({system:labPlatform,romHash,graph:graphIdentity&&graphIdentity.sha256,inputs:ids('inputIds'),outputs:ids('outputIds'),gmode:gmodeMode,profile:profileValues()}),source,diagnostic,value,frame:typeof frame==='number'?frame:null,success:Boolean(success),death:Boolean(death),spec,wrap:$('ramWrap').checked,scale:Number($('rewardScale').value),bonus:diagnostic?2:Number($('winReward').value),penalty:Number($('deathReward').value)};
+ return {context:JSON.stringify({system:labPlatform,romHash,graph:graphIdentity&&graphIdentity.sha256,inputs:ids('inputIds'),outputs:ids('outputIds'),gmode:gmodeMode,profile:profileValues()}),source,diagnostic,value,progress:source==='agod'&&window.agodObjective?window.agodObjective.readProgress(memory):null,frame:typeof frame==='number'?frame:null,success:Boolean(success),death:Boolean(death),spec,wrap:$('ramWrap').checked,scale:Number($('rewardScale').value),bonus:diagnostic?2:Number($('winReward').value),penalty:Number($('deathReward').value)};
 }
 function fdbOutcomeReward(outcome,manualReward){
  const start=outcome&&outcome.rewardStart,end=outcome&&outcome.rewardEnd;
@@ -84,8 +84,8 @@ function fdbOutcomeReward(outcome,manualReward){
  // and no reward call - never a numeric zero.
  if(start.source==='agod'){
   if(!window.agodObjective||start.value===null||end.value===null)return {reward:0,valid:false};
-  const packet=window.agodObjective.settle({valueBefore:start.value,valueAfter:end.value,endFrame:end.frame,requestedMask:outcome.mask,executed:{mask:outcome.mask,frames:outcome.frames,complete:outcome.valid===true,manualOverride:outcome.valid!==true},phase:'PLAYING'});
-  return packet.status==='VERIFIED'&&Number.isFinite(packet.value)?{reward:Math.max(-10,Math.min(10,packet.value)),valid:true,agod:packet.eventId}:{reward:0,valid:false};
+  const packet=window.agodObjective.settle({valueBefore:start.value,valueAfter:end.value,progressBefore:start.progress,progressAfter:end.progress,endFrame:end.frame,requestedMask:outcome.mask,executed:{mask:outcome.mask,frames:outcome.frames,complete:outcome.valid===true,manualOverride:outcome.valid!==true},phase:'PLAYING'});
+  return (packet.status==='VERIFIED'||packet.status==='PROVISIONAL')&&Number.isFinite(packet.value)?{reward:Math.max(-10,Math.min(10,packet.value)),valid:true,agod:packet.eventId,tier:packet.status}:{reward:0,valid:false};
  }
  if(!['manual','ram','score','diagnostic'].includes(start.source))return {reward:0,valid:false};
  if(start.diagnostic&&(labPlatform!=='nes'||typeof diagnosticHash==='undefined'||romHash!==diagnosticHash))return {reward:0,valid:false};
@@ -426,7 +426,7 @@ window.labLoadRom=async function(data) {
     if(info.warnings)info.warnings.forEach(log);
     if(info.timing)log('PAL/Dendy: NES ядро работает с NTSC таймингом.');
     if(info.battery)log('Battery RAM .sav отдельно не сохраняется; используйте снимки.');
-    if(!data.name.includes('diagnostic')){$('rewardMode').value='manual';$('learnMode').value='off';status('Игра готова. Цель не подтверждена; можно играть вручную или наблюдать за агентом.');}
+    if(!data.name.includes('diagnostic')){$('rewardMode').value='agod';$('learnMode').value='off';status('Игра готова. AGOD ищет цель в фоне; можно играть вручную или наблюдать за агентом.');}
     trials.length=0;transitions.length=0;learningStats();
     if(window.labGameStates)await window.labGameStates.list();
     if(window.labState)await window.labState.restore();

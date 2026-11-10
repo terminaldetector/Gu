@@ -15,8 +15,10 @@
                      existing broker's claim(), with the executed action, never
                      by arithmetic here.
 
-   UNKNOWN IS NOT ZERO, end to end. observe() returns a packet. Only a VERIFIED
-   packet has a `value` key. UNKNOWN and INVALIDATED packets have none, and the
+   UNKNOWN IS NOT ZERO, end to end. observe() returns a packet. A VERIFIED packet
+   has a `value` key. Under the explicit 'aggressive' policy a PROVISIONAL packet
+   has one too, on its own channel (see createProfile). UNKNOWN and INVALIDATED
+   packets have none, and the
    caller is expected to clear the learner's temporal link instead of sending a
    reward - which is exactly what fdb-feedback.js already does for
    evidenceKnown=false.
@@ -31,7 +33,7 @@
    What was already learned keeps its provenance; it is not retroactively
    described as proof. */
 (function(root){'use strict';
-const PROFILE_SCHEMA=1,OBJECTIVE_REVISION='agod-objective-l1-1';
+const PROFILE_SCHEMA=1,OBJECTIVE_REVISION='agod-objective-d2-2';
 const LEDGER_LIMIT=4096;
 const frozen=Object.freeze.bind(Object);
 
@@ -89,6 +91,34 @@ function createProfile(dto,identitySource,modules){
  if(dto.resource.address+dto.resource.width>identity.observedRamBytes)
   return refuse('the resource lies outside the observed RAM of this platform');
  const identityKey=fnv(canonical(identity));
+ /* PROGRESS FIELDS (D2, the aggressive tier). A resource goal alone teaches an
+    agent not to lose; nothing in it says what to do instead, and no level is
+    passed by standing still. The pipeline already measures the one behavioural
+    fact that separates a quantity the game VALUES from a counter that merely
+    grows: what the game takes away when the resource is restored from its
+    floor. A field that an action raises, and that the reversal arm destroys,
+    is a gain the game itself ties to survival. Position bytes, level counters
+    and input echoes are raised by actions too, but survive the reversal, and
+    are not taken.
+
+    This is evidence of what the game couples to the resource, NOT a verified
+    positive polarity - so it travels as its own PROVISIONAL channel, at a
+    fraction of a verified loss, and only when the caller asks for it. */
+ const lost=new Set();
+ for(const entry of dto.trace||[])
+  if(entry.stage==='reverse'&&Array.isArray(entry.lostGainAddresses))
+   for(const address of entry.lostGainAddresses)lost.add(address);
+ const progress=[],seen=new Set();
+ for(const field of (dto.discovered&&dto.discovered.increasingFields)||[]){
+  if(!Number.isInteger(field.address)||!lost.has(field.address)||seen.has(field.address))continue;
+  if(field.address===dto.resource.address)continue;
+  if(field.address+(field.width||1)>identity.observedRamBytes)continue;
+  seen.add(field.address);
+  progress.push(frozen({address:field.address,width:field.width||1,endian:field.endian,
+   encoding:field.encoding,encodingDetermined:field.encodingDetermined===true,
+   mask:Number.isInteger(field.mask)?field.mask:null,
+   basis:'raised by an action and destroyed by the reversal arm'}));
+ }
  return frozen({status:'PROFILE',profileSchema:PROFILE_SCHEMA,
   objectiveRevision:OBJECTIVE_REVISION,
   identity:frozen(identity),identityKey,
@@ -98,6 +128,7 @@ function createProfile(dto,identitySource,modules){
    endian:dto.resource.endian,encoding:dto.resource.encoding,
    encodingDetermined:dto.resource.encodingDetermined===true}),
   actions:dto.actions?frozen({...dto.actions}):null,
+  progress:frozen(progress),
   /* the goal record travels with the profile, so the mechanism can be rebuilt
      and so the evidence a payout cites is the evidence that was verified */
   dto});
@@ -133,7 +164,15 @@ function createLiveReward(profile,modules,options){
  const ledger=[],paid=new Set();
  for(const id of Array.isArray(settings.ledger)?settings.ledger:[])
   if(typeof id==='string'&&!paid.has(id)){paid.add(id);ledger.push(id);}
- const counts={VERIFIED:0,UNKNOWN:0,INVALIDATED:0};
+ const counts={VERIFIED:0,PROVISIONAL:0,UNKNOWN:0,INVALIDATED:0};
+ /* 'strict': only a verified event pays - every result before this was produced
+    that way. 'aggressive': a gain in a progress field also pays, as PROVISIONAL. */
+ const policy=settings.policy==='aggressive'?'aggressive':'strict';
+ const PROGRESS_UNIT=Number.isFinite(settings.progressUnit)?settings.progressUnit:0.25;
+ const progressSpecs=(profile.progress||[]).map(field=>parts.Dto.decodeSpecFor(field));
+ const readProgress=memory=>progressSpecs.map(spec=>{
+  try{const value=parts.Ram.decode(memory,spec);return Number.isFinite(value)?value:null;}
+  catch(error){return null;}});
  let revoked=null;
  const packet=(status,reason,extra)=>{counts[status]++;
   return frozen({status,reason,goalId:profile.goal.id,...(extra||{})});};
@@ -165,8 +204,40 @@ function createLiveReward(profile,modules,options){
      not consistently better than paying losses only (it won one seed and lost
      another at each budget), so it bought nothing and widened the one rule
      this module exists to keep. */
-  if(eventMagnitude===0)
+  if(eventMagnitude===0){
+   /* THE PROVISIONAL TIER. No verified event; did a progress field rise? The
+      same conditions a verified claim must meet apply - the requested action
+      ran, to completion, with no human in it, while play was not suppressed -
+      and the same ledger makes it payable once. It is paid at PROGRESS_UNIT
+      per unit, capped at one unit-step of four, so no amount of provisional
+      gain outweighs one verified loss. */
+   if(policy==='aggressive'&&progressSpecs.length){
+    const executed=s.executed||{};
+    const clean=executed.complete===true&&executed.manualOverride!==true
+     &&Number.isInteger(executed.mask)&&Number.isInteger(executed.frames)&&executed.frames>0
+     &&(!Number.isInteger(s.requestedMask)||s.requestedMask===executed.mask)
+     &&(s.phase===undefined||s.phase==='PLAYING')
+     &&!(s.episode&&(s.episode.partition==='control'||s.episode.restoredAfterObservation===true));
+    const was=Array.isArray(s.progressBefore)?s.progressBefore:(s.ramBefore?readProgress(s.ramBefore):null);
+    const now=Array.isArray(s.progressAfter)?s.progressAfter:(s.ramAfter?readProgress(s.ramAfter):null);
+    if(clean&&was&&now){
+     let gain=0;
+     for(let i=0;i<progressSpecs.length;i++)
+      if(Number.isFinite(was[i])&&Number.isFinite(now[i])&&now[i]>was[i])gain+=now[i]-was[i];
+     if(gain>0){
+      const eventId=sessionId+':'+profile.goal.id+':'+s.endFrame+':p';
+      if(paid.has(eventId))
+       return packet('INVALIDATED','this progress was already credited (ledger)',{eventId});
+      paid.add(eventId);ledger.push(eventId);
+      if(ledger.length>LEDGER_LIMIT)paid.delete(ledger.shift());
+      return packet('PROVISIONAL','a field the game destroys on reversal rose',
+       {eventId,channel:'provisional-progress',value:PROGRESS_UNIT*Math.min(4,gain),gain,
+        notVerified:'this is a coupled gain, not a verified positive polarity'});
+     }
+    }
+   }
    return packet('UNKNOWN','no verified event in this interval',{delta});
+  }
   const eventId=sessionId+':'+profile.goal.id+':'+s.endFrame;
   if(paid.has(eventId))
    return packet('INVALIDATED','this event was already credited (ledger)',{eventId});
@@ -188,7 +259,8 @@ function createLiveReward(profile,modules,options){
    {eventId,value:claim.value,magnitude:eventMagnitude,
     executedAction:claim.executedAction,evidenceRefs:claim.evidenceRefs});
  }
- return frozen({status:'READY',observe,read,
+ return frozen({status:'READY',observe,read,readProgress,policy,
+  progressFields:(profile.progress||[]).length,
   revoke(reason){revoked=String(reason||'revoked');broker.revokeGoal(profile.goal.id,revoked);},
   revoked:()=>revoked,
   counts:()=>({...counts}),

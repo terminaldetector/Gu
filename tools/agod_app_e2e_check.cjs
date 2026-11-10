@@ -467,6 +467,9 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
    const snap=()=>fdbRewardSnapshot(sampleRewardMemory());
    const interval=(mask,valid)=>{const rewardStart=snap();press(mask);frame+=12;
     return {rewardStart,rewardEnd:snap(),mask,frames:12,valid};};
+   /* the aggressive tier first, on a fresh interval: the effect action raises
+      the field the game destroys on reversal */
+   const gain=fdbOutcomeReward(interval(dto.actions.effect,true),0);
    const loss=interval(cost,true);
    const paid=fdbOutcomeReward(loss,0);
    const again=fdbOutcomeReward(loss,0);
@@ -478,7 +481,7 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
    let autonomous=null;
    try{document.getElementById('rewardMode').value='agod';}catch(_){}
    return {objective,mode,cost,resourceBefore:loss.rewardStart.value,resourceAfter:loss.rewardEnd.value,
-    paid,again,idle,overridden,afterRevoke,counts:before,
+    gain,paid,again,idle,overridden,afterRevoke,counts:before,
     stored:Object.keys(localStorage).filter(k=>k.startsWith('gu.agod.objective')).length,
     panel:document.getElementById('agodRunResult').textContent,
     status:document.getElementById('agodRunStatus').textContent};
@@ -489,6 +492,11 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
   expect(/Подтверждено/.test(l1.status),'the indicator does not say Подтверждено: '+l1.status);
   expect(l1.resourceAfter===l1.resourceBefore-1,'the cost action did not lower the discovered resource on the live core: '
    +l1.resourceBefore+' -> '+l1.resourceAfter);
+  expect(l1.objective.policy==='aggressive'&&l1.objective.progressFields>=1,
+   'the app does not run the aggressive policy with a progress field: '+JSON.stringify(l1.objective));
+  expect(l1.gain.valid===true&&l1.gain.reward>0&&l1.gain.reward<1&&l1.gain.tier==='PROVISIONAL',
+   'a rise in the progress field did not pay as PROVISIONAL below a verified loss: '+JSON.stringify(l1.gain));
+  expect(l1.paid.tier==='VERIFIED','the loss was not paid on the verified tier: '+JSON.stringify(l1.paid));
   expect(l1.paid.valid===true&&l1.paid.reward===-1,'the verified loss did not pay -1: '+JSON.stringify(l1.paid));
   expect(l1.again.valid===false&&l1.again.reward===0,'the same event paid twice: '+JSON.stringify(l1.again));
   expect(l1.idle.valid===false,'an interval with no event was reported as known: '+JSON.stringify(l1.idle));
@@ -508,6 +516,53 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
   expect(negative.status==='DISABLED'||negative.status==='NOT-LOADED'
    ||negative.status==='REFUSED',
    'session(null) did not refuse: '+JSON.stringify(negative));
+
+  /* ---- 15. discovery follows the game ----
+     A cartridge whose boot state gives discovery nothing. With background
+     discovery on, the first run starts by itself and does not verify. A retry
+     must NOT fire while the live game stands still, and MUST fire once it has
+     advanced - from the state the game is in now. */
+  const seqJson=path.join(work,'sequence.json');
+  execFileSync(process.env.PYTHON||'python3',['tools/make_agod_sequence_rom.py','--out',seqJson]);
+  const seq=JSON.parse(fs.readFileSync(seqJson));
+  const followPage=await browser.newPage({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
+  followPage.on('pageerror',error=>pageErrors.push(error.message));
+  await followPage.addInitScript(()=>{window.GU_AGOD_AUTOSTART=true;window.GU_AGOD_RETRY_SECONDS=2;});
+  await followPage.route('https://flyconsole.local/**',async route=>{
+   const file=path.join(assets,new URL(route.request().url()).pathname.slice(1));
+   if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
+   const type=file.endsWith('.js')?'application/javascript':file.endsWith('.json')?'application/json'
+    :file.endsWith('.css')?'text/css':'text/html';
+   return route.fulfill({status:200,contentType:type,body:fs.readFileSync(file)});
+  });
+  await followPage.goto('https://flyconsole.local/lab/index.html');
+  await followPage.waitForFunction(()=>typeof window.labLoadRom==='function',null,{timeout:60000});
+  await followPage.evaluate(data=>window.labLoadRom(data),{base64:seq.base64,
+   name:'AGOD sequence fixture (MIT, generated locally)',
+   sha256:crypto.createHash('sha256').update(Buffer.from(seq.base64,'base64')).digest('hex')});
+  await followPage.waitForFunction(()=>loaded===true,null,{timeout:60000});
+  const defaultMode=await followPage.evaluate(()=>document.getElementById('rewardMode').value);
+  const statusOf=()=>followPage.evaluate(()=>document.getElementById('agodRunStatus').textContent);
+  /* first run: starts by itself, ends without a verified goal */
+  await followPage.waitForFunction(()=>/Недостаточно данных/.test(document.getElementById('agodRunStatus').textContent),
+   null,{timeout:300000});
+  const afterFirst=await statusOf();
+  await followPage.waitForTimeout(7000);          /* well past the 2 s retry delay */
+  const stillWaiting=await statusOf();
+  /* now the game moves */
+  await followPage.evaluate(()=>{for(let i=0;i<120;i++)nes.frame();frame+=120;});
+  await followPage.waitForFunction(()=>/попытка 2/.test(document.getElementById('agodRunStatus').textContent)
+   ||/попытка 2/.test(window.__lastAgodPhase||''),null,{timeout:60000}).catch(()=>{});
+  const afterAdvance=await statusOf();
+  const objective=await followPage.evaluate(()=>window.agodObjective.status());
+  step('15. discovery follows the game',{defaultMode,afterFirst,stillWaiting,afterAdvance,objective});
+  expect(defaultMode==='agod','an imported cartridge does not default to the automatic reward source: '+defaultMode);
+  expect(/Недостаточно данных/.test(afterFirst),'background discovery did not start and finish by itself: '+afterFirst);
+  expect(!/попытка 2/.test(stillWaiting),'a retry fired although the live game had not advanced: '+stillWaiting);
+  expect(/попытка 2|Недостаточно данных/.test(afterAdvance)&&afterAdvance!==stillWaiting||/попытка 2/.test(afterAdvance),
+   'no second attempt after the game advanced: '+afterAdvance);
+  expect(objective.state!=='VERIFIED','a cartridge with no single-action goal was given an objective: '+JSON.stringify(objective));
+  await followPage.close();
 
   report.pageErrors=pageErrors.slice();
   expect(pageErrors.length===0,'the page reported errors: '+pageErrors.join(' | '));

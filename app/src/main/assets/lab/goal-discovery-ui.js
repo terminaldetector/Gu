@@ -391,8 +391,16 @@
   }
   if(message.type==='result'){showResult(message);
    const live=window.agodObjective?window.agodObjective.status():null;
-   finished(live&&live.state==='VERIFIED'?'Подтверждено · AGOD завершён'
-    :'Недостаточно данных · AGOD завершён');return;}
+   const verified=live&&live.state==='VERIFIED';
+   finished(verified?'Подтверждено · AGOD завершён':'Недостаточно данных · AGOD завершён');
+   /* DISCOVERY FOLLOWS THE GAME. A cartridge examined from its title screen has
+      nothing to find: no resource moves there. So a run that did not verify is
+      tried again later FROM WHEREVER THE PLAYER OR THE AGENT HAS GOT TO, as
+      long as the live game has actually advanced since the last attempt. The
+      attempts are bounded and spaced out, and stop for good on a verified
+      goal, a new cartridge or the stop button. */
+   if(!verified)scheduleRetry();
+   return;}
   if(message.type==='error'){
    const error=message.error||{};
    set(outcome,(error.budgetExceeded?'бюджет исчерпан: ':'ошибка: ')
@@ -408,7 +416,23 @@
   }
  }
 
- let autoTimer=null;
+ let autoTimer=null,retryTimer=null,attempts=0,lastAttemptFrame=-1,userStopped=false;
+ const RETRY_LIMIT=8,RETRY_DELAYS=[20,30,45,60,90,120,180,240];
+ const autoEnabled=()=>window.GU_AGOD_AUTOSTART===true
+  ||(window.GU_AGOD_AUTOSTART!==false&&!!window.FlyBridge);
+ function scheduleRetry(){
+  clearTimeout(retryTimer);
+  if(!autoEnabled()||userStopped||attempts>=RETRY_LIMIT)return;
+  const wait=(window.GU_AGOD_RETRY_SECONDS||RETRY_DELAYS[Math.min(attempts,RETRY_DELAYS.length-1)])*1000;
+  retryTimer=setTimeout(()=>{
+   if(session||userStopped||(window.agodObjective&&window.agodObjective.active()))return;
+   const now=liveFrame();
+   /* the game has not moved since the last attempt: the same state would
+      give the same answer, so wait for play rather than spend the budget */
+   if(now!==null&&now===lastAttemptFrame){scheduleRetry();return;}
+   runButton.onclick();
+  },wait);
+ }
  runButton.onclick=()=>{
   if(session)return;
   if(typeof loaded==='undefined'||!loaded||typeof romLoading!=='undefined'&&romLoading){
@@ -430,11 +454,18 @@
   /* cleared per run: a shape left over from the previous cartridge would be a
      claim about this one */
   platformShape='';
-  set(phase,'Ищет · AGOD запускается…');
+  attempts++;lastAttemptFrame=liveFrame();
+  set(phase,'Ищет · AGOD запускается…'+(attempts>1?' (попытка '+attempts+', из текущего состояния игры)':''));
   /* The live state is passed BY VALUE as a serialised snapshot, so the research
      core starts where the player is without the live instance being shared. */
+  /* jsnes restores from a JSON string; the WASM cores restore from their own
+     state object. Stringifying every platform's snapshot made the worker's
+     restore fail on Sega, Game Boy and SNES, so the run could only ever start
+     from that worker's own boot - the title screen. */
   let startSnapshot=null;
-  try{startSnapshot=JSON.stringify(nes.toJSON());}catch(_){startSnapshot=null;}
+  try{const state=nes.toJSON();
+   startSnapshot=(typeof labPlatform==='undefined'||labPlatform==='nes')?JSON.stringify(state):state;
+  }catch(_){startSnapshot=null;}
   const started=window.FlyAgodExperimental.runInWorker({
    platform:typeof labPlatform!=='undefined'?labPlatform:'nes',
    romBinaryString:rom,
@@ -453,6 +484,8 @@
  };
 
  stopButton.onclick=()=>{
+  /* a stop from the user also stops the background retries, until a new cartridge */
+  userStopped=true;clearTimeout(retryTimer);
   if(!session)return;
   try{session.stop();}catch(_){}
   finished('AGOD остановлен');
@@ -471,9 +504,8 @@
      worker on its own core. On by default inside the Android app, where the
      native bridge exists; a page without it (the host test bench) starts a run
      only when asked, or when GU_AGOD_AUTOSTART is set. */
-  const auto=window.GU_AGOD_AUTOSTART===true
-   ||(window.GU_AGOD_AUTOSTART!==false&&!!window.FlyBridge);
-  if(!auto)return;
+  clearTimeout(retryTimer);attempts=0;lastAttemptFrame=-1;userStopped=false;
+  if(!autoEnabled())return;
   clearTimeout(autoTimer);
   autoTimer=setTimeout(()=>{
    if(session||(window.agodObjective&&window.agodObjective.active()))return;

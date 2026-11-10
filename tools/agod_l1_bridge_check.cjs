@@ -129,6 +129,24 @@ function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<
  const costOutput=Math.log2(profile.actions.cost);
  console.log('  profile identityKey=%s resource@%d actions=%j (neutral, effect, cost) - all from discovery',
   profile.identityKey,profile.resource.address,actions);
+ console.log('  progress fields (raised by an action, destroyed by the reversal arm): %j',
+  profile.progress.map(f=>({address:f.address,mask:f.mask})));
+ ok(profile.progress.length>=1,'the profile names at least one progress field, found without an oracle');
+ /* THE DECEPTION CONTROL. This cartridge has four fields an action raises: the
+    score, a sprite coordinate, its OAM mirror and a level counter. Only the
+    score is destroyed by the reversal arm. Paying for any of the other three
+    would reward moving a sprite or pressing a button - so they must not be
+    progress, and the count of raised fields is asserted so this cannot pass by
+    there being nothing to exclude. */
+ const raised=(found.dto.discovered.increasingFields||[]).map(f=>f.address);
+ const taken=new Set(profile.progress.map(f=>f.address));
+ console.log('  raised by some action: %j; of those, progress: %j',raised,[...taken]);
+ ok(new Set(raised).size>=3,'the cartridge really has several action-raised fields ('+new Set(raised).size+')');
+ ok(raised.filter(a=>!taken.has(a)).length>=2&&taken.size<new Set(raised).size,
+  'fields an action raises but the game does NOT take away are not progress: '
+   +JSON.stringify(raised.filter(a=>!taken.has(a))));
+ const strictLive=Objective.createLiveReward(profile,MODULES,{identity:found.identity});
+ ok(strictLive.policy==='strict','the default policy is strict: a provisional gain pays only when asked for');
  ok(Objective.matches(profile,found.identity).ok,'the profile matches the game it was proved on');
  const other=Objective.matches(profile,{...found.identity,romSha256:sha(Buffer.from('another cartridge'))});
  ok(!other.ok&&/romSha256/.test(other.problems.join()),'and refuses a different cartridge: '+other.problems[0].slice(0,60));
@@ -142,7 +160,7 @@ function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<
  ok(none.status==='REFUSED'&&noProfile.status==='REFUSED','a cartridge discovery refuses yields NO profile');
 
  const java=bridge();
- const rows=[],ab=[];
+ const rows=[],ab=[],gains=[];
  try{
   /* one run: optional training through the live reward, then a frozen evaluation */
   async function run(seed,mode,romBytes,reward,options){
@@ -151,9 +169,9 @@ function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<
    await java.call({op:'prior',output:costOutput,weight:PRIOR});
    const initial=await java.call({op:'state'});
    const game=live(romBytes);
-   const stats={verified:0,unknown:0,invalidated:0,rewardCalls:0,changed:0,valueKeysOutsideVerified:0};
+   const stats={verified:0,provisional:0,unknown:0,invalidated:0,rewardCalls:0,changed:0,valueKeysOutsideVerified:0};
    async function play(steps,train){
-    let cost=0,lost=0;
+    let cost=0,lost=0,gained=0;
     for(let step=0;step<steps;step++){
      const d=await java.call({op:'decide',retina:game.retina(),train,actions,epsilon:train?.1:0,windowMs:20});
      const before=game.ram();
@@ -162,12 +180,18 @@ function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<
      if(d.mask===profile.actions.cost)cost++;
      const lives=after[profile.resource.address],previous=before[profile.resource.address];
      if(lives<previous)lost+=previous-lives;
+     for(const field of profile.progress){const d2=after[field.address]-before[field.address];if(d2>0)gained+=d2;}
      if(train){
       const packet=reward?reward.observe({ramBefore:before,ramAfter:after,endFrame,
        executed:{mask:d.mask,frames:HOLD+RELEASE,complete:true,manualOverride:false},
        requestedMask:d.mask,phase:'PLAYING'}):{status:'UNKNOWN',reason:'no objective profile'};
-      if(packet.status!=='VERIFIED'&&'value' in packet)stats.valueKeysOutsideVerified++;
-      if(packet.status==='VERIFIED'){
+      if(packet.status!=='VERIFIED'&&packet.status!=='PROVISIONAL'&&'value' in packet)stats.valueKeysOutsideVerified++;
+      if(packet.status==='PROVISIONAL'){
+       stats.provisional++;stats.rewardCalls++;
+       const r=await java.call({op:'reward',id:d.id,mask:d.mask,reward:packet.value,
+        seconds:(HOLD+RELEASE)/60,frames:HOLD+RELEASE});
+       stats.changed+=r.changed;
+      }else if(packet.status==='VERIFIED'){
        stats.verified++;stats.rewardCalls++;
        const r=await java.call({op:'reward',id:d.id,mask:d.mask,reward:packet.value,
         seconds:(HOLD+RELEASE)/60,frames:HOLD+RELEASE});
@@ -179,7 +203,7 @@ function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<
      }
      if(lives===0){game.restore();if(train)await java.call({op:'boundary'});}
     }
-    return {cost,lost};
+    return {cost,lost,gained};
    }
    if(settings.trainSteps){
     if(settings.checkpointAt){
@@ -199,7 +223,7 @@ function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<
    const before=await java.call({op:'state'});
    const evaluation=await play(EVAL_STEPS,false);
    const after=await java.call({op:'state'});
-   const row={seed,mode,...stats,evalCost:evaluation.cost,evalLost:evaluation.lost,
+   const row={seed,mode,...stats,evalCost:evaluation.cost,evalLost:evaluation.lost,evalGained:evaluation.gained,
     updates:after.updates,deltas:after.deltas,edges:after.edges,
     weightsChanged:after.weights!==initial.weights,
     frozenClean:after.updates===before.updates&&after.rng===before.rng
@@ -207,14 +231,18 @@ function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<
     weights:after.weights,rng:after.rng,stateText:JSON.stringify(after.learningState)};
    rows.push(row);return row;
   }
-  const liveReward=()=>Objective.createLiveReward(profile,MODULES,
-   {identity:found.identity,sessionId:'l1-'+crypto.randomBytes(4).toString('hex')});
+  const liveReward=policy=>Objective.createLiveReward(profile,MODULES,
+   {identity:found.identity,sessionId:'l1-'+crypto.randomBytes(4).toString('hex'),policy});
 
   console.log('=== 2. training through the verified reward ===');
   for(const seed of SEEDS){
    const untrained=await run(seed,'untrained',positive,null,{});
    const trained=await run(seed,'trained',positive,liveReward(),{trainSteps:TRAIN_STEPS});
    const resumed=await run(seed,'resumed',positive,liveReward(),{trainSteps:TRAIN_STEPS,checkpointAt:TRAIN_STEPS/2});
+   /* D2, THE AGGRESSIVE TIER. Same seed, starts, budget and cartridge; the only
+      difference is that a rise in a field the game destroys on reversal is
+      also paid, as PROVISIONAL, at a quarter of a verified loss per unit. */
+   const aggressive=await run(seed,'aggressive',positive,liveReward('aggressive'),{trainSteps:TRAIN_STEPS});
    const unknown=await run(seed,'unknown-source',positive,null,{trainSteps:TRAIN_STEPS});
    const random=rng(seed);const g=live(positive);let rc=0,rl=0;
    for(let s=0;s<EVAL_STEPS;s++){const m=actions[Math.floor(random()*3)];const b=g.ram();g.step(m);const a=g.ram();
@@ -236,6 +264,17 @@ function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<
     'seed '+seed+': a checkpoint restored mid-training continues to the same weights and behaviour');
    ok(trained.evalCost<untrained.evalCost,'seed '+seed+': trained takes the verified-cost action less than the layer it started from ('
     +trained.evalCost+' < '+untrained.evalCost+')');
+   console.log('          aggressive: cost %d lost %d GAINED %d  (verified %d, provisional %d) | strict gained %d | untrained gained %d',
+    aggressive.evalCost,aggressive.evalLost,aggressive.evalGained,aggressive.verified,aggressive.provisional,
+    trained.evalGained,untrained.evalGained);
+   ok(aggressive.provisional>0&&aggressive.verified>0,'seed '+seed+': the aggressive tier paid '+aggressive.provisional
+    +' provisional gains alongside '+aggressive.verified+' verified losses');
+   ok(aggressive.frozenClean,'seed '+seed+' aggressive: the frozen evaluation mutated nothing');
+   ok(aggressive.evalLost===0,'seed '+seed+': the aggressive agent still loses nothing ('+aggressive.evalLost+')');
+   ok(aggressive.evalGained>trained.evalGained&&aggressive.evalGained>untrained.evalGained,
+    'seed '+seed+': and it makes PROGRESS the strict agent does not ('+aggressive.evalGained+' vs strict '
+    +trained.evalGained+', untrained '+untrained.evalGained+')');
+   gains.push({seed,untrained:untrained.evalGained,strict:trained.evalGained,aggressive:aggressive.evalGained});
    ok(trained.evalLost<rl,'seed '+seed+': and loses less of the resource than a seeded random policy ('+trained.evalLost+' < '+rl+')');
    ab.push({seed,untrained:untrained.evalLost,trained:trained.evalLost,random:rl});
   }
@@ -267,7 +306,9 @@ function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<
 
  console.log('=== A/B, frozen evaluation, resource lost in %d steps ===',EVAL_STEPS);
  for(const r of ab)console.log('  seed %d  untrained %d | trained %d | random %d',r.seed,r.untrained,r.trained,r.random);
- const summary={kind:'agod-l1-bridge',ab,graph:process.env.FDB_GRAPH?'configured connectome':'30-neuron mechanism fixture; not the fly connectome',
+ console.log('=== progress gained in %d frozen steps ===',EVAL_STEPS);
+ for(const g of gains)console.log('  seed %d  untrained %d | strict %d | aggressive %d',g.seed,g.untrained,g.strict,g.aggressive);
+ const summary={kind:'agod-l1-bridge',ab,gains,graph:process.env.FDB_GRAPH?'configured connectome':'30-neuron mechanism fixture; not the fly connectome',
   trainSteps:TRAIN_STEPS,evalSteps:EVAL_STEPS,
   rows:rows.map(({weights,stateText,...rest})=>rest)};
  if(process.env.AGOD_L1_REPORT)fs.writeFileSync(process.env.AGOD_L1_REPORT,JSON.stringify(summary,null,1)+'\n');

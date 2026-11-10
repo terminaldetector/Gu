@@ -40,6 +40,7 @@
    polarity:profile?profile.goal.polarity:null,
    resourceAddress:profile?profile.resource.address:null,
    identityKey:profile?profile.identityKey:null,
+   policy:reward?reward.policy:null,progressFields:profile?(profile.progress||[]).length:0,
    counts:reward?reward.counts():null,revoked:reward?reward.revoked():null};
  }
  function persist(){
@@ -48,8 +49,13 @@
    ledger:reward?reward.exportLedger():[]}));}catch(_){}
  }
  function arm(ledger){
+  /* THE APP RUNS THE AGGRESSIVE POLICY unless GU_AGOD_POLICY says 'strict': a
+     verified loss pays in full, and a rise in a field the game destroys on
+     reversal pays as PROVISIONAL. Strict alone taught the agent to stand
+     still - measured: 0 progress in 60 frozen steps against 59. */
   const live=window.FlyAgodObjective.createLiveReward(profile,modules(),
-   {identity:identity(),sessionId:'app-'+(window.flyOriginId||'session'),ledger});
+   {identity:identity(),sessionId:'app-'+(window.flyOriginId||'session'),ledger,
+    policy:window.GU_AGOD_POLICY==='strict'?'strict':'aggressive'});
   if(live.status!=='READY'){reward=null;state='REFUSED';reason=live.reason;return false;}
   reward=live;state='VERIFIED';reason='';return true;
  }
@@ -113,7 +119,13 @@
  function addresses(){
   if(!profile||state!=='VERIFIED')return [];
   const out=[];for(let i=0;i<profile.resource.width;i++)out.push(profile.resource.address+i);
+  for(const field of profile.progress||[])for(let i=0;i<field.width;i++)out.push(field.address+i);
   return out;
+ }
+ /* the progress values from the same sampled bytes; [] when there are none */
+ function readProgress(memory){
+  if(!active())return [];
+  try{return reward.readProgress(memory);}catch(_){return [];}
  }
  /* one executed interval -> a packet. Only VERIFIED carries a value. */
  function settle(sample){
@@ -123,12 +135,12 @@
    return {status:'INVALIDATED',reason:'the game changed under the objective'};
   }
   const packet=reward.observe(sample);
-  if(packet.status==='VERIFIED')persist();
+  if(packet.status==='VERIFIED'||packet.status==='PROVISIONAL')persist();
   return packet;
  }
  function revoke(why){if(reward){reward.revoke(why);state='INVALIDATED';reason=String(why);persist();notify();}}
 
- window.agodObjective={adopt,detector,romLoaded,active,read,addresses,settle,revoke,
+ window.agodObjective={adopt,detector,romLoaded,active,read,readProgress,addresses,settle,revoke,
   status,subscribe:fn=>{listeners.add(fn);return()=>listeners.delete(fn);}};
  window.addEventListener('lab-rom-loaded',romLoaded);
 })();
