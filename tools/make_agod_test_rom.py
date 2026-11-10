@@ -66,7 +66,7 @@ class Assembler:
         return self.code
 
 
-def generate(seed=1):
+def generate(seed=1, backdrop=None):
     rng = random.Random(seed)
     used = set(range(0x40))
 
@@ -306,7 +306,12 @@ def generate(seed=1):
     asm.label('interrupt')
     asm.emit(0x40)
     asm.label('palette')
-    asm.emit(*([0x0F, 0x21, 0x12, 0x30] * 4 + [0x0F, 0x16, 0x30, 0x21] * 4))
+    # `backdrop` replaces the universal background colour. The default leaves
+    # every byte of the cartridge - and every SHA-256 published for this family
+    # - unchanged. A lit screen exists for the learning checks: a retina that
+    # reads black gives a spiking learner no presynaptic activity to credit.
+    universal = 0x0F if backdrop is None else backdrop & 0x3F
+    asm.emit(*([universal, 0x21, 0x12, 0x30] * 4 + [universal, 0x16, 0x30, 0x21] * 4))
     code = asm.finish()
     assert len(code) < 0x3FFA
     prg = bytearray([0xEA] * 16384)
@@ -343,8 +348,10 @@ def main():
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--out', type=Path)
     parser.add_argument('--oracle-out', type=Path, help='checker-only metadata; never load into analyser')
+    parser.add_argument('--backdrop', type=lambda v: int(v, 0), default=None,
+                        help='NES palette index for the background; omit for the published cartridge')
     args = parser.parse_args()
-    rom, oracle = generate(args.seed)
+    rom, oracle = generate(args.seed, args.backdrop)
     output = {'name': 'GU AGOD controlled fixture', 'license': 'MIT', 'author': 'GU contributors',
               'sha256': hashlib.sha256(rom).hexdigest(), 'base64': base64.b64encode(rom).decode()}
     encoded = json.dumps(output) + '\n'
