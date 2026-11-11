@@ -3,12 +3,34 @@ def guDigest = java.security.MessageDigest.getInstance('SHA-256')
 def guSources = fileTree('src/main') { include 'java/**/*.java', 'assets/lab/**/*.js', 'assets/lab/**/*.html', 'assets/lab/**/*.css', 'assets/**/*source.json', 'assets/**/*.comp', 'res/**/*.xml', 'AndroidManifest.xml' }.files.toList().sort { it.path }
 (guSources + [file('build.gradle')]).each { guDigest.update(project.relativePath(it).getBytes('UTF-8')); guDigest.update(it.bytes) }
 def guSourceId = guDigest.digest().encodeHex().toString()
+/* TECH-TEST BUILDS. Every property below is optional; with none of them set the
+   build is byte-for-byte the ordinary one CI makes. tools/build_techtest_set.sh
+   uses them to make a set of APKs that install SIDE BY SIDE with each other and
+   with the normal app (own applicationId suffix and launcher label), each with a
+   chosen set of bundled connectomes and a chosen default connectome. */
+def guTechId = project.findProperty('guTechId')
+def guTechLabel = project.findProperty('guTechLabel') ?: 'FlyConsole'
+def guTechAssets = project.findProperty('guTechAssets') ?: 'both'
+def guTechConnectome = project.findProperty('guTechConnectome') ?: 'flywire-v783'
+if (!(guTechAssets in ['none', 'flywire', 'male', 'both'])) throw new GradleException('guTechAssets must be none, flywire, male or both')
+if (!(guTechConnectome in ['flywire-v783', 'male-cns-v1.0'])) throw new GradleException('guTechConnectome must be flywire-v783 or male-cns-v1.0')
+def guIgnored = []
+if (guTechAssets in ['none', 'male']) guIgnored += ['!brain.fly.gz', '!brain.fly', '!brain.fly.json']
+if (guTechAssets in ['none', 'flywire']) guIgnored += ['!male-cns.fly.gz', '!male-cns.fly', '!male-cns.fly.json']
 android { namespace 'org.node.flyconsole'; compileSdk 35
- defaultConfig { applicationId 'org.node.flyconsole.nes'; minSdk 26; targetSdk 35; versionCode 42; versionName '2.2.0-agod'; buildConfigField 'String', 'GU_SOURCE_ID', '"' + guSourceId + '"' }
+ defaultConfig { applicationId 'org.node.flyconsole.nes'; minSdk 26; targetSdk 35; versionCode 42; versionName '2.2.0-agod'; buildConfigField 'String', 'GU_SOURCE_ID', '"' + guSourceId + '"'
+  buildConfigField 'String', 'DEFAULT_CONNECTOME', '"' + guTechConnectome + '"'
+  buildConfigField 'String', 'TECH_ID', '"' + (guTechId ?: '') + '"'
+  manifestPlaceholders = [appLabel: guTechLabel]
+  if (guTechId) { applicationIdSuffix '.tech.' + guTechId.toLowerCase(); versionNameSuffix '-' + guTechId }
+ }
  buildFeatures { buildConfig true }
  compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
  // Graphs and source bundles are already compressed; do not inflate packaging heap.
- androidResources { noCompress += ['gz', 'zip'] }
+ androidResources { noCompress += ['gz', 'zip']
+  // the AGP default pattern, plus whichever connectomes this build leaves out
+  if (guIgnored) ignoreAssetsPattern = (['!.svn', '!.git', '!.ds_store', '!*.scc', '.*', '!CVS', '!thumbs.db', '!picasa.ini', '!*~'] + guIgnored).join(':')
+ }
 }
 dependencies { implementation 'com.google.mlkit:text-recognition:16.0.1' }
 

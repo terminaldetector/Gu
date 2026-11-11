@@ -9,7 +9,7 @@ import org.json.*;
 final class ConnectomeStore {
     static final String FLYWIRE="flywire-v783",MALE="male-cns-v1.0",IMPORTED="imported";
     static boolean valid(String id){return FLYWIRE.equals(id)||MALE.equals(id)||IMPORTED.equals(id);}
-    static String selected(Context c){String id=c.getSharedPreferences("connectome-model",0).getString("selected",null);return valid(id)?id:new File(c.getFilesDir(),"connectome.fly").exists()?IMPORTED:FLYWIRE;}
+    static String selected(Context c){String id=c.getSharedPreferences("connectome-model",0).getString("selected",null);return valid(id)?id:new File(c.getFilesDir(),"connectome.fly").exists()?IMPORTED:(MALE.equals(BuildConfig.DEFAULT_CONNECTOME)?MALE:FLYWIRE);}
     static void select(Context c,String id)throws IOException{if(!valid(id))throw new IOException("Неизвестная модель коннектома");if(!c.getSharedPreferences("connectome-model",0).edit().putString("selected",id).commit())throw new IOException("Выбор модели не сохранён");}
     private static String importedSha(Context c){return c.getSharedPreferences("connectome-model",0).getString("importedSha","");}
     private static File importedFile(Context c)throws IOException {
