@@ -169,6 +169,35 @@ function actionSpecFor(platform,platforms,availableButtons){
    :'button indices are bit positions in the mask the pipeline drives'};
 }
 
+/* ---- RAW RESEARCH SNAPSHOTS for the WASM cores ----
+   SegaConsole and RetroConsole serialise a state for a SAVE FILE: the core's
+   state bytes base64-encoded, plus a base64 copy of the last video frame. A
+   research run restores hundreds of times, and measured on Snes9x that format
+   cost 40 ms per snapshot and 129 ms per restore against 0.8 ms per emulated
+   frame - most of a 74 s SNES run was spent encoding text, not emulating.
+
+   The cores already expose the state itself: save_state() fills a buffer in
+   WASM memory and returns its size, load_state() reads it back. A research
+   snapshot is a copy of those bytes, tagged so that restore() can tell it from
+   a live save-format snapshot, which is still accepted (the start state comes
+   from the player's game in that format). Nothing here leaves the worker. */
+function rawSnapshotter(platform,core,stateRef,load,fallbackRestore){
+ const kind='raw-'+platform;
+ return {
+  snapshot(){
+   const g=core.g,size=g._lab_save_state();
+   if(!size)throw new Error(platform+' core produced no state');
+   const at=stateRef();
+   return {kind,size,bytes:g.HEAPU8.slice(at,at+size)};
+  },
+  restore(state){
+   if(!state||state.kind!==kind)return fallbackRestore(state);
+   const g=core.g;
+   g.HEAPU8.set(state.bytes,stateRef());     /* HEAPU8 re-read: memory may have grown */
+   if(!load(state.size))throw new Error(platform+' core rejected a research snapshot');
+  }};
+}
+
 /* ---- the shared wrapper ----
    Every adapter hands this the few platform-specific operations; the frame
    budget, the metering, the dispose guard and the driver surface are common. */
@@ -291,7 +320,7 @@ function createNes(options){
   coreRevision:options.coreRevision||'jsnes',
   ramBytes,frameBudget:Number.isInteger(options.frameBudget)?options.frameBudget:null,
   onFrames:options.onFrames,
-  snapshotFormat:'jsnes-json-string',
+  snapshotFormat:'jsnes-state-object (accepts a JSON string)',
   memoryRegions:[{name:'NesInternalRam',size:ramBytes,base:0,readable:true,writable:true}],
   actionSpec,
   readRam:()=>core.cpu.mem.slice(0,ramBytes),
@@ -301,7 +330,11 @@ function createNes(options){
    return out;
   },
   bulkReadVia:'cpu.mem typed array slice',
-  snapshot:()=>JSON.stringify(core.toJSON()),
+  /* an OBJECT, not a JSON string: measured on jsnes, restoring from the
+     object costs 1.05 ms against 7.49 ms for parse-then-restore, and a
+     research run restores far more often than it snapshots. A string (the
+     live game's snapshot arrives as one) is still accepted. */
+  snapshot:()=>core.toJSON(),
   restore:state=>core.fromJSON(typeof state==='string'?JSON.parse(state):state),
   press:(mask,frames)=>{
    for(let b=0;b<actionSpec.buttonCount;b++)
@@ -327,6 +360,9 @@ async function createSega(options){
  if(!bytes)return unavailable('sega','no cartridge bytes were supplied');
  const core=await SegaConsole.create({onFrame(){},onAudioSample(){}},factory,
   options.moduleOptions||{locateFile:file=>'sega/'+file});
+ /* the region the live core was set to, so its snapshot can be restored here */
+ if(Number.isInteger(options.region)&&typeof core.configureRegion==='function')
+  core.configureRegion(options.region);
  core.loadROM(bytes);
  /* The Sega wrapper exposes a 64 KiB read window over work RAM through a Proxy
     with a getter and NO setter, so a write is impossible and poke is omitted.
@@ -377,7 +413,7 @@ async function createSega(options){
   coreRevision:options.coreRevision||'genplus',
   ramBytes,frameBudget:Number.isInteger(options.frameBudget)?options.frameBudget:null,
   onFrames:options.onFrames,
-  snapshotFormat:'sega-state-object',
+  snapshotFormat:'raw-sega-state-bytes (accepts a sega save-format object)',
   memoryRegions:[{name:'SegaWorkRam',size:ramBytes,base:0xff0000,readable:true,
    writable:false,
    note:'logical offset 0 is physical $FF0000, the start of Mega Drive work RAM. '
@@ -385,8 +421,21 @@ async function createSega(options){
   actionSpec:segaActions,
   readRam,readRamSparse,
   bulkReadVia:read?'core _lab_read_ram':'cpu.mem Proxy (slow fallback)',
-  snapshot:()=>core.toJSON(),
-  restore:state=>core.fromJSON(state),
+  /* RESEARCH SNAPSHOTS CARRY NO PICTURE. A Sega state optionally embeds the
+     last video frame, and fromJSON checks it against the frame size the core
+     reports. A worker core adopting the LIVE game's snapshot takes the live
+     picture with it, renders at its own size afterwards, and the next restore
+     of its own snapshot fails "Неверный видео-снимок" - which stopped every
+     Sega run in a real browser worker (Node runs never render, so never saw it).
+     The picture is derived output; the machine state is in `data`. */
+  /* raw state bytes for research; a live save-format snapshot is still
+     accepted, without its picture - a worker core adopting the live picture
+     renders at its own size and its next save-format restore fails
+     "Неверный видео-снимок", which stopped every Sega run in a real browser */
+  ...(()=>{const raw=rawSnapshotter('sega',core,()=>core.g._lab_state_ref(),
+    ()=>core.g._lab_load_state(),
+    state=>core.fromJSON(state&&typeof state==='object'&&state.video?{...state,video:null}:state));
+   return {snapshot:raw.snapshot,restore:raw.restore};})(),
   press:(mask,frames)=>{
    for(let b=0;b<segaActions.buttonCount;b++)
     (mask&(1<<b)?core.buttonDown:core.buttonUp).call(core,1,b);
@@ -458,7 +507,7 @@ async function createRetro(platform,options){
   coreRevision:options.coreRevision||platform,
   ramBytes,frameBudget:Number.isInteger(options.frameBudget)?options.frameBudget:null,
   onFrames:options.onFrames,
-  snapshotFormat:'retro-state-object',
+  snapshotFormat:'raw-retro-state-bytes (accepts a retro save-format object)',
   memoryRegions:[{name:platform==='gb'?'GbWorkRam':'SnesWorkRam',
    size:ramBytes,base:0,readable:true,writable:false,
    note:'a flat read window reported by the core. Bank structure is NOT '
@@ -467,8 +516,10 @@ async function createRetro(platform,options){
   actionSpec:retroActions,
   readRam,readRamSparse,
   bulkReadVia:read?'core _lab_read_ram':'cpu.mem Proxy (slow fallback)',
-  snapshot:()=>core.toJSON(),
-  restore:state=>core.fromJSON(state),
+  /* raw state bytes for research; a live save-format snapshot still restores */
+  ...(()=>{const raw=rawSnapshotter(platform,core,()=>core.g._lab_state(),
+    size=>core.g._lab_load_state(size),state=>core.fromJSON(state));
+   return {snapshot:raw.snapshot,restore:raw.restore};})(),
   press:(mask,frames)=>{
    for(let b=0;b<buttonCount;b++)
     (mask&(1<<b)?core.buttonDown:core.buttonUp).call(core,1,b);
@@ -520,7 +571,7 @@ function describe(platform,platforms){
   observedRamBytesNote:platform==='gb'||platform==='snes'
    ?'reported by the core at runtime through _lab_ram_size()'
    :'fixed for this core',
-  snapshotFormat:{nes:'jsnes-json-string',sega:'sega-state-object',
+  snapshotFormat:{nes:'jsnes-state-object',sega:'sega-state-object',
    gb:'retro-state-object',snes:'retro-state-object'}[platform]});
 }
 

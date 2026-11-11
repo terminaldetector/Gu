@@ -37,6 +37,30 @@ const MODULES=['jsnes.min.js','platforms.js','agod-ram.js','agod-causal.js',
  'agod-goals.js','agod-reward.js','agod-evidence.js','agod-pipeline.js',
  'agod-platform-driver.js','agod-goal-dto.js'];
 
+/* THE CORES OF THE OTHER THREE PLATFORMS, loaded on demand. The list above
+   used to be the whole worker, so a Sega, Game Boy or SNES run reached the
+   driver and stopped at "the SegaConsole wrapper is not available" - seen on a
+   phone. Each platform's scripts are imported only when a run for it arrives,
+   so an NES run pays nothing for them. */
+const PLATFORM_MODULES=Object.freeze({
+ sega:['sega-core.js','sega/genplus.js'],
+ gb:['retro-core.js','gb/core.js'],
+ snes:['retro-core.js','snes/core.js']});
+const platformLoaded=new Set();
+function loadPlatform(platform){
+ const files=PLATFORM_MODULES[platform];
+ if(!files||platformLoaded.has(platform))return;
+ for(const file of files)
+  if(!platformLoaded.has(file)){self.importScripts(file);platformLoaded.add(file);}
+ /* genplus.js publishes its factory as window.GenPlusFactory, and a worker has
+    no window: in a classic worker script its top-level `var Module` is the
+    factory instead. The retro cores declare GambatteFactory / Snes9xFactory as
+    top-level vars, which a worker sees directly. */
+ if(platform==='sega'&&typeof self.GenPlusFactory!=='function'&&typeof self.Module==='function')
+  self.GenPlusFactory=self.Module;
+ platformLoaded.add(platform);
+}
+
 let loaded=false,loadError=null;
 let currentSession=null,cancelledBeforeStart=new Set();
 
@@ -92,8 +116,21 @@ async function runSession(request){
      is driving beyond passing the platform through; a core that cannot be
      built answers with a status rather than throwing. */
   const platform=request.platform||'nes';
+  try{loadPlatform(platform);}
+  catch(error){
+   post({type:'error',sessionId,workerRevision:WORKER_REVISION,phase:'load',
+    platform,error:describeError(error)});
+   return;
+  }
+  /* The research core must be configured like the live one BEFORE the
+     cartridge goes in, or the live snapshot cannot be adopted: a Sega state
+     records its region and pad types and refuses a core set up differently. */
+  const snap=request.startSnapshot&&typeof request.startSnapshot==='object'?request.startSnapshot:null;
+  const segaRegion=platform==='sega'&&snap&&Number.isInteger(snap.region)?snap.region:undefined;
+  const segaPad=platform==='sega'&&snap&&Array.isArray(snap.padTypes)
+   &&[3,6].includes(snap.padTypes[0])?snap.padTypes[0]:undefined;
   const built=await self.FlyAgodPlatformDriver.create({
-   platform,
+   platform,region:segaRegion,padType:segaPad,
    romBase64:request.romBase64,romBinaryString:request.romBinaryString,
    jsnes:self.jsnes,frameBudget,
    platforms:self.FlyPlatforms,

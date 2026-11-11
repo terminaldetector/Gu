@@ -99,7 +99,12 @@ ok(PD.describe('gameboyadvance').supported===false,'an unknown platform is not s
   ok(sd.readRam().length===65536,'Sega readRam returns 65536 bytes');
   ok(sega.capabilities.memoryRegions[0].writable===false,'the Sega region is not writable');
   const ss=sd.snapshot(),sh0=sd.stateHash();
-  ok(ss&&typeof ss==='object'&&ss.kind==='sega','the Sega snapshot is a state object');
+  ok(ss&&ss.kind==='raw-sega'&&ss.bytes instanceof Uint8Array&&ss.bytes.length===ss.size,
+   'the Sega research snapshot is the raw core state, '+(ss&&ss.size)+' bytes, not a base64 save file');
+  /* the live game's save-format snapshot - the start a discovery run adopts -
+     must still restore through the same driver */
+  {const live=sega.core.toJSON(),atLive=sd.stateHash();sd.run(8,15);sd.run(0,15);sd.restore(live);
+   ok(sd.stateHash()===atLive,'a save-format Sega snapshot from the live game still restores exactly');}
   /* THE BUTTON MATTERS, and the first version of this probe got it wrong.
      It pressed mask 1 (A) and asserted the observed state would change. This
      diagnostic cartridge only writes work RAM for Left and Right, so nothing

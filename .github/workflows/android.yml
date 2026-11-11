@@ -79,7 +79,9 @@ jobs:
             /tmp/fly-ui/node_modules/.bin/playwright install chromium
           fi
       - name: Check console and objective discovery interfaces
-        timeout-minutes: 10
+        # 20, not 10: agod_worker_platforms runs AGOD in a real browser worker on
+        # all four cores (about 70 s on a 4-core host)
+        timeout-minutes: 20
         run: NODE_PATH=/tmp/fly-ui/node_modules node tools/run_ui_checks.cjs
       - uses: actions/upload-artifact@v4
         if: always()
