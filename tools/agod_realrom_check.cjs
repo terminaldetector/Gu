@@ -215,6 +215,10 @@ async function learn(built,inPlay,profile,identity,java){
      stats[packet.status]++;
      const r=await java.call({op:'reward',id:pick.id,mask:pick.mask,reward:packet.value,seconds:STEP_FRAMES/60,frames:STEP_FRAMES});
      stats.changed+=r.changed;
+    }else if(process.env.REALROM_CREDIT==='carry'&&packet.status==='UNKNOWN'){
+     /* no verified event: the decision joins the eligibility traces, nothing is paid */
+     stats.unknown++;const c=await java.call({op:'carry',id:pick.id,mask:pick.mask,seconds:STEP_FRAMES/60,frames:STEP_FRAMES});
+     if(c.carried)stats.carried=(stats.carried||0)+1;
     }else{stats.unknown++;await java.call({op:'boundary'});}
    }
    if(ended(after)){n++;break;}
@@ -245,7 +249,7 @@ async function learn(built,inPlay,profile,identity,java){
   const r=rng(seed);const random=await evaluate(async()=>({mask:actions[Math.floor(r()*actions.length)],id:null}));
   const sum=(list,key)=>list.reduce((s,x)=>s+x[key],0);
   const row={seed,trainSteps:TRAIN_STEPS,verified:stats.VERIFIED,provisional:stats.PROVISIONAL,unknown:stats.unknown,
-   nativeChanges:stats.changed,frozenClean:frozenBefore.weights===frozenAfter.weights&&frozenBefore.updates===frozenAfter.updates,
+   nativeChanges:stats.changed,carried:stats.carried||0,frozenClean:frozenBefore.weights===frozenAfter.weights&&frozenBefore.updates===frozenAfter.updates,
    untrained:{survivalSteps:sum(untrained,'steps'),losses:sum(untrained,'losses'),progress:sum(untrained,'progress')},
    trained:{survivalSteps:sum(trained,'steps'),losses:sum(trained,'losses'),progress:sum(trained,'progress')},
    random:{survivalSteps:sum(random,'steps'),losses:sum(random,'losses'),progress:sum(random,'progress')}};
@@ -256,6 +260,7 @@ async function learn(built,inPlay,profile,identity,java){
  }
  return {actions:actions.length,stepFrames:STEP_FRAMES,evalStarts:3,evalStepsCap:EVAL_STEPS,
   evaluation:process.env.REALROM_EVAL==='stochastic'?'frozen, sampled from the policy':'frozen, argmax',
+  credit:process.env.REALROM_CREDIT==='carry'?'UNKNOWN intervals carried into the traces, unpaid':'UNKNOWN intervals clear the traces',
   noOpAction:process.env.REALROM_NOOP!=='0',
   graph:process.env.FDB_GRAPH?'connectome':'30-neuron mechanism fixture',rows};
 }

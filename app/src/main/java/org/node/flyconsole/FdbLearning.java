@@ -82,7 +82,7 @@ public final class FdbLearning {
     private final String projectionSha;
     private final LinkedHashMap<Long,Trace> traces=new LinkedHashMap<>();
     private final LinkedHashMap<String,Decision> pending=new LinkedHashMap<>();
-    private long observations,human,automatic,rng=1,born,pruned,rejected,baseUpdates;
+    private long observations,human,automatic,rng=1,born,pruned,rejected,baseUpdates,carried;
     private double baseline;
     public static final class Outcome {
         public final String id;public final int mask,changed;public final boolean accepted;public final double reward,advantage,budget;public final long births,removals;
@@ -234,28 +234,7 @@ public final class FdbLearning {
         // not those later decisions; otherwise one intervention poisons every future step.
         if(!valid||d==null||d.mask!=executedMask||!Arrays.equals(d.lesions,lesionSet(lesions))){rejected++;clearTemporal();event(new Outcome(id,executedMask,0,false,reward,0,0,0,0));return 0;}
         long birthsBefore=born,removalsBefore=pruned,revisionBefore=layer.version();temporalDirty=true;beginBudget();
-        double decay=Math.exp(-gameSeconds/.6);
-        for(Trace t:traces.values()){t.eligibility*=decay;t.support*=Math.exp(-gameSeconds/2);
-            if(dualCredit()){t.slowAge=Math.min(16,t.slowAge+1);t.slowEligibility=t.slowAge>=16?0:t.slowEligibility*Math.exp(-1.0/8);}
-}
-        for(Map.Entry<Long,Double> e:d.gradient.entrySet()){
-            int source=(int)(e.getKey()>>32),target=(int)(long)e.getKey();if(lesioned(source,lesions)||lesioned(target,lesions))continue;
-            Trace t=trace(source,target);if(t!=null){t.eligibility=Math.max(-2,Math.min(2,t.eligibility+e.getValue()*decay));
-                if(dualCredit()){t.slowEligibility=Math.max(-2,Math.min(2,t.slowEligibility+e.getValue()));t.slowAge=0;}
-            }
-        }
-        for(int neuron:neuronCandidates){
-            double gradient=d.neuronGradient.getOrDefault(neuron,0.0);
-            if(creditProfile.equals("dual-rate-v1")){
-                // Consecutive confirmed observation windows with the same action semantics.
-                // This is a clipped rate-change proxy, not a causal threshold derivative.
-                Double previous=previousRates.get(neuron);
-                gradient*=previous!=null&&previousMask==d.mask&&previousSteps==d.steps
-                    ?Math.max(-1,Math.min(1,(d.rates.getOrDefault(neuron,0.0)-previous)/250.0)):0;
-            }
-            neuronTraces.put(neuron,d.blockedDynamics.contains(neuron)?0:Math.max(-2,Math.min(2,neuronTraces.getOrDefault(neuron,0.0)*decay+gradient*decay)));
-        }
-        if(creditProfile.equals("dual-rate-v1")){previousRates.clear();previousRates.putAll(d.rates);previousMask=d.mask;previousSteps=d.steps;}
+        double decay=accumulate(d,gameSeconds,lesions);
         double advantage=Math.max(-2,Math.min(2,reward-baseline));baseline+=.05*(reward-baseline);int changed=0,removed=0,created=0;
         for(Trace t:traces.values()){
             if(lesioned(t.source,lesions)||lesioned(t.target,lesions)||Math.abs(eligibility(t))<1e-6)continue;
@@ -282,6 +261,44 @@ public final class FdbLearning {
         finishBudget();observations++;automatic++;event(new Outcome(id,executedMask,(int)(layer.version()-revisionBefore),true,reward,advantage,lastBudget,born-birthsBefore,pruned-removalsBefore));return changed;
     }
     private float weight(int source,int target){for(GraphDelta.Edge e:layer.outgoing(source))if(e.target==target)return e.weight;return 0;}
+    /** Decay the traces over the interval and fold this decision's credit into them. */
+    private double accumulate(Decision d,double gameSeconds,int[] lesions){
+        double decay=Math.exp(-gameSeconds/.6);
+        for(Trace t:traces.values()){t.eligibility*=decay;t.support*=Math.exp(-gameSeconds/2);
+            if(dualCredit()){t.slowAge=Math.min(16,t.slowAge+1);t.slowEligibility=t.slowAge>=16?0:t.slowEligibility*Math.exp(-1.0/8);}
+}
+        for(Map.Entry<Long,Double> e:d.gradient.entrySet()){
+            int source=(int)(e.getKey()>>32),target=(int)(long)e.getKey();if(lesioned(source,lesions)||lesioned(target,lesions))continue;
+            Trace t=trace(source,target);if(t!=null){t.eligibility=Math.max(-2,Math.min(2,t.eligibility+e.getValue()*decay));
+                if(dualCredit()){t.slowEligibility=Math.max(-2,Math.min(2,t.slowEligibility+e.getValue()));t.slowAge=0;}
+            }
+        }
+        for(int neuron:neuronCandidates){
+            double gradient=d.neuronGradient.getOrDefault(neuron,0.0);
+            if(creditProfile.equals("dual-rate-v1")){
+                // Consecutive confirmed observation windows with the same action semantics.
+                // This is a clipped rate-change proxy, not a causal threshold derivative.
+                Double previous=previousRates.get(neuron);
+                gradient*=previous!=null&&previousMask==d.mask&&previousSteps==d.steps
+                    ?Math.max(-1,Math.min(1,(d.rates.getOrDefault(neuron,0.0)-previous)/250.0)):0;
+            }
+            neuronTraces.put(neuron,d.blockedDynamics.contains(neuron)?0:Math.max(-2,Math.min(2,neuronTraces.getOrDefault(neuron,0.0)*decay+gradient*decay)));
+        }
+        if(creditProfile.equals("dual-rate-v1")){previousRates.clear();previousRates.putAll(d.rates);previousMask=d.mask;previousSteps=d.steps;}
+        return decay;
+    }
+    /** An interval with NO verified outcome: the decision joins the eligibility traces
+     * and nothing else happens - no reward, no baseline change, no weight or threshold
+     * update, no replay record. UNKNOWN stays non-numeric, but a later verified event
+     * can reach the decisions that led to it instead of only the last 8 frames.
+     * An invalid interval (human input, mask mismatch) still breaks the link. */
+    public boolean carry(String id,int executedMask,double gameSeconds,int frames,boolean valid,int[] lesions){
+        if(!Double.isFinite(gameSeconds)||gameSeconds<=0||gameSeconds>2||frames<1||frames>240)throw new IllegalArgumentException("FDB carry");
+        Decision d=pending.remove(id);
+        if(!valid||d==null||d.mask!=executedMask||!Arrays.equals(d.lesions,lesionSet(lesions))){rejected++;clearTemporal();return false;}
+        temporalDirty=true;accumulate(d,gameSeconds,lesions);carried++;return true;
+    }
+    public long carried(){return carried;}
     /** Slow trust-region updates of effective root weights; W0 and its sign stay intact.
      * Explicit user deltas outside this region are retained, not silently clamped. */
     private boolean adaptBase(GraphDelta.Edge base,double credit){

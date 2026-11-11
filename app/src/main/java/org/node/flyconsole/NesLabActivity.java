@@ -740,7 +740,17 @@ public final class NesLabActivity extends Activity {
                 }
                 if(fdbLearning==null){response.put("token",token).put("data",JSONObject.NULL);emit("labFdbFeedback",response);return;}
                 long learningStarted=System.nanoTime();int changed=0;
+                boolean carried=false;
                 if(op.equals("boundary")){if(pairedEvaluation==null)fdbLearning.boundary();}
+                else if(op.equals("carry")){
+                    // no verified outcome: eligibility only - no reward, update or replay record
+                    for(String key:new String[]{"mask","frames"})if(!(request.get(key) instanceof Number)||request.getDouble(key)!=request.getInt(key))throw new IllegalArgumentException("FDB carry integer");
+                    if(!(request.get("seconds") instanceof Number)||!(request.get("valid") instanceof Boolean))throw new IllegalArgumentException("FDB carry fields");
+                    if(pairedEvaluation==null&&learningConfiguration.getBoolean("enabled"))carried=fdbLearning.carry(request.getString("decision"),request.getInt("mask"),request.getDouble("seconds"),request.getInt("frames"),request.getBoolean("valid"),experiment.options.lesions);
+                    if(activeEpisode!=null)episodeUnknown++;
+                    response.put("token",token).put("data",new JSONObject().put("changed",0).put("carried",carried)).put("feedbackMs",(System.nanoTime()-learningStarted)/1e6);
+                    emit("labFdbFeedback",response);return;
+                }
                 else if(op.equals("reward")){
                     for(String key:new String[]{"mask","frames"})if(!(request.get(key) instanceof Number)||request.getDouble(key)!=request.getInt(key))throw new IllegalArgumentException("FDB feedback integer");
                     for(String key:new String[]{"valid","frozen"})if(!(request.get(key) instanceof Boolean))throw new IllegalArgumentException("FDB feedback boolean");

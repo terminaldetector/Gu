@@ -55,6 +55,15 @@
   // negative advantage. Clear the native temporal link without calling reward.
   // Block captures until the serialized worker acknowledges the boundary so an
   // already-produced next decision cannot inherit credit across this gap.
+  // CARRY (real-ROM track): a clean interval with no verified event joins the
+  // native eligibility traces and nothing else - no reward, no baseline, no
+  // weight update, no replay record - so a later verified loss can reach the
+  // decisions that led to it. Clearing here meant a hit was credited to the
+  // last 8 frames only, and training made the policy worse on real games.
+  // An interrupted, invalid or over-long interval still breaks the link.
+  if(!evidenceKnown&&window.GU_FDB_CARRY===true&&outcome.valid&&!interrupted&&outcome.elapsed>0&&outcome.elapsed<=2
+   &&$('learnMode').value==='train'&&!$('freeze').checked)
+   return send('carry',{decision:outcome.id,mask:outcome.mask,frames:outcome.frames,seconds:outcome.elapsed,valid:true,unknown:true});
   if(!evidenceKnown){linked=false;current=null;gameSeconds=capturedAt=0;blocked=true;recovering=true;return send('boundary',{unknown:true},true);}
   if(outcome.elapsed>2){linked=false;current=null;gameSeconds=capturedAt=0;blocked=true;recovering=true;return send('boundary',{},true);}
   if(outcome.elapsed<=0){invalidate('интервал результата вне окна пластичности');recover();return Promise.resolve();}
