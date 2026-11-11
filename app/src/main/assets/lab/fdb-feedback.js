@@ -61,7 +61,7 @@
   // decisions that led to it. Clearing here meant a hit was credited to the
   // last 8 frames only, and training made the policy worse on real games.
   // An interrupted, invalid or over-long interval still breaks the link.
-  if(!evidenceKnown&&window.GU_FDB_CARRY===true&&outcome.valid&&!interrupted&&outcome.elapsed>0&&outcome.elapsed<=2
+  if(!evidenceKnown&&window.GU_FDB_CARRY!==false&&outcome.valid&&!interrupted&&outcome.elapsed>0&&outcome.elapsed<=2
    &&$('learnMode').value==='train'&&!$('freeze').checked)
    return send('carry',{decision:outcome.id,mask:outcome.mask,frames:outcome.frames,seconds:outcome.elapsed,valid:true,unknown:true});
   if(!evidenceKnown){linked=false;current=null;gameSeconds=capturedAt=0;blocked=true;recovering=true;return send('boundary',{unknown:true},true);}

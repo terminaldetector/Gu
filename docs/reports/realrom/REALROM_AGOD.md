@@ -136,11 +136,32 @@ Immediate credit on a real game teaches noise and narrows the policy. This,
 not the discovery side, is now the bottleneck for "a level passed
 automatically".
 
+**Carry, measured (2026-11-11, later the same day).** `FdbLearning.carry`
+folds an interval with no verified event into the eligibility traces and does
+nothing else (no reward, no baseline change, no update, no replay record).
+Same seeds, starts, budget and sampled frozen evaluation:
+
+| | seed | trained, `boundary` (old) | trained, `carry` | untrained | random |
+|---|---|---|---|---|---|
+| R1 survival | 11 | 226 | **300** | 406 | 306 |
+| R1 survival | 23 | 252 | **373** | 288 | 279 |
+| R1 progress | 11 | 1 086 | **2 604** | 4 360 | 2 811 |
+| R1 progress | 23 | 1 877 | **4 119** | 1 965 | 1 457 |
+| R2 solo progress (losses) | 11 | 283 (2) | 3 (0) | 95 (4) | 216 (6) |
+| R2 solo progress (losses) | 23 | 3 (0) | 143 (1) | 144 (6) | 423 (9) |
+
+On R1 carry improves the trained layer on every number and both seeds, and on
+seed 23 it beats both the untrained layer and random play. On R2 solo it is
+mixed: the trained layer survives the whole evaluation either way and barely
+progresses, with either credit rule. Carry is now the app default
+(`GU_FDB_CARRY=false` restores the old rule); a human taking over still
+breaks the link. The R2 passivity is the open problem.
+
 **No level was completed automatically.** Nothing here was run on a phone.
 
 ## 5. Next steps this data points to
 
-1. Credit assignment over the time scale the game works on. FdbLearning has
+1. (Done for R1, see "Carry, measured".) Credit assignment over the time scale the game works on. FdbLearning has
    eligibility traces (τ ≈ 0.6 s), but every interval without a verified event
    calls `boundary()`, which clears them - that is how UNKNOWN ≠ 0 is kept - so
    on a real game, where 85–97 % of training intervals carry no event, a hit is credited

@@ -218,7 +218,7 @@ async function learn(built,inPlay,profile,identity,java){
     }else if(process.env.REALROM_CREDIT==='carry'&&packet.status==='UNKNOWN'){
      /* no verified event: the decision joins the eligibility traces, nothing is paid */
      stats.unknown++;const c=await java.call({op:'carry',id:pick.id,mask:pick.mask,seconds:STEP_FRAMES/60,frames:STEP_FRAMES});
-     if(c.carried)stats.carried=(stats.carried||0)+1;
+     if(c.accepted)stats.carried=(stats.carried||0)+1;
     }else{stats.unknown++;await java.call({op:'boundary'});}
    }
    if(ended(after)){n++;break;}

@@ -18,7 +18,7 @@ def guIgnored = []
 if (guTechAssets in ['none', 'male']) guIgnored += ['!brain.fly.gz', '!brain.fly', '!brain.fly.json']
 if (guTechAssets in ['none', 'flywire']) guIgnored += ['!male-cns.fly.gz', '!male-cns.fly', '!male-cns.fly.json']
 android { namespace 'org.node.flyconsole'; compileSdk 35
- defaultConfig { applicationId 'org.node.flyconsole.nes'; minSdk 26; targetSdk 35; versionCode 42; versionName '2.2.0-agod'; buildConfigField 'String', 'GU_SOURCE_ID', '"' + guSourceId + '"'
+ defaultConfig { applicationId 'org.node.flyconsole.nes'; minSdk 26; targetSdk 35; versionCode 43; versionName '2.3.0-agod'; buildConfigField 'String', 'GU_SOURCE_ID', '"' + guSourceId + '"'
   buildConfigField 'String', 'DEFAULT_CONNECTOME', '"' + guTechConnectome + '"'
   buildConfigField 'String', 'TECH_ID', '"' + (guTechId ?: '') + '"'
   manifestPlaceholders = [appLabel: guTechLabel]

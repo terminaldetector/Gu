@@ -44,7 +44,7 @@ EOF
  echo "# FlyConsole tech-test APK set"
  echo
  echo "- Commit: \`$(git rev-parse HEAD)\`"
- echo "- Base version: 2.2.0-agod (versionCode 42); each APK adds -TNN to the version name."
+ echo "- Base version: 2.3.0-agod (versionCode 43); each APK adds -TNN to the version name."
  echo "- Signature: Android debug key of the build machine. Not a release signature."
  echo "- All ten install side by side, and next to the normal app; each has its own data."
  echo "- GPU inference is not a separate APK: it is the 'Backend' switch inside any of them."

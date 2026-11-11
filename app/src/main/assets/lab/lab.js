@@ -135,7 +135,10 @@ function learnedButtons(data){
  if(mode!=='teach'&&lastDecisionFeatures&&!interrupted){
   // Automatic FDB credit is accepted only through a cached neural decision, never a retina label.
   transitions.push({romHash,episode:learner.episodes,frame,sequence:data.sequence,state:lastDecisionFeatures,action:lastDecisionAction,reward,next:features.slice(),terminal,mode});if(transitions.length>200)transitions.shift();}
- if(window.fdbAgent){window.fdbAgent.settle(sampledFdbOutcome,credit.reward,interrupted||!credit.valid,credit.valid);sampledFdbOutcome=null;}
+ // interrupted (a human took over) and unknown evidence are told apart: the
+ // first breaks the temporal link, the second is carried into the traces
+ // unpaid (fdb-feedback.js, GU_FDB_CARRY)
+ if(window.fdbAgent){window.fdbAgent.settle(sampledFdbOutcome,credit.reward,interrupted,credit.valid);sampledFdbOutcome=null;}
  if(exo&&mode!=='teach'&&!data.fdbDecision)throw Error('Нейронное управление не получило решение FDB');
  const mask=mode==='teach'?0:exo?data.fdbDecision.mask:learner.step(features,reward,terminal,mode==='train');
  if(exo&&terminal&&mode!=='teach')learner.episodes++;

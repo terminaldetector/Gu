@@ -17,7 +17,7 @@ public final class FdbGameBridge {
     long started=System.nanoTime();Engine.Result result=engine.advance(in,rates,q.optInt("windowMs",20),options,new AtomicBoolean());int[] actions={0,64,128};if(q.has("actions")){JSONArray list=q.getJSONArray("actions");actions=new int[list.length()];for(int i=0;i<actions.length;i++)actions[i]=list.getInt(i);}
     FdbLearning.Decision decision=learner.decide("game-"+(counter++),result,actions,4095,30,q.optDouble("epsilon",.1),q.getBoolean("train"),null);r.put("id",decision.id).put("mask",decision.mask).put("wallMs",result.wallSeconds*1000).put("spikes",result.spikes).put("decisionWallMs",(System.nanoTime()-started)/1e6);
    }else if(op.equals("reward")){int changed=learner.feedback(q.getString("id"),q.getInt("mask"),q.getDouble("reward"),q.getDouble("seconds"),q.getInt("frames"),q.optBoolean("valid",true),q.optBoolean("frozen",false),null);r.put("changed",changed);}
-   else if(op.equals("carry")){r.put("carried",learner.carry(q.getString("id"),q.getInt("mask"),q.getDouble("seconds"),q.getInt("frames"),q.optBoolean("valid",true),null));}
+   else if(op.equals("carry")){r.put("accepted",learner.carry(q.getString("id"),q.getInt("mask"),q.getDouble("seconds"),q.getInt("frames"),q.optBoolean("valid",true),null));}
    /* the production answer to an UNKNOWN interval: clear the temporal link, pay nothing */
    else if(op.equals("boundary")){learner.boundary();}
    /* a prior toward one output, so an untrained layer has a habit to unlearn */

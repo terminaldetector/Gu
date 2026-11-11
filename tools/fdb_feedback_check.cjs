@@ -4,7 +4,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const source=fs.readFileSync(path.resolve(__dirname,'../app/src/main/assets/lab/fdb-feedback.js'),'utf8');
 const labSource=fs.readFileSync(path.resolve(__dirname,'../app/src/main/assets/lab/lab.js'),'utf8'),rewardStart=labSource.indexOf('function fdbRewardSnapshot(memory){'),rewardStop=labSource.indexOf('function learnedButtons(data){');
 assert.ok(rewardStart>=0&&rewardStop>rewardStart,'production action-aligned reward helpers must exist');
-assert.ok(labSource.includes('settle(sampledFdbOutcome,credit.reward,interrupted||!credit.valid,credit.valid)'), 'the live game loop must distinguish unknown evidence from numeric zero');
+assert.ok(labSource.includes('settle(sampledFdbOutcome,credit.reward,interrupted,credit.valid)'), 'the live game loop must distinguish unknown evidence from numeric zero, and a human interruption from unknown evidence');
 const rewardSource=labSource.slice(rewardStart,rewardStop),gameTools=require('../app/src/main/assets/lab/game-tools.js');
 const plain=value=>JSON.parse(JSON.stringify(value));
 function fixture(){
@@ -98,6 +98,20 @@ let checks=0;function check(name,fn){return Promise.resolve().then(fn).then(()=>
   const start=f.context.fdbRewardSnapshot({0:1}),end=f.context.fdbRewardSnapshot({0:1});
   const credit=f.context.fdbOutcomeReward({rewardStart:start,rewardEnd:end},-1);assert.equal(credit.valid,true);assert.equal(credit.reward,-1);
   const p=f.agent.settle(f.outcome(),credit.reward,false,credit.valid);assert.equal(f.calls[0].op,'reward');assert.equal(f.calls[0].reward,-1);f.ack();await p;
+ });
+ await check('CARRY: a clean interval with no verified event joins the traces unpaid and does not block the next decision',async()=>{
+  const f=fixture(),result=f.outcome('quiet'),p=f.agent.settle(result,0,false,false),call=f.calls.at(-1);
+  assert.equal(call.op,'carry');assert.equal(call.unknown,true);assert.equal(call.decision,'quiet');assert.equal(call.mask,128);
+  assert.equal(call.frames,6);assert.equal(call.valid,true);assert.ok(!('reward' in call),'UNKNOWN is not a numeric zero: a carry carries no reward');
+  f.decision('next');f.frames();assert.notEqual(f.agent.capture(),null,'the next decision is captured: carry keeps the temporal link');
+  f.ack(call,{data:{changed:0,carried:true}});await p;assert.equal(f.agent.error(),null);assert.deepEqual(f.counts(),{persisted:0,autosaved:0,views:0});
+ });
+ await check('CARRY is not used when a human intervened, when learning is frozen, or when GU_FDB_CARRY is false',async()=>{
+  const a=fixture(),pa=a.agent.settle(a.outcome(),0,true,false);assert.equal(a.calls.at(-1).op,'boundary');a.ack(a.calls.at(-1));await pa;
+  const b=fixture(),rb=b.outcome();b.nodes.freeze.checked=true;const pb=b.agent.settle(rb,0,false,false);assert.equal(b.calls.at(-1).op,'boundary');b.ack(b.calls.at(-1));await pb;
+  const c=fixture();c.context.GU_FDB_CARRY=false;const pc=c.agent.settle(c.outcome(),0,false,false),call=c.calls.at(-1);
+  assert.equal(call.op,'boundary');assert.equal(call.unknown,true);c.decision('blocked');c.frames();assert.equal(c.agent.capture(),null,'with carry off the old rule holds: credit is blocked until the reset ACK');
+  c.ack(call);await pc;
  });
  await check('unknown boundary failures remain visible and block further credit',async()=>{
   const f=fixture(),p=f.agent.settle(f.outcome(),0,true,false);f.ack(f.calls[0],{error:'boundary failed'});await p;
