@@ -65,7 +65,7 @@ R1 the health byte fell 4, 3, 2, 1, 0 in front of the refusing stage.
 | survival discovery | **VERIFIED**, TERMINAL, 30 816 frames, 29.8 s (Node) | **VERIFIED**, TERMINAL, 76 472 frames, 85.1 s (Node) |
 | discovery runs ending | 6 / 6 (neutral at 576 frames, random 640–1 216) | 4 / 6 (game over at 2 240–2 688 frames under random play; idling never died in 3 600) |
 | calibration / holdout | confirmed / confirmed | confirmed / confirmed |
-| oracle (opened after) | resource **match** (health bar); progress **match** (score word), 1 extra progress field | the chosen byte is the per-life health bar (checked against the HUD frame by frame); the oracle file listed only the lives counter at first and was corrected — see below |
+| oracle (opened after) | resource **match** (health bar); progress **match** (score word), 1 extra progress field | resource **match** after the oracle was corrected (the chosen byte is the per-life health bar, checked against the HUD frame by frame; the oracle had listed only the lives counter); progress: no oracle (the HUD shows no score) |
 | browser worker (Chromium, from live play) | VERIFIED in 33.5 s, 32 936 frames | — |
 | background run at the title | `NOT_IN_PLAY` in 0.8 s, 720 frames (was 12 371 frames and a refusal) | — |
 | port 2 | no effect at all (solo game, nothing to join) | port 2 joins with two Start presses (4 586 frames); port-2 survival **VERIFIED** (per-loss counter), calibration and holdout confirmed; see the finding below |
@@ -119,18 +119,43 @@ What this shows, plainly:
   (2 377–2 913). The other limits are the 16-cell luminance retina (bullets and
   enemies are invisible at that resolution) and the 30-neuron fixture graph.
 
+**The argmax hid a second fact.** With a frozen *stochastic* evaluation
+(`REALROM_EVAL=stochastic`: sample from the layer's own policy, no feedback,
+weights and update counts verified unchanged), R1:
+
+| seed | survival untrained → trained (random) | progress untrained → trained (random) |
+|---|---|---|
+| 11 | **406** → 226 (306) | **4 360** → 1 086 (2 811) |
+| 23 | **288** → 252 (279) | **1 965** → 1 877 (1 457) |
+
+Sampled, the untrained layer is as good as random or better, and **training
+with the verified reward makes it worse**. The reward is right; the credit is
+not: a hit is paid to whichever 8-frame action was running when it landed,
+while what caused it is where the player was over the preceding second or two.
+Immediate credit on a real game teaches noise and narrows the policy. This,
+not the discovery side, is now the bottleneck for "a level passed
+automatically".
+
 **No level was completed automatically.** Nothing here was run on a phone.
 
 ## 5. Next steps this data points to
 
-1. Decision rule: a frozen *stochastic* evaluation (sample from the policy with
-   a seeded RNG, no updates) and a no-op that is not free.
-2. Observation: a retina with spatial resolution for sprites, or RAM-derived
+1. Credit assignment over the time scale the game works on. FdbLearning has
+   eligibility traces (τ ≈ 0.6 s), but every interval without a verified event
+   calls `boundary()`, which clears them - that is how UNKNOWN ≠ 0 is kept - so
+   on a real game, where 85–97 % of training intervals carry no event, a hit is credited
+   to the last 8-frame decision only. Proposed: fold an UNKNOWN interval's
+   decision into the traces *without* paying anything (no reward, no update,
+   no replay record) and clear them only at real boundaries (restore, episode
+   end, human input). Baseline to beat: the sampled untrained layer.
+2. Decision rule: evaluate the sampled policy (as above), and stop the empty
+   mask winning for free.
+3. Observation: a retina with spatial resolution for sprites, or RAM-derived
    inputs (the discovered position integrators are a free player-position
    sensor).
-3. Progress shaping from the survival data: the per-button attribution of
+4. Progress shaping from the survival data: the per-button attribution of
    progress events is already in the rollouts.
-4. Per-player attribution from per-port control loss (which player lost
+5. Per-player attribution from per-port control loss (which player lost
    control when the shared counter fell).
 
 ## Reproduce
