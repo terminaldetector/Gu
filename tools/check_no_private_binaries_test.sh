@@ -47,6 +47,24 @@ else
 fi
 cleanup
 
+echo "6. a Genesis ROM staged as .bin is refused by its header, not its name"
+python3 -c "import sys;b=bytearray(1024);b[0x100:0x110]=b'SEGA GENESIS    ';sys.stdout.buffer.write(b)" > tmp_guard_probe.dat
+git add -f tmp_guard_probe.dat
+check "SEGA header at 0x100 under an innocent name" 1
+cleanup
+
+echo "7. a Game Boy ROM is refused by the logo at 0x104"
+python3 -c "import sys;b=bytearray(1024);b[0x104:0x108]=bytes.fromhex('CEED6666');sys.stdout.buffer.write(b)" > tmp_guard_probe.dat
+git add -f tmp_guard_probe.dat
+check "Nintendo logo at 0x104 under an innocent name" 1
+cleanup
+
+echo "8. a file that merely CONTAINS the word SEGA elsewhere passes"
+printf 'notes about SEGA Mega Drive cores\n' > tmp_guard_probe.dat
+git add -f tmp_guard_probe.dat
+check "the word SEGA at offset 12" 0
+cleanup
+
 echo
 echo "guard regression: $pass passed, $fail failed"
 [ "$fail" -eq 0 ]

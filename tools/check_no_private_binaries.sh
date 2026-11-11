@@ -21,7 +21,9 @@ trap 'rm -f "$findings"' EXIT
 PRIVATE_SHAS="116ff51eabad94da0c3bf32de9d50cc84becf73814fa2bf5574676b058a0a09a
 1f4a9b3f04e2f828688512c0b83611a87c3fc1bd4f85ed91da1b19abc5816d73
 c725a0c6b3eb52f542c10cf40538b69d0b163e5884ced7530dd250dbc02749b4
-21faf868260bbc26a38127d31e98561679a7d0d17bb04ea747d8a549112e4812"
+21faf868260bbc26a38127d31e98561679a7d0d17bb04ea747d8a549112e4812
+38e7f32e3874e2b516c584bbcb206326daec6f3e3a00261aa277578a76d9d809
+704c54b3fece68e5bbdc584cf8a22605380b0e845bd60f61c06406ed03a04b1c"
 
 # Paths, newline separated. `read -d ""` is a bashism and this runs under dash,
 # where it made the whole loop a no-op that reported success - caught by the
@@ -38,7 +40,10 @@ fi
 printf '%s\n' "$records" | while IFS= read -r path; do
   [ -n "$path" ] || continue
   case "$path" in
-    *.nes|*.NES|*.unf|*.unif|*.fds|*.nsf)
+    # every console GU emulates, not only NES. .bin and .md are deliberately NOT
+    # listed - one is generic and the other is markdown - and are caught by the
+    # header signatures below instead.
+    *.nes|*.NES|*.unf|*.unif|*.fds|*.nsf|*.gen|*.GEN|*.smd|*.SMD|*.32x|*.sms|*.gg|*.gb|*.GB|*.gbc|*.GBC|*.sfc|*.SFC|*.smc|*.SMC)
       printf 'rom-extension\t%s\n' "$path" >> "$findings";;
     *.zip|*.7z|*.rar|*.tar|*.tar.gz|*.tgz|*.gz|*.bz2|*.xz)
       printf 'archive\t%s\n' "$path" >> "$findings";;
@@ -48,6 +53,13 @@ printf '%s\n' "$records" | while IFS= read -r path; do
   magic=$(git cat-file blob ":$path" 2>/dev/null | head -c 4 | od -An -tx1 | tr -d ' \n' || true)
   [ "$magic" = "4e45531a" ] && printf 'ines-magic-in-index\t%s\n' "$path" >> "$findings"
   [ "$magic" = "504b0304" ] && printf 'zip-magic-in-index\t%s\n' "$path" >> "$findings"
+  # Mega Drive / Genesis: "SEGA" at 0x100. Game Boy: the Nintendo logo at 0x104.
+  # Both are where the console itself looks, so they hold under any file name;
+  # an SMD-interleaved dump would not match and is caught by extension above.
+  sega=$(git cat-file blob ":$path" 2>/dev/null | dd bs=1 skip=256 count=4 2>/dev/null | od -An -tx1 | tr -d ' \n' || true)
+  [ "$sega" = "53454741" ] && printf 'genesis-header-in-index\t%s\n' "$path" >> "$findings"
+  gblogo=$(git cat-file blob ":$path" 2>/dev/null | dd bs=1 skip=260 count=4 2>/dev/null | od -An -tx1 | tr -d ' \n' || true)
+  [ "$gblogo" = "ceed6666" ] && printf 'gameboy-logo-in-index\t%s\n' "$path" >> "$findings"
 
   sha=$(git cat-file blob ":$path" 2>/dev/null | sha256sum | cut -d' ' -f1 || true)
   if printf '%s\n' "$PRIVATE_SHAS" | grep -qx "$sha"; then
