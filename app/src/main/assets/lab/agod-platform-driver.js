@@ -207,12 +207,18 @@ function wrap(spec){
   frameBudget,notes,bulkReadVia,padType,padTypeRequested}=spec;
  let framesRun=0,disposed=false;
  const guard=()=>{if(disposed)throw new Error('this research driver has been disposed');};
- const run=(mask,frames)=>{
+ /* SECOND PORT (real-ROM 2P track). `mask2` drives controller 2 for the same
+    frames; omitted, controller 2 is released, which is what every caller
+    before this saw. A platform with one port refuses a non-zero mask2 rather
+    than dropping it. */
+ const ports=Number.isInteger(spec.ports)?spec.ports:1;
+ const run=(mask,frames,mask2)=>{
   guard();
   if(frameBudget!==null&&framesRun+frames>frameBudget)
    throw new Error('FRAME_BUDGET_EXCEEDED: this arm would bring the research run to '
     +(framesRun+frames)+' emulated frames, over the declared budget of '+frameBudget);
-  press(mask,frames);
+  if(mask2&&ports<2)throw new Error('this platform has one controller port; mask2 cannot be driven');
+  press(mask,frames,mask2||0);
   framesRun+=frames;
   if(spec.onFrames)spec.onFrames(frames);
  };
@@ -228,6 +234,7 @@ function wrap(spec){
   readRam(){guard();return readRam();},
   snapshot(){guard();return snapshot();},
   stateHash(){guard();return ramHash(readRam());},
+  ports,
   actionSpec:Object.freeze(actionSpec),
   observedRamBytes:ramBytes};
  /* SELECTIVE SCANNING, for a caller that has an independent reason to narrow -
@@ -336,9 +343,11 @@ function createNes(options){
      live game's snapshot arrives as one) is still accepted. */
   snapshot:()=>core.toJSON(),
   restore:state=>core.fromJSON(typeof state==='string'?JSON.parse(state):state),
-  press:(mask,frames)=>{
-   for(let b=0;b<actionSpec.buttonCount;b++)
+  ports:2,
+  press:(mask,frames,mask2)=>{
+   for(let b=0;b<actionSpec.buttonCount;b++){
     (mask&(1<<b)?core.buttonDown:core.buttonUp).call(core,1,b);
+    (mask2&(1<<b)?core.buttonDown:core.buttonUp).call(core,2,b);}
    for(let i=0;i<frames;i++)core.frame();
   },
   poke:(address,value)=>{core.cpu.mem[address]=value&255;},
@@ -436,9 +445,11 @@ async function createSega(options){
     ()=>core.g._lab_load_state(),
     state=>core.fromJSON(state&&typeof state==='object'&&state.video?{...state,video:null}:state));
    return {snapshot:raw.snapshot,restore:raw.restore};})(),
-  press:(mask,frames)=>{
-   for(let b=0;b<segaActions.buttonCount;b++)
+  ports:2,
+  press:(mask,frames,mask2)=>{
+   for(let b=0;b<segaActions.buttonCount;b++){
     (mask&(1<<b)?core.buttonDown:core.buttonUp).call(core,1,b);
+    (mask2&(1<<b)?core.buttonDown:core.buttonUp).call(core,2,b);}
    for(let i=0;i<frames;i++)core.frame();
   },
   padType:padTypeObserved,padTypeRequested:requestedPad,
@@ -520,9 +531,11 @@ async function createRetro(platform,options){
   ...(()=>{const raw=rawSnapshotter(platform,core,()=>core.g._lab_state(),
     size=>core.g._lab_load_state(size),state=>core.fromJSON(state));
    return {snapshot:raw.snapshot,restore:raw.restore};})(),
-  press:(mask,frames)=>{
-   for(let b=0;b<buttonCount;b++)
+  ports:platform==='snes'?2:1,
+  press:(mask,frames,mask2)=>{
+   for(let b=0;b<buttonCount;b++){
     (mask&(1<<b)?core.buttonDown:core.buttonUp).call(core,1,b);
+    if(platform==='snes')(mask2&(1<<b)?core.buttonDown:core.buttonUp).call(core,2,b);}
    for(let i=0;i<frames;i++)core.frame();
   },
   notes:['cpu.mem is a read-only Proxy on this core, so there is no memory write',

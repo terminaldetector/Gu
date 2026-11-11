@@ -35,7 +35,7 @@ const WORKER_REVISION='agod-worker-1';
    so this order is the dependency order and is not cosmetic. */
 const MODULES=['jsnes.min.js','platforms.js','agod-ram.js','agod-causal.js',
  'agod-goals.js','agod-reward.js','agod-evidence.js','agod-pipeline.js',
- 'agod-platform-driver.js','agod-goal-dto.js'];
+ 'agod-platform-driver.js','agod-goal-dto.js','agod-phase.js','agod-survival.js'];
 
 /* THE CORES OF THE OTHER THREE PLATFORMS, loaded on demand. The list above
    used to be the whole worker, so a Sega, Game Boy or SNES run reached the
@@ -176,25 +176,66 @@ async function runSession(request){
    capsError=String(error&&error.message||error).slice(0,200);
    caps=null;
   }
+  /* the detector a profile is bound to is the whole route, not one stage */
+  const detectorRevision=[self.FlyAgodPipeline.PIPELINE_REVISION,
+   self.FlyAgodPhase?self.FlyAgodPhase.PHASE_REVISION:'no-phase',
+   self.FlyAgodSurvival?self.FlyAgodSurvival.SURVIVAL_REVISION:'no-survival'].join('+');
   post({type:'started',sessionId,workerRevision:WORKER_REVISION,
    platform,
    driverRevision:built.driverRevision,
    coreName:built.coreName,
    capabilities:caps,capabilitiesCloneError:capsError,
    pipelineRevision:self.FlyAgodPipeline.PIPELINE_REVISION,
+   detectorRevision,
    frameBudget,
    framesAfterEntryProcedure:host.framesRun(),
    startedFrom:request.startSnapshot?'a snapshot of the live game state, by value'
     :'this worker own boot of the same ROM'});
 
+  /* THE ROUTE, decided by what the start state IS (real-ROM track).
+     A commercial game in play loses health to the game, not to a button, and
+     the classic resource stage excludes exactly that loss as time-driven (it
+     refused on a private cartridge, from live play, after 12371 frames while
+     the health byte fell in front of it). So:
+       PLAYING  survival discovery first; the classic pipeline if it refuses;
+       MENU     in a background run, stop here and say so - the title or a
+                menu is not where a goal is, and the caller retries when the
+                live game has moved on; an explicit run still gets the
+                classic pipeline;
+       other    the classic pipeline, exactly as before (every synthetic
+                fixture of this repository probes INERT and lands here). */
+  const config=request.config||{};
+  const route=[];
+  let result=null;
+  const phaseApi=self.FlyAgodPhase,survivalApi=self.FlyAgodSurvival;
+  if(config.survival!==false&&phaseApi&&survivalApi){
+   const startState=host.driver.snapshot();
+   const phase=phaseApi.probe(host.driver);
+   route.push({stage:'phase',phase:phase.phase,controlledAxes:phase.controlledAxes});
+   post({type:'progress',sessionId,workerRevision:WORKER_REVISION,
+    framesRun:host.framesRun(),frameBudget,elapsedMs:Date.now()-started,phase:phase.phase});
+   if(phase.phase==='PLAYING'){
+    const survived=survivalApi.discover(host.driver,{romHash:config.romHash,
+     coreRevision:config.coreRevision,profileRevision:config.profileRevision,
+     contextKey:config.contextKey,detectorRevision,
+     frameBudget:Math.max(0,Math.min(survivalApi.DEFAULTS.frameBudget,host.budgetRemaining()-20000))});
+    route.push({stage:'survival',status:survived.status,reason:survived.reason||null});
+    if(survived.status==='VERIFIED')result=survived;
+    else host.driver.restore(startState);
+   }else if(phase.phase==='MENU'&&request.background===true){
+    result={schemaVersion:1,pipelineRevision:self.FlyAgodPipeline.PIPELINE_REVISION,
+     status:'NOT-SUPPORTED',stage:'phase',goal:null,actions:null,discovered:null,
+     reason:'NOT_IN_PLAY: the live game is at a menu or title screen; the search waits for play',
+     trace:route.slice(),refusals:[{stage:'phase',reason:'NOT_IN_PLAY'}]};
+   }
+  }
   /* THE REAL PIPELINE. No stub, no mock, no substitute. */
-  const result=self.FlyAgodPipeline.run(host.driver,request.config||{});
+  if(!result)result=self.FlyAgodPipeline.run(host.driver,config);
 
   /* A VERIFIED result carries readResource (a function) and broker and
      registry (objects with methods). Posting it verbatim throws
      DataCloneError, which is why the positive branch had never crossed this
      boundary. Only the DTO crosses; the mechanism stays here. */
-  const config=request.config||{};
   const dto=self.FlyAgodGoalDto.fromPipelineResult(result,{
    romHash:config.romHash||null,coreRevision:config.coreRevision||null,
    profileRevision:config.profileRevision||null,
@@ -214,7 +255,8 @@ async function runSession(request){
    /* kept so the interface can show status/stage/reason without reaching into
       the DTO, and so nothing here depends on the full result surviving */
    summary:{status:result.status||null,stage:result.stage||null,
-    reason:result.reason===undefined?null:result.reason},
+    reason:result.reason===undefined?null:result.reason,
+    route,notInPlay:typeof result.reason==='string'&&result.reason.indexOf('NOT_IN_PLAY')===0},
    cost:{framesRun:host.framesRun(),frameBudget,
     budgetRemaining:host.budgetRemaining(),
     wallClockMs:Date.now()-started},

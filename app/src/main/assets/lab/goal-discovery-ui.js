@@ -294,6 +294,7 @@
     refuses. The DTO is validated HERE before anything is called a goal. */
  /* the `started` message of the current run: the identity an objective is bound to */
  let lastStarted=null;
+ const PHASE_LABEL=p=>({PLAYING:'игра',MENU:'меню/титул',TRANSITION:'переход',INERT:'без реакции'})[p]||p;
  /* The platform's own shape, as the worker reported it; '' until it does.
     Declared above showResult because all three writers of the budget line
     append it. */
@@ -385,13 +386,22 @@
    return;
   }
   if(message.type==='progress'){
+   if(message.phase)lastPhase=message.phase;
    set(budget,'бюджет: '+(message.framesRun||0)+' из '+(message.frameBudget||0)
-    +' кадров · '+Math.round((message.elapsedMs||0)/100)/10+' с'+platformShape);
+    +' кадров · '+Math.round((message.elapsedMs||0)/100)/10+' с'
+    +(lastPhase?' · фаза игры: '+PHASE_LABEL(lastPhase):'')+platformShape);
    return;
   }
   if(message.type==='result'){showResult(message);
    const live=window.agodObjective?window.agodObjective.status():null;
    const verified=live&&live.state==='VERIFIED';
+   /* the live game was at a title or a menu: nothing was searched, nothing
+      is concluded, and the next look comes soon and costs no attempt */
+   if(!verified&&message.summary&&message.summary.notInPlay){
+    finished('Ждёт игры · AGOD начнёт поиск, когда начнётся игровой процесс');
+    scheduleRetry(true);
+    return;
+   }
    finished(verified?'Подтверждено · AGOD завершён':'Недостаточно данных · AGOD завершён');
    /* DISCOVERY FOLLOWS THE GAME. A cartridge examined from its title screen has
       nothing to find: no resource moves there. So a run that did not verify is
@@ -417,20 +427,24 @@
  }
 
  let autoTimer=null,retryTimer=null,attempts=0,lastAttemptFrame=-1,userStopped=false;
- const RETRY_LIMIT=8,RETRY_DELAYS=[20,30,45,60,90,120,180,240];
+ let backgroundRun=false,waits=0,lastPhase=null;
+ const RETRY_LIMIT=8,RETRY_DELAYS=[20,30,45,60,90,120,180,240],WAIT_LIMIT=60,WAIT_SECONDS=20;
  const autoEnabled=()=>window.GU_AGOD_AUTOSTART===true
   ||(window.GU_AGOD_AUTOSTART!==false&&!!window.FlyBridge);
- function scheduleRetry(){
+ function scheduleRetry(notInPlay){
   clearTimeout(retryTimer);
-  if(!autoEnabled()||userStopped||attempts>=RETRY_LIMIT)return;
-  const wait=(window.GU_AGOD_RETRY_SECONDS||RETRY_DELAYS[Math.min(attempts,RETRY_DELAYS.length-1)])*1000;
+  if(!autoEnabled()||userStopped)return;
+  /* waiting for play is not a failed attempt: it has its own, larger bound */
+  if(notInPlay){attempts=Math.max(0,attempts-1);if(++waits>WAIT_LIMIT)return;}
+  else if(attempts>=RETRY_LIMIT)return;
+  const wait=(window.GU_AGOD_RETRY_SECONDS||(notInPlay?WAIT_SECONDS:RETRY_DELAYS[Math.min(attempts,RETRY_DELAYS.length-1)]))*1000;
   retryTimer=setTimeout(()=>{
    if(session||userStopped||(window.agodObjective&&window.agodObjective.active()))return;
    const now=liveFrame();
    /* the game has not moved since the last attempt: the same state would
       give the same answer, so wait for play rather than spend the budget */
-   if(now!==null&&now===lastAttemptFrame){scheduleRetry();return;}
-   runButton.onclick();
+   if(now!==null&&now===lastAttemptFrame){scheduleRetry(notInPlay);return;}
+   backgroundRun=true;runButton.onclick();
   },wait);
  }
  runButton.onclick=()=>{
@@ -470,12 +484,14 @@
    platform:typeof labPlatform!=='undefined'?labPlatform:'nes',
    romBinaryString:rom,
    startSnapshot,
+   background:backgroundRun,
    frameBudget:(window.GU_AGOD_FRAME_BUDGET|0)||2000000,
    config:{romHash:(typeof romHash!=='undefined'&&romHash)||'unknown-rom',
     coreRevision:window.labCoreIdentity||'unknown-core',
     profileRevision:'agod-app-1',
     ...(window.GU_AGOD_CONFIG||{})},
    onEvent});
+  backgroundRun=false;
   if(!started||started.status!=='RUNNING'){
    set(phase,'AGOD не запущен: '+((started&&started.reason)||'мост отказал'));
    return;
@@ -504,12 +520,12 @@
      worker on its own core. On by default inside the Android app, where the
      native bridge exists; a page without it (the host test bench) starts a run
      only when asked, or when GU_AGOD_AUTOSTART is set. */
-  clearTimeout(retryTimer);attempts=0;lastAttemptFrame=-1;userStopped=false;
+  clearTimeout(retryTimer);attempts=0;waits=0;lastPhase=null;lastAttemptFrame=-1;userStopped=false;
   if(!autoEnabled())return;
   clearTimeout(autoTimer);
   autoTimer=setTimeout(()=>{
    if(session||(window.agodObjective&&window.agodObjective.active()))return;
-   runButton.onclick();
+   backgroundRun=true;runButton.onclick();
   },1500);
  });
  window.addEventListener('pagehide',()=>abandon('AGOD остановлен: страница закрыта'));

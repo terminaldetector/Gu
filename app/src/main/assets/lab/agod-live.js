@@ -65,7 +65,7 @@
  function adopt(dto,started){
   if(!window.FlyAgodObjective)return status();
   capabilities=started&&started.capabilities||capabilities;
-  detectorSeen=started&&started.pipelineRevision||detectorSeen;
+  detectorSeen=started&&(started.detectorRevision||started.pipelineRevision)||detectorSeen;
   const made=window.FlyAgodObjective.createProfile(dto,
    {...identity(),detectorRevision:detectorSeen},modules());
   if(made.status!=='PROFILE'){
@@ -80,7 +80,7 @@
  /* the detector revision this build reports, from any discovery run */
  function detector(started){
   capabilities=started&&started.capabilities||capabilities;
-  detectorSeen=started&&started.pipelineRevision||detectorSeen;
+  detectorSeen=started&&(started.detectorRevision||started.pipelineRevision)||detectorSeen;
   if(state==='RESTORED_UNCHECKED'&&profile){
    if(profile.identity.detectorRevision!==detectorSeen)
     clear('the stored objective was proved by another detector revision');

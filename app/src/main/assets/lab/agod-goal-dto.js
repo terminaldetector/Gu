@@ -81,6 +81,8 @@ function addressSpec(resource){
   encodingDetermined:resource.encodingDetermined===undefined
    ?null:resource.encodingDetermined===true,
   mask:resource.mask===undefined?null:resource.mask,
+  /* only a producer that saw the field cross zero says so; absent is unsigned */
+  signed:resource.signed===true,
   /* G2 forward slots. null means "this producer did not say", which is
      different from a value, and consumers must treat it as unknown. */
   memoryRegion:resource.memoryRegion||null,
@@ -294,7 +296,8 @@ function decodeSpecFor(resource){
  return {address:resource.address,width:resource.width,
   endian:resource.endian==='n/a'||!resource.endian?'little':resource.endian,
   encoding:resource.encodingDetermined===true&&resource.encoding
-   ?resource.encoding:'binary'};
+   ?resource.encoding:'binary',
+  ...(resource.signed===true?{signed:true}:{})};
 }
 
 const api={DTO_REVISION,DTO_SCHEMA,DECLARED_STATUSES,

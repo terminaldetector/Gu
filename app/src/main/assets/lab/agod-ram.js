@@ -59,6 +59,9 @@ function decode(bytes,spec){
   if(spec.encoding==='bcd'){if((byte&15)>9||(byte>>>4)>9)return null;value=value*100+(byte>>>4)*10+(byte&15);}
   else value=value*256+byte;
  }
+ /* a field the producer saw crossing zero downwards (1, 0, 255) is read
+    signed, so -1 is a loss and not a gain of 255; only when asked for */
+ if(spec.signed===true&&spec.encoding!=='bcd'){const m=Math.pow(256,spec.width);if(value>=m/2)value-=m;}
  return value;
 }
 const modulusOf=spec=>spec.encoding==='bcd'?Math.pow(100,spec.width):Math.pow(256,spec.width);

@@ -109,6 +109,19 @@ function createProfile(dto,identitySource,modules){
   if(entry.stage==='reverse'&&Array.isArray(entry.lostGainAddresses))
    for(const address of entry.lostGainAddresses)lost.add(address);
  const progress=[],seen=new Set();
+ /* SURVIVAL PROGRESS (real-ROM track). agod-survival.js has no reversal arm:
+    its progress fields are the ones that rose in play under most policies,
+    never under neutral, and never fell in play on any start, including the
+    calibration and holdout starts. They arrive already shaped as fields. */
+ for(const field of (dto.discovered&&dto.discovered.progressFields)||[]){
+  if(!Number.isInteger(field.address)||seen.has(field.address))continue;
+  if(field.address===dto.resource.address)continue;
+  if(field.address+(field.width||1)>identity.observedRamBytes)continue;
+  seen.add(field.address);
+  progress.push(frozen({address:field.address,width:field.width||1,endian:field.endian,
+   encoding:field.encoding,encodingDetermined:field.encodingDetermined===true,mask:null,
+   basis:field.basis||'rose in play, never under neutral, never fell in play'}));
+ }
  for(const field of (dto.discovered&&dto.discovered.increasingFields)||[]){
   if(!Number.isInteger(field.address)||!lost.has(field.address)||seen.has(field.address))continue;
   if(field.address===dto.resource.address)continue;
@@ -126,7 +139,8 @@ function createProfile(dto,identitySource,modules){
   goal:frozen({id:dto.goal.id,polarity:dto.goal.polarity,lifecycle:dto.goal.lifecycle}),
   resource:frozen({address:dto.resource.address,width:dto.resource.width,
    endian:dto.resource.endian,encoding:dto.resource.encoding,
-   encodingDetermined:dto.resource.encodingDetermined===true}),
+   encodingDetermined:dto.resource.encodingDetermined===true,
+   ...(dto.resource.signed===true?{signed:true}:{})}),
   actions:dto.actions?frozen({...dto.actions}):null,
   progress:frozen(progress),
   /* the goal record travels with the profile, so the mechanism can be rebuilt

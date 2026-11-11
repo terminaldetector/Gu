@@ -130,6 +130,7 @@ function runInWorker(request){
   romBase64:options.romBase64||null,romBinaryString:options.romBinaryString||null,
   startSnapshot:options.startSnapshot||null,
   entry:options.entry||null,
+  background:options.background===true,
   config:options.config||{},
   frameBudget:Number.isInteger(options.frameBudget)?options.frameBudget:2000000,
   progressEveryFrames:Number.isInteger(options.progressEveryFrames)
