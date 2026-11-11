@@ -25,20 +25,20 @@
     "controlledAxes": [
      "horizontal"
     ],
-    "wallMs": 38311
+    "wallMs": 38797
    },
    "classic": {
     "status": "REFUSED",
     "stage": "induce",
     "frames": 16355,
-    "wallMs": 21268
+    "wallMs": 21217
    },
    "survival": {
     "status": "VERIFIED",
     "stage": "complete",
     "reason": null,
     "frames": 76472,
-    "wallMs": 85140,
+    "wallMs": 82655,
     "kind": "TERMINAL_RESOURCE_DEPLETION",
     "discoveryRuns": [
      {
@@ -95,7 +95,7 @@
     "progressFields": 4
    },
    "oracle": {
-    "resourceMatches": false,
+    "resourceMatches": true,
     "progressMatches": null,
     "progressFieldsOutsideOracle": 4
    },
@@ -113,7 +113,7 @@
      "stage": "complete",
      "kind": "LOSS_OF_LIFE_COUNTER",
      "frames": 69576,
-     "wallMs": 74668,
+     "wallMs": 78377,
      "verdicts": [
       {
        "group": "CALIBRATION",
@@ -191,7 +191,7 @@
     ]
    },
    "totalFrames": 290117,
-   "totalWallMs": 325602,
+   "totalWallMs": 329739,
    "status": "DONE"
   },
   {
@@ -357,5 +357,9 @@
    "totalWallMs": 128688,
    "status": "DONE"
   }
+ ],
+ "notes": [
+  "the second cartridge was rerun after its private oracle was corrected: discovery chose the per-life health bar, which the oracle had not listed; the lives counter and the health bar were both confirmed against the HUD frame by frame",
+  "learning rows use a frozen argmax evaluation; REALROM_EVAL=stochastic results are in REALROM_AGOD.md"
  ]
 }
