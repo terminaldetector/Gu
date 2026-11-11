@@ -1,0 +1,104 @@
+{
+ "type": "gu-agod-build-manifest",
+ "version": 1,
+ "git": {
+  "commit": "8e4c58566785b4a8d7ef59b44f6ff15231e32772",
+  "branch": "research/agod-neural-e0-e1",
+  "dirty": true
+ },
+ "apk": {
+  "file": "FlyConsole-AGOD-2.3.0-debug.apk",
+  "sha256": "d9e63b0b359b1090265688f79241911e9cb19e3eb4860a1f62065f6ff8eb895d",
+  "bytes": 208304447,
+  "variant": "debug",
+  "signing": "Android debug key (not a release signature)",
+  "badging": [
+   "package: name='org.node.flyconsole.nes' versionCode='43' versionName='2.3.0-agod' platformBuildVersionName='15' platformBuildVersionCode='35' compileSdkVersion='35' compileSdkVersionCodename='15'"
+  ],
+  "permissions": [
+   "package: org.node.flyconsole.nes",
+   "permission: org.node.flyconsole.nes.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION",
+   "uses-permission: name='org.node.flyconsole.nes.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'",
+   "uses-permission: name='android.permission.ACCESS_NETWORK_STATE'"
+  ]
+ },
+ "assetsInApk": {
+  "assets/lab/agod-pipeline.js": "assets/lab/agod-pipeline.js",
+  "assets/lab/agod-sequences.js": "assets/lab/agod-sequences.js",
+  "assets/lab/agod-graph.js": "assets/lab/agod-graph.js",
+  "assets/lab/agod-objective.js": "assets/lab/agod-objective.js",
+  "assets/lab/agod-live.js": "assets/lab/agod-live.js",
+  "assets/lab/agod-worker.js": "assets/lab/agod-worker.js",
+  "assets/lab/agod-platform-driver.js": "assets/lab/agod-platform-driver.js",
+  "assets/lab/agod-reward.js": "assets/lab/agod-reward.js",
+  "assets/lab/agod-evidence.js": "assets/lab/agod-evidence.js",
+  "assets/lab/sega/genplus.wasm": "assets/lab/sega/genplus.wasm",
+  "assets/lab/gb/core.wasm": "assets/lab/gb/core.wasm",
+  "assets/lab/snes/core.wasm": "assets/lab/snes/core.wasm",
+  "assets/brain.fly.gz": "assets/brain.fly",
+  "assets/male-cns.fly.gz": "assets/male-cns.fly"
+ },
+ "cores": {
+  "gb": {
+   "system": "gb",
+   "upstream": "libretro/gambatte-libretro",
+   "revision": "d9d6cd06382d1ced30de34d56d3609452323dab1",
+   "core": "gambatte-d9d6cd0-fly1",
+   "source_url": "https://github.com/libretro/gambatte-libretro/tree/d9d6cd06382d1ced30de34d56d3609452323dab1",
+   "source_transport": "git-checkout",
+   "upstream_archive_sha256": null,
+   "emscripten_version": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.6 ()",
+   "stack_setting": "TOTAL_STACK",
+   "wasm_sha256": "42249af883d590613a18e86eabb767f33f3cf48b60736105f81061ba9a57fcf8",
+   "source_sha256": "97761a32394c4d49553018ced60706ad9e69d78b592f3d64d9c83ab0aa783117"
+  },
+  "snes": {
+   "system": "snes",
+   "upstream": "snes9xgit/snes9x",
+   "revision": "1bcc369e89f08243e0a462882fb1f3e42e51de3a",
+   "core": "snes9x-1bcc369-fly1",
+   "source_url": "https://github.com/snes9xgit/snes9x/tree/1bcc369e89f08243e0a462882fb1f3e42e51de3a",
+   "source_transport": "git-checkout",
+   "upstream_archive_sha256": null,
+   "emscripten_version": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.6 ()",
+   "stack_setting": "TOTAL_STACK",
+   "wasm_sha256": "7df4ded991519c37114482647ba6e729b7ea7cfcd23e14ca9c89e8498b30c89c",
+   "source_sha256": "56a3b5291f97978c9d5c679a2852ff36376ae653373dff4ba7a9e37651be13a6"
+  },
+  "sega": {
+   "upstream": "https://github.com/h1romas4/wasm-genplus",
+   "commit": "6090aff9e9b2f578cd28882bd4571d2e35b1d674",
+   "compiler": "Emscripten 3.1.57",
+   "license": "Genesis Plus GX noncommercial + component notices",
+   "source_archive": "genplus-source.zip",
+   "core_api": "genplus-fly-49c5847-api6",
+   "wasm_sha256": "dc73bd69e789596cf69fb3649eed0c29c1010f7840b181c3e8cf0292e0d1d74a",
+   "source_sha256": "446d479dd526651cf6ec7fa1457f97b43c2ecd6cab855acdd36820396c147295",
+   "controllers": 2,
+   "core_upstream": "https://github.com/ekeeke/Genesis-Plus-GX",
+   "core_commit": "49c584764893b0505ac7f768a754f97330fa4392",
+   "core_archive_sha256": "f04f89c20ec286a23d7a10bc5ec0329bdc4954d3d41062d836fccba7b18c7d85",
+   "max_rom_bytes": 33554432
+  }
+ },
+ "connectomes": {
+  "brain.fly.gz": {
+   "sha256": "e06ff2d29581c9bdf88ebba48fd355673c1b550e757c4325af21c01719489d62",
+   "bytes": 53119189
+  },
+  "male-cns.fly.gz": {
+   "sha256": "c8f5e2bd9d78a2f458c4947f6c999fb2911a46b543a4c01aa0b37f1caf74ed93",
+   "bytes": 86170894
+  }
+ },
+ "toolchain": {
+  "java": "see stderr",
+  "gradle": "Gradle 8.14.3",
+  "emscripten": [
+   "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.6 ()"
+  ],
+  "cc65": "n/a",
+  "node": "v22.22.0"
+ },
+ "smoke": "NOT RUN - no /dev/kvm here and no physical device attached; the APK was not launched anywhere. Physical device: DEVICE-PENDING."
+}
