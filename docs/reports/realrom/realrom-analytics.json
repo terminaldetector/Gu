@@ -1,0 +1,361 @@
+{
+ "tool": "agod_realrom_check",
+ "revisions": {
+  "pipeline": "agod-pipeline-s10-5",
+  "phase": "agod-phase-r1",
+  "survival": "agod-pipeline-survival-r1",
+  "objective": "agod-objective-d2-2"
+ },
+ "privacy": "hashes, sizes and aggregates only; no ROM bytes, RAM offsets, frames or states",
+ "results": [
+  {
+   "romSha256": "704c54b3fece68e5bbdc584cf8a22605380b0e845bd60f61c06406ed03a04b1c",
+   "bytes": 2097152,
+   "platform": "sega",
+   "entry": {
+    "status": "PLAYING",
+    "frames": 39042,
+    "steps": 41,
+    "waits": 11,
+    "presses": {
+     "Start": 17,
+     "A": 4,
+     "B": 8
+    },
+    "controlledAxes": [
+     "horizontal"
+    ],
+    "wallMs": 38311
+   },
+   "classic": {
+    "status": "REFUSED",
+    "stage": "induce",
+    "frames": 16355,
+    "wallMs": 21268
+   },
+   "survival": {
+    "status": "VERIFIED",
+    "stage": "complete",
+    "reason": null,
+    "frames": 76472,
+    "wallMs": 85140,
+    "kind": "TERMINAL_RESOURCE_DEPLETION",
+    "discoveryRuns": [
+     {
+      "policy": "neutral",
+      "ended": false,
+      "framesToEnd": null,
+      "lossesOfLife": 0
+     },
+     {
+      "policy": "random-1",
+      "ended": false,
+      "framesToEnd": null,
+      "lossesOfLife": 1
+     },
+     {
+      "policy": "random-2",
+      "ended": true,
+      "framesToEnd": 2240,
+      "lossesOfLife": 4
+     },
+     {
+      "policy": "random-3",
+      "ended": true,
+      "framesToEnd": 2368,
+      "lossesOfLife": 4
+     },
+     {
+      "policy": "random-4",
+      "ended": true,
+      "framesToEnd": 2688,
+      "lossesOfLife": 3
+     },
+     {
+      "policy": "random-5",
+      "ended": true,
+      "framesToEnd": 2432,
+      "lossesOfLife": 1
+     }
+    ],
+    "verdicts": [
+     {
+      "group": "CALIBRATION",
+      "outcome": "confirmed",
+      "losses": 27,
+      "linked": 3
+     },
+     {
+      "group": "HOLDOUT",
+      "outcome": "confirmed",
+      "losses": 27,
+      "linked": 3
+     }
+    ],
+    "progressFields": 4
+   },
+   "oracle": {
+    "resourceMatches": false,
+    "progressMatches": null,
+    "progressFieldsOutsideOracle": 4
+   },
+   "twoPlayer": {
+    "port2Before": "INERT",
+    "join": "PLAYING",
+    "joinFrames": 4586,
+    "joinPresses": [
+     "Start",
+     "Start"
+    ],
+    "port1AfterJoin": "PLAYING",
+    "survival": {
+     "status": "VERIFIED",
+     "stage": "complete",
+     "kind": "LOSS_OF_LIFE_COUNTER",
+     "frames": 69576,
+     "wallMs": 74668,
+     "verdicts": [
+      {
+       "group": "CALIBRATION",
+       "outcome": "confirmed"
+      },
+      {
+       "group": "HOLDOUT",
+       "outcome": "confirmed"
+      }
+     ]
+    },
+    "sameResourceAsPort1": false,
+    "port1ResourceFallsUnderPort2Play": true
+   },
+   "profile": {
+    "status": "PROFILE",
+    "reason": null,
+    "progress": 4
+   },
+   "learning": {
+    "actions": 11,
+    "stepFrames": 8,
+    "evalStarts": 3,
+    "evalStepsCap": 300,
+    "graph": "30-neuron mechanism fixture",
+    "rows": [
+     {
+      "seed": 11,
+      "trainSteps": 2400,
+      "verified": 21,
+      "provisional": 65,
+      "unknown": 2314,
+      "nativeChanges": 507,
+      "frozenClean": true,
+      "untrained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 0
+      },
+      "trained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 0
+      },
+      "random": {
+       "survivalSteps": 798,
+       "losses": 6,
+       "progress": 216
+      }
+     },
+     {
+      "seed": 23,
+      "trainSteps": 2400,
+      "verified": 10,
+      "provisional": 56,
+      "unknown": 2334,
+      "nativeChanges": 343,
+      "frozenClean": true,
+      "untrained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 0
+      },
+      "trained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 0
+      },
+      "random": {
+       "survivalSteps": 489,
+       "losses": 9,
+       "progress": 423
+      }
+     }
+    ]
+   },
+   "totalFrames": 290117,
+   "totalWallMs": 325602,
+   "status": "DONE"
+  },
+  {
+   "romSha256": "38e7f32e3874e2b516c584bbcb206326daec6f3e3a00261aa277578a76d9d809",
+   "bytes": 524288,
+   "platform": "sega",
+   "entry": {
+    "status": "PLAYING",
+    "frames": 8442,
+    "steps": 10,
+    "waits": 5,
+    "presses": {
+     "Start": 3,
+     "A": 1
+    },
+    "controlledAxes": [
+     "horizontal",
+     "vertical"
+    ],
+    "wallMs": 7234
+   },
+   "classic": {
+    "status": "REFUSED",
+    "stage": "induce",
+    "frames": 12371,
+    "wallMs": 14682
+   },
+   "survival": {
+    "status": "VERIFIED",
+    "stage": "complete",
+    "reason": null,
+    "frames": 30816,
+    "wallMs": 29836,
+    "kind": "TERMINAL_RESOURCE_DEPLETION",
+    "discoveryRuns": [
+     {
+      "policy": "neutral",
+      "ended": true,
+      "framesToEnd": 576,
+      "lossesOfLife": 1
+     },
+     {
+      "policy": "random-1",
+      "ended": true,
+      "framesToEnd": 1216,
+      "lossesOfLife": 1
+     },
+     {
+      "policy": "random-2",
+      "ended": true,
+      "framesToEnd": 640,
+      "lossesOfLife": 1
+     },
+     {
+      "policy": "random-3",
+      "ended": true,
+      "framesToEnd": 896,
+      "lossesOfLife": 1
+     },
+     {
+      "policy": "random-4",
+      "ended": true,
+      "framesToEnd": 1088,
+      "lossesOfLife": 1
+     },
+     {
+      "policy": "random-5",
+      "ended": true,
+      "framesToEnd": 1216,
+      "lossesOfLife": 1
+     }
+    ],
+    "verdicts": [
+     {
+      "group": "CALIBRATION",
+      "outcome": "confirmed",
+      "losses": 15,
+      "linked": 3
+     },
+     {
+      "group": "HOLDOUT",
+      "outcome": "confirmed",
+      "losses": 15,
+      "linked": 3
+     }
+    ],
+    "progressFields": 4
+   },
+   "oracle": {
+    "resourceMatches": true,
+    "progressMatches": true,
+    "progressFieldsOutsideOracle": 1
+   },
+   "twoPlayer": {
+    "port2Before": "INERT",
+    "join": "NOT_REACHED",
+    "joinFrames": 15600,
+    "joinPresses": []
+   },
+   "profile": {
+    "status": "PROFILE",
+    "reason": null,
+    "progress": 4
+   },
+   "learning": {
+    "actions": 11,
+    "stepFrames": 8,
+    "evalStarts": 3,
+    "evalStepsCap": 300,
+    "graph": "30-neuron mechanism fixture",
+    "rows": [
+     {
+      "seed": 11,
+      "trainSteps": 2400,
+      "verified": 165,
+      "provisional": 107,
+      "unknown": 2128,
+      "nativeChanges": 10031,
+      "frozenClean": true,
+      "untrained": {
+       "survivalSteps": 154,
+       "losses": 15,
+       "progress": 121
+      },
+      "trained": {
+       "survivalSteps": 204,
+       "losses": 15,
+       "progress": 60
+      },
+      "random": {
+       "survivalSteps": 306,
+       "losses": 15,
+       "progress": 2811
+      }
+     },
+     {
+      "seed": 23,
+      "trainSteps": 2400,
+      "verified": 109,
+      "provisional": 239,
+      "unknown": 2052,
+      "nativeChanges": 5246,
+      "frozenClean": true,
+      "untrained": {
+       "survivalSteps": 154,
+       "losses": 15,
+       "progress": 121
+      },
+      "trained": {
+       "survivalSteps": 170,
+       "losses": 15,
+       "progress": 242
+      },
+      "random": {
+       "survivalSteps": 279,
+       "losses": 15,
+       "progress": 1457
+      }
+     }
+    ]
+   },
+   "totalFrames": 117759,
+   "totalWallMs": 128688,
+   "status": "DONE"
+  }
+ ]
+}

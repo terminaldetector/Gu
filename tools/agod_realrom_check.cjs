@@ -223,7 +223,13 @@ async function learn(built,inPlay,profile,identity,java){
  }
  const rows=[];
  for(const seed of SEEDS){
-  const brain=train=>async()=>{const r=await java.call({op:'decide',retina:retina(core),train,actions,epsilon:train?.1:0,windowMs:20});return {mask:r.mask,id:r.id};};
+  /* REALROM_EVAL=stochastic: evaluation samples from the layer's own policy
+     (decide in sampling mode, epsilon 0) and never sends feedback, so weights
+     and update counts stay frozen - checked below - but the frozen argmax's
+     "press nothing" tie no longer decides every step */
+  const stochastic=process.env.REALROM_EVAL==='stochastic';
+  const brain=train=>async()=>{const r=await java.call({op:'decide',retina:retina(core),train:train||stochastic,actions,
+   epsilon:train?.1:0,windowMs:20});return {mask:r.mask,id:r.id};};
   const evaluate=async choose=>{const out=[];for(const s of evalStarts)out.push(await episode(s,choose,false,EVAL_STEPS,null,null));return out;};
   await java.call({op:'init',seed,mode:'base'});
   const untrained=await evaluate(brain(false));
@@ -249,6 +255,8 @@ async function learn(built,inPlay,profile,identity,java){
    row.untrained.losses,row.trained.losses,row.random.losses,row.untrained.progress,row.trained.progress,row.random.progress);
  }
  return {actions:actions.length,stepFrames:STEP_FRAMES,evalStarts:3,evalStepsCap:EVAL_STEPS,
+  evaluation:process.env.REALROM_EVAL==='stochastic'?'frozen, sampled from the policy':'frozen, argmax',
+  noOpAction:process.env.REALROM_NOOP!=='0',
   graph:process.env.FDB_GRAPH?'connectome':'30-neuron mechanism fixture',rows};
 }
 
