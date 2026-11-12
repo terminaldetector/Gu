@@ -302,7 +302,7 @@ function releasePorts() {
   if(!nes)return;
   for(const port of [1,2])for(let i=0;i<((labPlatform==='sega'||labPlatform==='snes')?12:8);i++)nes.buttonUp(port,i);
   appliedMask=appliedHumanMask=appliedAgentMask=0;
-  appliedDualMasks=[0,0];dualOverrides=[false,false];physicalPortMasks=[0,0];
+  appliedDualMasks=[0,0];dualOverrides=[false,false];physicalPortMasks=[0,0];p2JoinFrames=0;
 }
 function applyPortMask(port,mask,old) {
   if(!loaded)return;
