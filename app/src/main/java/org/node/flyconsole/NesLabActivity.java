@@ -1028,7 +1028,7 @@ public final class NesLabActivity extends Activity {
             if(destroyed)return;if(json.getBytes(StandardCharsets.UTF_8).length>8*1024*1024){error("JSON превышает 8 МиБ");return;}
             submit(() -> {
                 try {
-                    JSONObject document=new JSONObject(json);final String suffix=document.optString("type").endsWith("-report")?"report":"fly-layer-set".equals(document.optString("type"))?"layer-set":"model";
+                    JSONObject document=new JSONObject(json);final String suffix="gu-private-research-state".equals(document.optString("type"))?"research-state":document.optString("type").endsWith("-report")?"report":"fly-layer-set".equals(document.optString("type"))?"layer-set":"model";
                     modelExport = new File(getFilesDir(), labSystem+"-"+suffix+"-export.json");
                     try (Writer writer = new OutputStreamWriter(new FileOutputStream(modelExport), StandardCharsets.UTF_8)) { writer.write(json); }
                     runOnUiThread(() -> {
