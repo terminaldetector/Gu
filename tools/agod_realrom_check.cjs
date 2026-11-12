@@ -104,9 +104,27 @@ async function studyRom(file,java){
  if(built.status!=='READY')return {...report,status:'CORE_UNAVAILABLE'};
  const d=built.driver;
  /* 1. into play, with nothing but the pad */
- const entry=Phase.enter(d,{});
+ // A private snapshot from an actual playable party state (e.g. Secret of Mana
+ // after acquiring the second character) is a research origin, not a public
+ // fixture. Never copy it into reports or the repository.
+ const privateStatePath=option('--state-file',null);
+ let entry;
+ if(privateStatePath){
+  if(!option('--only',null))throw Error('--state-file requires --only <ROM SHA prefix>');
+  const snapshot=JSON.parse(fs.readFileSync(privateStatePath,'utf8'));
+  if(snapshot.type!=='gu-private-research-state'||snapshot.version!==1||
+    snapshot.system!==platform||snapshot.hash!==romSha256||
+    !snapshot.state||snapshot.state.kind!==platform||
+    snapshot.state.core!==snapshot.core)
+   throw Error('RESEARCH_STATE_MISMATCH: ROM/platform/core identity');
+  d.restore(snapshot.state);                         // core validates revision
+  const probe=Phase.probe(d,{port:1});
+  entry={status:probe.phase==='PLAYING'?'PLAYING':'NOT_IN_PLAY',
+   frames:probe.framesUsed,steps:[],probe,snapshot:d.snapshot(),source:'private-state'};
+ }else entry=Phase.enter(d,{});
+
  const presses={};for(const s of entry.steps)if(s.kind==='PRESS')presses[s.button]=(presses[s.button]||0)+1;
- report.entry={status:entry.status,frames:entry.frames,steps:entry.steps.length,
+ report.entry={status:entry.status,source:entry.source||'rom-boot',frames:entry.frames,steps:entry.steps.length,
   waits:entry.steps.filter(s=>s.kind==='WAIT').length,presses,
   controlledAxes:entry.probe?entry.probe.controlledAxes:null,wallMs:Date.now()-t0};
  console.log('  entry: %s in %d frames, %d steps, presses %j',entry.status,entry.frames,entry.steps.length,presses);
@@ -166,7 +184,20 @@ async function studyRom(file,java){
    joinPresses:join.steps.filter(x=>x.kind==='PRESS').map(x=>x.button)};
   if(join.status==='PLAYING'){
    d.restore(join.snapshot);
-   two.port1AfterJoin=Phase.probe(d,{port:1}).phase;
+   const p1Probe=Phase.probe(d,{port:1});
+   const p2Probe=Phase.probe(d,{port:2});
+   two.port1AfterJoin=p1Probe.phase;
+   // Physical P2 ownership must be observed causally after joining.
+   // Counts only: never disclose memory offsets from the private cartridge.
+   const fields=p=>new Set((p.controlledAxes||[]).flatMap(a=>a.fields||[]));
+   const a=fields(p1Probe),b=fields(p2Probe);
+   two.independentMovement={
+    p1ControlledFields:a.size,p2ControlledFields:b.size,
+    p1Exclusive:[...a].filter(x=>!b.has(x)).length,
+    p2Exclusive:[...b].filter(x=>!a.has(x)).length,
+    status:a.size&&b.size&&[...a].some(x=>!b.has(x))&&[...b].some(x=>!a.has(x))
+     ?'CONFIRMED':'INCONCLUSIVE'
+   };
    const f2=built.framesRun(),t3=Date.now();
    const p2=Survival.discover(d,{...config,detectorRevision,port:2});
    two.survival={status:p2.status,stage:p2.stage,kind:p2.judgement?p2.judgement.kind:null,frames:built.framesRun()-f2,wallMs:Date.now()-t3,
@@ -314,6 +345,7 @@ async function learn(built,inPlay,profile,identity,java){
 (async()=>{
  const files=fs.readdirSync(ROMS).filter(f=>EXT[path.extname(f).toLowerCase()]).sort();
  const only=option('--only',null);
+ if(option('--state-file',null)&&!only)throw Error('--state-file requires --only <ROM SHA prefix>');
  const java=flag('--fdb')&&process.env.CODE_CLASSPATH?bridge():null;
  if(flag('--fdb')&&!java)console.log('FDB: BLOCKED - CODE_CLASSPATH is not set');
  const results=[];
