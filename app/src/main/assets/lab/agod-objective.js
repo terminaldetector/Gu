@@ -301,13 +301,23 @@ function decisionPrior(attribution,actionSpec,weight){
  if(!progButtons.length&&!progDirs.length)return null;
  const dirs=dirNames.map(n=>buttons.find(b=>b.name===n)).filter(Boolean).map(b=>b.mask);
  const opposite=m=>(m&48)===48||(m&192)===192;
- const out=[0,...dirs,...progButtons.map(b=>b.mask)];
+ /* ADDED TO the default set, never instead of it. The first version replaced
+    it, and on a private shooter whose fire button scores only after its
+    bullets travel (beyond the attribution lags) the set lost the fire button
+    and the trained layer stopped scoring. The default - nothing, each
+    direction, the first two action buttons, each direction with the first -
+    comes first; the attributed combinations are added after it. */
+ const action=buttons.filter(b=>!dirNames.includes(b.name)&&!['Start','Select','Mode'].includes(b.name)).map(b=>b.mask);
+ const out=[0,...dirs,...action.slice(0,2)];
+ if(action[0])for(const d of dirs)out.push(d|action[0]);
+ out.push(...progButtons.map(b=>b.mask));
  for(const d of progDirs.slice(0,2))for(const b of progButtons)out.push(d.mask|b.mask);
  if(progButtons[0])for(const d of dirs)out.push(d|progButtons[0].mask);
- const actions=[...new Set(out)].filter(m=>!opposite(m)).slice(0,12);
+ const actions=[...new Set(out)].filter(m=>!opposite(m)).slice(0,16);
+ /* the innate bias only where the lift is clear */
  const w=Number.isFinite(weight)?weight:2,bit=mask=>Math.round(Math.log2(mask)),priors=[];
- if(progDirs[0])priors.push({output:bit(progDirs[0].mask),weight:w,button:progDirs[0].name,lift:progDirs[0].gainLift});
- progButtons.forEach((b,i)=>priors.push({output:bit(b.mask),weight:i?w/2:w,button:b.name,lift:b.gainLift}));
+ if(progDirs[0]&&progDirs[0].gainLift>=1.3)priors.push({output:bit(progDirs[0].mask),weight:w,button:progDirs[0].name,lift:progDirs[0].gainLift});
+ progButtons.filter(b=>b.gainLift>=1.3).forEach((b,i)=>priors.push({output:bit(b.mask),weight:i?w/2:w,button:b.name,lift:b.gainLift}));
  return frozen({actions:frozen(actions),priors:frozen(priors.map(frozen)),
   basis:'button lift before progress rises in seeded random play (survival discovery)'});
 }

@@ -199,7 +199,7 @@ async function learn(built,inPlay,profile,identity,java){
   ?decisionPrior(profile.dto.discovered&&profile.dto.discovered.buttonAttribution,spec,Number(process.env.REALROM_PRIOR||2)):null;
  const actions=prior?prior.actions:actionSet(spec);
  const init=async seed=>{await java.call({op:'init',seed,mode:'base'});
-  if(prior)for(const p of prior.priors)await java.call({op:'prior',output:p.output,weight:p.weight});};
+  if(prior)for(const p of prior.priors)if(p.weight>0)await java.call({op:'prior',output:p.output,weight:p.weight});};
  const read=Objective.createLiveReward(profile,MODULES,{identity,sessionId:'probe',policy:'aggressive'}).read;
  const progressOf=Objective.createLiveReward(profile,MODULES,{identity,sessionId:'probe2',policy:'aggressive'}).readProgress;
  const floor=profile.dto.discovered.resource.floor;

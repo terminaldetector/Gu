@@ -420,7 +420,7 @@ function attributeButtons(runs,progressFields,resourceAddress,spec,cfg){
     synthetic check measured A at 0.96 although only A scores). Each lag
     0..lags-1 strides before the event is measured on its own and the best
     one is reported, with the lag, so a bullet's travel time shows. */
- const lags=Math.max(1,Math.round((cfg.attributionFrames||32)/cfg.stride));
+ const lags=Math.max(1,Math.round((cfg.attributionFrames||64)/cfg.stride));
  const tally=buttons.map(b=>({name:b.name,mask:b.mask,base:0,steps:0,
   gain:new Array(lags).fill(0),gains:0,loss:new Array(lags).fill(0),losses:0}));
  const progressBytes=new Set();for(const f of progressFields)for(let k=0;k<f.width;k++)progressBytes.add(f.address+k);

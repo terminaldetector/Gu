@@ -130,6 +130,12 @@ const ranked=attribution.filter(b=>b.gainLift!==null).sort((a,b)=>b.gainLift-a.g
 console.log('button attribution (gain lift): '+ranked.map(b=>b.name+' '+b.gainLift).join(', '));
 ok(ranked.length>0&&ranked[0].name==='A'&&ranked[0].gainLift>1.2,
  'the button held before score rises is A, the only one that scores (lift '+(ranked[0]&&ranked[0].gainLift)+')');
+const prior=Objective.decisionPrior(attribution,fresh.actionSpec,2);
+ok(prior&&prior.actions.includes(0)&&prior.actions.includes(1)&&prior.actions.includes(64|1),
+ 'the decision prior keeps the default set (nothing, A, a direction with A): '+JSON.stringify(prior&&prior.actions));
+ok(prior&&prior.priors.some(p=>p.button==='A'),'and biases toward A, the button the game pays for: '+JSON.stringify(prior&&prior.priors.map(p=>p.button)));
+ok(Objective.decisionPrior([{name:'A',mask:1,gainLift:1.0,gainEvents:50}],fresh.actionSpec,2)===null,
+ 'no button above the lift threshold: no prior at all');
 /* ---- 4. into the reward path ---- */
 const dto=Dto.fromPipelineResult(found,{romHash:'a'.repeat(64),coreRevision:'synthetic',profileRevision:'survival-check',contextKey:'synthetic',platform:'synthetic'});
 const valid=Dto.validate(dto,{});

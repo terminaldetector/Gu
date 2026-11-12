@@ -331,6 +331,28 @@
     const live=window.agodObjective.adopt(validated.valid?dto:null,lastStarted);
     if(live.state==='VERIFIED'){
      parts.push('источник награды: подтверждён автоматически (ресурс @'+live.resourceAddress+', '+live.polarity+')');
+     /* THE DECISION PRIOR (real-ROM track). Survival discovery measured which
+        buttons a seeded random player held just before progress rose; those
+        are ADDED to the agent's action set (the default set is kept). Only
+        when the field still holds a platform default or a set AGOD put there
+        itself - a set the person typed is theirs. GU_AGOD_DECISION=false
+        turns it off. */
+     try{
+      const field=document.getElementById('actionMasks');
+      const prior=window.FlyAgodObjective&&typeof window.FlyAgodObjective.decisionPrior==='function'
+       ?window.FlyAgodObjective.decisionPrior(dto.discovered&&dto.discovered.buttonAttribution,
+         lastStarted&&lastStarted.capabilities&&lastStarted.capabilities.actionSpec):null;
+      const defaults=['0,1,2,16,32,64,128,129,17,3,65,33,66,130,18,34,19,67,131,35,4,8',
+       '0,1,2,4,16,32,64,128,129,17,256,512,1024,257,513,1025'];
+      const current=field?field.value.replace(/\s+/g,''):'';
+      if(prior&&field&&window.GU_AGOD_DECISION===true
+       &&(defaults.includes(current)||field.dataset.agodActions===current)){
+       const text=prior.actions.join(',');field.value=text;field.dataset.agodActions=text;
+       try{if(typeof learner!=='undefined'&&learner&&typeof learner.setActions==='function')learner.setActions(prior.actions.slice());}catch(_){}
+       parts.push('действия агента: набор из AGOD ('+prior.actions.length+' масок'
+        +(prior.priors.length?'; кнопки, за которые платит игра: '+prior.priors.map(p=>p.button).join(', '):'')+')');
+      }
+     }catch(_){}
      const mode=document.getElementById('rewardMode');
      if(mode&&mode.value==='manual'){mode.value='agod';
       try{mode.dispatchEvent(new Event('change'));}catch(_){}}
