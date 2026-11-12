@@ -90,32 +90,8 @@ function actionSet(spec){
  for(const d of dirs)if(buttons[0])out.push(d|buttons[0]);
  return [...new Set(out)].slice(0,12);
 }
-/* THE DECISION PRIOR FROM DISCOVERY (REALROM_DECISION=agod). Survival
-   discovery measured, per button, how much more often it was held just before
-   a progress field rose. The buttons the game pays for become the action set
-   (with each direction, and the best direction combined with them) and an
-   innate bias of the layer toward them - a prior, not a reward: it is set
-   before any learning, the same for the untrained and the trained layer, and
-   the reward stays the verified objective. */
-function decisionPrior(attribution,spec,weight){
- const dirNames=['\u2190','\u2192','\u2191','\u2193'];
- const usable=(attribution||[]).filter(b=>b.gainLift!==null&&b.gainEvents>=10);
- const lift=(a,b)=>b.gainLift-a.gainLift;
- const progDirs=usable.filter(b=>dirNames.includes(b.name)&&b.gainLift>=1.2).sort(lift);
- const progButtons=usable.filter(b=>!dirNames.includes(b.name)&&b.gainLift>=1.2).sort(lift).slice(0,2);
- if(!progButtons.length&&!progDirs.length)return null;
- const dirs=dirNames.map(n=>spec.buttons.find(b=>b.name===n)).filter(Boolean).map(b=>b.mask);
- const opposite=m=>(m&48)===48||(m&192)===192;
- const out=[0,...dirs,...progButtons.map(b=>b.mask)];
- for(const d of progDirs.slice(0,2))for(const b of progButtons)out.push(d.mask|b.mask);
- if(progButtons[0])for(const d of dirs)out.push(d|progButtons[0].mask);
- const actions=[...new Set(out)].filter(m=>!opposite(m)).slice(0,12);
- const bit=mask=>Math.round(Math.log2(mask));
- const priors=[];
- if(progDirs[0])priors.push({output:bit(progDirs[0].mask),weight,button:progDirs[0].name,lift:progDirs[0].gainLift});
- progButtons.forEach((b,i)=>priors.push({output:bit(b.mask),weight:i?weight/2:weight,button:b.name,lift:b.gainLift}));
- return {actions,priors};
-}
+/* REALROM_DECISION=agod: the decision prior from discovery, the same function the app uses */
+const decisionPrior=(attribution,spec,weight)=>Objective.decisionPrior(attribution,spec,weight);
 function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
 
 async function studyRom(file,java){

@@ -282,7 +282,37 @@ function createLiveReward(profile,modules,options){
   goalId:profile.goal.id,polarity:profile.goal.polarity});
 }
 
-const api={PROFILE_SCHEMA,OBJECTIVE_REVISION,createProfile,matches,createLiveReward,
+/* THE DECISION PRIOR FROM DISCOVERY. Survival discovery measured, per
+   button, how much more often a seeded random player held it just before a
+   progress field rose (agod-survival.js attributeButtons). The buttons the game
+   pays for (lift >= 1.2 over >= 10 events) become the action set - nothing,
+   each direction, those buttons, the best direction with them, each direction
+   with the best one - and the outputs to bias. A prior, set before any
+   learning; the reward is still only the verified objective. null when the
+   attribution names no such button. */
+function decisionPrior(attribution,actionSpec,weight){
+ const dirNames=['\u2190','\u2192','\u2191','\u2193'];
+ const buttons=(actionSpec&&actionSpec.buttons)||[];
+ const usable=(attribution||[]).filter(b=>b&&b.gainLift!==null&&b.gainEvents>=10
+  &&buttons.some(x=>x.name===b.name&&x.mask===b.mask));
+ const lift=(a,b)=>b.gainLift-a.gainLift;
+ const progDirs=usable.filter(b=>dirNames.includes(b.name)&&b.gainLift>=1.2).sort(lift);
+ const progButtons=usable.filter(b=>!dirNames.includes(b.name)&&b.gainLift>=1.2).sort(lift).slice(0,2);
+ if(!progButtons.length&&!progDirs.length)return null;
+ const dirs=dirNames.map(n=>buttons.find(b=>b.name===n)).filter(Boolean).map(b=>b.mask);
+ const opposite=m=>(m&48)===48||(m&192)===192;
+ const out=[0,...dirs,...progButtons.map(b=>b.mask)];
+ for(const d of progDirs.slice(0,2))for(const b of progButtons)out.push(d.mask|b.mask);
+ if(progButtons[0])for(const d of dirs)out.push(d|progButtons[0].mask);
+ const actions=[...new Set(out)].filter(m=>!opposite(m)).slice(0,12);
+ const w=Number.isFinite(weight)?weight:2,bit=mask=>Math.round(Math.log2(mask)),priors=[];
+ if(progDirs[0])priors.push({output:bit(progDirs[0].mask),weight:w,button:progDirs[0].name,lift:progDirs[0].gainLift});
+ progButtons.forEach((b,i)=>priors.push({output:bit(b.mask),weight:i?w/2:w,button:b.name,lift:b.gainLift}));
+ return frozen({actions:frozen(actions),priors:frozen(priors.map(frozen)),
+  basis:'button lift before progress rises in seeded random play (survival discovery)'});
+}
+
+const api={PROFILE_SCHEMA,OBJECTIVE_REVISION,createProfile,matches,createLiveReward,decisionPrior,
  identityOf,identityKeyOf:source=>fnv(canonical(identityOf(source)))};
 root.FlyAgodObjective=api;
 if(typeof module!=='undefined')module.exports=api;
