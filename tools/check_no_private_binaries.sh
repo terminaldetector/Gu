@@ -23,7 +23,9 @@ PRIVATE_SHAS="116ff51eabad94da0c3bf32de9d50cc84becf73814fa2bf5574676b058a0a09a
 c725a0c6b3eb52f542c10cf40538b69d0b163e5884ced7530dd250dbc02749b4
 21faf868260bbc26a38127d31e98561679a7d0d17bb04ea747d8a549112e4812
 38e7f32e3874e2b516c584bbcb206326daec6f3e3a00261aa277578a76d9d809
-704c54b3fece68e5bbdc584cf8a22605380b0e845bd60f61c06406ed03a04b1c"
+704c54b3fece68e5bbdc584cf8a22605380b0e845bd60f61c06406ed03a04b1c
+a93ea87fc835c530b5135c5294433d15eef6dbf656144b387e89ac19cf864996
+4c15013131351e694e05f22e38bb1b3e4031dedac77ec75abecebe8520d82d5f"
 
 # Paths, newline separated. `read -d ""` is a bashism and this runs under dash,
 # where it made the whole loop a no-op that reported success - caught by the
@@ -60,6 +62,19 @@ printf '%s\n' "$records" | while IFS= read -r path; do
   [ "$sega" = "53454741" ] && printf 'genesis-header-in-index\t%s\n' "$path" >> "$findings"
   gblogo=$(git cat-file blob ":$path" 2>/dev/null | dd bs=1 skip=260 count=4 2>/dev/null | od -An -tx1 | tr -d ' \n' || true)
   [ "$gblogo" = "ceed6666" ] && printf 'gameboy-logo-in-index\t%s\n' "$path" >> "$findings"
+  # SNES: the internal header's checksum complement and checksum (little
+  # endian, at $7FDC/$FFDC for LoROM/HiROM, +512 with a copier header) add up
+  # to $FFFF. Neither may be 0, so a file of zeros followed by $FF is not one.
+  for off in 32732 65500 33244 66012; do
+    quad=$(git cat-file blob ":$path" 2>/dev/null | dd bs=1 skip=$off count=4 2>/dev/null | od -An -tu1 | tr -s ' ' || true)
+    set -- $quad
+    if [ $# -eq 4 ]; then
+      comp=$(( $1 + $2 * 256 )); sum=$(( $3 + $4 * 256 ))
+      if [ $(( comp + sum )) -eq 65535 ] && [ "$comp" -ne 0 ] && [ "$sum" -ne 0 ]; then
+        printf 'snes-header-in-index\t%s\n' "$path" >> "$findings"; break
+      fi
+    fi
+  done
 
   sha=$(git cat-file blob ":$path" 2>/dev/null | sha256sum | cut -d' ' -f1 || true)
   if printf '%s\n' "$PRIVATE_SHAS" | grep -qx "$sha"; then

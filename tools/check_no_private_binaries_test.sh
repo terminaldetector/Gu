@@ -65,6 +65,22 @@ git add -f tmp_guard_probe.dat
 check "the word SEGA at offset 12" 0
 cleanup
 
+echo "9. a SNES ROM is refused by its header checksum pair, LoROM and HiROM"
+python3 -c "import sys;b=bytearray(0x8000);b[0x7FDC:0x7FE0]=bytes([0x34,0x12,0xCB,0xED]);sys.stdout.buffer.write(b)" > tmp_guard_probe.dat
+git add -f tmp_guard_probe.dat
+check "SNES LoROM checksum pair at 0x7FDC under an innocent name" 1
+cleanup
+python3 -c "import sys;b=bytearray(0x10000);b[0xFFDC:0xFFE0]=bytes([0x00,0x80,0xFF,0x7F]);sys.stdout.buffer.write(b)" > tmp_guard_probe.dat
+git add -f tmp_guard_probe.dat
+check "SNES HiROM checksum pair at 0xFFDC under an innocent name" 1
+cleanup
+
+echo "10. zeros followed by FF at the header offset is not a SNES header"
+python3 -c "import sys;b=bytearray(0x8000);b[0x7FDE:0x7FE0]=bytes([0xFF,0xFF]);sys.stdout.buffer.write(b)" > tmp_guard_probe.dat
+git add -f tmp_guard_probe.dat
+check "a zero complement with an FFFF checksum" 0
+cleanup
+
 echo
 echo "guard regression: $pass passed, $fail failed"
 [ "$fail" -eq 0 ]
