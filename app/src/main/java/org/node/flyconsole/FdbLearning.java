@@ -36,7 +36,7 @@ public final class FdbLearning {
     // Independent research profile: the five plasticity modes and default v4 rule stay intact.
     private String creditProfile="single-v1";
     public static String validateCreditProfile(String profile){
-        if(!Arrays.asList("single-v1","dual-v1","dual-rate-v1").contains(profile))throw new IllegalArgumentException("Unknown FDB credit profile");return profile;
+        if(!Arrays.asList("single-v1","dual-v1","dual-rate-v1","dual-time-v1").contains(profile))throw new IllegalArgumentException("Unknown FDB credit profile");return profile;
     }
     public void creditProfile(String profile){profile=validateCreditProfile(profile);if(!profile.equals(creditProfile)){boundary();creditProfile=profile;}}
     public String creditProfile(){return creditProfile;}
@@ -82,7 +82,7 @@ public final class FdbLearning {
     private final String projectionSha;
     private final LinkedHashMap<Long,Trace> traces=new LinkedHashMap<>();
     private final LinkedHashMap<String,Decision> pending=new LinkedHashMap<>();
-    private long observations,human,automatic,rng=1,born,pruned,rejected,baseUpdates,carried;
+    private long observations,human,automatic,rng=1,born,pruned,rejected,baseUpdates,carried,paused;
     private double baseline;
     public static final class Outcome {
         public final String id;public final int mask,changed;public final boolean accepted;public final double reward,advantage,budget;public final long births,removals;
@@ -262,11 +262,22 @@ public final class FdbLearning {
     }
     private float weight(int source,int target){for(GraphDelta.Edge e:layer.outgoing(source))if(e.target==target)return e.weight;return 0;}
     /** Decay the traces over the interval and fold this decision's credit into them. */
-    private double accumulate(Decision d,double gameSeconds,int[] lesions){
-        double decay=Math.exp(-gameSeconds/.6);
+    /** dual-time-v1: two traces by GAME TIME, not by decision count - fast
+     * tau 15 frames (a hit, a shot at point blank), slow tau 90 frames (the
+     * run-up and the jump that put the player under the bullet). dual-v1's slow
+     * trace ages per decision, so its reach depends on how often the agent decides. */
+    private static final double FAST_TAU_SECONDS=15/60.0,SLOW_TAU_SECONDS=90/60.0;
+    private boolean timeCredit(){return creditProfile.equals("dual-time-v1");}
+    private double decayTraces(double gameSeconds){
+        double decay=Math.exp(-gameSeconds/(timeCredit()?FAST_TAU_SECONDS:.6));
         for(Trace t:traces.values()){t.eligibility*=decay;t.support*=Math.exp(-gameSeconds/2);
-            if(dualCredit()){t.slowAge=Math.min(16,t.slowAge+1);t.slowEligibility=t.slowAge>=16?0:t.slowEligibility*Math.exp(-1.0/8);}
-}
+            if(timeCredit()){t.slowAge=0;t.slowEligibility*=Math.exp(-gameSeconds/SLOW_TAU_SECONDS);}
+            else if(dualCredit()){t.slowAge=Math.min(16,t.slowAge+1);t.slowEligibility=t.slowAge>=16?0:t.slowEligibility*Math.exp(-1.0/8);}
+        }
+        return decay;
+    }
+    private double accumulate(Decision d,double gameSeconds,int[] lesions){
+        double decay=decayTraces(gameSeconds);
         for(Map.Entry<Long,Double> e:d.gradient.entrySet()){
             int source=(int)(e.getKey()>>32),target=(int)(long)e.getKey();if(lesioned(source,lesions)||lesioned(target,lesions))continue;
             Trace t=trace(source,target);if(t!=null){t.eligibility=Math.max(-2,Math.min(2,t.eligibility+e.getValue()*decay));
@@ -293,11 +304,23 @@ public final class FdbLearning {
      * can reach the decisions that led to it instead of only the last 8 frames.
      * An invalid interval (human input, mask mismatch) still breaks the link. */
     public boolean carry(String id,int executedMask,double gameSeconds,int frames,boolean valid,int[] lesions){
+        return carry(id,executedMask,gameSeconds,frames,valid,true,lesions);
+    }
+    /** accumulate=false PAUSES the traces for an interval in which the player had
+     * no control (death animation, respawn, invulnerability, a scene change):
+     * time passes and the traces decay, but the decision is not added - its
+     * outputs drove nothing - and the traces are not cleared either, so the
+     * moves before the loss of control keep their credit for what follows. */
+    public boolean carry(String id,int executedMask,double gameSeconds,int frames,boolean valid,boolean accumulate,int[] lesions){
         if(!Double.isFinite(gameSeconds)||gameSeconds<=0||gameSeconds>2||frames<1||frames>240)throw new IllegalArgumentException("FDB carry");
         Decision d=pending.remove(id);
         if(!valid||d==null||d.mask!=executedMask||!Arrays.equals(d.lesions,lesionSet(lesions))){rejected++;clearTemporal();return false;}
-        temporalDirty=true;accumulate(d,gameSeconds,lesions);carried++;return true;
+        temporalDirty=true;
+        if(accumulate){accumulate(d,gameSeconds,lesions);carried++;}
+        else{decayTraces(gameSeconds);paused++;}
+        return true;
     }
+    public long paused(){return paused;}
     public long carried(){return carried;}
     /** Slow trust-region updates of effective root weights; W0 and its sign stay intact.
      * Explicit user deltas outside this region are retained, not silently clamped. */

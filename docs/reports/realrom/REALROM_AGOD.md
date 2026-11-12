@@ -218,30 +218,114 @@ In R3 the trained layer now advances and dies (9 losses = every life) where the
 old one stood still and lived: that is playing the game, and it is still not
 finishing a stage.
 
+## 4c. Control authority, rare cells, two time scales (2026-11-12, later)
+
+Targeted additions, no refactor (method notes and the ranking of all proposals:
+[`METHODS_RESEARCH.md`](METHODS_RESEARCH.md)).
+
+**AGOD, two signals besides the terminal ending** (`agod-pipeline-survival-r2`):
+
+* **Control authority.** The phase probe already finds, causally, the RAM fields
+  that integrate a held direction; it now also exports the sign each field moves
+  with. A passive tracker checks every 8-frame stride: did a commanded direction
+  move one of those fields the commanded way? A run of ignored commands (2
+  strides in both directions - a wall blocks one, a stun both - or 4 in a row)
+  is a loss of control. Rollouts record these drops; a fall of a field followed
+  within two active strides by a drop is a **hit**.
+* **Rare-RAM step cells.** Cells that change at most once per second of play
+  are counted by what they do (fall only / rise only / mixed). They are
+  evidence, not reward: a rare cell becomes a goal only as a `PER_HIT`
+  candidate - it falls >= 3 times, >= 60 % of falls are followed by a loss of
+  control, at least twice the base rate of drops, never like a clock - and then
+  passes the same calibration and holdout as every other goal (judgement
+  `HIT_POINTS`). Synthetic check: a health game with 90 frames of knock-back and
+  no game over in reach is verified as `HIT_POINTS`; the old games keep their
+  old verdicts (26/26).
+
+**FDB, two changes to carry** (unpaid eligibility):
+
+* `dual-time-v1`: a fast trace (tau 15 frames) and a slow one (tau 90 frames),
+  both decaying by GAME time; eligibility = half of each. Selectable in the lab
+  ("Fast 15 + Slow 90 кадров"); `dual-v1` aged its slow trace per decision.
+* **Pause on authority loss**: `carry(..., accumulate=false)` decays the traces
+  and adds nothing - the decision taken while the game ignores the pad
+  (respawn, invulnerability, transitions) is not a cause of what follows. It is
+  counted apart (`paused`), pays nothing, and clears nothing.
+  `fdb_carry_check`: 10/10, `FrozenFdbCheck` now covers four profiles.
+
+**A/B on real cartridges** (carry on, discovery action set, 2 400 training
+steps, frozen evaluation with weights and update counts checked unchanged;
+progress = sum over the discovered progress fields; runs are deterministic: the
+R3 baseline reproduces the v3 row above exactly).
+
+Progress is summed over argmax and sampled evaluations; losses over both.
+
+| | seeds | baseline (single-v1) | dual-time-v1 | dual-time-v1 + pause |
+|---|---|---|---|---|
+| R3 progress | 11, 23 | 2 847 | 2 796 | 2 578 |
+| R3 progress | 11, 23, 37, 41 | 3 912 | - | **4 254** (+9 %) |
+| R3 losses of life | 11, 23, 37, 41 | 72 | - | 72 |
+| R2 progress | 11, 23 | 5 071 | 4 646 | 4 194 |
+| R2 progress | 11, 23, 37, 41 | **12 062** | - | 10 466 (-13 %) |
+| R2 losses of life | 11, 23, 37, 41 | 33 | - | 41 |
+
+The pause fired on 1-2.5 % of R3's unpaid intervals and 7-9 % of R2's.
+Per-seed rows: `realrom-credit-ab.json`.
+
+**What this says, plainly.** Neither change gives a consistent gain: on R3 the
+pause is +9 % in progress and every life is still spent; on R2 it is -13 % and
+dies more. Seed variance dominates - an earlier run of the same R2 variant,
+whose tracker skipped the strides that carried an event (a difference in which
+~1 % of strides are paused), scored 6 611 on seeds 11/23 against 4 194 now.
+**App defaults are unchanged**: carry stays single-time, `dual-time-v1` is a
+lab option, the pause is a measurement option (`REALROM_CREDIT_PROFILE`,
+`REALROM_PAUSE=1`) and is not wired into the live loop.
+
+Why credit reach does not move R3: per training run it pays ~1 150 provisional
+progress events (0.25-1 each) and ~46 verified losses (-1 each). Each loss
+outweighs any single progress payment, but the sum is dominated by progress,
+and no trace length changes that sum - under every variant and every seed R3's
+trained policy spends all 9 lives. The levers that change what is
+learned are the payment balance and more loss evidence per death (section 5).
+
+**R4 (SNES RPG), honestly.** Discovery with the new signals, same entry
+(37 606 frames to a controllable hero), 62 536 frames: no run ends, and the
+tracker sees control lost 0-3 times per run (8 drops in 6 runs; their cause was
+not inspected - a text box or a door stops the hero just as a hit would). One rare cell fell before such drops often
+enough to be proposed as `PER_HIT`; the calibration runs (3 falls, 0 followed
+by a loss of control) and the holdout runs (2 falls, 0) contradicted it, and
+the registry refused. **Still REFUSED, now on evidence rather than on absence**:
+the hit signal looked, proposed, and was refuted on states it had not seen. So
+there is no verified objective on R4 and no learning A/B is possible there -
+running one would mean paying for something nobody verified. Of 596 rare cells
+574 move both ways; 7 only fall. The way forward on R4 is exploration that
+reaches enemies (Go-Explore-style archive inside discovery, METHODS_RESEARCH
+item 5), not a reward.
+
 ## 5. Next steps this data points to
 
-1. (Done for R1, see "Carry, measured".) Credit assignment over the time scale the game works on. FdbLearning has
-   eligibility traces (τ ≈ 0.6 s), but every interval without a verified event
-   calls `boundary()`, which clears them - that is how UNKNOWN ≠ 0 is kept - so
-   on a real game, where 85–97 % of training intervals carry no event, a hit is credited
-   to the last 8-frame decision only. Proposed: fold an UNKNOWN interval's
-   decision into the traces *without* paying anything (no reward, no update,
-   no replay record) and clear them only at real boundaries (restore, episode
-   end, human input). Baseline to beat: the sampled untrained layer.
-2. Decision rule: evaluate the sampled policy (as above), and stop the empty
-   mask winning for free.
-3. Observation: a retina with spatial resolution for sprites, or RAM-derived
+Ranked with sources in [`METHODS_RESEARCH.md`](METHODS_RESEARCH.md). In short:
+
+1. **Counterfactual rewind at a verified loss** (research worker / autonomous
+   runs only, never the person's game): restore 72-96 frames before the loss,
+   run 4-6 branches, register paired evidence (same state: action X -> verified
+   loss, action Y -> none). It multiplies the scarcest data - R3 discovery sees
+   ~7 losses - and costs ~660 frames per loss at 0.4-0.5 ms per restore.
+2. **Exploration that reaches danger** on R4: a Go-Explore-style archive inside
+   discovery (cells by screen and coarse position, return by snapshot). It
+   steers where discovery looks; novelty is never paid.
+3. Done: carry (2026-11-11), two time scales and the pause (4c above) - credit
+   reach is no longer what limits R3: under every variant it spends all 9
+   lives.
+4. Observation: a retina with spatial resolution for sprites, or RAM-derived
    inputs (the discovered position integrators are a free player-position
    sensor).
-4. Progress shaping from the survival data: the per-button attribution of
-   progress events is already in the rollouts.
-5. Per-player attribution from per-port control loss (which player lost
-   control when the shared counter fell).
+5. Per-player attribution from per-port control loss.
 
 ## Reproduce
 
 ```
 AGOD_PRIVATE_ROMS=/path/to/private node tools/agod_realrom_check.cjs --2p \
   [--fdb with CODE_CLASSPATH] --out realrom-analytics.json
-node tools/agod_survival_check.cjs     # synthetic, runs in CI: 20/20
+node tools/agod_survival_check.cjs     # synthetic, runs in CI: 26/26
 ```

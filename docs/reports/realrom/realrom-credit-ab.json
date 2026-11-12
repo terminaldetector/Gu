@@ -1,0 +1,941 @@
+{
+ "tool": "agod_realrom_check (aggregated)",
+ "date": "2026-11-12",
+ "privacy": "hashes, sizes and aggregates only; no ROM bytes, RAM offsets, frames or states",
+ "roms": {
+  "R3": "a93ea87fc835c530b5135c5294433d15eef6dbf656144b387e89ac19cf864996",
+  "R2": "704c54b3fece68e5bbdc584cf8a22605380b0e845bd60f61c06406ed03a04b1c"
+ },
+ "setup": "carry on, discovery action set (no bias), 2400 training steps of 8 frames, frozen evaluation argmax and sampled, weights and update counts checked unchanged; progress = sum over discovered progress fields; 30-neuron mechanism fixture graph",
+ "note": "\"(r1 tracker)\" rows: the authority tracker then observed only strides without an event; kept to show how much a change in ~1% of paused strides moves the result",
+ "rows": {
+  "R3 base": [
+   {
+    "file": "cr-c3-base.json",
+    "seed": 11,
+    "creditProfile": "single-v1",
+    "pause": false,
+    "verified": 46,
+    "provisional": 1154,
+    "unknown": 1200,
+    "carried": 1200,
+    "paused": 0,
+    "nativeChanges": 24475,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 385,
+     "losses": 9,
+     "progress": 725
+    },
+    "sampled": {
+     "survivalSteps": 384,
+     "losses": 9,
+     "progress": 747
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 90
+    },
+    "random": {
+     "survivalSteps": 844,
+     "losses": 8,
+     "progress": 208
+    }
+   },
+   {
+    "file": "cr-c3-base.json",
+    "seed": 23,
+    "creditProfile": "single-v1",
+    "pause": false,
+    "verified": 43,
+    "provisional": 1013,
+    "unknown": 1344,
+    "carried": 1344,
+    "paused": 0,
+    "nativeChanges": 37006,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 385,
+     "losses": 9,
+     "progress": 725
+    },
+    "sampled": {
+     "survivalSteps": 380,
+     "losses": 9,
+     "progress": 650
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 48
+    },
+    "random": {
+     "survivalSteps": 900,
+     "losses": 5,
+     "progress": 200
+    }
+   },
+   {
+    "file": "cr-c3-base2.json",
+    "seed": 37,
+    "creditProfile": "single-v1",
+    "pause": false,
+    "verified": 47,
+    "provisional": 1238,
+    "unknown": 1115,
+    "carried": 1115,
+    "paused": 0,
+    "nativeChanges": 27527,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 363,
+     "losses": 9,
+     "progress": 126
+    },
+    "sampled": {
+     "survivalSteps": 394,
+     "losses": 9,
+     "progress": 545
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 802,
+     "losses": 6,
+     "progress": 244
+    },
+    "random": {
+     "survivalSteps": 884,
+     "losses": 5,
+     "progress": 206
+    }
+   },
+   {
+    "file": "cr-c3-base2.json",
+    "seed": 41,
+    "creditProfile": "single-v1",
+    "pause": false,
+    "verified": 55,
+    "provisional": 851,
+    "unknown": 1494,
+    "carried": 1494,
+    "paused": 0,
+    "nativeChanges": 38300,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 363,
+     "losses": 9,
+     "progress": 126
+    },
+    "sampled": {
+     "survivalSteps": 365,
+     "losses": 9,
+     "progress": 268
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 900,
+     "losses": 6,
+     "progress": 299
+    },
+    "random": {
+     "survivalSteps": 891,
+     "losses": 7,
+     "progress": 238
+    }
+   }
+  ],
+  "R3 dual-time": [
+   {
+    "file": "cr-c3-dual.json",
+    "seed": 11,
+    "creditProfile": "dual-time-v1",
+    "pause": false,
+    "verified": 43,
+    "provisional": 1271,
+    "unknown": 1086,
+    "carried": 1086,
+    "paused": 0,
+    "nativeChanges": 33719,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 385,
+     "losses": 9,
+     "progress": 725
+    },
+    "sampled": {
+     "survivalSteps": 379,
+     "losses": 9,
+     "progress": 648
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 90
+    },
+    "random": {
+     "survivalSteps": 844,
+     "losses": 8,
+     "progress": 208
+    }
+   },
+   {
+    "file": "cr-c3-dual.json",
+    "seed": 23,
+    "creditProfile": "dual-time-v1",
+    "pause": false,
+    "verified": 50,
+    "provisional": 1314,
+    "unknown": 1036,
+    "carried": 1036,
+    "paused": 0,
+    "nativeChanges": 39526,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 385,
+     "losses": 9,
+     "progress": 725
+    },
+    "sampled": {
+     "survivalSteps": 387,
+     "losses": 9,
+     "progress": 698
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 48
+    },
+    "random": {
+     "survivalSteps": 900,
+     "losses": 5,
+     "progress": 200
+    }
+   }
+  ],
+  "R3 dual-time+pause": [
+   {
+    "file": "cr-c3-dualp2.json",
+    "seed": 11,
+    "creditProfile": "dual-time-v1",
+    "pause": true,
+    "verified": 44,
+    "provisional": 1287,
+    "unknown": 1069,
+    "carried": 1056,
+    "paused": 13,
+    "nativeChanges": 35037,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 385,
+     "losses": 9,
+     "progress": 725
+    },
+    "sampled": {
+     "survivalSteps": 381,
+     "losses": 9,
+     "progress": 685
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 90
+    },
+    "random": {
+     "survivalSteps": 844,
+     "losses": 8,
+     "progress": 208
+    }
+   },
+   {
+    "file": "cr-c3-dualp2.json",
+    "seed": 23,
+    "creditProfile": "dual-time-v1",
+    "pause": true,
+    "verified": 52,
+    "provisional": 1287,
+    "unknown": 1061,
+    "carried": 1035,
+    "paused": 26,
+    "nativeChanges": 40789,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 425,
+     "losses": 9,
+     "progress": 432
+    },
+    "sampled": {
+     "survivalSteps": 396,
+     "losses": 9,
+     "progress": 736
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 48
+    },
+    "random": {
+     "survivalSteps": 900,
+     "losses": 5,
+     "progress": 200
+    }
+   },
+   {
+    "file": "cr-c3-dualp2.json",
+    "seed": 37,
+    "creditProfile": "dual-time-v1",
+    "pause": true,
+    "verified": 47,
+    "provisional": 1237,
+    "unknown": 1116,
+    "carried": 1105,
+    "paused": 11,
+    "nativeChanges": 34816,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 385,
+     "losses": 9,
+     "progress": 725
+    },
+    "sampled": {
+     "survivalSteps": 368,
+     "losses": 9,
+     "progress": 657
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 802,
+     "losses": 6,
+     "progress": 244
+    },
+    "random": {
+     "survivalSteps": 884,
+     "losses": 5,
+     "progress": 206
+    }
+   },
+   {
+    "file": "cr-c3-dualp2.json",
+    "seed": 41,
+    "creditProfile": "dual-time-v1",
+    "pause": true,
+    "verified": 49,
+    "provisional": 1166,
+    "unknown": 1185,
+    "carried": 1155,
+    "paused": 30,
+    "nativeChanges": 44271,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 363,
+     "losses": 9,
+     "progress": 126
+    },
+    "sampled": {
+     "survivalSteps": 372,
+     "losses": 9,
+     "progress": 168
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 900,
+     "losses": 6,
+     "progress": 299
+    },
+    "random": {
+     "survivalSteps": 891,
+     "losses": 7,
+     "progress": 238
+    }
+   }
+  ],
+  "R3 dual-time+pause (r1 tracker)": [
+   {
+    "file": "cr-c3-dualp.json",
+    "seed": 11,
+    "creditProfile": "dual-time-v1",
+    "pause": true,
+    "verified": 44,
+    "provisional": 1287,
+    "unknown": 1069,
+    "carried": 1056,
+    "paused": 13,
+    "nativeChanges": 35037,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 385,
+     "losses": 9,
+     "progress": 725
+    },
+    "sampled": {
+     "survivalSteps": 381,
+     "losses": 9,
+     "progress": 685
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 90
+    },
+    "random": {
+     "survivalSteps": 844,
+     "losses": 8,
+     "progress": 208
+    }
+   },
+   {
+    "file": "cr-c3-dualp.json",
+    "seed": 23,
+    "creditProfile": "dual-time-v1",
+    "pause": true,
+    "verified": 51,
+    "provisional": 1307,
+    "unknown": 1042,
+    "carried": 1017,
+    "paused": 25,
+    "nativeChanges": 45810,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 385,
+     "losses": 9,
+     "progress": 725
+    },
+    "sampled": {
+     "survivalSteps": 386,
+     "losses": 9,
+     "progress": 718
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 48
+    },
+    "random": {
+     "survivalSteps": 900,
+     "losses": 5,
+     "progress": 200
+    }
+   }
+  ],
+  "R2 base": [
+   {
+    "file": "cr-ch-base.json",
+    "seed": 11,
+    "creditProfile": "single-v1",
+    "pause": false,
+    "verified": 22,
+    "provisional": 170,
+    "unknown": 2208,
+    "carried": 2208,
+    "paused": 0,
+    "nativeChanges": 1779,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 74
+    },
+    "sampled": {
+     "survivalSteps": 900,
+     "losses": 3,
+     "progress": 1804
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 875,
+     "losses": 7,
+     "progress": 1075
+    },
+    "random": {
+     "survivalSteps": 875,
+     "losses": 7,
+     "progress": 1703
+    }
+   },
+   {
+    "file": "cr-ch-base.json",
+    "seed": 23,
+    "creditProfile": "single-v1",
+    "pause": false,
+    "verified": 21,
+    "provisional": 229,
+    "unknown": 2150,
+    "carried": 2150,
+    "paused": 0,
+    "nativeChanges": 1987,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 74
+    },
+    "sampled": {
+     "survivalSteps": 882,
+     "losses": 8,
+     "progress": 3119
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 877,
+     "losses": 6,
+     "progress": 1224
+    },
+    "random": {
+     "survivalSteps": 872,
+     "losses": 8,
+     "progress": 1274
+    }
+   },
+   {
+    "file": "cr-ch-base2.json",
+    "seed": 37,
+    "creditProfile": "single-v1",
+    "pause": false,
+    "verified": 19,
+    "provisional": 175,
+    "unknown": 2206,
+    "carried": 2206,
+    "paused": 0,
+    "nativeChanges": 2378,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 74
+    },
+    "sampled": {
+     "survivalSteps": 900,
+     "losses": 5,
+     "progress": 2379
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 895,
+     "losses": 8,
+     "progress": 885
+    },
+    "random": {
+     "survivalSteps": 876,
+     "losses": 8,
+     "progress": 1264
+    }
+   },
+   {
+    "file": "cr-ch-base2.json",
+    "seed": 41,
+    "creditProfile": "single-v1",
+    "pause": false,
+    "verified": 23,
+    "provisional": 178,
+    "unknown": 2199,
+    "carried": 2199,
+    "paused": 0,
+    "nativeChanges": 1801,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 858,
+     "losses": 9,
+     "progress": 2304
+    },
+    "sampled": {
+     "survivalSteps": 856,
+     "losses": 8,
+     "progress": 2234
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 891,
+     "losses": 7,
+     "progress": 1414
+    },
+    "random": {
+     "survivalSteps": 894,
+     "losses": 6,
+     "progress": 1315
+    }
+   }
+  ],
+  "R2 dual-time": [
+   {
+    "file": "cr-ch-dual.json",
+    "seed": 11,
+    "creditProfile": "dual-time-v1",
+    "pause": false,
+    "verified": 24,
+    "provisional": 141,
+    "unknown": 2235,
+    "carried": 2235,
+    "paused": 0,
+    "nativeChanges": 1913,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "sampled": {
+     "survivalSteps": 855,
+     "losses": 8,
+     "progress": 1344
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 875,
+     "losses": 7,
+     "progress": 1075
+    },
+    "random": {
+     "survivalSteps": 875,
+     "losses": 7,
+     "progress": 1703
+    }
+   },
+   {
+    "file": "cr-ch-dual.json",
+    "seed": 23,
+    "creditProfile": "dual-time-v1",
+    "pause": false,
+    "verified": 19,
+    "provisional": 177,
+    "unknown": 2204,
+    "carried": 2204,
+    "paused": 0,
+    "nativeChanges": 1928,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 895,
+     "losses": 3,
+     "progress": 574
+    },
+    "sampled": {
+     "survivalSteps": 899,
+     "losses": 6,
+     "progress": 2728
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 877,
+     "losses": 6,
+     "progress": 1224
+    },
+    "random": {
+     "survivalSteps": 872,
+     "losses": 8,
+     "progress": 1274
+    }
+   }
+  ],
+  "R2 dual-time+pause": [
+   {
+    "file": "cr-ch-dualp2.json",
+    "seed": 11,
+    "creditProfile": "dual-time-v1",
+    "pause": true,
+    "verified": 23,
+    "provisional": 155,
+    "unknown": 2222,
+    "carried": 2028,
+    "paused": 194,
+    "nativeChanges": 1578,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 900,
+     "losses": 1,
+     "progress": 934
+    },
+    "sampled": {
+     "survivalSteps": 900,
+     "losses": 6,
+     "progress": 1674
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 875,
+     "losses": 7,
+     "progress": 1075
+    },
+    "random": {
+     "survivalSteps": 875,
+     "losses": 7,
+     "progress": 1703
+    }
+   },
+   {
+    "file": "cr-ch-dualp2.json",
+    "seed": 23,
+    "creditProfile": "dual-time-v1",
+    "pause": true,
+    "verified": 23,
+    "provisional": 182,
+    "unknown": 2195,
+    "carried": 2036,
+    "paused": 159,
+    "nativeChanges": 1749,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 795,
+     "losses": 9,
+     "progress": 272
+    },
+    "sampled": {
+     "survivalSteps": 895,
+     "losses": 7,
+     "progress": 1314
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 877,
+     "losses": 6,
+     "progress": 1224
+    },
+    "random": {
+     "survivalSteps": 872,
+     "losses": 8,
+     "progress": 1274
+    }
+   },
+   {
+    "file": "cr-ch-dualp2.json",
+    "seed": 37,
+    "creditProfile": "dual-time-v1",
+    "pause": true,
+    "verified": 25,
+    "provisional": 130,
+    "unknown": 2245,
+    "carried": 2097,
+    "paused": 148,
+    "nativeChanges": 1317,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "sampled": {
+     "survivalSteps": 868,
+     "losses": 7,
+     "progress": 1794
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 895,
+     "losses": 8,
+     "progress": 885
+    },
+    "random": {
+     "survivalSteps": 876,
+     "losses": 8,
+     "progress": 1264
+    }
+   },
+   {
+    "file": "cr-ch-dualp2.json",
+    "seed": 41,
+    "creditProfile": "dual-time-v1",
+    "pause": true,
+    "verified": 23,
+    "provisional": 125,
+    "unknown": 2252,
+    "carried": 2071,
+    "paused": 181,
+    "nativeChanges": 1474,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 900,
+     "losses": 5,
+     "progress": 2204
+    },
+    "sampled": {
+     "survivalSteps": 880,
+     "losses": 6,
+     "progress": 2274
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 891,
+     "losses": 7,
+     "progress": 1414
+    },
+    "random": {
+     "survivalSteps": 894,
+     "losses": 6,
+     "progress": 1315
+    }
+   }
+  ],
+  "R2 dual-time+pause (r1 tracker)": [
+   {
+    "file": "cr-ch-dualp.json",
+    "seed": 11,
+    "creditProfile": "dual-time-v1",
+    "pause": true,
+    "verified": 21,
+    "provisional": 173,
+    "unknown": 2206,
+    "carried": 2045,
+    "paused": 161,
+    "nativeChanges": 2013,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 74
+    },
+    "sampled": {
+     "survivalSteps": 900,
+     "losses": 6,
+     "progress": 2775
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 875,
+     "losses": 7,
+     "progress": 1075
+    },
+    "random": {
+     "survivalSteps": 875,
+     "losses": 7,
+     "progress": 1703
+    }
+   },
+   {
+    "file": "cr-ch-dualp.json",
+    "seed": 23,
+    "creditProfile": "dual-time-v1",
+    "pause": true,
+    "verified": 23,
+    "provisional": 202,
+    "unknown": 2175,
+    "carried": 1933,
+    "paused": 242,
+    "nativeChanges": 1547,
+    "frozenClean": true,
+    "argmax": {
+     "survivalSteps": 885,
+     "losses": 3,
+     "progress": 894
+    },
+    "sampled": {
+     "survivalSteps": 900,
+     "losses": 6,
+     "progress": 2868
+    },
+    "untrained": {
+     "survivalSteps": 900,
+     "losses": 0,
+     "progress": 0
+    },
+    "untrainedSampled": {
+     "survivalSteps": 877,
+     "losses": 6,
+     "progress": 1224
+    },
+    "random": {
+     "survivalSteps": 872,
+     "losses": 8,
+     "progress": 1274
+    }
+   }
+  ]
+ }
+}

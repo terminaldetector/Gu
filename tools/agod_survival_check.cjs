@@ -31,12 +31,13 @@ const ok=(c,m)=>{out.push((c?'  ok    ':'  FAIL  ')+m);if(!c)fail.push(m);return
 const R={MODE:0,CURSOR:1,X:2,Y:3,HEALTH:4,STUN:5,SCORE_HI:6,SCORE_LO:7,CLOCK:8,FADE:9,RNG:10,TIMER:11,
  DEAD:12,ENEMY:16};/* enemies: 4 x (x,y,alive) from 16 */
 const BUTTONS=['A','B','C','Start','↑','↓','←','→'];
-function game(){
+function game(options){
+ const startHealth=(options&&options.health)||5,invulnerable=(options&&options.invulnerable)||0;
  let ram=new Uint8Array(256);
  const boot=()=>{ram.fill(0);ram[R.MODE]=0;for(let i=32;i<256;i++)ram[i]=(i*37)&255;};
  boot();
  const startPlay=()=>{
-  ram[R.MODE]=2;ram[R.X]=120;ram[R.Y]=180;ram[R.HEALTH]=5;ram[R.STUN]=0;ram[R.SCORE_HI]=0;ram[R.SCORE_LO]=0;
+  ram[R.MODE]=2;ram[R.X]=120;ram[R.Y]=180;ram[R.HEALTH]=startHealth;ram[R.STUN]=0;ram[R.SCORE_HI]=0;ram[R.SCORE_LO]=0;
   ram[R.CLOCK]=200;ram[R.FADE]=4;ram[R.TIMER]=0;ram[R.DEAD]=0;
   for(let e=0;e<4;e++){ram[R.ENEMY+e*3]=30+e*60;ram[R.ENEMY+e*3+1]=10+e*7;ram[R.ENEMY+e*3+2]=1;}
   for(let i=32;i<256;i++)ram[i]=0;
@@ -55,6 +56,7 @@ function game(){
   /* play */
   ram[R.TIMER]=(ram[R.TIMER]+1)&255;
   if((ram[R.TIMER]&63)===0&&ram[R.CLOCK]>0)ram[R.CLOCK]--;
+  if(ram[13]>0)ram[13]--;   /* invulnerability after a hit, as real games have */
   if(ram[R.STUN]>0)ram[R.STUN]--;
   else{
    if(mask&64)ram[R.X]=Math.max(8,ram[R.X]-2);if(mask&128)ram[R.X]=Math.min(232,ram[R.X]+2);
@@ -69,8 +71,8 @@ function game(){
   for(let e=0;e<4;e++){const b=R.ENEMY+e*3;
    if(!ram[b+2]){if(((ram[R.TIMER]+e*41)&127)===0){ram[b+2]=1;ram[b]=(ram[R.TIMER]*7+e*60)&255;ram[b+1]=8;}continue;}
    if((ram[R.TIMER]+e)%2===0){ram[b]+=Math.sign(ram[R.X]-ram[b]);ram[b+1]+=Math.sign(ram[R.Y]-ram[b+1]);}
-   if(ram[R.STUN]===0&&Math.abs(ram[b]-ram[R.X])<6&&Math.abs(ram[b+1]-ram[R.Y])<6){
-    ram[R.HEALTH]--;ram[R.STUN]=24;ram[b+1]=8;
+   if(ram[R.STUN]===0&&ram[13]===0&&Math.abs(ram[b]-ram[R.X])<6&&Math.abs(ram[b+1]-ram[R.Y])<6){
+    ram[R.HEALTH]--;ram[R.STUN]=24;ram[13]=invulnerable;ram[b+1]=8;
     if(ram[R.HEALTH]===0){ram[R.MODE]=3;ram[R.DEAD]=1;ram[R.TIMER]=0;}
    }
   }
@@ -136,6 +138,16 @@ ok(prior&&prior.actions.includes(0)&&prior.actions.includes(1)&&prior.actions.in
 ok(prior&&prior.priors.some(p=>p.button==='A'),'and biases toward A, the button the game pays for: '+JSON.stringify(prior&&prior.priors.map(p=>p.button)));
 ok(Objective.decisionPrior([{name:'A',mask:1,gainLift:1.0,gainEvents:50}],fresh.actionSpec,2)===null,
  'no button above the lift threshold: no prior at all');
+/* ---- 3c. HP that cannot run out within the horizon: found through hit-stuns ---- */
+{const tough=game({health:200,invulnerable:90});
+ const e2=Phase.enter(tough,{});tough.restore(e2.snapshot);
+ const hp=Survival.discover(tough,{romHash:'b'.repeat(64),coreRevision:'synthetic',profileRevision:'survival-check',
+  contextKey:'synthetic-hp',discoveryPolicies:6,horizon:3000});
+ const stuns=(hp.trace||[]).filter(t=>t.stage==='rollout').reduce((n,t)=>n+(t.stuns||0),0);
+ console.log('HP game: %s %s kind=%s stuns=%d rare=%j',hp.status,hp.stage,hp.judgement&&hp.judgement.kind,stuns,hp.discovered&&hp.discovered.rareCells);
+ ok(stuns>0,'the authority tracker sees hit-stuns while the player is pressing ('+stuns+')');
+ ok(hp.status==='VERIFIED'&&hp.resource&&hp.resource.address===R.HEALTH&&hp.judgement.kind==='HIT_POINTS',
+  'with no game over in reach, HEALTH is still VERIFIED, as hit points (got '+(hp.resource&&hp.resource.address)+' '+(hp.judgement&&hp.judgement.kind)+')');}
 /* ---- 4. into the reward path ---- */
 const dto=Dto.fromPipelineResult(found,{romHash:'a'.repeat(64),coreRevision:'synthetic',profileRevision:'survival-check',contextKey:'synthetic',platform:'synthetic'});
 const valid=Dto.validate(dto,{});

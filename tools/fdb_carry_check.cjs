@@ -50,6 +50,32 @@ const ACTIONS=[0,64,128,1,65,129];
   ok(bad.accepted===false,'a carry whose executed mask differs from the decision is refused');
   const missing=await java.call({op:'carry',id:'no-such-decision',mask:0,seconds:8/60,frames:8});
   ok(missing.accepted===false,'a carry for an unknown decision is refused');
+  /* paused carry (control authority lost): traces only decay, nothing is
+     added, nothing is paid, nothing is cleared */
+  async function paused(profile){
+   await java.call({op:'init',seed:5,mode:'base'});
+   if(profile)await java.call({op:'credit',profile});
+   await java.call({op:'prior',output:6,weight:3});
+   const before=await java.call({op:'state'});
+   for(let k=0;k<12;k++){
+    const d=await java.call({op:'decide',retina:retina(k),train:true,actions:ACTIONS,epsilon:.2,windowMs:20});
+    if(k<11)await java.call({op:'carry',id:d.id,mask:d.mask,seconds:8/60,frames:8,accumulate:k<5});
+    else{
+     const mid=await java.call({op:'state'});
+     const r=await java.call({op:'reward',id:d.id,mask:d.mask,reward:-1,seconds:8/60,frames:8});
+     return {before,mid,changed:r.changed};
+    }
+   }
+  }
+  const p=await paused(null);
+  ok(p.mid.updates===p.before.updates&&p.mid.weights===p.before.weights&&p.mid.paused===6&&p.mid.carried===5,
+   'six paused carries change no weight or update and are counted apart (carried '+p.mid.carried+', paused '+p.mid.paused+')');
+  ok(p.changed>b.changed&&p.changed<=c.changed,
+   'a reward after a pause still reaches the decisions before it, never more than without the pause ('+b.changed+' <= '+p.changed+' <= '+c.changed+')');
+  const t=await paused('dual-time-v1');
+  ok(t.mid.creditProfile==='dual-time-v1'&&t.mid.updates===t.before.updates&&t.mid.weights===t.before.weights,
+   'dual-time-v1 (fast 15 + slow 90 frames by game time): carries and pauses stay unpaid');
+  ok(t.changed>=p.changed,'the 90-frame trace keeps at least as many earlier decisions in reach ('+t.changed+' against '+p.changed+')');
  }finally{java.close();}
  console.log('\n'+out.join('\n'));
  console.log('\n%s — %d/%d',fail.length?'FAIL ('+fail.length+')':'PASS',out.length-fail.length,out.length);

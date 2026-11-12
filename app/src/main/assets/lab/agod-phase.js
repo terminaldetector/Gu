@@ -157,7 +157,11 @@ function probe(driver,options){
     found.push({field:key,pos:[S,L],neg:[NS,NL],clipped:true});
   }
   axes.push({axis:axis.name,neg:axis.neg,pos:axis.pos,integrators:found.length,examples:found.slice(0,4),
-   fields:found.filter(f=>f.field[0]==='b').slice(0,16).map(f=>Number(f.field.slice(1)))});
+   fields:found.filter(f=>f.field[0]==='b').slice(0,16).map(f=>Number(f.field.slice(1))),
+   /* which way each field moves for the axis' POSITIVE direction (+1 or -1):
+      what a passive control-authority check compares the commanded
+      direction against */
+   fieldSigns:found.filter(f=>f.field[0]==='b').slice(0,16).map(f=>Math.sign(f.pos[1])||1)});
  }
  driver.restore(start);
  const dirNames=new Set([UP,DOWN,LEFT,RIGHT]);

@@ -48,7 +48,7 @@ const Evidence=root.FlyAgodEvidence||(require_?require_('./agod-evidence.js'):nu
 const Reward=root.FlyAgodReward||(require_?require_('./agod-reward.js'):null);
 const Ram=root.FlyAgodRam||(require_?require_('./agod-ram.js'):null);
 
-const SURVIVAL_REVISION='agod-pipeline-survival-r1';
+const SURVIVAL_REVISION='agod-pipeline-survival-r2';
 const DEFAULTS=Object.freeze({
  stride:8,                 /* RAM is compared every this many frames */
  checkEvery:64,            /* control is re-tested every this many frames */
@@ -84,6 +84,43 @@ function randomPolicy(spec,seed){
  return ()=>{let m=dirs[Math.floor(r()*dirs.length)];buttons.forEach((b,i)=>{if(r()<odds[i])m|=b.mask;});return m;};
 }
 
+/* CONTROL AUTHORITY, PASSIVE. Each stride the random player holds some
+   direction; on the controlled axis the phase probe found fields that move WITH
+   that direction (and which way). A stride with input on the axis is obeyed
+   when some such field moved the commanded way; `authority` is the obeyed share
+   over the last strides (reported only), `dropped` is decided by the run of
+   ignored commands below. It costs no extra emulation (the counterfactual
+   control test runs every 64 frames; this sees every 8), and a drop while
+   input is active is a hit-stun, a knock-back, a death or a scene the player
+   does not steer. */
+const s8=x=>x>127?x-256:x;
+function authorityTracker(probe,options){
+ const o={window:8,...(options||{})};
+ const ax=(probe&&probe.axes||[]).filter(a=>a.integrators>0&&a.fields&&a.fields.length)
+  .sort((a,b)=>b.integrators-a.integrators)[0];
+ if(!ax)return null;
+ const fields=ax.fields.slice(0,8),signs=(ax.fieldSigns||[]).slice(0,8);
+ /* A RUN OF IGNORED COMMANDS, not a window average: a knock-back of three
+    strides moved an 8-stride average only to 0.63 and was never seen. Dropped
+    when commanded moves failed on >= 2 consecutive active strides in BOTH
+    directions (a wall blocks one direction, a stun both), or on >= 4 in a row;
+    recovered at the first commanded move that takes effect. */
+ const history=[];let run=0,dirs=new Set(),dropped=false;
+ return {axis:ax.axis,fields,signs,
+  observe(mask,before,after){
+   const d=(mask&ax.pos)&&!(mask&ax.neg)?1:(mask&ax.neg)&&!(mask&ax.pos)?-1:0;
+   if(d){let moved=false;
+    for(let k=0;k<fields.length;k++){const delta=s8((after[fields[k]]-before[fields[k]])&255);
+     if(delta&&Math.sign(delta)===d*(signs[k]||1)){moved=true;break;}}
+    history.push(moved?1:0);if(history.length>o.window)history.shift();
+    if(moved){run=0;dirs=new Set();dropped=false;}
+    else{run++;dirs.add(d);if((run>=2&&dirs.size===2)||run>=4)dropped=true;}
+   }
+   const authority=history.length?history.reduce((t,x)=>t+x,0)/history.length:null;
+   return {authority,dropped,active:!!d,moved:d?history[history.length-1]===1:null};
+  }};
+}
+
 /* Is the player in control right now? From a snapshot, hold one direction of
    the controlled axis, then the other, release both and let them settle: in
    play the two arms leave the machine in different states (the player is
@@ -99,6 +136,7 @@ function controlTester(driver,probe,cfg){
  const axis=ax?{pos:ax.pos,neg:ax.neg,name:ax.axis}:null;
  return {
   axis:()=>axis&&axis.name,
+  authority:()=>authorityTracker(probe),
   test(){
    if(!axis)return false;
    const s=driver.snapshot();
@@ -125,6 +163,7 @@ function rollout(driver,start,policy,control,cfg,meter){
  let prev=driver.readRam();
  const v0=prev.slice();
  const masks=[];              /* the mask held for each stride, for attribution */
+ const authority=control.authority?control.authority():null,dropTimeline=[],missTimeline=[];
  const checks=[];             /* [t, controlled] */
  let lostSince=null,terminal=null,t=0,ending=null;
  while(t<cfg.horizon||lostSince!==null){
@@ -151,6 +190,8 @@ function rollout(driver,start,policy,control,cfg,meter){
   const held=policy(t);masks.push(held);
   drive(held,cfg.stride);meter.frames+=cfg.stride;t+=cfg.stride;
   const cur=driver.readRam();
+  if(authority){const a=authority.observe(held,prev,cur);dropTimeline.push(a.dropped?1:0);
+   missTimeline.push(a.active?(a.moved?0:1):-1);}
   for(let a=0;a<width;a++){
    if(cur[a]===prev[a]||busy[a])continue;
    const c=count[a];
@@ -172,7 +213,19 @@ function rollout(driver,start,policy,control,cfg,meter){
  /* losses of life: long gaps, and the ending itself */
  const losses=kept.filter(x=>x[1]-x[0]>=cfg.deathGapFrames).map(x=>({start:x[0],end:x[1],kind:'gap'}));
  if(terminal!==null)losses.push({start:terminal,end:t,kind:'terminal'});
- return {terminal,end:t,gaps:kept,losses,endingPhase:terminal!==null?ending:null,masks,
+ /* hits: authority dropped for >= 2 strides (16 frames) while input was
+    active, outside a gap already counted and before the ending */
+ const stuns=[];
+ for(let i=0;i<dropTimeline.length;){
+  if(!dropTimeline[i]){i++;continue;}
+  let j=i;while(j<dropTimeline.length&&dropTimeline[j])j++;
+  const start=i*cfg.stride,end=j*cfg.stride;
+  if(j-i>=2&&(terminal===null||start<terminal)&&!losses.some(l=>start<l.end&&end>l.start))
+   stuns.push({start,end,kind:'stun'});
+  i=j;
+ }
+ return {terminal,end:t,gaps:kept,losses,stuns,endingPhase:terminal!==null?ending:null,masks,
+  authorityDrops:stuns.length,missTimeline,
   count,busy,events,E,v0,last:prev,width,inControlAt,lossFrames:cfg.terminalLossFrames,stride:cfg.stride};
 }
 
@@ -202,6 +255,21 @@ function signedAddress(runs,a){
  return false;
 }
 const asValue=(x,signed)=>signed&&x>127?x-256:x;
+
+/* CONTROL AUTHORITY RIGHT AFTER A FALL. For each fall of a field: did the
+   first one or two commanded moves after it fail (a knock-back, a stun)? Set
+   against the run's own share of failed commands. A health bar is hit by
+   something that also shoves the player; an enemy's "alive" flag falls with
+   the player in full control. Returns {falls, missedAfter, baseline}. */
+function authorityAfter(run,times){
+ const m=run.missTimeline||[];
+ const active=m.filter(x=>x>=0),baseline=active.length?active.filter(x=>x===1).length/active.length:0;
+ let falls=0,missed=0;
+ for(const t of times){const i=Math.round(t/run.stride);let seen=0,miss=false;
+  for(let k=i;k<Math.min(m.length,i+4)&&seen<2;k++){if(m[k]<0)continue;seen++;if(m[k]===1)miss=true;}
+  if(seen){falls++;if(miss)missed++;}}
+ return {falls,missed,baseline};
+}
 
 /* the per-address facts one rollout supports */
 function summarise(run,a,signed){
@@ -235,6 +303,7 @@ function summarise(run,a,signed){
 function candidatesFrom(runs,controlFields,cfg){
  const width=runs[0].width;
  const resource=[],progress=[];
+ const rare={cells:0,fallOnly:0,riseOnly:0,mixed:0};
  const skip=new Set(controlFields);
  for(let a=0;a<width;a++){
   if(skip.has(a)||runs.some(r=>r.busy[a]))continue;
@@ -291,6 +360,30 @@ function candidatesFrom(runs,controlFields,cfg){
    resource.push({...base,kind:'TERMINAL',linked,contradicted,terminalRuns:terminalRuns.length});
   else if(explained>=2&&stray===0&&risesInPlay===0&&!clock&&initial>floor&&explained>=2*unexplained)
    resource.push({...base,kind:'PER_LOSS',linked:explained,contradicted:unexplained,terminalRuns:terminalRuns.length});
+  else{
+   /* KIND C, per hit (HP). Every fall lies at a loss of control the player
+      did not choose - a hit-stun seen by the authority tracker, a death gap or
+      the ending - and the field changes rarely: a health bar in a game whose
+      opening has no game over in reach. Refills are allowed (items, level
+      ups); a fall with no loss of control around it is not. */
+   let falls=0,missed=0,baseSum=0,baseRuns=0,changes=0,frames=0;
+   runs.forEach((r,i)=>{
+    changes+=r.count[a];frames+=r.end;
+    const q=authorityAfter(r,facts[i].decAll);falls+=q.falls;missed+=q.missed;
+    if(r.missTimeline&&r.missTimeline.some(x=>x>=0)){baseSum+=q.baseline;baseRuns++;}
+   });
+   /* rare: at most one change per second of play on average */
+   const rare=changes<=Math.max(2,frames/60),baseline=baseRuns?baseSum/baseRuns:1;
+   const share=falls?missed/falls:0;
+   if(falls>=3&&share>=.6&&share>=2*baseline&&rare&&!clock&&initial>floor)
+    resource.push({...base,kind:'PER_HIT',linked:missed,contradicted:falls-missed,
+     authorityAfterFall:+share.toFixed(3),authorityBaseline:+baseline.toFixed(3),terminalRuns:terminalRuns.length});
+  }
+  /* RARE-RAM SUMMARY: rare stepwise cells, by what they do (counts only) */
+  {const total=runs.reduce((n,r)=>n+r.count[a],0),frames=runs.reduce((n,r)=>n+r.end,0);
+   if(total>=2&&total<=frames/120){rare.cells++;
+    const falls=facts.reduce((n,f)=>n+f.decAll.length,0),rises=facts.reduce((n,f)=>n+f.incControl,0);
+    if(falls&&!rises)rare.fallOnly++;else if(rises&&!falls)rare.riseOnly++;else rare.mixed++;}}
   /* ---- progress ---- */
   const rises=facts.map(f=>f.incControl);
   const falls=facts.reduce((s,f)=>s+f.decAll.length,0);
@@ -306,7 +399,8 @@ function candidatesFrom(runs,controlFields,cfg){
  /* the stronger evidence first: linked in more runs; then the field that falls
     in more steps (a health bar says more than a dead flag); then fewer
     contradictions */
- resource.sort((x,y)=>((x.kind==='TERMINAL'?0:1)-(y.kind==='TERMINAL'?0:1))||(y.linked-x.linked)||(x.contradicted-y.contradicted)
+ const kindRank={TERMINAL:0,PER_LOSS:1,PER_HIT:2};
+ resource.sort((x,y)=>(kindRank[x.kind]-kindRank[y.kind])||(y.linked-x.linked)||(x.contradicted-y.contradicted)
   ||((y.unitSteps?1:0)-(x.unitSteps?1:0))
   /* then the field that spends MORE of itself before the ending: on a private
      SNES run-and-gun the lives counter went 3,2,1,0 into GAME OVER while a
@@ -315,7 +409,7 @@ function candidatesFrom(runs,controlFields,cfg){
   ||((y.initial-y.floor)-(x.initial-x.floor))
   ||(y.decrementsBeforeTerminal-x.decrementsBeforeTerminal)||(x.address-y.address));
  progress.sort((x,y)=>(y.risingRuns-x.risingRuns)||(y.rises.reduce((s,v)=>s+v,0)-x.rises.reduce((s,v)=>s+v,0))||(x.address-y.address));
- return {resource,progress};
+ return {resource,progress,rare};
 }
 
 /* Progress fields as the profile reads them: a byte whose carries go into a
@@ -353,6 +447,7 @@ function verdictFor(runs,chosen,cfg){
    else if(kind==='TERMINAL')contradictions.push('the game ended at frame '+r.terminal
     +' while the field read '+f.valueAtEnd+', above its floor '+floor);
   }
+  if(kind==='PER_HIT'){const q=authorityAfter(r,f.decAll);explained+=q.missed;unexplained+=q.falls-q.missed;}
   if(kind==='PER_LOSS'){
    for(const loss of r.losses){
     if(f.decAll.some(t=>t>=loss.start-cfg.checkEvery&&t<=loss.end+cfg.checkEvery))explained++;else unexplained++;
@@ -362,6 +457,8 @@ function verdictFor(runs,chosen,cfg){
      contradictions.push('the field fell at frame '+t+' with no loss of life there');
   }
  }
+ if(kind==='PER_HIT'&&unexplained*2>explained)
+  contradictions.push(unexplained+' falls with no loss of control around them, '+explained+' at one');
  if(kind==='PER_LOSS'&&unexplained>explained&&explained+unexplained>=2)
   contradictions.push(unexplained+' losses of life left the field untouched, '+explained+' took one');
  if(contradictions.length)return {outcome:'contradicted',losses,linked,explained,unexplained,contradictions};
@@ -474,11 +571,12 @@ function discover(driver,options){
   const r=rollout(driver,start,pol.make(),control,cfg,meter);
   runs.push(r);
   note('rollout',{partition:'DISCOVERY',policy:pol.name,terminal:r.terminal,end:r.end,gaps:r.gaps.length,
-   losses:r.losses.length,endingPhase:r.endingPhase});
+   losses:r.losses.length,stuns:(r.stuns||[]).length,endingPhase:r.endingPhase});
  }
  const found=candidatesFrom(runs,controlFields,cfg);
  const survival=runs.map((r,i)=>({policy:policies[i].name,terminal:r.terminal,end:r.end,gaps:r.gaps.length,losses:r.losses.length}));
  const discovered={resourceCandidates:found.resource.slice(0,6),progressCandidates:found.progress.slice(0,8),
+  rareCells:found.rare,authorityDrops:runs.map(r=>r.authorityDrops||0),
   controlFields,survival};
  note('candidates',{resource:found.resource.length,progress:found.progress.length,
   terminalRuns:runs.filter(r=>r.terminal!==null).length});
@@ -552,7 +650,7 @@ function discover(driver,options){
   encodingDetermined:true,signed:chosen.signed===true,mask:null,direction:'decreasing',step:-1});
  return frozen({schemaVersion:1,pipelineRevision:SURVIVAL_REVISION,status:'VERIFIED',stage:'complete',reason:null,
   goal,resource,discovered:frozen(discovered),
-  judgement:frozen({kind:chosen.kind==='TERMINAL'?'TERMINAL_RESOURCE_DEPLETION':'LOSS_OF_LIFE_COUNTER',basis:'survival',
+  judgement:frozen({kind:chosen.kind==='TERMINAL'?'TERMINAL_RESOURCE_DEPLETION':chosen.kind==='PER_HIT'?'HIT_POINTS':'LOSS_OF_LIFE_COUNTER',basis:'survival',
    linkedRuns:chosen.linked,terminalRuns:chosen.terminalRuns,policyDependentTiming:chosen.policyDependentTiming}),
   depletionFact:frozen({floor:chosen.floor,initial:chosen.initial}),
   /* the cost is not one button: it is the game, modulated by every input */
@@ -563,7 +661,7 @@ function discover(driver,options){
   registry,trace,refusals:[]});
 }
 
-const api=Object.freeze({SURVIVAL_REVISION,DEFAULTS,discover,randomPolicy,rollout,controlTester,attributeButtons});
+const api=Object.freeze({SURVIVAL_REVISION,DEFAULTS,discover,randomPolicy,rollout,controlTester,attributeButtons,authorityTracker});
 root.FlyAgodSurvival=api;
 if(typeof module!=='undefined')module.exports=api;
 })(typeof window==='undefined'?globalThis:window);

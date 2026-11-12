@@ -131,9 +131,15 @@ async function studyRom(file,java){
   discoveryRuns:(found.discovered&&found.discovered.survival||[]).map(r=>({policy:r.policy,ended:r.terminal!==null,
    framesToEnd:r.terminal,lossesOfLife:r.losses})),
   verdicts:(found.verdicts||[]).map(v=>({group:v.group,outcome:v.outcome,losses:v.losses,linked:v.linked})),
-  progressFields:found.discovered&&found.discovered.progressFields?found.discovered.progressFields.length:0};
+  progressFields:found.discovered&&found.discovered.progressFields?found.discovered.progressFields.length:0,
+  /* aggregate only - no address leaves the run */
+  candidateKind:found.discovered&&found.discovered.resource?found.discovered.resource.kind:null,
+  rareCells:found.discovered&&found.discovered.rareCells||null,
+  authorityDrops:found.discovered&&found.discovered.authorityDrops||null};
  console.log('  survival: %s (%s) %d frames %d ms, progress fields %d',found.status,report.survival.kind,
   report.survival.frames,report.survival.wallMs,report.survival.progressFields);
+ console.log('  candidate %s, rare cells %j, control-authority drops per run %j',report.survival.candidateKind,
+  report.survival.rareCells,report.survival.authorityDrops);
  /* 4. the oracle, opened only now */
  const oraclePath=path.join(ROMS,'oracle.json');
  if(fs.existsSync(oraclePath)){
@@ -198,7 +204,16 @@ async function learn(built,inPlay,profile,identity,java){
  const prior=process.env.REALROM_DECISION==='agod'
   ?decisionPrior(profile.dto.discovered&&profile.dto.discovered.buttonAttribution,spec,Number(process.env.REALROM_PRIOR||2)):null;
  const actions=prior?prior.actions:actionSet(spec);
+ /* REALROM_CREDIT_PROFILE=dual-time-v1: two eligibility traces by game time
+    (15 / 90 frames). REALROM_PAUSE=1: an interval in which the passive
+    control-authority tracker says the player had no control joins the traces
+    as a PAUSE (decay, nothing added) instead of a carry. */
+ const creditProfile=process.env.REALROM_CREDIT_PROFILE||null;
+ const pauseOnDrop=process.env.REALROM_PAUSE==='1';
+ d.restore(inPlay);
+ const authorityProbe=pauseOnDrop?Phase.probe(d):null;
  const init=async seed=>{await java.call({op:'init',seed,mode:'base'});
+  if(creditProfile)await java.call({op:'credit',profile:creditProfile});
   if(prior)for(const p of prior.priors)if(p.weight>0)await java.call({op:'prior',output:p.output,weight:p.weight});};
  const read=Objective.createLiveReward(profile,MODULES,{identity,sessionId:'probe',policy:'aggressive'}).read;
  const progressOf=Objective.createLiveReward(profile,MODULES,{identity,sessionId:'probe2',policy:'aggressive'}).readProgress;
@@ -212,6 +227,7 @@ async function learn(built,inPlay,profile,identity,java){
  async function episode(start,choose,train,steps,live,stats){
   d.restore(start);d.run(0,1);
   let n=0,losses=0,progress=0;
+  const authority=pauseOnDrop&&authorityProbe?Survival.authorityTracker(authorityProbe):null;
   for(;n<steps;n++){
    const before=d.readRam();
    const pick=await choose(train);
@@ -220,6 +236,9 @@ async function learn(built,inPlay,profile,identity,java){
    const rb=read(before),ra=read(after);if(ra<rb)losses+=rb-ra;
    const pb=progressOf(before),pa=progressOf(after);
    for(let i=0;i<pb.length;i++)if(Number.isFinite(pb[i])&&Number.isFinite(pa[i])&&pa[i]>pb[i])progress+=pa[i]-pb[i];
+   /* the tracker sees every stride, so a run of ignored commands is never
+      stitched across strides it did not look at */
+   const noControl=authority?authority.observe(pick.mask,before,after).dropped:false;
    if(train&&live){
     stats.frame+=STEP_FRAMES;
     const packet=live.observe({ramBefore:before,ramAfter:after,endFrame:stats.frame,requestedMask:pick.mask,
@@ -229,9 +248,11 @@ async function learn(built,inPlay,profile,identity,java){
      const r=await java.call({op:'reward',id:pick.id,mask:pick.mask,reward:packet.value,seconds:STEP_FRAMES/60,frames:STEP_FRAMES});
      stats.changed+=r.changed;
     }else if(process.env.REALROM_CREDIT==='carry'&&packet.status==='UNKNOWN'){
-     /* no verified event: the decision joins the eligibility traces, nothing is paid */
-     stats.unknown++;const c=await java.call({op:'carry',id:pick.id,mask:pick.mask,seconds:STEP_FRAMES/60,frames:STEP_FRAMES});
-     if(c.accepted)stats.carried=(stats.carried||0)+1;
+     /* no verified event: the decision joins the eligibility traces, nothing is
+        paid - or, with no control, the traces only decay */
+     stats.unknown++;
+     const c=await java.call({op:'carry',id:pick.id,mask:pick.mask,seconds:STEP_FRAMES/60,frames:STEP_FRAMES,accumulate:!noControl});
+     if(c.accepted)stats[noControl?'paused':'carried']=(stats[noControl?'paused':'carried']||0)+1;
     }else{stats.unknown++;await java.call({op:'boundary'});}
    }
    if(ended(after)){n++;break;}
@@ -267,7 +288,7 @@ async function learn(built,inPlay,profile,identity,java){
   const r=rng(seed);const random=await evaluate(async()=>({mask:actions[Math.floor(r()*actions.length)],id:null}));
   const sum=(list,key)=>list.reduce((s,x)=>s+x[key],0);
   const row={seed,trainSteps:TRAIN_STEPS,verified:stats.VERIFIED,provisional:stats.PROVISIONAL,unknown:stats.unknown,
-   nativeChanges:stats.changed,carried:stats.carried||0,frozenClean:frozenBefore.weights===frozenAfter.weights&&frozenBefore.updates===frozenAfter.updates,
+   nativeChanges:stats.changed,carried:stats.carried||0,paused:stats.paused||0,frozenClean:frozenBefore.weights===frozenAfter.weights&&frozenBefore.updates===frozenAfter.updates,
    untrained:{survivalSteps:sum(untrained,'steps'),losses:sum(untrained,'losses'),progress:sum(untrained,'progress')},
    trained:{survivalSteps:sum(trained,'steps'),losses:sum(trained,'losses'),progress:sum(trained,'progress')},
    random:{survivalSteps:sum(random,'steps'),losses:sum(random,'losses'),progress:sum(random,'progress')},
@@ -284,6 +305,7 @@ async function learn(built,inPlay,profile,identity,java){
  return {actions:actions.length,stepFrames:STEP_FRAMES,evalStarts:3,evalStepsCap:EVAL_STEPS,
   evaluation:'frozen, both argmax (untrained/trained) and sampled from the policy (untrainedSampled/trainedSampled)',
   decision:prior?{source:'survival discovery button attribution',actions:prior.actions,priors:prior.priors}:'default action set, no prior',
+  creditProfile:creditProfile||'single-v1',pauseOnAuthorityDrop:pauseOnDrop,
   credit:process.env.REALROM_CREDIT==='carry'?'UNKNOWN intervals carried into the traces, unpaid':'UNKNOWN intervals clear the traces',
   noOpAction:process.env.REALROM_NOOP!=='0',
   graph:process.env.FDB_GRAPH?'connectome':'30-neuron mechanism fixture',rows};
