@@ -189,7 +189,7 @@ async function studyRom(file,java){
    two.port1AfterJoin=p1Probe.phase;
    // Physical P2 ownership must be observed causally after joining.
    // Counts only: never disclose memory offsets from the private cartridge.
-   const fields=p=>new Set((p.controlledAxes||[]).flatMap(a=>a.fields||[]));
+   const fields=p=>new Set((p.axes||[]).filter(a=>a.integrators>0).flatMap(a=>a.fields||[]));
    const a=fields(p1Probe),b=fields(p2Probe);
    two.independentMovement={
     p1ControlledFields:a.size,p2ControlledFields:b.size,
