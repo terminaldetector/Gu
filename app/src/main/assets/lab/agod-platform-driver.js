@@ -193,6 +193,12 @@ function rawSnapshotter(platform,core,stateRef,load,fallbackRestore){
   restore(state){
    if(!state||state.kind!==kind)return fallbackRestore(state);
    const g=core.g;
+   /* A CORE THAT HAS NEVER SAVED HAS NO STATE BUFFER: Snes9x allocates it on
+      the first save, and until then the pointer is 0 - a raw snapshot made by
+      one core and restored into a fresh one was written to address 0 and
+      rejected (seen on a private SNES cartridge, a snapshot cached on disk and
+      restored in a new process). One save allocates the buffer. */
+   if(!stateRef())g._lab_save_state();
    g.HEAPU8.set(state.bytes,stateRef());     /* HEAPU8 re-read: memory may have grown */
    if(!load(state.size))throw new Error(platform+' core rejected a research snapshot');
   }};

@@ -233,6 +233,14 @@ ok(PD.describe('gameboyadvance').supported===false,'an unknown platform is not s
   d.run(0,90);
   d.restore(snap);
   ok(d.stateHash()===h0,p+' snapshot/restore is exact');
+  /* a raw snapshot restores into a FRESH core too: the state buffer is
+     allocated on the first save, and a core that had never saved rejected it */
+  {const fresh=await PD.create({platform:p,romBytes:rom,RetroConsole,factory,
+    moduleOptions:{wasmBinary:fs.readFileSync(path.join(A,p,'core.wasm')),
+     locateFile:f=>path.join(A,p,f)},frameBudget:100000});
+   let crossed=false;try{fresh.driver.restore(snap);crossed=fresh.driver.stateHash()===h0;}catch(error){crossed=false;}
+   ok(crossed,p+' a raw snapshot restores exactly into a fresh core that has never saved');
+   fresh.dispose();}
   d.restore(snap);d.run(0,90);
   const idle=d.stateHash();
   ok(idle!==h0,p+' 90 frames of idle advance the observed state');
