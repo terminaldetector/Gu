@@ -18,7 +18,7 @@ console.log('PASS: production GMode port isolation, release, swapped ports and m
 // A real SNES 2P join needs a human-origin START edge on port 2. The default
 // system-button filter must continue to prohibit *model* Start/Select.
 state.releasePorts();events.length=0;
-state.gmodeMode='coop';state.controlMode='blocked';state.playing=true;state.manualMask=0;state.brainMask=2;
+state.window={};state.gmodeMode='coop';state.controlMode='blocked';state.playing=true;state.manualMask=0;state.brainMask=2;
 state.learningBoundary=()=>{};
 assert.equal(state.filterAgentMask(8),0,'model Start remains forbidden');
 assert.equal(state.requestPort2Start(),true,'explicit P2 START accepted');
