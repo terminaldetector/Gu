@@ -1,0 +1,990 @@
+{
+ "tool": "agod_realrom_check",
+ "date": "2026-11-12",
+ "privacy": "hashes, sizes and aggregates only; no ROM bytes, RAM offsets, frames or states",
+ "snes": [
+  {
+   "romSha256": "a93ea87fc835c530b5135c5294433d15eef6dbf656144b387e89ac19cf864996",
+   "bytes": 1048576,
+   "platform": "snes",
+   "entry": {
+    "status": "PLAYING",
+    "frames": 10502,
+    "steps": 10,
+    "waits": 5,
+    "presses": {
+     "Start": 2,
+     "Select": 1,
+     "Y": 1
+    },
+    "controlledAxes": [
+     "horizontal"
+    ],
+    "wallMs": 12248
+   },
+   "survival": {
+    "status": "VERIFIED",
+    "stage": "complete",
+    "reason": null,
+    "frames": 67368,
+    "wallMs": 91610,
+    "kind": "TERMINAL_RESOURCE_DEPLETION",
+    "discoveryRuns": [
+     {
+      "policy": "neutral",
+      "ended": false,
+      "framesToEnd": null,
+      "lossesOfLife": 0
+     },
+     {
+      "policy": "random-1",
+      "ended": false,
+      "framesToEnd": null,
+      "lossesOfLife": 0
+     },
+     {
+      "policy": "random-2",
+      "ended": false,
+      "framesToEnd": null,
+      "lossesOfLife": 0
+     },
+     {
+      "policy": "random-3",
+      "ended": false,
+      "framesToEnd": null,
+      "lossesOfLife": 0
+     },
+     {
+      "policy": "random-4",
+      "ended": true,
+      "framesToEnd": 2304,
+      "lossesOfLife": 1
+     },
+     {
+      "policy": "random-5",
+      "ended": true,
+      "framesToEnd": 2368,
+      "lossesOfLife": 1
+     }
+    ],
+    "verdicts": [
+     {
+      "group": "CALIBRATION",
+      "outcome": "confirmed",
+      "losses": 6,
+      "linked": 2
+     },
+     {
+      "group": "HOLDOUT",
+      "outcome": "confirmed",
+      "losses": 3,
+      "linked": 1
+     }
+    ],
+    "progressFields": 4
+   },
+   "oracle": {
+    "resourceMatches": true,
+    "progressMatches": false,
+    "progressFieldsOutsideOracle": 4
+   },
+   "profile": {
+    "status": "PROFILE",
+    "reason": null,
+    "progress": 4
+   },
+   "learning": {
+    "actions": 16,
+    "stepFrames": 8,
+    "evalStarts": 3,
+    "evalStepsCap": 300,
+    "evaluation": "frozen, both argmax (untrained/trained) and sampled from the policy (untrainedSampled/trainedSampled)",
+    "credit": "UNKNOWN intervals carried into the traces, unpaid",
+    "noOpAction": true,
+    "graph": "30-neuron mechanism fixture",
+    "rows": [
+     {
+      "seed": 11,
+      "trainSteps": 2400,
+      "verified": 46,
+      "provisional": 1154,
+      "unknown": 1200,
+      "nativeChanges": 24475,
+      "carried": 1200,
+      "frozenClean": true,
+      "untrained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 0
+      },
+      "trained": {
+       "survivalSteps": 385,
+       "losses": 9,
+       "progress": 725
+      },
+      "random": {
+       "survivalSteps": 844,
+       "losses": 8,
+       "progress": 208
+      },
+      "untrainedSampled": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 90
+      },
+      "trainedSampled": {
+       "survivalSteps": 384,
+       "losses": 9,
+       "progress": 747
+      }
+     },
+     {
+      "seed": 23,
+      "trainSteps": 2400,
+      "verified": 43,
+      "provisional": 1013,
+      "unknown": 1344,
+      "nativeChanges": 37006,
+      "carried": 1344,
+      "frozenClean": true,
+      "untrained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 0
+      },
+      "trained": {
+       "survivalSteps": 385,
+       "losses": 9,
+       "progress": 725
+      },
+      "random": {
+       "survivalSteps": 900,
+       "losses": 5,
+       "progress": 200
+      },
+      "untrainedSampled": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 48
+      },
+      "trainedSampled": {
+       "survivalSteps": 380,
+       "losses": 9,
+       "progress": 650
+      }
+     }
+    ]
+   },
+   "totalFrames": 172555,
+   "totalWallMs": 219329,
+   "status": "DONE"
+  },
+  {
+   "romSha256": "4c15013131351e694e05f22e38bb1b3e4031dedac77ec75abecebe8520d82d5f",
+   "bytes": 2097152,
+   "platform": "snes",
+   "entry": {
+    "status": "PLAYING",
+    "frames": 37606,
+    "steps": 33,
+    "waits": 20,
+    "presses": {
+     "A": 9,
+     "B": 2,
+     "Start": 1
+    },
+    "controlledAxes": [
+     "horizontal",
+     "vertical"
+    ],
+    "wallMs": 66282
+   },
+   "survival": {
+    "status": "REFUSED",
+    "stage": "resource",
+    "reason": "control was lost for good in 0 of 6 runs within the horizon; a terminal resource needs at least two endings to be linked to",
+    "frames": 30688,
+    "wallMs": 64480,
+    "kind": null,
+    "discoveryRuns": [
+     {
+      "policy": "neutral",
+      "ended": false,
+      "framesToEnd": null,
+      "lossesOfLife": 0
+     },
+     {
+      "policy": "random-1",
+      "ended": false,
+      "framesToEnd": null,
+      "lossesOfLife": 0
+     },
+     {
+      "policy": "random-2",
+      "ended": false,
+      "framesToEnd": null,
+      "lossesOfLife": 0
+     },
+     {
+      "policy": "random-3",
+      "ended": false,
+      "framesToEnd": null,
+      "lossesOfLife": 0
+     },
+     {
+      "policy": "random-4",
+      "ended": false,
+      "framesToEnd": null,
+      "lossesOfLife": 0
+     },
+     {
+      "policy": "random-5",
+      "ended": false,
+      "framesToEnd": null,
+      "lossesOfLife": 0
+     }
+    ],
+    "verdicts": [],
+    "progressFields": 0
+   },
+   "totalFrames": 68294,
+   "totalWallMs": 130766,
+   "status": "DONE"
+  }
+ ],
+ "decisionAB": {
+  "credit": "carry (unpaid eligibility)",
+  "trainSteps": 2400,
+  "evalStartsPerSeed": 3,
+  "evalStepsCap": 300,
+  "graph": "30-neuron mechanism fixture",
+  "variants": {
+   "snes-run-and-gun": {
+    "carry, default action set, no prior": [
+     {
+      "seed": 11,
+      "untrained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 0
+      },
+      "trained": {
+       "survivalSteps": 363,
+       "losses": 9,
+       "progress": 126
+      },
+      "untrainedSampled": {
+       "survivalSteps": 855,
+       "losses": 5,
+       "progress": 82
+      },
+      "trainedSampled": {
+       "survivalSteps": 381,
+       "losses": 9,
+       "progress": 228
+      },
+      "random": {
+       "survivalSteps": 856,
+       "losses": 5,
+       "progress": 88
+      },
+      "frozenClean": true
+     },
+     {
+      "seed": 23,
+      "untrained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 0
+      },
+      "trained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 0
+      },
+      "untrainedSampled": {
+       "survivalSteps": 900,
+       "losses": 1,
+       "progress": 72
+      },
+      "trainedSampled": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 2
+      },
+      "random": {
+       "survivalSteps": 847,
+       "losses": 4,
+       "progress": 92
+      },
+      "frozenClean": true
+     }
+    ],
+    "v1: attributed set replaces default + bias": [
+     {
+      "seed": 11,
+      "untrained": {
+       "survivalSteps": 363,
+       "losses": 9,
+       "progress": 126
+      },
+      "trained": {
+       "survivalSteps": 385,
+       "losses": 9,
+       "progress": 725
+      },
+      "untrainedSampled": {
+       "survivalSteps": 383,
+       "losses": 9,
+       "progress": 474
+      },
+      "trainedSampled": {
+       "survivalSteps": 355,
+       "losses": 9,
+       "progress": 618
+      },
+      "random": {
+       "survivalSteps": 809,
+       "losses": 5,
+       "progress": 170
+      },
+      "frozenClean": true
+     },
+     {
+      "seed": 23,
+      "untrained": {
+       "survivalSteps": 363,
+       "losses": 9,
+       "progress": 126
+      },
+      "trained": {
+       "survivalSteps": 385,
+       "losses": 9,
+       "progress": 725
+      },
+      "untrainedSampled": {
+       "survivalSteps": 318,
+       "losses": 9,
+       "progress": 333
+      },
+      "trainedSampled": {
+       "survivalSteps": 388,
+       "losses": 9,
+       "progress": 718
+      },
+      "random": {
+       "survivalSteps": 799,
+       "losses": 9,
+       "progress": 192
+      },
+      "frozenClean": true
+     }
+    ],
+    "v2: attributed set added to default + bias": [
+     {
+      "seed": 11,
+      "untrained": {
+       "survivalSteps": 363,
+       "losses": 9,
+       "progress": 126
+      },
+      "trained": {
+       "survivalSteps": 363,
+       "losses": 9,
+       "progress": 126
+      },
+      "untrainedSampled": {
+       "survivalSteps": 394,
+       "losses": 9,
+       "progress": 476
+      },
+      "trainedSampled": {
+       "survivalSteps": 417,
+       "losses": 9,
+       "progress": 704
+      },
+      "random": {
+       "survivalSteps": 844,
+       "losses": 8,
+       "progress": 208
+      },
+      "frozenClean": true
+     },
+     {
+      "seed": 23,
+      "untrained": {
+       "survivalSteps": 363,
+       "losses": 9,
+       "progress": 126
+      },
+      "trained": {
+       "survivalSteps": 385,
+       "losses": 9,
+       "progress": 725
+      },
+      "untrainedSampled": {
+       "survivalSteps": 453,
+       "losses": 9,
+       "progress": 534
+      },
+      "trainedSampled": {
+       "survivalSteps": 427,
+       "losses": 9,
+       "progress": 817
+      },
+      "random": {
+       "survivalSteps": 900,
+       "losses": 5,
+       "progress": 200
+      },
+      "frozenClean": true
+     }
+    ],
+    "v3: attributed set added to default, no bias (app default)": [
+     {
+      "seed": 11,
+      "untrained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 0
+      },
+      "trained": {
+       "survivalSteps": 385,
+       "losses": 9,
+       "progress": 725
+      },
+      "untrainedSampled": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 90
+      },
+      "trainedSampled": {
+       "survivalSteps": 384,
+       "losses": 9,
+       "progress": 747
+      },
+      "random": {
+       "survivalSteps": 844,
+       "losses": 8,
+       "progress": 208
+      },
+      "frozenClean": true
+     },
+     {
+      "seed": 23,
+      "untrained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 0
+      },
+      "trained": {
+       "survivalSteps": 385,
+       "losses": 9,
+       "progress": 725
+      },
+      "untrainedSampled": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 48
+      },
+      "trainedSampled": {
+       "survivalSteps": 380,
+       "losses": 9,
+       "progress": 650
+      },
+      "random": {
+       "survivalSteps": 900,
+       "losses": 5,
+       "progress": 200
+      },
+      "frozenClean": true
+     }
+    ]
+   },
+   "sega-run-and-gun": {
+    "carry, default action set, no prior": [
+     {
+      "seed": 11,
+      "untrained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 0
+      },
+      "trained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 74
+      },
+      "untrainedSampled": {
+       "survivalSteps": 892,
+       "losses": 3,
+       "progress": 334
+      },
+      "trainedSampled": {
+       "survivalSteps": 900,
+       "losses": 1,
+       "progress": 604
+      },
+      "random": {
+       "survivalSteps": 900,
+       "losses": 3,
+       "progress": 774
+      },
+      "frozenClean": true
+     },
+     {
+      "seed": 23,
+      "untrained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 0
+      },
+      "trained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 74
+      },
+      "untrainedSampled": {
+       "survivalSteps": 892,
+       "losses": 5,
+       "progress": 744
+      },
+      "trainedSampled": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 74
+      },
+      "random": {
+       "survivalSteps": 900,
+       "losses": 4,
+       "progress": 904
+      },
+      "frozenClean": true
+     }
+    ],
+    "v1: attributed set replaces default + bias": [
+     {
+      "seed": 11,
+      "untrained": {
+       "survivalSteps": 892,
+       "losses": 3,
+       "progress": 699
+      },
+      "trained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 74
+      },
+      "untrainedSampled": {
+       "survivalSteps": 873,
+       "losses": 7,
+       "progress": 1605
+      },
+      "trainedSampled": {
+       "survivalSteps": 900,
+       "losses": 4,
+       "progress": 2613
+      },
+      "random": {
+       "survivalSteps": 900,
+       "losses": 6,
+       "progress": 1884
+      },
+      "frozenClean": true
+     },
+     {
+      "seed": 23,
+      "untrained": {
+       "survivalSteps": 900,
+       "losses": 2,
+       "progress": 594
+      },
+      "trained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 74
+      },
+      "untrainedSampled": {
+       "survivalSteps": 900,
+       "losses": 6,
+       "progress": 1764
+      },
+      "trainedSampled": {
+       "survivalSteps": 900,
+       "losses": 4,
+       "progress": 1974
+      },
+      "random": {
+       "survivalSteps": 900,
+       "losses": 5,
+       "progress": 1634
+      },
+      "frozenClean": true
+     }
+    ],
+    "v2: attributed set added to default + bias": [
+     {
+      "seed": 11,
+      "untrained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 74
+      },
+      "trained": {
+       "survivalSteps": 874,
+       "losses": 3,
+       "progress": 492
+      },
+      "untrainedSampled": {
+       "survivalSteps": 874,
+       "losses": 6,
+       "progress": 1911
+      },
+      "trainedSampled": {
+       "survivalSteps": 900,
+       "losses": 6,
+       "progress": 1926
+      },
+      "random": {
+       "survivalSteps": 875,
+       "losses": 7,
+       "progress": 1703
+      },
+      "frozenClean": true
+     },
+     {
+      "seed": 23,
+      "untrained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 74
+      },
+      "trained": {
+       "survivalSteps": 885,
+       "losses": 3,
+       "progress": 941
+      },
+      "untrainedSampled": {
+       "survivalSteps": 883,
+       "losses": 5,
+       "progress": 1394
+      },
+      "trainedSampled": {
+       "survivalSteps": 879,
+       "losses": 7,
+       "progress": 2293
+      },
+      "random": {
+       "survivalSteps": 872,
+       "losses": 8,
+       "progress": 1274
+      },
+      "frozenClean": true
+     }
+    ],
+    "v3: attributed set added to default, no bias (app default)": [
+     {
+      "seed": 11,
+      "untrained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 0
+      },
+      "trained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 74
+      },
+      "untrainedSampled": {
+       "survivalSteps": 875,
+       "losses": 7,
+       "progress": 1075
+      },
+      "trainedSampled": {
+       "survivalSteps": 900,
+       "losses": 3,
+       "progress": 1804
+      },
+      "random": {
+       "survivalSteps": 875,
+       "losses": 7,
+       "progress": 1703
+      },
+      "frozenClean": true
+     },
+     {
+      "seed": 23,
+      "untrained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 0
+      },
+      "trained": {
+       "survivalSteps": 900,
+       "losses": 0,
+       "progress": 74
+      },
+      "untrainedSampled": {
+       "survivalSteps": 877,
+       "losses": 6,
+       "progress": 1224
+      },
+      "trainedSampled": {
+       "survivalSteps": 882,
+       "losses": 8,
+       "progress": 3119
+      },
+      "random": {
+       "survivalSteps": 872,
+       "losses": 8,
+       "progress": 1274
+      },
+      "frozenClean": true
+     }
+    ]
+   },
+   "sega-shooter": {
+    "carry, default action set, no prior": [
+     {
+      "seed": 11,
+      "untrained": {
+       "survivalSteps": 154,
+       "losses": 15,
+       "progress": 121
+      },
+      "trained": {
+       "survivalSteps": 219,
+       "losses": 15,
+       "progress": 1550
+      },
+      "untrainedSampled": {
+       "survivalSteps": 406,
+       "losses": 15,
+       "progress": 4360
+      },
+      "trainedSampled": {
+       "survivalSteps": 261,
+       "losses": 15,
+       "progress": 1813
+      },
+      "random": {
+       "survivalSteps": 306,
+       "losses": 15,
+       "progress": 2811
+      },
+      "frozenClean": true
+     },
+     {
+      "seed": 23,
+      "untrained": {
+       "survivalSteps": 154,
+       "losses": 15,
+       "progress": 121
+      },
+      "trained": {
+       "survivalSteps": 284,
+       "losses": 15,
+       "progress": 3459
+      },
+      "untrainedSampled": {
+       "survivalSteps": 288,
+       "losses": 15,
+       "progress": 1965
+      },
+      "trainedSampled": {
+       "survivalSteps": 321,
+       "losses": 15,
+       "progress": 2792
+      },
+      "random": {
+       "survivalSteps": 279,
+       "losses": 15,
+       "progress": 1457
+      },
+      "frozenClean": true
+     }
+    ],
+    "v1: attributed set replaces default + bias": [
+     {
+      "seed": 11,
+      "untrained": {
+       "survivalSteps": 179,
+       "losses": 15,
+       "progress": 60
+      },
+      "trained": {
+       "survivalSteps": 179,
+       "losses": 15,
+       "progress": 60
+      },
+      "untrainedSampled": {
+       "survivalSteps": 185,
+       "losses": 15,
+       "progress": 60
+      },
+      "trainedSampled": {
+       "survivalSteps": 189,
+       "losses": 15,
+       "progress": 60
+      },
+      "random": {
+       "survivalSteps": 121,
+       "losses": 15,
+       "progress": 60
+      },
+      "frozenClean": true
+     },
+     {
+      "seed": 23,
+      "untrained": {
+       "survivalSteps": 179,
+       "losses": 15,
+       "progress": 60
+      },
+      "trained": {
+       "survivalSteps": 179,
+       "losses": 15,
+       "progress": 60
+      },
+      "untrainedSampled": {
+       "survivalSteps": 178,
+       "losses": 15,
+       "progress": 121
+      },
+      "trainedSampled": {
+       "survivalSteps": 180,
+       "losses": 15,
+       "progress": 60
+      },
+      "random": {
+       "survivalSteps": 216,
+       "losses": 15,
+       "progress": 122
+      },
+      "frozenClean": true
+     }
+    ],
+    "v2: attributed set added to default + bias": [
+     {
+      "seed": 11,
+      "untrained": {
+       "survivalSteps": 179,
+       "losses": 15,
+       "progress": 60
+      },
+      "trained": {
+       "survivalSteps": 179,
+       "losses": 15,
+       "progress": 60
+      },
+      "untrainedSampled": {
+       "survivalSteps": 240,
+       "losses": 15,
+       "progress": 764
+      },
+      "trainedSampled": {
+       "survivalSteps": 261,
+       "losses": 15,
+       "progress": 1006
+      },
+      "random": {
+       "survivalSteps": 361,
+       "losses": 15,
+       "progress": 3131
+      },
+      "frozenClean": true
+     },
+     {
+      "seed": 23,
+      "untrained": {
+       "survivalSteps": 179,
+       "losses": 15,
+       "progress": 60
+      },
+      "trained": {
+       "survivalSteps": 170,
+       "losses": 15,
+       "progress": 242
+      },
+      "untrainedSampled": {
+       "survivalSteps": 254,
+       "losses": 15,
+       "progress": 725
+      },
+      "trainedSampled": {
+       "survivalSteps": 289,
+       "losses": 15,
+       "progress": 1779
+      },
+      "random": {
+       "survivalSteps": 266,
+       "losses": 15,
+       "progress": 1992
+      },
+      "frozenClean": true
+     }
+    ],
+    "v3: attributed set added to default, no bias (app default)": [
+     {
+      "seed": 11,
+      "untrained": {
+       "survivalSteps": 154,
+       "losses": 15,
+       "progress": 121
+      },
+      "trained": {
+       "survivalSteps": 119,
+       "losses": 15,
+       "progress": 120
+      },
+      "untrainedSampled": {
+       "survivalSteps": 320,
+       "losses": 15,
+       "progress": 1863
+      },
+      "trainedSampled": {
+       "survivalSteps": 177,
+       "losses": 15,
+       "progress": 725
+      },
+      "random": {
+       "survivalSteps": 361,
+       "losses": 15,
+       "progress": 3131
+      },
+      "frozenClean": true
+     },
+     {
+      "seed": 23,
+      "untrained": {
+       "survivalSteps": 154,
+       "losses": 15,
+       "progress": 121
+      },
+      "trained": {
+       "survivalSteps": 291,
+       "losses": 15,
+       "progress": 3820
+      },
+      "untrainedSampled": {
+       "survivalSteps": 291,
+       "losses": 15,
+       "progress": 1862
+      },
+      "trainedSampled": {
+       "survivalSteps": 391,
+       "losses": 15,
+       "progress": 4927
+      },
+      "random": {
+       "survivalSteps": 266,
+       "losses": 15,
+       "progress": 1992
+      },
+      "frozenClean": true
+     }
+    ]
+   }
+  }
+ }
+}

@@ -159,6 +159,65 @@ breaks the link. The R2 passivity is the open problem.
 
 **No level was completed automatically.** Nothing here was run on a phone.
 
+## 4b. SNES, and the decision side (2026-11-12)
+
+Two more private cartridges, SNES, by hash only (`realrom-snes-decision.json`):
+
+| tag | SHA-256 | bytes | role |
+|---|---|---|---|
+| R3 | `a93ea87fc835c530b5135c5294433d15eef6dbf656144b387e89ac19cf864996` | 1 048 576 | run-and-gun (lives, score) |
+| R4 | `4c15013131351e694e05f22e38bb1b3e4031dedac77ec75abecebe8520d82d5f` | 2 097 152 | action RPG (long intro, naming, dialogue) |
+
+**What SNES broke, and what was fixed (each found on these cartridges):**
+
+* A raw research snapshot made by one Snes9x core was rejected by a fresh core:
+  the core allocates its state buffer on its first save, and the pointer is 0
+  until then. `restore()` now saves once when the buffer is missing (driver
+  check 85/85; without the fix the three new assertions fail).
+* R4's attract sequence runs ~3000 frames before the title takes input; the
+  entry procedure spent its budget on probes. Waits now double while nothing
+  answers (60 → 960 frames). R4: intro, title, new game and the opening
+  dialogue to a controllable hero in **37 606 frames, no script**.
+* On R3's title, Select moved "1 PLAYER" to "2 PLAYERS", and every measurement
+  was of a two-player game with an idle player 2. Select/Mode are now used only
+  when no other button advances the screen. R3: 1-player play in **10 502 frames**.
+* R3's lives counter (3, 2, 1, 0 into GAME OVER) tied on every count with a byte
+  that fell once; ties are now broken by how much of its range a field spends
+  before the ending.
+
+| | R3 (SNES run-and-gun) | R4 (SNES RPG) |
+|---|---|---|
+| survival discovery | **VERIFIED**, terminal, 67 368 frames; calibration and holdout confirmed | **REFUSED**: no ending within 3 600 frames in any of 6 runs - nothing in the opening area can hurt the hero, so nothing was verified and nothing was invented |
+| oracle (opened after) | resource **match** (lives); progress **no match**: the four progress fields are level-advance counters, the HUD score was not among them | - |
+
+**The decision prior.** Survival discovery now measures, per button, the lift
+of being held 0..7 strides before a progress rise (best lag reported; a lift at
+each lag, because a press-edge game makes the step before the event empty and
+an average cancelled to 1.0 on the synthetic check). The buttons the game pays
+for are added to the agent's action set. Trained progress, seeds 11 / 23, carry
+on, 2400 steps, frozen evaluation (weights checked unchanged):
+
+| | default set (old) | v1 replace set + bias | v2 add + bias | **v3 add, no bias (app)** | random (v3 set) |
+|---|---|---|---|---|---|
+| R3 argmax | 126 / 0 | 725 / 725 | 126 / 725 | **725 / 725** | 208 / 200 |
+| R3 sampled | 228 / 2 | 618 / 718 | 704 / 817 | **747 / 650** | |
+| R2 argmax | 74 / 74 | 74 / 74 | 492 / 941 | 74 / 74 | 1703 / 1274 |
+| R2 sampled | 604 / 74 | 2613 / 1974 | 1926 / 2293 | **1804 / 3119** | |
+| R1 argmax | 1550 / 3459 | 60 / 60 | 60 / 242 | 120 / **3820** | 3131 / 1992 |
+| R1 sampled | 1813 / 2792 | 60 / 60 | 1006 / 1779 | 725 / **4927** | |
+
+v1 **replaced** the default set and on R1 lost the fire button, whose effect
+arrives after the bullet travels, beyond the lags then used: progress fell to
+60. v3 adds instead. Summed over seeds and both evaluations, v3 against the
+old set: R3 356 → **2847**, R2 752 → **5071**, R1 9614 → 9592 (one seed better
+than ever, one worse). v3 is the app default (`GU_AGOD_DECISION=false` turns
+it off; a set the person typed is never replaced). The innate bias helped R2
+under argmax and hurt R1, so it is not applied in the app.
+
+In R3 the trained layer now advances and dies (9 losses = every life) where the
+old one stood still and lived: that is playing the game, and it is still not
+finishing a stage.
+
 ## 5. Next steps this data points to
 
 1. (Done for R1, see "Carry, measured".) Credit assignment over the time scale the game works on. FdbLearning has
