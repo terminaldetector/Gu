@@ -39,12 +39,19 @@ if(!ROMS||!fs.existsSync(ROMS)){
   +'private corpus; no fixture is substituted and nothing is reported as passed.');
  process.exit(0);
 }
-const EXT={'.gen':'sega','.md':'sega','.bin':'sega','.smd':'sega','.nes':'nes'};
+const EXT={'.gen':'sega','.md':'sega','.bin':'sega','.smd':'sega','.nes':'nes','.sfc':'snes','.smc':'snes','.gb':'gb','.gbc':'gb'};
 const sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 const BUILD={
  sega:async bytes=>PD.create({platform:'sega',romBytes:bytes,SegaConsole:require(path.join(A,'sega-core.js')),
   factory:require(path.join(A,'sega','genplus.js')),moduleOptions:{locateFile:f=>path.join(A,'sega',f)},frameBudget:1e10}),
- nes:async bytes=>PD.createNesSync({romBytes:bytes,jsnes,frameBudget:1e10})};
+ nes:async bytes=>PD.createNesSync({romBytes:bytes,jsnes,frameBudget:1e10}),
+ snes:async bytes=>retroBuild('snes',bytes),gb:async bytes=>retroBuild('gb',bytes)};
+function retroBuild(platform,bytes){
+ let factory;try{factory=require(path.join(A,platform,'core.js'));}
+ catch(error){return {status:'CORE_UNAVAILABLE',reason:'lab/'+platform+'/core.js is not built in this checkout'};}
+ return PD.create({platform,romBytes:bytes,RetroConsole:require(path.join(A,'retro-core.js')),factory,
+  moduleOptions:{wasmBinary:fs.readFileSync(path.join(A,platform,'core.wasm')),locateFile:f=>path.join(A,platform,f)},frameBudget:1e10});
+}
 const TRAIN_STEPS=Number(process.env.REALROM_TRAIN_STEPS||2400),EVAL_STEPS=Number(process.env.REALROM_EVAL_STEPS||300),
  STEP_FRAMES=8,SEEDS=(process.env.REALROM_SEEDS||'11,23,37').split(',').map(Number);
 
@@ -82,6 +89,32 @@ function actionSet(spec){
  const out=[...(process.env.REALROM_NOOP==='0'?[]:[0]),...dirs,...buttons.slice(0,2)];
  for(const d of dirs)if(buttons[0])out.push(d|buttons[0]);
  return [...new Set(out)].slice(0,12);
+}
+/* THE DECISION PRIOR FROM DISCOVERY (REALROM_DECISION=agod). Survival
+   discovery measured, per button, how much more often it was held just before
+   a progress field rose. The buttons the game pays for become the action set
+   (with each direction, and the best direction combined with them) and an
+   innate bias of the layer toward them - a prior, not a reward: it is set
+   before any learning, the same for the untrained and the trained layer, and
+   the reward stays the verified objective. */
+function decisionPrior(attribution,spec,weight){
+ const dirNames=['\u2190','\u2192','\u2191','\u2193'];
+ const usable=(attribution||[]).filter(b=>b.gainLift!==null&&b.gainEvents>=10);
+ const lift=(a,b)=>b.gainLift-a.gainLift;
+ const progDirs=usable.filter(b=>dirNames.includes(b.name)&&b.gainLift>=1.2).sort(lift);
+ const progButtons=usable.filter(b=>!dirNames.includes(b.name)&&b.gainLift>=1.2).sort(lift).slice(0,2);
+ if(!progButtons.length&&!progDirs.length)return null;
+ const dirs=dirNames.map(n=>spec.buttons.find(b=>b.name===n)).filter(Boolean).map(b=>b.mask);
+ const opposite=m=>(m&48)===48||(m&192)===192;
+ const out=[0,...dirs,...progButtons.map(b=>b.mask)];
+ for(const d of progDirs.slice(0,2))for(const b of progButtons)out.push(d.mask|b.mask);
+ if(progButtons[0])for(const d of dirs)out.push(d|progButtons[0].mask);
+ const actions=[...new Set(out)].filter(m=>!opposite(m)).slice(0,12);
+ const bit=mask=>Math.round(Math.log2(mask));
+ const priors=[];
+ if(progDirs[0])priors.push({output:bit(progDirs[0].mask),weight,button:progDirs[0].name,lift:progDirs[0].gainLift});
+ progButtons.forEach((b,i)=>priors.push({output:bit(b.mask),weight:i?weight/2:weight,button:b.name,lift:b.gainLift}));
+ return {actions,priors};
 }
 function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
 
@@ -186,7 +219,11 @@ async function studyRom(file,java){
 
 async function learn(built,inPlay,profile,identity,java){
  const d=built.driver,spec=d.actionSpec,core=built.core;
- const actions=actionSet(spec);
+ const prior=process.env.REALROM_DECISION==='agod'
+  ?decisionPrior(profile.dto.discovered&&profile.dto.discovered.buttonAttribution,spec,Number(process.env.REALROM_PRIOR||2)):null;
+ const actions=prior?prior.actions:actionSet(spec);
+ const init=async seed=>{await java.call({op:'init',seed,mode:'base'});
+  if(prior)for(const p of prior.priors)await java.call({op:'prior',output:p.output,weight:p.weight});};
  const read=Objective.createLiveReward(profile,MODULES,{identity,sessionId:'probe',policy:'aggressive'}).read;
  const progressOf=Objective.createLiveReward(profile,MODULES,{identity,sessionId:'probe2',policy:'aggressive'}).readProgress;
  const floor=profile.dto.discovered.resource.floor;
@@ -231,20 +268,25 @@ async function learn(built,inPlay,profile,identity,java){
      (decide in sampling mode, epsilon 0) and never sends feedback, so weights
      and update counts stay frozen - checked below - but the frozen argmax's
      "press nothing" tie no longer decides every step */
-  const stochastic=process.env.REALROM_EVAL==='stochastic';
-  const brain=train=>async()=>{const r=await java.call({op:'decide',retina:retina(core),train:train||stochastic,actions,
+  /* evaluated twice, both frozen: argmax (what the app's frozen mode does)
+     and sampled from the layer's own policy (no feedback; weights and update
+     counts are checked unchanged below) */
+  const brain=(train,sampled)=>async()=>{const r=await java.call({op:'decide',retina:retina(core),train:train||sampled,actions,
    epsilon:train?.1:0,windowMs:20});return {mask:r.mask,id:r.id};};
   const evaluate=async choose=>{const out=[];for(const s of evalStarts)out.push(await episode(s,choose,false,EVAL_STEPS,null,null));return out;};
-  await java.call({op:'init',seed,mode:'base'});
-  const untrained=await evaluate(brain(false));
-  await java.call({op:'init',seed,mode:'base'});
+  await init(seed);
+  const untrained=await evaluate(brain(false,false));
+  await init(seed);
+  const untrainedSampled=await evaluate(brain(false,true));
+  await init(seed);
   const live=Objective.createLiveReward(profile,MODULES,{identity,sessionId:'realrom-'+seed,policy:'aggressive'});
   const stats={VERIFIED:0,PROVISIONAL:0,unknown:0,changed:0,frame:0};
   let done=0,k=0;
-  while(done<TRAIN_STEPS){const e=await episode(trainStarts[k++%trainStarts.length],brain(true),true,TRAIN_STEPS-done,live,stats);done+=e.steps;await java.call({op:'boundary'});}
+  while(done<TRAIN_STEPS){const e=await episode(trainStarts[k++%trainStarts.length],brain(true,false),true,TRAIN_STEPS-done,live,stats);done+=e.steps;await java.call({op:'boundary'});}
   await java.call({op:'reset'});
   const frozenBefore=await java.call({op:'state'});
-  const trained=await evaluate(brain(false));
+  const trained=await evaluate(brain(false,false));
+  const trainedSampled=await evaluate(brain(false,true));
   const frozenAfter=await java.call({op:'state'});
   const r=rng(seed);const random=await evaluate(async()=>({mask:actions[Math.floor(r()*actions.length)],id:null}));
   const sum=(list,key)=>list.reduce((s,x)=>s+x[key],0);
@@ -252,14 +294,20 @@ async function learn(built,inPlay,profile,identity,java){
    nativeChanges:stats.changed,carried:stats.carried||0,frozenClean:frozenBefore.weights===frozenAfter.weights&&frozenBefore.updates===frozenAfter.updates,
    untrained:{survivalSteps:sum(untrained,'steps'),losses:sum(untrained,'losses'),progress:sum(untrained,'progress')},
    trained:{survivalSteps:sum(trained,'steps'),losses:sum(trained,'losses'),progress:sum(trained,'progress')},
-   random:{survivalSteps:sum(random,'steps'),losses:sum(random,'losses'),progress:sum(random,'progress')}};
+   random:{survivalSteps:sum(random,'steps'),losses:sum(random,'losses'),progress:sum(random,'progress')},
+   untrainedSampled:{survivalSteps:sum(untrainedSampled,'steps'),losses:sum(untrainedSampled,'losses'),progress:sum(untrainedSampled,'progress')},
+   trainedSampled:{survivalSteps:sum(trainedSampled,'steps'),losses:sum(trainedSampled,'losses'),progress:sum(trainedSampled,'progress')}};
   rows.push(row);
   console.log('  seed %d: verified %d provisional %d native changes %d | survival steps untrained %d trained %d random %d | losses %d/%d/%d | progress %d/%d/%d',
    seed,row.verified,row.provisional,row.nativeChanges,row.untrained.survivalSteps,row.trained.survivalSteps,row.random.survivalSteps,
    row.untrained.losses,row.trained.losses,row.random.losses,row.untrained.progress,row.trained.progress,row.random.progress);
+  console.log('          sampled: survival untrained %d trained %d | losses %d/%d | progress %d/%d',
+   row.untrainedSampled.survivalSteps,row.trainedSampled.survivalSteps,row.untrainedSampled.losses,row.trainedSampled.losses,
+   row.untrainedSampled.progress,row.trainedSampled.progress);
  }
  return {actions:actions.length,stepFrames:STEP_FRAMES,evalStarts:3,evalStepsCap:EVAL_STEPS,
-  evaluation:process.env.REALROM_EVAL==='stochastic'?'frozen, sampled from the policy':'frozen, argmax',
+  evaluation:'frozen, both argmax (untrained/trained) and sampled from the policy (untrainedSampled/trainedSampled)',
+  decision:prior?{source:'survival discovery button attribution',actions:prior.actions,priors:prior.priors}:'default action set, no prior',
   credit:process.env.REALROM_CREDIT==='carry'?'UNKNOWN intervals carried into the traces, unpaid':'UNKNOWN intervals clear the traces',
   noOpAction:process.env.REALROM_NOOP!=='0',
   graph:process.env.FDB_GRAPH?'connectome':'30-neuron mechanism fixture',rows};

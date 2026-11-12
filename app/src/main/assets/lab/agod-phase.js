@@ -61,6 +61,7 @@ const DEFAULTS=Object.freeze({
  confirmAfter:30});
 
 const UP='↑',DOWN='↓',LEFT='←',RIGHT='→';
+const SYSTEM_BUTTONS=new Set(['Select','Mode']);
 
 function maskOf(spec,name){
  const b=spec&&Array.isArray(spec.buttons)?spec.buttons.find(x=>x.name===name):null;
@@ -173,7 +174,14 @@ function probe(driver,options){
  else phase='INERT';
  return {revision:PHASE_REVISION,port:cfg.port===2?2:1,phase,arms:arms.map(({name,mask,persist})=>({name,mask,persist})),
   distinctDirections,controlledAxes:controlled.map(a=>a.axis),axes,
-  advance:btnArms.filter(a=>a.persist>=cfg.minPersistBytes).sort((a,b)=>b.persist-a.persist).map(a=>({name:a.name,mask:a.mask,persist:a.persist})),
+  /* Select and Mode move a menu cursor more often than they confirm one: on a
+     private SNES title, Select moved "1 PLAYER" to "2 PLAYERS", and every
+     later measurement was of a two-player game with an idle second player.
+     They are used only when no other button advances the screen; choosing
+     another menu entry is the job of an explicit request (the 2P entry). */
+  advance:btnArms.filter(a=>a.persist>=cfg.minPersistBytes)
+   .sort((a,b)=>(SYSTEM_BUTTONS.has(a.name)-SYSTEM_BUTTONS.has(b.name))||(b.persist-a.persist))
+   .map(a=>({name:a.name,mask:a.mask,persist:a.persist})),
   framesUsed:total*(1+masks.length)+(cfg.longHold+cfg.integratorSettle)*5*axes.length};
 }
 
@@ -182,7 +190,7 @@ function enter(driver,options){
  const cfg={...DEFAULTS,...(options||{})};
  const drive=driverFor(driver,cfg.port);
  const steps=[],seen=new Map();
- let frames=0,lastProbe=null;
+ let frames=0,lastProbe=null,idleStreak=0;
  const spend=f=>{frames+=f;};
  for(let i=0;i<cfg.maxSteps;i++){
   if(frames>cfg.frameBudget)return {status:'BUDGET_EXHAUSTED',revision:PHASE_REVISION,steps,frames,lastPhase:lastProbe&&lastProbe.phase};
@@ -207,9 +215,17 @@ function enter(driver,options){
    drive(pick.mask,cfg.advanceHold);drive(0,cfg.advanceWait);spend(cfg.advanceHold+cfg.advanceWait);
    steps.push({kind:'PRESS',button:pick.name,mask:pick.mask,phase:p.phase,persist:pick.persist,attempt:tried});
   }else{
-   drive(0,cfg.idleWait);spend(cfg.idleWait);
-   steps.push({kind:'WAIT',frames:cfg.idleWait,phase:p.phase});
+   /* NOTHING ANSWERS: an intro, a logo, a story scroll. Each probe costs
+      ~700 frames of restored search and the wait 60 of real game time, so a
+      long attract sequence (a private SNES RPG: ~3000 frames before its title
+      takes input) ate the whole budget in probes. Waits double while nothing
+      answers, up to 16x, and reset as soon as something does. */
+   const wait=cfg.idleWait*Math.pow(2,Math.min(4,idleStreak));idleStreak++;
+   drive(0,wait);spend(wait);
+   steps.push({kind:'WAIT',frames:wait,phase:p.phase});
+   continue;
   }
+  idleStreak=0;
  }
  return {status:'NOT_REACHED',revision:PHASE_REVISION,steps,frames,lastPhase:lastProbe&&lastProbe.phase};
 }

@@ -124,6 +124,7 @@ function rollout(driver,start,policy,control,cfg,meter){
  const events=new Int32Array(width*E);
  let prev=driver.readRam();
  const v0=prev.slice();
+ const masks=[];              /* the mask held for each stride, for attribution */
  const checks=[];             /* [t, controlled] */
  let lostSince=null,terminal=null,t=0,ending=null;
  while(t<cfg.horizon||lostSince!==null){
@@ -147,7 +148,8 @@ function rollout(driver,start,policy,control,cfg,meter){
    if(lostSince===null)ending=null;
   }
   if(t>=cfg.horizon&&lostSince===null)break;
-  drive(policy(t),cfg.stride);meter.frames+=cfg.stride;t+=cfg.stride;
+  const held=policy(t);masks.push(held);
+  drive(held,cfg.stride);meter.frames+=cfg.stride;t+=cfg.stride;
   const cur=driver.readRam();
   for(let a=0;a<width;a++){
    if(cur[a]===prev[a]||busy[a])continue;
@@ -170,7 +172,7 @@ function rollout(driver,start,policy,control,cfg,meter){
  /* losses of life: long gaps, and the ending itself */
  const losses=kept.filter(x=>x[1]-x[0]>=cfg.deathGapFrames).map(x=>({start:x[0],end:x[1],kind:'gap'}));
  if(terminal!==null)losses.push({start:terminal,end:t,kind:'terminal'});
- return {terminal,end:t,gaps:kept,losses,endingPhase:terminal!==null?ending:null,
+ return {terminal,end:t,gaps:kept,losses,endingPhase:terminal!==null?ending:null,masks,
   count,busy,events,E,v0,last:prev,width,inControlAt,lossFrames:cfg.terminalLossFrames,stride:cfg.stride};
 }
 
@@ -305,7 +307,13 @@ function candidatesFrom(runs,controlFields,cfg){
     in more steps (a health bar says more than a dead flag); then fewer
     contradictions */
  resource.sort((x,y)=>((x.kind==='TERMINAL'?0:1)-(y.kind==='TERMINAL'?0:1))||(y.linked-x.linked)||(x.contradicted-y.contradicted)
-  ||((y.unitSteps?1:0)-(x.unitSteps?1:0))||(y.decrementsBeforeTerminal-x.decrementsBeforeTerminal)||(x.address-y.address));
+  ||((y.unitSteps?1:0)-(x.unitSteps?1:0))
+  /* then the field that spends MORE of itself before the ending: on a private
+     SNES run-and-gun the lives counter went 3,2,1,0 into GAME OVER while a
+     byte that fell once at the first death (2 -> 1) and never again tied with
+     it on every count above */
+  ||((y.initial-y.floor)-(x.initial-x.floor))
+  ||(y.decrementsBeforeTerminal-x.decrementsBeforeTerminal)||(x.address-y.address));
  progress.sort((x,y)=>(y.risingRuns-x.risingRuns)||(y.rises.reduce((s,v)=>s+v,0)-x.rises.reduce((s,v)=>s+v,0))||(x.address-y.address));
  return {resource,progress};
 }
@@ -394,6 +402,44 @@ function lead(driver,from,spec,seed,frames,meter,port){
   meter.frames+=24;
  }
  return {snapshot:driver.snapshot(),probe:null,frames:t};
+}
+
+/* WHICH BUTTONS THE GAME PAYS FOR, AND WHICH IT PUNISHES (decision prior).
+   The discovery runs already hold every input a seeded random player gave and
+   every time a progress field rose or the resource fell. For each button: how
+   much more often was it held in the moments just before a rise (or a fall)
+   than in the run as a whole? A lift above 1 before progress is a button the
+   game rewards; that is handed to the learner as its action set and an innate
+   bias, so an untrained layer does not begin by pressing nothing. Attribution,
+   not proof: it is reported with its counts and used only as a prior. */
+function attributeButtons(runs,progressFields,resourceAddress,spec,cfg){
+ const buttons=(spec&&spec.buttons||[]).filter(b=>!PAUSE_NAMES.has(b.name));
+ /* LIFT AT EACH LAG, not an average over a window: a game that acts on a
+    press EDGE guarantees the step before the event was without the button,
+    and an average over the window cancelled the effect exactly (the
+    synthetic check measured A at 0.96 although only A scores). Each lag
+    0..lags-1 strides before the event is measured on its own and the best
+    one is reported, with the lag, so a bullet's travel time shows. */
+ const lags=Math.max(1,Math.round((cfg.attributionFrames||32)/cfg.stride));
+ const tally=buttons.map(b=>({name:b.name,mask:b.mask,base:0,steps:0,
+  gain:new Array(lags).fill(0),gains:0,loss:new Array(lags).fill(0),losses:0}));
+ const progressBytes=new Set();for(const f of progressFields)for(let k=0;k<f.width;k++)progressBytes.add(f.address+k);
+ for(const r of runs){
+  if(!r.masks||!r.masks.some(m=>m))continue;          /* neutral teaches nothing here */
+  const gainSteps=new Set(),lossSteps=new Set();
+  for(const a of progressBytes)for(const e of eventsOf(r,a))if(e.to>e.from)gainSteps.add(e.t/cfg.stride-1);
+  if(resourceAddress!==null)for(const e of eventsOf(r,resourceAddress))if(e.to<e.from)lossSteps.add(e.t/cfg.stride-1);
+  r.masks.forEach(m=>tally.forEach(b=>{b.steps++;if(m&b.mask)b.base++;}));
+  const at=(set,key,count)=>{for(const i of set){if(i<lags-1||i>=r.masks.length)continue;
+   tally.forEach(b=>{b[count]++;for(let k=0;k<lags;k++)if(r.masks[i-k]&b.mask)b[key][k]++;});}};
+  at(gainSteps,'gain','gains');at(lossSteps,'loss','losses');
+ }
+ const best=(row,n,p)=>{if(!n||!p)return {lift:null,lag:null};let lift=-1,lag=0;
+  row.forEach((c,k)=>{const l=(c/n)/p;if(l>lift){lift=l;lag=k;}});return {lift:+lift.toFixed(3),lag};};
+ return tally.map(b=>{const p=b.steps?b.base/b.steps:0,g=best(b.gain,b.gains,p),l=best(b.loss,b.losses,p);
+  return {name:b.name,mask:b.mask,heldShare:+p.toFixed(3),
+   gainEvents:b.gains,gainLift:g.lift,gainLagFrames:g.lag===null?null:g.lag*cfg.stride,
+   lossEvents:b.losses,lossLift:l.lift,lossLagFrames:l.lag===null?null:l.lag*cfg.stride};});
 }
 
 function discover(driver,options){
@@ -490,6 +536,7 @@ function discover(driver,options){
  note('progress',{proposed:proposed.length,kept:progressFields.length,
   dropped:proposed.length-Math.min(proposed.length,progressFields.length)});
  discovered.progressFields=progressFields;
+ discovered.buttonAttribution=attributeButtons(runs,progressFields,chosen.address,spec,cfg);
  discovered.port=port;
  discovered.resource={address:chosen.address,width:1,direction:'decreasing',kind:chosen.kind,port,signed:chosen.signed,floor:chosen.floor,initial:chosen.initial};
  const cost={frames:meter.frames,wallMs:Date.now()-t0};
@@ -516,7 +563,7 @@ function discover(driver,options){
   registry,trace,refusals:[]});
 }
 
-const api=Object.freeze({SURVIVAL_REVISION,DEFAULTS,discover,randomPolicy,rollout,controlTester});
+const api=Object.freeze({SURVIVAL_REVISION,DEFAULTS,discover,randomPolicy,rollout,controlTester,attributeButtons});
 root.FlyAgodSurvival=api;
 if(typeof module!=='undefined')module.exports=api;
 })(typeof window==='undefined'?globalThis:window);

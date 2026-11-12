@@ -124,6 +124,12 @@ ok(!progress.some(f=>covers(f,R.X)||covers(f,R.Y)),'player position is not progr
 ok(!progress.some(f=>covers(f,R.RNG)),'the pad-perturbed RNG byte is not progress');
 ok((found.verdicts||[]).length===2&&found.verdicts.every(v=>v.outcome==='confirmed'),
  'calibration and holdout, from starts of their own origin, both confirm: '+JSON.stringify((found.verdicts||[]).map(v=>v.group+':'+v.outcome)));
+/* ---- 3b. which button does the game pay for? ---- */
+const attribution=(found.discovered&&found.discovered.buttonAttribution)||[];
+const ranked=attribution.filter(b=>b.gainLift!==null).sort((a,b)=>b.gainLift-a.gainLift);
+console.log('button attribution (gain lift): '+ranked.map(b=>b.name+' '+b.gainLift).join(', '));
+ok(ranked.length>0&&ranked[0].name==='A'&&ranked[0].gainLift>1.2,
+ 'the button held before score rises is A, the only one that scores (lift '+(ranked[0]&&ranked[0].gainLift)+')');
 /* ---- 4. into the reward path ---- */
 const dto=Dto.fromPipelineResult(found,{romHash:'a'.repeat(64),coreRevision:'synthetic',profileRevision:'survival-check',contextKey:'synthetic',platform:'synthetic'});
 const valid=Dto.validate(dto,{});
