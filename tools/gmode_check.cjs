@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('assert'),fs=require('fs'),vm=require('vm');
 const source=fs.readFileSync('app/src/main/assets/lab/lab.js','utf8');
-const block=source.slice(source.indexOf('function agentAllowedMask'),source.indexOf('function rgbaAndRetina'));
+const block=source.slice(source.indexOf('let physicalPortMasks'),source.indexOf('function rgbaAndRetina'));
 const events=[],state={loaded:true,playing:true,agentIntervened:false,manualMask:0,brainMask:0,gmodeMode:'off',appliedMask:0,appliedHumanMask:0,appliedAgentMask:0,labPlatform:'nes',controlMode:'auto',$:()=>({value:state.controlMode}),nes:{buttonDown:(p,b)=>events.push(['down',p,b]),buttonUp:(p,b)=>events.push(['up',p,b])}};
 vm.createContext(state);vm.runInContext(block,state);
 state.gmodeMode='coop';state.manualMask=1;state.brainMask=2;state.updateButtons();
@@ -18,9 +18,11 @@ console.log('PASS: production GMode port isolation, release, swapped ports and m
 // A real SNES 2P join needs a human-origin START edge on port 2. The default
 // system-button filter must continue to prohibit *model* Start/Select.
 state.releasePorts();events.length=0;
-state.window={};state.gmodeMode='coop';state.controlMode='blocked';state.playing=true;state.manualMask=0;state.brainMask=2;
+state.window={};state.labPlatform='snes';state.gmodeMode='coop';state.controlMode='blocked';state.playing=true;state.manualMask=0;state.brainMask=2;
 state.learningBoundary=()=>{};
 assert.equal(state.filterAgentMask(8),0,'model Start remains forbidden');
+assert.equal(state.filterAgentMask(4),0,'SNES Select must be blocked');
+assert.equal(state.filterAgentMask(2048),2048,'SNES R shoulder must remain available');
 assert.equal(state.requestPort2Start(),true,'explicit P2 START accepted');
 assert.equal(state.requestPort2Start(),false,'duplicate during pulse is ignored');
 assert(events.some(e=>e[0]==='down'&&e[1]===2&&e[2]===3),'P2 Start physically pressed');
