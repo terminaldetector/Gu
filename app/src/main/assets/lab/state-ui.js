@@ -64,6 +64,27 @@ function gameLoad(slot=slotPicker.value,{snapshot=null,permit=()=>true}={}){
 }
 async function continueLast(){const list=await gameList(),valid=list.filter(s=>!s.error).sort((a,b)=>b.savedAt-a.savedAt);if(valid.length)return gameLoad(valid[0].slot);if(list.some(s=>s.error))throw Error('Снимки игры повреждены или несовместимы с ядром');return null;}
 window.labGameStates={context:gameContext,capture:()=>({version:1,...gameContext(),slot:'auto',frame,state:JSON.parse(JSON.stringify(nes.toJSON())),originId:window.flyOriginId||FlySaveStates.legacyOrigin(romHash),savedAt:Date.now(),preview:null}),save:gameSave,load:gameLoad,list:gameList,read:slot=>gameStore.read(gameContext(),slot),continueLast,autosave:()=>loaded?gameSave('auto',{automatic:true}):Promise.resolve(null)};
+$('exportResearchState').onclick=()=>{
+ try{
+  // Local-only save, pinned to the exact ROM and emulator core.
+  // It contains no ROM bytes and no FDB weights. Never commit gameplay states.
+  const s=window.labGameStates.capture();
+  const payload={type:'gu-private-research-state',version:1,
+   system:s.system,hash:s.hash,core:s.core,frame:s.frame,state:s.state};
+  const json=JSON.stringify(payload);
+  if(new TextEncoder().encode(json).length>8*1024*1024)
+   throw Error('Состояние больше 8 МиБ: Android экспорт ограничен размером');
+  if(window.FlyBridge?.exportModel){nativeCall('exportModel',json);}
+  else {
+   const blob=new Blob([json],{type:'application/json'}),url=URL.createObjectURL(blob);
+   const link=document.createElement('a');link.href=url;
+   link.download='gu-private-research-state-'+s.hash.slice(0,12)+'.json';
+   document.body.appendChild(link);link.click();link.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  status('Экспорт состояния: используйте файл только локально с тем же ROM и ядром SNES.');
+ }catch(error){status('Экспорт состояния: '+error.message,true);}
+};
 $('saveState').onclick=()=>gameSave().then(()=>status('Снимок игры сохранён. Обученные веса хранятся отдельно.')).catch(e=>status(e.message,true));
 $('loadState').onclick=()=>gameLoad().catch(e=>status(e.message,true));
 const fields=['mode','clock','maxHz','thresholdHz','windowMs','gain','seed','disableInhibition','scramble','lesions','inputIds','outputIds','backend','systemButtons','learnerController','actionHoldMode','actionHoldLimit','actionHoldTimeout'];

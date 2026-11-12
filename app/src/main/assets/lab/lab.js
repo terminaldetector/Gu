@@ -160,6 +160,7 @@ function learnedButtons(data){
 function setGMode(value){
   window.labPause();
   if(value!=='off'&&(labPlatform==='gb'||((labPlatform==='sega'||labPlatform==='snes')&&nes&&!nes.twoPlayerSupported))){gmodeMode='off';$('gmode').value='off';$('gmodeStatus').textContent='У этой платформы нет независимого P2. GB link не подключён.';return;}
+  p2JoinFrames=0;releasePorts();
   gmodeMode=value;learningBoundary();updateButtons();
   $('gmodeStatus').textContent=value==='off'?'Обычный режим: сеть управляет P1.':value==='coop'?labPlatform.toUpperCase()+' GMode: человек P1 · connectome/SARSA P2.':labPlatform.toUpperCase()+' GMode: connectome/SARSA P1 · человек P2.';
   updateGmodeHud();status('GMode изменён: '+value+'. Включите связь заново.');
@@ -170,6 +171,7 @@ function updateGmodeHud(){
  const active=gmodeMode!=='off',coop=gmodeMode==='coop';
  const badge=$('gmodeBadge'),left=$('gmodeLeft'),right=$('gmodeRight'),brain=$('brainBadge'),state=$('gameState');
  if(!badge)return;
+ const p2Start=$('gmodeP2Start');if(p2Start)p2Start.disabled=!loaded||gmodeMode!=='coop'||labPlatform==='gb'||nes?.twoPlayerSupported===false;
  if(!window.labNeuralSuspended&&window.dualAgents&&window.dualAgents.active()){
   badge.textContent='ДВЕ СЕТИ · CPU';badge.className='hud-live';
   left.textContent=window.dualAgents.label(1);right.textContent=window.dualAgents.label(2);
@@ -278,9 +280,17 @@ function checkBrainHold(now){
  if(expired==='timeout'){window.labError({message:'Команда модели устарела: нет нового ответа '+c.timeoutMs/1000+' с. Связь остановлена.'});return;}
  if(expired==='limit'&&!brainExpired){brainExpired=true;agentIntervened=true;releaseBrain();}
 }
+// Actual controller bus state, independent of the policy/learning masks.
+// Otherwise error fallback or GMode role changes can strand pressed P2 buttons.
+let physicalPortMasks=[0,0],p2JoinFrames=0;
 function agentAllowedMask(mode=$('systemButtons').value) {
  if(!['auto','blocked'].includes(mode))throw Error('Неизвестный режим Start/Select/Mode');
- return mode==='blocked'?((labPlatform==='sega'||labPlatform==='snes')?2039:243):((labPlatform==='sega'||labPlatform==='snes')?4095:255);
+ if(mode!=='blocked')return (labPlatform==='sega'||labPlatform==='snes')?4095:255;
+ // Sega index 2 is C (allowed) and 11 is Mode (blocked).
+ // SNES index 2 is Select (blocked) and 11 is R (allowed).
+ if(labPlatform==='sega')return 2039;
+ if(labPlatform==='snes')return 4083;
+ return 243;
 }
 function filterAgentMask(mask){return mask&agentAllowedMask();}
 function normalizeMask(mask) {
@@ -292,13 +302,29 @@ function releasePorts() {
   if(!nes)return;
   for(const port of [1,2])for(let i=0;i<((labPlatform==='sega'||labPlatform==='snes')?12:8);i++)nes.buttonUp(port,i);
   appliedMask=appliedHumanMask=appliedAgentMask=0;
-  appliedDualMasks=[0,0];dualOverrides=[false,false];
+  appliedDualMasks=[0,0];dualOverrides=[false,false];physicalPortMasks=[0,0];p2JoinFrames=0;
 }
 function applyPortMask(port,mask,old) {
   if(!loaded)return;
-  for(let i=0;i<((labPlatform==='sega'||labPlatform==='snes')?12:8);i++)if((mask&(1<<i))!==(old&(1<<i))) {
+  // The previous logical agent mask need not match the physical port (manual
+  // takeover, two-agent mode, or a deliberate system-button injection).
+  const previous=physicalPortMasks[port-1];
+  for(let i=0;i<((labPlatform==='sega'||labPlatform==='snes')?12:8);i++)if((mask&(1<<i))!==(previous&(1<<i))) {
     if(mask&(1<<i))nes.buttonDown(port,i);else nes.buttonUp(port,i);
   }
+  physicalPortMasks[port-1]=mask;
+}
+function requestPort2Start(){
+  if(!loaded||!playing||!nes||nes.twoPlayerSupported===false||gmodeMode!=='coop'||
+     (typeof window!=='undefined'&&(window.labNeuralSuspended||window.dualAgents?.active())))
+    throw Error('P2 START: нужна запущенная 2P-игра, GMode человек P1 / агент P2');
+  if(p2JoinFrames)return false;
+  // A human-initiated 2-frame START edge on the real P2 bus. Not a neural
+  // decision, not a reward event, and never a press on P1.
+  agentIntervened=true;learningBoundary();p2JoinFrames=2;updateButtons();return true;
+}
+function consumePort2StartFrame(){
+  if(p2JoinFrames>0&&--p2JoinFrames===0)updateButtons();
 }
 function manualOnlyButtons(){
   const port=window.labAgentFailure?.manualPort||(gmodeMode==='coop-reverse'?2:1),mask=normalizeMask(manualMask);
@@ -330,7 +356,7 @@ function updateAgentButtons() {
   if(gmodeMode==='off'){agent=hint?manual:manual|(showing?0:filterAgentMask(brainMask));if(manual&16)agent&=~32;if(manual&32)agent&=~16;if(manual&64)agent&=~128;if(manual&128)agent&=~64;agent=normalizeMask(agent);human=0;}
   const humanPort=gmodeMode==='coop-reverse'?2:1,agentPort=gmodeMode==='coop'?2:1;
   if(gmodeMode==='off'){applyPortMask(1,agent,appliedAgentMask);}
-  else {if(hint){agent=manual;human=0;agentIntervened=true;}applyPortMask(humanPort,human,appliedHumanMask);applyPortMask(agentPort,agent,appliedAgentMask);}
+  else {if(hint){agent=manual;human=0;agentIntervened=true;}applyPortMask(humanPort,human,appliedHumanMask);applyPortMask(agentPort,agent|(gmodeMode==='coop'&&p2JoinFrames?8:0),appliedAgentMask);}
   appliedHumanMask=human;appliedAgentMask=agent;appliedMask=agent;
   if(typeof window!=='undefined')window.userInterface?.telemetry?.();
 }
@@ -414,7 +440,7 @@ window.labLoadRom=async function(data) {
     const actions=FlyGameTools.actions($('actionMasks').value,(labPlatform==='sega'||labPlatform==='snes')?4095:255),changedRom=romHash!==data.sha256;
     if(loaded&&(learner.updates||learner.demonstrations)){try{persistPolicy(false);}catch(error){log('Перед сменой ROM: '+error.message);}}
     nes=candidate;if(labPlatform==='gb'||labPlatform==='snes')ramLimit=candidate.ramSize;loaded=true;committed=true;romHash=data.sha256;window.labStartStateId='rom-boot';window.flyOriginId=window.FlyLayerSets?.id?FlyLayerSets.id():null;window.labCoreIdentity=labPlatform==='nes'?'jsnes-sha256:84946f0dae4bcf3b2dfebe84ad3bfeb1dbcb413bd9b1a69e1f45910a95fd7b41':candidate.toJSON().core;frame=5;appliedMask=appliedHumanMask=appliedAgentMask=0;manualMask=0;audioRead=audioWrite;
-    resetSession();if(bootFrame)rgbaAndRetina(bootFrame.buffer,bootFrame.width,bootFrame.height);
+    releasePorts();resetSession();if(bootFrame)rgbaAndRetina(bootFrame.buffer,bootFrame.width,bootFrame.height);
     diagnosticHash=labPlatform==='nes'&&romHash===FlyGameTools.diagnosticSha256?romHash:null;
     if(changedRom){pendingFdbReplay=null;humanExamples=[];latestOutputs=new Array(buttonNames.length).fill(0);sampledRam=null;learner.reset(Number($('seed').value));learner.setActions(actions);startSnapshot=null;}
     terminalLatch={success:false,death:false};if(window.sharedExperience)window.sharedExperience.contextChanged();if(window.layerExperience)window.layerExperience.contextChanged();
@@ -704,6 +730,7 @@ function advanceFrame(now,forceSample=false) {
   try{
    window.gameObjectiveDiscovery?.observeFrame({frame,generation,atMs:performance.now(),elapsedMs:coreElapsedMs,action:objectiveAction});
   }catch(error){try{window.guLogger?.event?.('goal.discovery-error',{message:String(error.message||error)},'error');}catch(_){}}
+  consumePort2StartFrame();
   if(!window.labNeuralSuspended)neuralStep(()=>{
    if(!connected&&!(dual&&window.dualAgents.running()))return;
    const dt=1/(labPlatform==='nes'?60:nes.fps);
@@ -797,6 +824,7 @@ $('fdbClear').onclick=()=>{window.labPause();$('fdbJson').value='';status('FDB �
 $('fdbJson').onchange=()=>{window.labPause();status('FDB изменён. Примените конфигурацию.');};
 $('gmode').onchange=()=>setGMode($('gmode').value);
 $('gmodeBoost').onchange=()=>setGmodeBoost($('gmodeBoost').checked);
+$('gmodeP2Start').onclick=()=>{try{if(requestPort2Start())status('START отправлен только на P2: проверьте цифру 2 у союзника. Повторный START отключит P2.');}catch(e){status(e.message,true);}};
 $('gmodeLaunch').onclick=()=>{if(labPlatform==='gb'||((labPlatform==='sega'||labPlatform==='snes')&&nes&&!nes.twoPlayerSupported)){status('GB: один контроллер. Сеть и человек работают с P1; link/P2 не подключён.',true);return;}$('gmode').value='coop';setGMode('coop');if(!$('gmodeBoost').checked){$('gmodeBoost').checked=true;setGmodeBoost(true);}openGame();status('2P Game Mode: человек P1 · коннектом P2. Связь запускается отдельно.');};
 $('gameExit').onclick=()=>leaveGame();
 $('gameSettings').onclick=()=>leaveGame('network');
