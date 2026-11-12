@@ -285,7 +285,12 @@ function checkBrainHold(now){
 let physicalPortMasks=[0,0],p2JoinFrames=0;
 function agentAllowedMask(mode=$('systemButtons').value) {
  if(!['auto','blocked'].includes(mode))throw Error('Неизвестный режим Start/Select/Mode');
- return mode==='blocked'?((labPlatform==='sega'||labPlatform==='snes')?2039:243):((labPlatform==='sega'||labPlatform==='snes')?4095:255);
+ if(mode!=='blocked')return (labPlatform==='sega'||labPlatform==='snes')?4095:255;
+ // Sega index 2 is C (allowed) and 11 is Mode (blocked).
+ // SNES index 2 is Select (blocked) and 11 is R (allowed).
+ if(labPlatform==='sega')return 2039;
+ if(labPlatform==='snes')return 4083;
+ return 243;
 }
 function filterAgentMask(mask){return mask&agentAllowedMask();}
 function normalizeMask(mask) {
