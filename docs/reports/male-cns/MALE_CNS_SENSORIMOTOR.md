@@ -157,8 +157,25 @@ three most-attributed action buttons - 63 actions, still within FDB's 64, so a
 route found with them can be distilled (the brain's action set takes every action
 the route uses). `select: 'lives'` (opt-in) pushes one frontier per number of
 lives left; on the synthetic gated stage it is slower than the default (93 768
-against 1 576 frames), so it is measured, not assumed. Composite searches are
-running.
+against 1 576 frames), so it is measured, not assumed.
+
+With composite actions the search reaches the same tank (1 114 by 3 M frames from
+the start) and, seeded with the earlier route, hits it - the tank flashes - but
+does not kill it (1 147 after 4 M frames). Privately the reason is visible: one
+RAM byte is the tank's health; it stays at 250 while the player stands and falls
+only under the player's fire, ~60 strides of hits are needed, and an exploration on
+the last life survives ~20. Nothing the archive kept recorded the damage: the cell
+is progress, position, lives and a coarse screen, and of two equal cells the
+shorter trace wins - a half-won fight was thrown away every time.
+
+**Causal damage counters** (`agod-explore` r3, `damage`, opt-in): when the frontier
+has not moved for a while, AGOD probes the best cell causally - from the same
+state, "press nothing" against the action set - and keeps as damage counters the
+bytes that fall in small steps only when the player acts and never rise; what a
+trajectory has made them fall is part of its cell and of its progress. On a
+synthetic boss (health not drawn, a fight longer than any exploration, one life)
+the archive wins in 15 128 frames with it and never in 563 392 without it
+(`agod_explore_check` 14/14). Cartridge searches with it are running.
 
 The cartridge's score (the oracle's progress field) is not among the discovered
 fields: it is BCD, and the carry test expects a binary `+1` in the next byte.
@@ -215,7 +232,9 @@ start:
 
 One frame late the route still works blind, and the brain does not: its readout
 fitted 548 exact activity patterns, a slightly different image gives a different
-pattern and a different action. Eight frames late it goes further than the blind
+pattern and a different action. A smoother readout does not change that: fitted
+with 30 % of the population silenced at random in every pass and a margin of 4
+(still 100 % of the route), the delayed starts give 112 / 158 / 155 / 178. Eight frames late it goes further than the blind
 replay, but every delayed episode ends in a game over before progress 250. So this
 is the distillation of one search route into the Male CNS, not play; and the route
 itself is fragile (blind, it survives one frame of delay, not two).

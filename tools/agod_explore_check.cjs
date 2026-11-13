@@ -96,6 +96,34 @@ function searchGated(select){const g=gated();
 const byLives=searchGated('lives'),byFrontier=searchGated('frontier');
 console.log('gated stage: lives %j | frontier %j',byLives,byFrontier);
 ok(byLives.reached,"select 'lives' finds a route that keeps enough lives for two unavoidable hits ("+byLives.frames+' frames)');
+/* a BOSS on a locked screen: from x 120 the player cannot pass while the boss has
+   health; health falls only while the player fires (A) next to it, one point every
+   4 frames; every 64 frames the boss attacks for 16 frames and a player not ducking
+   (down) loses the only life. Killing it takes >= 480 frames of fire - longer than
+   any exploration's horizon (384) - so an archive that does not remember the damage
+   dealt never finishes the fight. Health is not drawn on the screen. */
+function boss(){let ram=new Uint8Array(64),frameNo=0;const px=new Uint32Array(W*H);ram[R.X]=60;ram[R.LIVES]=1;ram[20]=120;
+ const draw=()=>{for(let y=0;y<H;y++)for(let x=0;x<W;x++){let v=((x+(ram[R.X]>>1))>>3)%2*60+40;if(Math.abs(x-(ram[R.X]>>2))<2&&y>36)v=250;if(x>58&&y>28)v=180;px[y*W+x]=v|(v<<8)|(v<<16);}};
+ function frame(mask){frameNo++;ram[10]=(ram[10]+1)&255;if(ram[R.LIVES]===0)return;
+  const locked=ram[R.X]>=120&&ram[20]>0;
+  if(mask&128&&ram[R.X]<250&&!locked)ram[R.X]++;if(mask&64&&ram[R.X]>2)ram[R.X]--;
+  if(ram[R.X]>=110&&ram[20]>0){if((mask&1)&&!(mask&32)&&frameNo%4===0)ram[20]--;
+   if((frameNo%64)>=48&&!(mask&32))ram[R.LIVES]=0;}
+  draw();}
+ draw();
+ const names=['A','B','Select','Start','↑','↓','←','→'];
+ return {actionSpec:{buttonCount:8,buttons:names.map((name,index)=>({index,name,mask:1<<index}))},core:{pixels:px,videoWidth:W,videoHeight:H},
+  run(mask,frames){for(let i=0;i<frames;i++)frame(mask);},readRam:()=>ram.slice(),
+  snapshot:()=>({ram:ram.slice(),frameNo}),restore(s){ram=s.ram.slice();frameNo=s.frameNo;draw();}};}
+function searchBoss(damage){const g=boss();
+ const a=Explore.createArchive(g,{actions:[0,128,1,32,129,33],readProgress:ram=>[ram[R.X]],readResource:ram=>ram[R.LIVES],
+  positionFields:[R.X],screen:()=>Stage.signature(g.core.pixels,W,H),seed:5,damage,probeEvery:100});
+ let reached=null;for(let i=0;i<6000&&!reached;i++){a.explore();for(const c of a.cells().values())if(!reached&&c.snapshot.ram[R.X]>=240)reached=c;}
+ return {reached:!!reached,frames:a.stats().framesRun,best:a.stats().bestProgress,counters:a.stats().damageCounters,probes:a.stats().probes};}
+const withDamage=searchBoss(true),without=searchBoss(false);
+console.log('boss: damage %j | without %j',withDamage,without);
+ok(withDamage.reached&&withDamage.counters>=1,'with the causal damage probe the archive keeps a fight half won and beats a boss no single exploration can ('+withDamage.frames+' frames, '+withDamage.counters+' damage counter(s), '+withDamage.probes+' probe(s))');
+ok(!without.reached,'without it the same search never gets past the boss ('+without.frames+' frames)');
 const u1=Explore.unwrapStep(null,[250,3],true),u2=Explore.unwrapStep(u1,[0,2],true),u3=Explore.unwrapStep(u2,[5,1],true);
 ok(u3.value[0]===255&&u3.value[1]===1,'unwrapStep: 250 -> 0 -> 5 is 255 gained; a small fall (3 -> 2 -> 1) stays a fall ('+u3.value+')');
 console.log('\n'+out.join('\n'));

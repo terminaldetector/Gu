@@ -174,21 +174,28 @@ public final class FdbLearning {
     private static final class Demo{final float[] f;final int[] actions;final double[] base;final int demo;Demo(float[] f,int[] a,double[] b,int d){this.f=f;actions=a;base=b;demo=d;}}
     private final ArrayList<Demo> imitationSet=new ArrayList<>();
     public int imitationSetSize(){return imitationSet.size();}
-    public double[] fitImitation(int epochs,double margin,double rate){
+    public double[] fitImitation(int epochs,double margin,double rate){return fitImitation(epochs,margin,rate,0);}
+    /** dropout in [0,0.9): each epoch every demonstration is seen with that fraction of
+     *  its population features silenced (a fixed-seed stream, so a fit is reproducible) -
+     *  a readout that must meet the margin without any one subset of neurons */
+    public double[] fitImitation(int epochs,double margin,double rate,double dropout){
         if(!readoutPop())throw new IllegalStateException("FDB population readout is off");
-        if(epochs<1||epochs>10000||!(margin>=0&&margin<=16)||!(rate>0&&rate<=1))throw new IllegalArgumentException("FDB fit");
-        int run=0;long updates=0;
+        if(epochs<1||epochs>10000||!(margin>=0&&margin<=16)||!(rate>0&&rate<=1)||!(dropout>=0&&dropout<0.9))throw new IllegalArgumentException("FDB fit");
+        int run=0;long updates=0;long drop=0x9e3779b9L;
         for(;run<epochs;run++){int errors=0;
-            for(Demo x:imitationSet){double[] total=total(x);int rival=-1;
+            for(Demo x:imitationSet){float[] f=x.f;
+                if(dropout>0){f=x.f.clone();for(int k=0;k<f.length-1;k++){drop^=(drop<<13)&0xffffffffL;drop^=drop>>>17;drop^=(drop<<5)&0xffffffffL;drop&=0xffffffffL;if(drop/4294967296.0<dropout)f[k]=0;}}
+                double[] total=total(x,f);int rival=-1;
                 for(int a=0;a<x.actions.length;a++)if(a!=x.demo&&Double.isFinite(total[a])&&(rival<0||total[a]>total[rival]))rival=a;
                 if(rival<0||total[x.demo]-total[rival]>=margin)continue;errors++;updates++;
-                step(x.actions[x.demo],x.f,rate);step(x.actions[rival],x.f,-rate);}
+                step(x.actions[x.demo],f,rate);step(x.actions[rival],f,-rate);}
             if(errors==0){run++;break;}}
         int met=0;for(Demo x:imitationSet){double[] total=total(x);int best=-1;for(int a=0;a<total.length;a++)if(Double.isFinite(total[a])&&(best<0||total[a]>total[best]))best=a;if(best==x.demo)met++;}
         readoutUpdates+=updates;
         return new double[]{imitationSet.isEmpty()?0:met/(double)imitationSet.size(),run,updates};
     }
-    private double[] total(Demo x){double[] t=new double[x.actions.length];double[] f=new double[x.f.length];for(int k=0;k<f.length;k++)f[k]=x.f[k];
+    private double[] total(Demo x){return total(x,x.f);}
+    private double[] total(Demo x,float[] g){double[] t=new double[x.actions.length];double[] f=new double[g.length];for(int k=0;k<f.length;k++)f[k]=g[k];
         for(int a=0;a<t.length;a++)t[a]=Double.isFinite(x.base[a])?x.base[a]+readoutScore(x.actions[a],f):Double.NEGATIVE_INFINITY;return t;}
     private void step(int mask,float[] f,double rate){double[] w=readout.get(mask);if(w==null){if(readout.size()>=READOUT_LIMIT)return;w=new double[f.length];readout.put(mask,w);}
         for(int k=0;k<w.length;k++)w[k]=Math.max(-4,Math.min(4,w[k]+rate*f[k]));}

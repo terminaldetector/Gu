@@ -77,7 +77,7 @@ public final class FdbGameBridge {
      v.sort((x,y)->x[0]!=y[0]?Double.compare(y[0],x[0]):Double.compare(x[1],y[1]));r.put("varying",v.size());
      pop=new int[Math.min(size,v.size())];for(int i=0;i<pop.length;i++)pop[i]=(int)v.get(i)[1];Arrays.sort(pop);statSum=null;statSq=null;statN=0;}
     learner.readoutPopulation(pop);r.put("population",pop.length);}
-   else if(op.equals("fit")){double[] f=learner.fitImitation(q.optInt("epochs",200),q.optDouble("margin",1),q.optDouble("rate",.05));r.put("met",f[0]).put("epochs",(int)f[1]).put("fitUpdates",(long)f[2]).put("demonstrations",learner.imitationSetSize());}
+   else if(op.equals("fit")){double[] f=learner.fitImitation(q.optInt("epochs",200),q.optDouble("margin",1),q.optDouble("rate",.05),q.optDouble("dropout",0));r.put("met",f[0]).put("epochs",(int)f[1]).put("fitUpdates",(long)f[2]).put("demonstrations",learner.imitationSetSize());}
    else if(op.equals("demonstrate")){JSONArray steps=q.getJSONArray("steps");for(int i=0;i<steps.length();i++){JSONArray st=steps.getJSONArray(i);learner.demonstrate(st.getString(0),st.getInt(1));}r.put("skills",learner.skillCount()).put("imitations",learner.imitations());}
    /* the production answer to an UNKNOWN interval: clear the temporal link, pay nothing */
    else if(op.equals("boundary")){learner.boundary();}

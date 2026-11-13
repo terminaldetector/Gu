@@ -235,7 +235,7 @@ async function exploreRoute(built,inPlay,profile,identity,extras){
   snapshot(){const s=d.snapshot();return s&&s.bytes?{...s,bytes:zlib.deflateRawSync(s.bytes,{level:1}),packed:true}:s;},
   restore(s){return d.restore(s&&s.packed?{...s,bytes:new Uint8Array(zlib.inflateRawSync(s.bytes)),packed:undefined}:s);}});
  const archive=Explore.createArchive(packed,{actions,readProgress:progressOf,readResource:read,positionFields,
-  maxCells:Number(process.env.REALROM_EXPLORE_CELLS||20000),select:process.env.REALROM_EXPLORE_SELECT||'frontier',
+  maxCells:Number(process.env.REALROM_EXPLORE_CELLS||20000),select:process.env.REALROM_EXPLORE_SELECT||'frontier',damage:process.env.REALROM_EXPLORE_DAMAGE==='1',
   screen:()=>{const [w,h]=dims();return Stage.signature(built.core.pixels,w,h);},seed:Number(process.env.REALROM_EXPLORE_SEED||1),
   allowLoss:process.env.REALROM_EXPLORE_LOSS==='1',floor:profile.dto.discovered.resource.floor,
   ...(process.env.REALROM_EXPLORE_LIFE?{lifeWeight:Number(process.env.REALROM_EXPLORE_LIFE)}:{})});
@@ -252,8 +252,8 @@ async function exploreRoute(built,inPlay,profile,identity,extras){
    console.log('  explore: best route written on request (progress %d, %d strides)',b.progress,b.trace.length);}
   const st=archive.stats();
   if(st.framesRun-lastLog>=budget/20){lastLog=st.framesRun;
-   console.log('  explore: %d frames, %d cells (%d evicted), %d explorations, best progress %d (resource %s, route %d strides) %d s, rss %d MiB, frontier by resource %j',
-    st.framesRun,st.cells,st.evicted,st.explorations,st.bestProgress,st.bestResource,st.bestTraceLength,Math.round((Date.now()-t0)/1000),Math.round(process.memoryUsage().rss/1048576),st.frontierByResource);
+   console.log('  explore: %d frames, %d cells (%d evicted), %d explorations, best progress %d (resource %s, route %d strides) %d s, rss %d MiB, frontier by resource %j, damage counters %d (%d probes)',
+    st.framesRun,st.cells,st.evicted,st.explorations,st.bestProgress,st.bestResource,st.bestTraceLength,Math.round((Date.now()-t0)/1000),Math.round(process.memoryUsage().rss/1048576),st.frontierByResource,st.damageCounters,st.probes);
    /* the current best route, private, so it can be checked before the budget ends */
    if(process.env.REALROM_EVIDENCE_DIR){const b=archive.best();fs.mkdirSync(process.env.REALROM_EVIDENCE_DIR,{recursive:true});
     fs.writeFileSync(path.join(process.env.REALROM_EVIDENCE_DIR,'explore-route-partial.json'),JSON.stringify({entrySteps:extras.entrySteps,stepFrames:8,masks:b.trace,progress:b.progress,resource:b.resource,framesRun:st.framesRun}));}}
@@ -525,7 +525,7 @@ async function learn(built,inPlay,profile,identity,java,extras){
      const im=await java.call({op:'imitate',id:dd.id,mask});if(im.accepted)imitated++;});
     console.log('  imitation pass %d: %d route steps',pass+1,route.masks.length);
    }
-   if(pop){const t=Date.now();const fit=await java.call({op:'fit',epochs:Number(process.env.REALROM_FIT_EPOCHS||400),margin:1,rate:.05});
+   if(pop){const t=Date.now();const fit=await java.call({op:'fit',epochs:Number(process.env.REALROM_FIT_EPOCHS||400),margin:Number(process.env.REALROM_FIT_MARGIN||1),rate:.05,dropout:Number(process.env.REALROM_FIT_DROPOUT||0)});
     populationInfo.fit={met:fit.met,epochs:fit.epochs,updates:fit.fitUpdates,demonstrations:fit.demonstrations,wallSeconds:Math.round((Date.now()-t)/1000)};
     console.log('  readout fitted to the route: %s of %d demonstrations met after %d epochs (%d updates, %d s)',(fit.met*100).toFixed(1)+'%',fit.demonstrations,fit.epochs,fit.fitUpdates,populationInfo.fit.wallSeconds);}
    const st=await java.call({op:'state'});

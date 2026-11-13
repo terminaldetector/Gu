@@ -22,7 +22,7 @@
    of the resource. Every stride's state is offered to the archive. */
 'use strict';
 (function(root){
-const EXPLORE_REVISION='agod-explore-r2';
+const EXPLORE_REVISION='agod-explore-r3';
 const DEFAULTS=Object.freeze({stride:8,horizons:Object.freeze([96,192,384]),holdMin:1,holdMax:4,
  progressBucket:4,positionBucket:16,screenLevels:3,seed:1,
  /* allowLoss: a branch goes on through a loss of the resource (a respawn) and
@@ -52,15 +52,27 @@ const DEFAULTS=Object.freeze({stride:8,horizons:Object.freeze([96,192,384]),hold
     run-and-gun the frontier routes met a mid-boss with one life after two early
     deaths). It spreads the effort over the lives counts: on the synthetic gated
     stage it is slower than 'frontier' (93 768 against 1 576 frames). */
- select:'frontier'});
+ select:'frontier',
+ /* damage: when the frontier has not moved for probeEvery explorations, AGOD probes
+    the best cell CAUSALLY - from the same state, "press nothing" for probeStrides
+    strides, then the action set (probeRounds random runs) - and keeps as DAMAGE
+    COUNTERS the bytes that fall in small steps (<= damageStep) only when the player
+    acts, and never rise in either branch (strides around a resource loss ignored).
+    What a trajectory has made them fall is part of its cell (damageBucket) and of
+    its progress (damageWeight per unit), so a fight a single exploration cannot
+    finish is kept half won. Measured on a private SNES run-and-gun: a mid-boss
+    whose health byte falls only under fire needs ~60 strides of hits, an
+    exploration on the last life survives ~20, and the archive stood still for
+    millions of frames without it. */
+ damage:false,damageWeight:1,damageBucket:4,damageStep:16,probeEvery:200,probeStrides:16,probeRounds:3});
 
 /* per trajectory: raw progress values -> accumulated ones (see DEFAULTS.unwrap) */
 function unwrapStep(track,raw,enabled){
- const off=track?track.off.slice():raw.map(()=>0),last=track?track.last.slice():raw.slice();
+ const off=track?track.off.slice():raw.map(()=>0),last=track?track.last.slice():raw.slice(),dmg=track&&track.dmg||0;
  for(let i=0;i<raw.length;i++){const v=raw[i],p=last[i];
   if(enabled&&Number.isFinite(v)&&Number.isFinite(p)&&p>=128&&v*4<=p)off[i]+=p;
   if(Number.isFinite(v))last[i]=v;}
- return {off,last,value:raw.map((v,i)=>Number.isFinite(v)?v+off[i]:v)};
+ return {off,last,dmg,value:raw.map((v,i)=>Number.isFinite(v)?v+off[i]:v)};
 }
 function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
 
@@ -93,19 +105,24 @@ function createArchive(driver,options){
  const o={...DEFAULTS,...(options||{})};
  const random=rng(o.seed);
  const cells=new Map();let explorations=0,framesRun=0,bestProgress=-Infinity,bestCell=null,evicted=0;const bestByResource=new Map();
+ const damageAddrs=new Set(),probed=new Set();let probes=0,lastImprove=0;
+ const dealt=(before,after)=>{let d=0;for(const a of damageAddrs){const f=before[a]-after[a];if(f>0&&f<=o.damageStep)d+=f;}return d;};
  const total=v=>v.reduce((s,x)=>s+(Number.isFinite(x)?x:0),0);
  function offer(trace,ram,track){
-  const k=cellKey(o,ram,o.screen?o.screen():null,track.value),prog=total(track.value),res=o.readResource(ram);
+  const dmg=o.damage?track.dmg||0:0;
+  const k=cellKey(o,ram,o.screen?o.screen():null,track.value)+(o.damage?'|d'+Math.floor(dmg/o.damageBucket):''),prog=total(track.value)+o.damageWeight*dmg,res=o.readResource(ram);
   const prev=cells.get(k);
   if(prev&&(prev.resource>res||(prev.resource===res&&prev.trace.length<=trace.length)))return false;
   cells.set(k,{key:k,trace:trace.slice(),snapshot:driver.snapshot(),progress:prog,resource:res,track,
    chosen:prev?prev.chosen:0,fails:prev?prev.fails:0,found:Date.now()});
   if(!(bestByResource.get(res)>=prog))bestByResource.set(res,prog);
-  if(res>o.floor||!o.allowLoss)if(prog>bestProgress||(prog===bestProgress&&bestCell&&res>bestCell.resource)){bestProgress=prog;bestCell=cells.get(k);}
+  if(res>o.floor||!o.allowLoss)if(prog>bestProgress||(prog===bestProgress&&bestCell&&res>bestCell.resource)){if(prog>bestProgress)lastImprove=explorations;bestProgress=prog;bestCell=cells.get(k);}
   if(cells.size>o.maxCells)evict();
   return true;
  }
- const worth=c=>c.progress+(o.allowLoss?o.lifeWeight*c.resource:0);
+ /* with select 'lives' a cell is worth its distance to the frontier of its own
+    resource, so a frontier with more lives left is not evicted for being behind */
+ const worth=c=>o.select==='lives'?c.progress-(bestByResource.get(c.resource)||0):c.progress+(o.allowLoss?o.lifeWeight*c.resource:0);
  function evict(){
   const drop=Math.max(1,Math.ceil(cells.size-o.maxCells*0.9));
   const order=[...cells.values()].filter(c=>c!==bestCell&&c.trace.length>0)
@@ -123,7 +140,21 @@ function createArchive(driver,options){
   }
   return best;
  }
+ /* the causal damage probe (see DEFAULTS.damage) */
+ function probe(c){probes++;probed.add(c.key);
+  const run=pick=>{driver.restore(c.snapshot);const falls=new Map(),rises=new Set();let prev=driver.readRam(),quiet=0;const r0=o.readResource(prev);
+   for(let k=0;k<o.probeStrides;k++){driver.run(pick(k),o.stride);framesRun+=o.stride;const ram=driver.readRam();
+    if(o.readResource(ram)<o.readResource(prev))quiet=4;
+    if(quiet>0)quiet--;else for(let a=0;a<ram.length;a++){const f=prev[a]-ram[a];if(f>0&&f<=o.damageStep)falls.set(a,(falls.get(a)||0)+1);else if(f<0)rises.add(a);}
+    prev=ram;if(o.readResource(ram)<r0&&(!o.allowLoss||o.readResource(ram)<=o.floor))break;}
+   return {falls,rises};};
+  const idle=run(()=>0),acted=[];
+  for(let r=0;r<o.probeRounds;r++){let m=0,left=0;acted.push(run(()=>{if(left<=0){do m=o.actions[Math.floor(random()*o.actions.length)];while(m===0&&o.actions.length>1);left=o.holdMin+Math.floor(random()*(o.holdMax-o.holdMin+1));}left--;return m;}));}
+  let found=0;const cand=new Map();for(const x of acted)for(const [a,n] of x.falls)cand.set(a,(cand.get(a)||0)+n);
+  for(const [a,n] of cand)if(n>=2&&!idle.falls.has(a)&&!idle.rises.has(a)&&acted.every(x=>!x.rises.has(a))&&!damageAddrs.has(a)){damageAddrs.add(a);found++;}
+  lastImprove=explorations;return found;}
  function explore(){
+  if(o.damage&&explorations-lastImprove>=o.probeEvery){let target=null;for(const c of cells.values())if(!probed.has(c.key)&&(c.resource>o.floor||!o.allowLoss)&&(!target||c.progress>target.progress))target=c;if(target)probe(target);else lastImprove=explorations;}
   const c=choose();if(!c)return null;
   c.chosen++;explorations++;
   driver.restore(c.snapshot);
@@ -133,11 +164,13 @@ function createArchive(driver,options){
   const start=o.readResource(driver.readRam());
   while(frames<horizon){
    if(left<=0){mask=o.actions[Math.floor(random()*o.actions.length)];left=o.holdMin+Math.floor(random()*(o.holdMax-o.holdMin+1));}
+   const before=o.damage?driver.readRam():null;
    driver.run(mask,o.stride);frames+=o.stride;framesRun+=o.stride;trace.push(mask);left--;
    const ram=driver.readRam();
    const res=o.readResource(ram);
    if(res<start){lost=true;if(!o.allowLoss||res<=o.floor)break;}
    track=unwrapStep(track,o.readProgress(ram)||[],o.unwrap);
+   if(o.damage&&damageAddrs.size)track.dmg+=dealt(before,ram);
    if(offer(trace,ram,track))added++;
   }
   if(!added)c.fails++;
@@ -150,12 +183,12 @@ function createArchive(driver,options){
     offered as if explored, so the search continues from it (a route found later is
     still one action trace from the legal start) */
  function seedRoute(masks){driver.restore(startCell.snapshot);let track=startCell.track;const trace=[];let added=0;
-  for(const mask of masks){driver.run(mask,o.stride);framesRun+=o.stride;trace.push(mask);const ram=driver.readRam();
+  for(const mask of masks){const before=driver.readRam();driver.run(mask,o.stride);framesRun+=o.stride;trace.push(mask);const ram=driver.readRam();
    if(o.allowLoss?o.readResource(ram)<=o.floor:false)break;
-   track=unwrapStep(track,o.readProgress(ram)||[],o.unwrap);if(offer(trace,ram,track))added++;}
+   track=unwrapStep(track,o.readProgress(ram)||[],o.unwrap);if(o.damage&&damageAddrs.size)track.dmg+=dealt(before,ram);if(offer(trace,ram,track))added++;}
   return {strides:trace.length,added};}
  return {revision:EXPLORE_REVISION,explore,seedRoute,
-  stats:()=>({cells:cells.size,evicted,explorations,framesRun,frontierByResource:Object.fromEntries([...bestByResource].sort((a,b)=>a[0]-b[0])),bestProgress,bestResource:bestCell?bestCell.resource:null,bestTraceLength:bestCell?bestCell.trace.length:0}),
+  stats:()=>({cells:cells.size,evicted,explorations,framesRun,damageCounters:damageAddrs.size,probes,frontierByResource:Object.fromEntries([...bestByResource].sort((a,b)=>a[0]-b[0])),bestProgress,bestResource:bestCell?bestCell.resource:null,bestTraceLength:bestCell?bestCell.trace.length:0}),
   best:()=>bestCell?{trace:bestCell.trace.slice(),progress:bestCell.progress,resource:bestCell.resource,snapshot:bestCell.snapshot}:null,
   cells:()=>cells};
 }
