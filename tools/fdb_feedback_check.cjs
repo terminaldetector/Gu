@@ -4,7 +4,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const source=fs.readFileSync(path.resolve(__dirname,'../app/src/main/assets/lab/fdb-feedback.js'),'utf8');
 const labSource=fs.readFileSync(path.resolve(__dirname,'../app/src/main/assets/lab/lab.js'),'utf8'),rewardStart=labSource.indexOf('function fdbRewardSnapshot(memory){'),rewardStop=labSource.indexOf('function learnedButtons(data){');
 assert.ok(rewardStart>=0&&rewardStop>rewardStart,'production action-aligned reward helpers must exist');
-assert.ok(labSource.includes('settle(sampledFdbOutcome,credit.reward,interrupted,credit.valid)'), 'the live game loop must distinguish unknown evidence from numeric zero, and a human interruption from unknown evidence');
+assert.ok(labSource.includes("settle(sampledFdbOutcome,credit.reward,interrupted,credit.valid,credit.tier||'VERIFIED')"), 'the live game loop must distinguish unknown evidence from numeric zero, a human interruption from unknown evidence, and a PROVISIONAL gain from a VERIFIED event');
 const rewardSource=labSource.slice(rewardStart,rewardStop),gameTools=require('../app/src/main/assets/lab/game-tools.js');
 const plain=value=>JSON.parse(JSON.stringify(value));
 function fixture(){
@@ -33,7 +33,7 @@ let checks=0;function check(name,fn){return Promise.resolve().then(fn).then(()=>
   const f=fixture();f.frames(0,3);f.decision();f.frames();const result=f.agent.capture();f.frames(128,12);
   assert.equal(result.frames,6);assert.ok(Math.abs(result.seconds-.1)<1e-12);assert.ok(Math.abs(result.elapsed-.1)<1e-12);assert.equal(result.valid,true);
   const settling=f.agent.settle(result,.25,false),packet=f.calls.at(-1);
-  assert.deepEqual(plain(packet),{op:'reward',token:'fdb-1',layerId:'layer-A',decision:'decision-A',mask:128,frames:6,seconds:result.elapsed,reward:.25,valid:true,frozen:false});
+  assert.deepEqual(plain(packet),{op:'reward',token:'fdb-1',layerId:'layer-A',decision:'decision-A',mask:128,frames:6,seconds:result.elapsed,reward:.25,tier:'VERIFIED',valid:true,frozen:false});
   f.ack();await settling;assert.equal(f.agent.capture(),null);
  });
  await check('eligibility elapsed clock includes real game time between observations, not invented executed frames',()=>{

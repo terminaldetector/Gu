@@ -74,9 +74,10 @@ node tools/goal_discovery_check.cjs
 node tools/objective_profiles_check.cjs
 node tools/agod_rom_check.cjs
 
-python - "$task_tmp/json.jar" <<'PYJSON'
+# GU_JSON_JAR: a local copy of the same jar (offline runs, rate-limited mirrors) - SHA-256 still pinned
+python - "$task_tmp/json.jar" "${GU_JSON_JAR:-}" <<'PYJSON'
 import urllib.request,hashlib,sys
-b=urllib.request.urlopen('https://repo.maven.apache.org/maven2/org/json/json/20240303/json-20240303.jar').read()
+b=open(sys.argv[2],'rb').read() if sys.argv[2] else urllib.request.urlopen('https://repo.maven.apache.org/maven2/org/json/json/20240303/json-20240303.jar').read()
 assert hashlib.sha256(b).hexdigest()=='3cf6cd6892e32e2b4c1c39e0f52f5248a2f5b37646fdfbb79a66b46b618414ed'
 open(sys.argv[1],'wb').write(b)
 PYJSON
@@ -104,7 +105,7 @@ java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FrozenSeries
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.BestPromotionGateCheck
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/FdbLayerBinding.java tools/FdbLayerBindingCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbLayerBindingCheck
-javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/FdbCheckpoint.java app/src/main/java/org/node/flyconsole/{IsolatedFdbContext,PairedEvaluation}.java tools/PairedEvaluationCheck.java tools/FdbCheckpointCheck.java tools/FdbIdentityCheck.java tools/FdbProjectionCheck.java tools/FdbProjectionCacheCheck.java tools/FdbDualCreditCheck.java tools/FrozenFdbCheck.java tools/FdbTemporalExperiment.java app/src/main/java/org/node/flyconsole/FdbDiagnostics.java app/src/main/java/org/node/flyconsole/GpuLayerSync.java tools/GpuLayerSyncCheck.java tools/FdbDiagnosticsCheck.java tools/SyntheticLearningCheck.java tools/FdbPlasticityCheck.java tools/ExpandedPlasticityCheck.java tools/FdbGameBridge.java
+javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/FdbCheckpoint.java app/src/main/java/org/node/flyconsole/{IsolatedFdbContext,PairedEvaluation}.java tools/PairedEvaluationCheck.java tools/FdbCheckpointCheck.java tools/FdbIdentityCheck.java tools/FdbProjectionCheck.java tools/FdbProjectionCacheCheck.java tools/FdbDualCreditCheck.java tools/FrozenFdbCheck.java tools/FdbTemporalExperiment.java app/src/main/java/org/node/flyconsole/RoutingProfile.java tools/RoutingProfileCheck.java app/src/main/java/org/node/flyconsole/FdbDiagnostics.java app/src/main/java/org/node/flyconsole/GpuLayerSync.java tools/GpuLayerSyncCheck.java tools/FdbDiagnosticsCheck.java tools/SyntheticLearningCheck.java tools/FdbPlasticityCheck.java tools/ExpandedPlasticityCheck.java tools/FdbGameBridge.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.PairedEvaluationCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbCheckpointCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbIdentityCheck
@@ -115,6 +116,7 @@ java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.ExpandedPlas
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbProjectionCacheCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbDualCreditCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FrozenFdbCheck
+java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.RoutingProfileCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.GpuLayerSyncCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbDiagnosticsCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbTemporalExperiment "${FDB_TEMPORAL_REPORT:-$task_tmp/fdb-temporal}"
@@ -133,6 +135,8 @@ node tools/agod_g5_sequence_check.cjs
 node tools/agod_d1_frontier_check.cjs
 node tools/agod_d2_progress_check.cjs
 node tools/agod_survival_check.cjs
+node tools/agod_stage_check.cjs
+node tools/agod_explore_check.cjs
 node tools/agod_realrom_check.cjs
 CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/agod_l1_bridge_check.cjs
 CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/fdb_carry_check.cjs

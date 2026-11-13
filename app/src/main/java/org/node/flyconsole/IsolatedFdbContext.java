@@ -31,7 +31,7 @@ final class IsolatedFdbContext {
         experiment.options.gain=config.getDouble("gain");experiment.options.disableInhibition=config.getBoolean("disableInhibition");experiment.scramble=config.getBoolean("scramble");experiment.seedPermutation(config.getLong("seed"));
         experiment.options.lesions=ports(graph,config.getJSONArray("lesions"));String systemButtons=config.optString("systemButtons","auto");if(!systemButtons.matches("auto|blocked"))throw new IOException("Управление контрольной модели");experiment.agentButtonMask=systemButtons.equals("blocked")?(wide?2039:243):(wide?4095:255);
         layer=new GraphDelta(graph.ids.length,2048);FdbCheckpoint.restoreLinks(layer,original,graph);FdbCheckpoint.restoreThresholds(layer,original,graph);experiment.options.delta=layer;
-        JSONObject lc=original.getJSONObject("learning");learning=new FdbLearning(graph,layer,experiment.inputs,experiment.outputs,lc.getDouble("rate"),lc.getInt("maxEdges"),(float)lc.getDouble("maxWeight"),lc.optBoolean("trainBase",true),lc.optString("plasticityMode","base"));learning.creditProfile(lc.optString("creditProfile","single-v1"));
+        JSONObject lc=original.getJSONObject("learning");learning=new FdbLearning(graph,layer,experiment.inputs,experiment.outputs,lc.getDouble("rate"),lc.getInt("maxEdges"),(float)lc.getDouble("maxWeight"),lc.optBoolean("trainBase",true),lc.optString("plasticityMode","base"));learning.creditProfile(lc.optString("creditProfile","single-v1"));learning.sensorProfile(experiment.sensorProfile());
         FdbCheckpoint.restore(learning,original.getJSONObject("learningState"),graph,experiment.inputs,experiment.outputs);
         // No boundary/reset here: an evaluator must restore the exact registered checkpoint.
         if(!CheckpointDigest.of(original).equals(CheckpointDigest.of(state())))throw new IOException("Контрольный checkpoint требует миграции; сравнение запрещено");
@@ -44,7 +44,7 @@ final class IsolatedFdbContext {
     }
     JSONObject sample(JSONObject request,AtomicBoolean cancel)throws Exception {
         JSONArray pixels=request.getJSONArray("retina");if(pixels.length()!=16)throw new IOException("Нужно 16 наблюдений");double[] retina=new double[16];for(int i=0;i<16;i++)retina[i]=pixels.getDouble(i);
-        Engine.Result result=engine.advance(experiment.inputs,experiment.rates(retina),experiment.windowMs,experiment.options,cancel);
+        Engine.Result result=engine.advance(experiment.stimulusInputs(),experiment.stimulusRates(experiment.rates(retina)),experiment.windowMs,experiment.options,cancel);
         if(cancel.get()||result.steps!=experiment.windowMs*10)throw new IOException("Изолированная проверка прервана");
         JSONArray values=request.getJSONArray("actions");if(values.length()<2||values.length()>64)throw new IOException("Набор контрольных действий");int[] actions=new int[values.length()];for(int i=0;i<actions.length;i++)actions[i]=values.getInt(i);
         String id=request.getLong("generation")+":"+request.getLong("token");FdbLearning.Decision decision=learning.decide(id,result,actions,experiment.agentButtonMask,experiment.thresholdHz,0,false,experiment.options.lesions);

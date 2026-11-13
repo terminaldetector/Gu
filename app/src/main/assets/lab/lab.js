@@ -138,7 +138,7 @@ function learnedButtons(data){
  // interrupted (a human took over) and unknown evidence are told apart: the
  // first breaks the temporal link, the second is carried into the traces
  // unpaid (fdb-feedback.js, GU_FDB_CARRY)
- if(window.fdbAgent){window.fdbAgent.settle(sampledFdbOutcome,credit.reward,interrupted,credit.valid);sampledFdbOutcome=null;}
+ if(window.fdbAgent){window.fdbAgent.settle(sampledFdbOutcome,credit.reward,interrupted,credit.valid,credit.tier||'VERIFIED');sampledFdbOutcome=null;}
  if(exo&&mode!=='teach'&&!data.fdbDecision)throw Error('Нейронное управление не получило решение FDB');
  const mask=mode==='teach'?0:exo?data.fdbDecision.mask:learner.step(features,reward,terminal,mode==='train');
  if(exo&&terminal&&mode!=='teach')learner.episodes++;

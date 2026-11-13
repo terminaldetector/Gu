@@ -75,6 +75,16 @@ final class ConnectomeStore {
     }
     static Experiment ports(Context c,Graph graph,int count,String id)throws Exception{
         if(!MALE.equals(id))return Experiment.automatic(graph,count);
+        /* Male CNS: the routing profile (16 image cells -> 256 visual projection neurons
+           -> 12 descending outputs), the same file the headless bridge reads. The
+           manifest's default ports are not used: its motor outputs never spike. */
+        try(InputStream in=c.getAssets().open(RoutingProfile.ASSET);ByteArrayOutputStream buffer=new ByteArrayOutputStream()){
+            byte[] chunk=new byte[8192];int n;while((n=in.read(chunk))!=-1){if(buffer.size()+n>4194304)throw new IOException("Профиль маршрутизации слишком велик");buffer.write(chunk,0,n);}
+            return RoutingProfile.read(new JSONObject(new String(buffer.toByteArray(),StandardCharsets.UTF_8)),graph).experiment(count);
+        }
+    }
+    /** the manifest's default ports - kept for diagnostics only, not used by the agent */
+    static Experiment manifestPorts(Context c,Graph graph,int count)throws Exception{
         JSONObject meta=manifest(c,MALE);JSONArray inputs=meta.getJSONArray("default_inputs"),outputs=meta.getJSONArray("default_outputs");
         if(inputs.length()!=16||outputs.length()<count)throw new IOException("Неверные порты Male CNS");
         int[] in=new int[16],out=new int[count];java.util.HashSet<Integer> unique=new java.util.HashSet<>();

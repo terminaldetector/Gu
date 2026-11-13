@@ -9,7 +9,9 @@ b=urllib.request.urlopen('https://repo.maven.apache.org/maven2/org/json/json/202
 assert hashlib.sha256(b).hexdigest()=='3cf6cd6892e32e2b4c1c39e0f52f5248a2f5b37646fdfbb79a66b46b618414ed'
 open(sys.argv[1],'wb').write(b)
 PY
-javac -cp "$dual_test_tmp/json.jar" -d "$dual_test_tmp/classes" app/src/main/java/org/node/flyconsole/{Graph,GraphDelta,FdbGrowth,FdbLearning,Engine,Experiment,FdbCheckpoint,LayerSetStore,DualAgentContext,DualLayerStore,DualRequestGuard}.java tools/DualAgentCheck.java
+javac -cp "$dual_test_tmp/json.jar" -d "$dual_test_tmp/classes" app/src/main/java/org/node/flyconsole/{Graph,GraphDelta,FdbGrowth,FdbLearning,Engine,Experiment,FdbCheckpoint,LayerSetStore,DualAgentContext,DualLayerStore,DualRequestGuard,RoutingProfile}.java tools/DualAgentCheck.java tools/RoutingProfileCheck.java
+# the Male CNS routing profile the app and the bridge read validates against the full graph
+java -Xmx1024m -cp "$dual_test_tmp/classes:$dual_test_tmp/json.jar" org.node.flyconsole.RoutingProfileCheck app/src/main/assets/male-cns.fly.gz app/src/main/assets/male-cns-routing-v1.json
 java -Xmx1024m -cp "$dual_test_tmp/classes:$dual_test_tmp/json.jar" org.node.flyconsole.DualAgentCheck app/src/main/assets/male-cns.fly.gz
 CODE_CLASSPATH="$dual_test_tmp/classes:$dual_test_tmp/json.jar" node tools/dual_game_check.cjs
 

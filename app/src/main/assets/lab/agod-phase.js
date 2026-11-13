@@ -234,7 +234,22 @@ function enter(driver,options){
  return {status:'NOT_REACHED',revision:PHASE_REVISION,steps,frames,lastPhase:lastProbe&&lastProbe.phase};
 }
 
-const api=Object.freeze({PHASE_REVISION,DEFAULTS,probe,enter,axesOf,buttonsOf,driverFor});
+/* REPLAY AN ENTRY on a freshly loaded cartridge, WITHOUT any snapshot or restore:
+   the probes enter() ran all returned to their own start, so the live timeline
+   of an entry is only its presses (hold, then wait) and its waits. This is the
+   system entry controller of a clean evaluation run: the presses AGOD found, not
+   gameplay. The caller compares the resulting stateHash with the original. */
+function replayEntry(driver,steps,options){
+ const cfg={...DEFAULTS,...(options||{})};
+ const drive=driverFor(driver,cfg.port);let frames=0;
+ for(const s of steps){
+  if(s.kind==='PRESS'){drive(s.mask,cfg.advanceHold);drive(0,cfg.advanceWait);frames+=cfg.advanceHold+cfg.advanceWait;}
+  else if(s.kind==='WAIT'){drive(0,s.frames);frames+=s.frames;}
+ }
+ return {frames};
+}
+
+const api=Object.freeze({PHASE_REVISION,DEFAULTS,probe,enter,replayEntry,axesOf,buttonsOf,driverFor});
 root.FlyAgodPhase=api;
 if(typeof module!=='undefined')module.exports=api;
 })(typeof window==='undefined'?globalThis:window);

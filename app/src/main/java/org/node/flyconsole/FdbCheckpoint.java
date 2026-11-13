@@ -52,6 +52,8 @@ public final class FdbCheckpoint {
             state.put("creditProfile",learner.creditProfile()).put("rateContext",new JSONObject().put("mask",learner.previousMask()).put("steps",learner.previousSteps()).put("rates",rates));
         }
         JSONArray traces=new JSONArray();for(FdbLearning.Trace t:learner.traces())traces.put(new JSONObject().put("source",Long.toString(graph.ids[t.source])).put("target",Long.toString(graph.ids[t.target])).put("eligibility",t.eligibility).put("slowEligibility",dual?t.slowEligibility:null).put("slowAge",dual?t.slowAge:null).put("utility",t.utility).put("support",t.support).put("evidence",t.evidence).put("bad",t.bad));JSONArray nt=new JSONArray();for(FdbLearning.NeuronTrace t:learner.neuronTraces())nt.put(new JSONObject().put("neuron",Long.toString(graph.ids[t.neuron])).put("eligibility",t.eligibility));state.put("traces",traces).put("neuronTraces",nt);
+        /* the sensor profile is written only when the ports run through one */
+        if(!learner.sensorProfile().isEmpty())state.put("sensorProfile",learner.sensorProfile());
         /* the action readout (research, opt-in) is written only when it is on, so
            a checkpoint without it is byte-for-byte what it was before */
         if(!learner.readoutProfile().equals("none")){
@@ -74,6 +76,7 @@ public final class FdbCheckpoint {
         if(state.has("graph_sha256")&&!graph.fingerprint().equals(state.getString("graph_sha256")))throw new IllegalArgumentException("FDB checkpoint graph mismatch");
         long version=integer(state,"version",1,5),max=9007199254740991L;
         if(!ids(graph,sources).toString().equals(state.getJSONArray("sources").toString())||!ids(graph,targets).toString().equals(state.getJSONArray("targets").toString()))throw new IllegalArgumentException("FDB checkpoint belongs to other ports");
+        if(!state.optString("sensorProfile","").equals(learner.sensorProfile()))throw new IllegalArgumentException("FDB checkpoint belongs to another sensor profile");
         long observations=integer(state,"observations",0,max),human=integer(state,"human",0,max),automatic=integer(state,"automatic",0,max);
         if(version==1){learner.restore(observations,human,automatic);return;}
         if(!(version==2?"action-conditioned window eligibility":version==3?"mixed-path eligibility v3":version==4?"bounded mixed plasticity v4":"bounded dual eligibility v5").equals(state.getString("algorithm")))throw new IllegalArgumentException("FDB learning algorithm");

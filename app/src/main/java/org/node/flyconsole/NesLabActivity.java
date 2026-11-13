@@ -246,6 +246,7 @@ public final class NesLabActivity extends Activity {
         Experiment next = new Experiment(parsePorts(data.getJSONArray("inputs"), 16), parsePorts(data.getJSONArray("outputs"), RomImport.wide(labSystem)&&data.getJSONArray("outputs").length()==12?12:8));
         for (int input : next.inputs) for (int output : next.outputs)
             if (input == output) throw new IllegalArgumentException("Вход и выход не должны совпадать");
+        next.keepProfileFrom(experiment);
         next.mode = data.getString("mode");
         if (!next.mode.equals("observe") && !next.mode.equals("closed") && !next.mode.equals("sham"))
             throw new IllegalArgumentException("Неизвестный режим");
@@ -305,7 +306,7 @@ public final class NesLabActivity extends Activity {
                     if(learning.has("trainBase")&&!(learning.get("trainBase") instanceof Boolean))throw new IllegalArgumentException("FDB trainBase must be boolean");
                     nextLearningConfig.put("trainBase",learning.optBoolean("trainBase",true)).put("plasticityMode",FdbLearning.validateMode(learning.optString("plasticityMode","base")));
                     nextLearning=new FdbLearning(graph,layer,next.inputs,next.outputs,learning.getDouble("rate"),learning.getInt("maxEdges"),(float)learning.getDouble("maxWeight"),learning.optBoolean("trainBase",true),nextLearningConfig.getString("plasticityMode"));
-                    nextLearning.creditProfile(learning.optString("creditProfile","single-v1"));
+                    nextLearning.creditProfile(learning.optString("creditProfile","single-v1"));nextLearning.sensorProfile(next.sensorProfile());
                     nextLearning.seed(next.seed);
                     JSONObject state=fdb.optJSONObject("learningState");
                     if(state!=null){
@@ -316,7 +317,7 @@ public final class NesLabActivity extends Activity {
             }
             if(nextLearning==null){
                 nextLearningConfig=new JSONObject().put("enabled",false).put("rate",.05).put("maxEdges",256).put("maxWeight",32);
-                nextLearning=new FdbLearning(graph,layer,next.inputs,next.outputs,.05,256,32);nextLearning.seed(next.seed);
+                nextLearning=new FdbLearning(graph,layer,next.inputs,next.outputs,.05,256,32);nextLearning.sensorProfile(next.sensorProfile());nextLearning.seed(next.seed);
             }
             next.options.delta=layer;
         }
@@ -424,8 +425,8 @@ public final class NesLabActivity extends Activity {
         Engine.Result result;
         if ("gpu".equals(backend)) {
             if (gpuEngine == null) throw new IllegalStateException("GPU backend не инициализирован");
-            result=gpuEngine.advance(experiment.inputs,rates,experiment.windowMs,experiment.options,cancel);
-        } else result=engine.advance(experiment.inputs,rates,experiment.windowMs,experiment.options,cancel);
+            result=gpuEngine.advance(experiment.stimulusInputs(),experiment.stimulusRates(rates),experiment.windowMs,experiment.options,cancel);
+        } else result=engine.advance(experiment.stimulusInputs(),experiment.stimulusRates(rates),experiment.windowMs,experiment.options,cancel);
         int mask=experiment.buttons(result); latestMask=cancel.get()?0:mask;
         JSONObject response=new JSONObject();
         response.put("token",request.getLong("token")).put("generation",request.getLong("generation"));
@@ -757,7 +758,7 @@ public final class NesLabActivity extends Activity {
                     for(String key:new String[]{"reward","seconds"})if(!(request.get(key) instanceof Number))throw new IllegalArgumentException("FDB feedback number");
                     if(learningConfiguration.getBoolean("enabled")&&!request.getBoolean("frozen"))requireFdbMutation(request);
                     long beforeAutomatic=fdbLearning.automatic();
-                    if(learningConfiguration.getBoolean("enabled"))changed=fdbLearning.feedback(request.getString("decision"),request.getInt("mask"),request.getDouble("reward"),request.getDouble("seconds"),request.getInt("frames"),request.getBoolean("valid"),request.getBoolean("frozen"),experiment.options.lesions);
+                    if(learningConfiguration.getBoolean("enabled"))changed=fdbLearning.feedback(request.getString("decision"),request.getInt("mask"),request.getDouble("reward"),request.getDouble("seconds"),request.getInt("frames"),request.getBoolean("valid"),request.getBoolean("frozen"),experiment.options.lesions,request.optString("tier",FdbLearning.VERIFIED));
                     if(activeEpisode!=null&&fdbLearning.automatic()>beforeAutomatic){episodeKnown++;episodeRewardSum+=request.getDouble("reward");}
                 }else throw new IllegalArgumentException("Unknown FDB feedback operation");
                 if(activeEpisode!=null&&op.equals("boundary")&&request.optBoolean("unknown",false))episodeUnknown++;

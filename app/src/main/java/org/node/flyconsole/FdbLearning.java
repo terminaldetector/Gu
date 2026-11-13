@@ -43,6 +43,13 @@ public final class FdbLearning {
     }
     public void creditProfile(String profile){profile=validateCreditProfile(profile);if(!profile.equals(creditProfile)){boundary();creditProfile=profile;}}
     public String creditProfile(){return creditProfile;}
+    /** SENSOR PROFILE: the sha256 of the routing profile the ports run through
+     *  (RoutingProfile) - "" for the 16 ports themselves. Part of the checkpoint
+     *  identity: a checkpoint made through one profile is not restored through
+     *  another, it starts a new layer. */
+    private String sensorProfile="";
+    public void sensorProfile(String sha){if(sha==null)sha="";if(!sha.isEmpty()&&!sha.matches("[a-f0-9]{64}"))throw new IllegalArgumentException("FDB sensor profile");if(!sha.equals(sensorProfile)){boundary();sensorProfile=sha;}}
+    public String sensorProfile(){return sensorProfile;}
     private boolean dualCredit(){return !creditProfile.equals("single-v1");}
     /** ACTION READOUT (opt-in research, "action-v1"). The neural score of an action
      * is the sum over its buttons of (rate/threshold - 1); "press nothing" has no
@@ -278,6 +285,28 @@ public final class FdbLearning {
     }
     private static double activity(Engine.Result r,int neuron){return Math.min(1,r.counts[neuron]*10.0/r.steps);}
     private static int index(int[] values,int value){for(int i=0;i<values.length;i++)if(values[i]==value)return i;return -1;}
+    /** TYPED CREDIT (directive 2026-11-13, 5.2). VERIFIED - a verified event (AGOD
+     *  broker) or an explicitly configured source - trains the weights and the
+     *  action readout. PROVISIONAL - a progress gain AGOD could not verify - does
+     *  NOT train FDB: it is AGOD's signal for which frontier to explore; here the
+     *  decision only joins the eligibility traces, unpaid (as UNKNOWN does), and is
+     *  counted apart. No other tier exists. */
+    public static final String VERIFIED="VERIFIED",PROVISIONAL="PROVISIONAL";
+    private long provisionalSeen,verifiedPaid;
+    public long provisionalSeen(){return provisionalSeen;}
+    public long verifiedPaid(){return verifiedPaid;}
+    public int feedback(String id,int executedMask,double reward,double gameSeconds,int frames,boolean valid,boolean frozen,int[] lesions,String tier){
+        if(PROVISIONAL.equals(tier)){
+            if(!Double.isFinite(reward)||Math.abs(reward)>20||!Double.isFinite(gameSeconds)||gameSeconds<=0||gameSeconds>2||frames<1||frames>240)throw new IllegalArgumentException("FDB feedback");
+            if(frozen)return 0;
+            if(carry(id,executedMask,gameSeconds,frames,valid,true,lesions)){carried--;provisionalSeen++;}
+            return 0;
+        }
+        if(!VERIFIED.equals(tier))throw new IllegalArgumentException("FDB credit tier");
+        int changed=feedback(id,executedMask,reward,gameSeconds,frames,valid,frozen,lesions);
+        if(!frozen)verifiedPaid++;
+        return changed;
+    }
     /** Reward applies to the cached decision's activity, only after real game execution. */
     public int feedback(String id,int executedMask,double reward,double gameSeconds,int frames,boolean valid,boolean frozen,int[] lesions){
         if(!Double.isFinite(reward)||Math.abs(reward)>20||!Double.isFinite(gameSeconds)||gameSeconds<=0||gameSeconds>2||frames<1||frames>240)throw new IllegalArgumentException("FDB feedback");

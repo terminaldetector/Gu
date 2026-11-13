@@ -76,6 +76,24 @@ const ACTIONS=[0,64,128,1,65,129];
   ok(t.mid.creditProfile==='dual-time-v1'&&t.mid.updates===t.before.updates&&t.mid.weights===t.before.weights,
    'dual-time-v1 (fast 15 + slow 90 frames by game time): carries and pauses stay unpaid');
   ok(t.changed>=p.changed,'the 90-frame trace keeps at least as many earlier decisions in reach ('+t.changed+' against '+p.changed+')');
+  /* TYPED CREDIT: a PROVISIONAL reward trains nothing - no weight, no readout,
+     no update - it only joins the traces, so a later VERIFIED loss reaches it */
+  async function typed(tier){
+   await java.call({op:'init',seed:5,mode:'base'});await java.call({op:'readout',profile:'action-v1'});await java.call({op:'prior',output:6,weight:3});
+   const before=await java.call({op:'state'});const results=[];
+   for(let k=0;k<6;k++){const d=await java.call({op:'decide',retina:retina(k),train:true,actions:ACTIONS,epsilon:.2,windowMs:20});
+    results.push(await java.call({op:'reward',id:d.id,mask:d.mask,reward:.5,tier,seconds:8/60,frames:8}));}
+   const mid=await java.call({op:'state'});
+   const d=await java.call({op:'decide',retina:retina(9),train:true,actions:ACTIONS,epsilon:.2,windowMs:20});
+   const loss=await java.call({op:'reward',id:d.id,mask:d.mask,reward:-1,tier:'VERIFIED',seconds:8/60,frames:8});
+   return {before,mid,changed:results.reduce((n,r)=>n+r.changed,0),loss:loss.changed};
+  }
+  const prov=await typed('PROVISIONAL'),ver=await typed('VERIFIED');
+  ok(prov.changed===0&&prov.mid.updates===prov.before.updates&&prov.mid.weights===prov.before.weights&&prov.mid.readoutUpdates===0,
+   'six PROVISIONAL rewards change no weight, no readout and no update count');
+  ok(prov.mid.provisionalSeen===6&&prov.mid.verifiedPaid===0,'they are counted apart ('+prov.mid.provisionalSeen+' provisional, '+prov.mid.verifiedPaid+' verified)');
+  ok(ver.changed>0&&ver.mid.updates===6&&ver.mid.verifiedPaid===6,'the same six rewards as VERIFIED do train ('+ver.changed+' native changes)');
+  ok(prov.loss>0,'a later VERIFIED loss still reaches the provisional decisions through the traces ('+prov.loss+' changes)');
   /* frozen SAMPLED evaluation: the draw comes from the caller, the learner
      takes no RNG step and keeps no pending decision */
   await java.call({op:'init',seed:5,mode:'base'});await java.call({op:'prior',output:6,weight:3});

@@ -30,6 +30,8 @@ const PD=globalThis.FlyAgodPlatformDriver,Pipeline=globalThis.FlyAgodPipeline,Dt
  Objective=globalThis.FlyAgodObjective,Phase=globalThis.FlyAgodPhase,Survival=globalThis.FlyAgodSurvival;
 const MODULES={Dto,Reward:globalThis.FlyAgodReward,Evidence:globalThis.FlyAgodEvidence,Ram:globalThis.FlyAgodRam};
 const Observation=require('./realrom_observation.cjs');
+const Stage=require(path.join(A,'agod-stage.js'));
+const Explore=require(path.join(A,'agod-explore.js'));
 
 const args=process.argv.slice(2);
 const flag=name=>args.includes(name);
@@ -179,21 +181,71 @@ async function studyRom(file,java){
    two.sameResourceAsPort1,two.port1ResourceFallsUnderPort2Play);
  }
  /* 5. learning */
- if(java&&found.status==='VERIFIED'){
+ if((java||Number(process.env.REALROM_EXPLORE)>0)&&found.status==='VERIFIED'){
   const dto=Dto.fromPipelineResult(found,{...config,platform,driverRevision:built.driverRevision});
   const identity={romSha256,platform,coreRevision:platform,detectorRevision,
    actionSpec:built.capabilities.actionSpec,padType:built.capabilities.padType,
    observedRamBytes:built.capabilities.observedRamBytes};
   const profile=Objective.createProfile(dto,identity,MODULES);
   report.profile={status:profile.status,reason:profile.reason||null,progress:profile.progress?profile.progress.length:0};
-  if(profile.status==='PROFILE')report.learning=await learn(built,inPlay,profile,identity,java);
+  /* FRONTIER ARCHIVE (REALROM_EXPLORE=frameBudget): AGOD exploration on this research
+     copy - then the best route is replayed from a fresh load with no restore and the
+     stage detector watching; only that replay can show a stage transition */
+  if(profile.status==='PROFILE'&&Number(process.env.REALROM_EXPLORE)>0)
+   report.explore=await exploreRoute(built,inPlay,profile,identity,{rebuild:()=>BUILD[platform](bytes),entrySteps:entry.steps,entryProbe:entry.probe});
+  if(profile.status==='PROFILE'&&java)report.learning=await learn(built,inPlay,profile,identity,java,
+   {rebuild:()=>BUILD[platform](bytes),entrySteps:entry.steps,entryProbe:entry.probe,inPlayHash:(d.restore(inPlay),d.stateHash())});
  }
  report.totalFrames=built.framesRun();report.totalWallMs=Date.now()-t0;
  built.dispose();
  return {...report,status:'DONE'};
 }
 
-async function learn(built,inPlay,profile,identity,java){
+async function exploreRoute(built,inPlay,profile,identity,extras){
+ const d=built.driver,spec=d.actionSpec;
+ const prior=decisionPrior(profile.dto.discovered&&profile.dto.discovered.buttonAttribution,spec,0);
+ const actions=prior?prior.actions:actionSet(spec);
+ const live=Objective.createLiveReward(profile,MODULES,{identity,sessionId:'explore',policy:'aggressive'});
+ const read=live.read,progressOf=live.readProgress,budget=Number(process.env.REALROM_EXPLORE);
+ const positionFields=(extras.entryProbe&&extras.entryProbe.axes||[]).filter(a=>a.integrators>0).map(a=>a.fields[0]);
+ const dims=()=>Observation.dims(built.core)||[256,224];
+ d.restore(inPlay);
+ const archive=Explore.createArchive(d,{actions,readProgress:progressOf,readResource:read,positionFields,
+  screen:()=>{const [w,h]=dims();return Stage.signature(built.core.pixels,w,h);},seed:Number(process.env.REALROM_EXPLORE_SEED||1)});
+ const t0=Date.now();let lastLog=0;
+ while(archive.stats().framesRun<budget){
+  archive.explore();
+  const st=archive.stats();
+  if(st.framesRun-lastLog>=budget/20){lastLog=st.framesRun;
+   console.log('  explore: %d frames, %d cells, %d explorations, best progress %d (resource %s, route %d strides) %d s',
+    st.framesRun,st.cells,st.explorations,st.bestProgress,st.bestResource,st.bestTraceLength,Math.round((Date.now()-t0)/1000));}
+ }
+ const best=archive.best(),st=archive.stats();
+ /* the route, replayed from a freshly loaded cartridge: entry without restore, then
+    the trace stride by stride, the stage detector watching - no snapshot anywhere */
+ const fresh=await extras.rebuild(),fd=fresh.driver;let restores=0;
+ Phase.replayEntry(fd,extras.entrySteps);const realRestore=fd.restore.bind(fd);fd.restore=x=>{restores++;return realRestore(x);};
+ const monitor=Stage.createMonitor({probe:extras.entryProbe,readResource:ram=>read(ram)});
+ const fdims=Observation.dims(fresh.core)||[256,224];let progress=0,losses=0;
+ for(const mask of best.trace){const before=fd.readRam();fd.run(mask,8);const after=fd.readRam();
+  const pb=progressOf(before),pa=progressOf(after);for(let i=0;i<pb.length;i++)if(Number.isFinite(pb[i])&&Number.isFinite(pa[i])&&pa[i]>pb[i])progress+=pa[i]-pb[i];
+  if(read(after)<read(before))losses+=read(before)-read(after);
+  if(monitor)monitor.observe({mask,ramBefore:before,ramAfter:after,signature:Stage.signature(fresh.core.pixels,fdims[0],fdims[1])});}
+ const transitions=monitor?monitor.transitions():[];
+ fresh.dispose();
+ if(process.env.REALROM_EVIDENCE_DIR){fs.mkdirSync(process.env.REALROM_EVIDENCE_DIR,{recursive:true});
+  fs.writeFileSync(path.join(process.env.REALROM_EVIDENCE_DIR,'explore-route.json'),JSON.stringify({entrySteps:extras.entrySteps,stepFrames:8,masks:best.trace,events:monitor?monitor.events():[]}));}
+ const out={revision:Explore.EXPLORE_REVISION,budgetFrames:budget,cells:st.cells,explorations:st.explorations,framesRun:st.framesRun,
+  wallSeconds:Math.round((Date.now()-t0)/1000),bestProgress:st.bestProgress,routeStrides:best.trace.length,routeFrames:best.trace.length*8,
+  replay:{freshLoad:true,restores,progress,losses,stageTransitions:transitions.map(e=>({frame:e.frame,gapFrames:e.gapFrames,novelty:e.novelty}))},
+  routeSha256:crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(best.trace).buffer)).digest('hex'),
+  levelClear:transitions.length?'ROUTE_REACHES_A_STAGE_TRANSITION (search, not autonomous play)':'NOT_REACHED'};
+ console.log('  explore result: %d cells, best progress %d, route %d frames; replayed from a fresh load (restores %d): progress %d, losses %d, stage transitions %d -> %s',
+  out.cells,out.bestProgress,out.routeFrames,restores,progress,losses,transitions.length,out.levelClear);
+ return out;
+}
+
+async function learn(built,inPlay,profile,identity,java,extras){
  const d=built.driver,spec=d.actionSpec,core=built.core;
  const prior=process.env.REALROM_DECISION==='agod'
   ?decisionPrior(profile.dto.discovered&&profile.dto.discovered.buttonAttribution,spec,Number(process.env.REALROM_PRIOR||2)):null;
@@ -209,7 +261,9 @@ async function learn(built,inPlay,profile,identity,java){
  /* REALROM_READOUT=action-v1 (P2): every action, "press nothing" included,
     gets a learned score from the verified outcomes (FdbLearning readout) */
  const readoutProfile=process.env.REALROM_READOUT||'none';
- const init=async seed=>{await java.call({op:'init',seed,mode:'base'});
+ let brainIdentity=null;
+ const init=async seed=>{const id=await java.call({op:'init',seed,mode:'base'});
+  brainIdentity={model:id.model,label:id.label,ports:id.ports,neurons:id.neurons,graphSha:id.graphSha,stimulated:id.stimulated,sensorProfile:id.sensorProfile||null};
   if(creditProfile)await java.call({op:'credit',profile:creditProfile});
   if(readoutProfile!=='none')await java.call({op:'readout',profile:readoutProfile});
   if(prior)for(const p of prior.priors)if(p.weight>0)await java.call({op:'prior',output:p.output,weight:p.weight});};
@@ -271,7 +325,8 @@ async function learn(built,inPlay,profile,identity,java){
    if(packet.status==='VERIFIED'||packet.status==='PROVISIONAL'){
     stats[packet.status]++;
     if(packet.status==='PROVISIONAL')stats.provisionalPaid=(stats.provisionalPaid||0)+packet.value;
-    const r=await java.call({op:'reward',id:pick.id,mask:pick.mask,reward:packet.value,seconds:STEP_FRAMES/60,frames:STEP_FRAMES});
+    /* typed credit: a PROVISIONAL gain reaches the learner as PROVISIONAL and does not train it */
+    const r=await java.call({op:'reward',id:pick.id,mask:pick.mask,reward:packet.value,tier:packet.status,seconds:STEP_FRAMES/60,frames:STEP_FRAMES});
     stats.changed+=r.changed;
    }else if(process.env.REALROM_CREDIT==='carry'&&packet.status==='UNKNOWN'){
     /* no verified event: the decision joins the eligibility traces, nothing is
@@ -377,14 +432,61 @@ async function learn(built,inPlay,profile,identity,java){
   console.log('          train frames %d, provisional paid %s (over budget %d), rewinds %d: branches %d lost %d survived %d (%d steps) | frozen %s',
    row.trainFrames,row.provisionalPaid,row.overBudget,row.rewinds,row.branches,row.branchLost,row.branchSurvived,row.branchSteps,row.frozenClean?'clean':'CHANGED');
  }
- return {actions:actions.length,stepFrames:STEP_FRAMES,evalStarts:3,evalStepsCap:EVAL_STEPS,
+ /* FULL EPISODE (REALROM_FULL_EPISODE=maxFrames, directive M2.2): the last trained
+    learner, FROZEN, plays one continuous episode on a freshly loaded cartridge -
+    entry replayed without any restore (Phase.replayEntry; the state hash must
+    equal the original start), no snapshot, no rewind, no restore during play
+    (counted), until the game ends or the frame cap. The stage detector watches
+    every stride; the action trace (and the frames around a detected transition)
+    go to REALROM_EVIDENCE_DIR - private, never the repository. */
+ let fullEpisode=null;
+ if(Number(process.env.REALROM_FULL_EPISODE)>0&&extras){
+  const maxFrames=Number(process.env.REALROM_FULL_EPISODE),sampled=process.env.REALROM_FULL_POLICY==='sampled';
+  const fresh=await extras.rebuild();const fd=fresh.driver;let restores=0;
+  Phase.replayEntry(fd,extras.entrySteps);
+  const sameStart=fd.stateHash()===extras.inPlayHash;
+  const realRestore=fd.restore.bind(fd);fd.restore=x=>{restores++;return realRestore(x);};
+  const fobs=Observation.create(OBS,fresh.core,{probe:obsProbe,readRam:()=>fd.readRam(),readResource:ram=>read(ram),initialResource:profile.dto.discovered.resource.initial});
+  const monitor=Stage.createMonitor({probe:extras.entryProbe,readResource:ram=>read(ram)});
+  const dims=Observation.dims(fresh.core)||[256,224];
+  const stream=rng(SEEDS[SEEDS.length-1]*104729+1);
+  const before0=learnerDigest(await java.call({op:'state'}));
+  await java.call({op:'reset'});
+  const log=[],t0=Date.now();let frames=0,losses=0,progress=0,best=0,ended_=false;const lat=[];
+  while(frames<maxFrames){
+   const ramBefore=fd.readRam();const t=Date.now();
+   const r=await java.call({op:'decide',retina:fobs.observe(),train:false,actions,epsilon:0,windowMs:20,...(sampled?{sample:stream()}:{})});lat.push(Date.now()-t);
+   fd.run(r.mask,STEP_FRAMES);frames+=STEP_FRAMES;log.push(r.mask);
+   const ramAfter=fd.readRam();const rb=read(ramBefore),ra=read(ramAfter);if(ra<rb)losses+=rb-ra;
+   const pb=progressOf(ramBefore),pa=progressOf(ramAfter);for(let i=0;i<pb.length;i++)if(Number.isFinite(pb[i])&&Number.isFinite(pa[i])&&pa[i]>pb[i])progress+=pa[i]-pb[i];
+   best=Math.max(best,progress);
+   if(monitor)monitor.observe({mask:r.mask,ramBefore,ramAfter,signature:Stage.signature(fresh.core.pixels,dims[0],dims[1])});
+   if(ended(ramAfter)){ended_=true;break;}
+  }
+  const after0=learnerDigest(await java.call({op:'state'}));
+  const q=p=>{const s2=[...lat].sort((a,b)=>a-b);return s2.length?s2[Math.min(s2.length-1,Math.floor(p*s2.length))]:null;};
+  const transitions=monitor?monitor.transitions():[];
+  const logSha=crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(log).buffer)).digest('hex');
+  if(process.env.REALROM_EVIDENCE_DIR){fs.mkdirSync(process.env.REALROM_EVIDENCE_DIR,{recursive:true});
+   fs.writeFileSync(path.join(process.env.REALROM_EVIDENCE_DIR,'full-episode-actions.json'),JSON.stringify({entrySteps:extras.entrySteps,stepFrames:STEP_FRAMES,masks:log,events:monitor?monitor.events():[]}));}
+  fullEpisode={runMode:'FROZEN_FULL_EPISODE',policy:sampled?'sampled (harness stream)':'argmax',freshLoad:true,entryReplayedSameState:sameStart,
+   evalRestores:restores,humanInputFrames:0,framesExecuted:frames,decisions:log.length,losses,ended:ended_,
+   progress,highestProgress:best,stageEvents:monitor?monitor.events().filter(e=>e.kind!=='LOSS').length:null,
+   transitions:transitions.map(e=>({frame:e.frame,gapFrames:e.gapFrames,novelty:e.novelty})),
+   levelClear:transitions.length?'CANDIDATE':'UNVERIFIED',levelClearEvidence:transitions.length?'stage transition detected; frames and action trace kept privately':null,
+   weightsChangedInEval:before0!==after0,actionTraceSha256:logSha,decisionLatencyMs:{p50:q(.5),p95:q(.95)},wallSeconds:Math.round((Date.now()-t0)/1000)};
+  console.log('  FULL EPISODE (%s): fresh load, entry same state %s, restores %d | frames %d, decisions %d, losses %d, ended %s | progress %d | stage transitions %d -> LEVEL_CLEAR %s | frozen %s | p50 %s ms',
+   fullEpisode.policy,sameStart,restores,frames,log.length,losses,ended_,best,transitions.length,fullEpisode.levelClear,before0===after0?'clean':'CHANGED',fullEpisode.decisionLatencyMs.p50);
+  fresh.dispose();
+ }
+ return {brain:brainIdentity,actions:actions.length,stepFrames:STEP_FRAMES,evalStarts:3,evalStepsCap:EVAL_STEPS,fullEpisode,
   evaluation:'frozen, both argmax (untrained/trained) and sampled from the policy with the harness RNG (untrainedSampled/trainedSampled); whole learner state digest compared',
   encoderRevision:observer.revision,readoutProfile,budget:BUDGET,rewind:REWIND?{branches:REWIND,backFrames:BACK_STEPS*STEP_FRAMES,branchFrames:BRANCH_STEPS*STEP_FRAMES}:null,
   decision:prior?{source:'survival discovery button attribution',actions:prior.actions,priors:prior.priors}:'default action set, no prior',
   creditProfile:creditProfile||'single-v1',pauseOnAuthorityDrop:pauseOnDrop,
   credit:process.env.REALROM_CREDIT==='carry'?'UNKNOWN intervals carried into the traces, unpaid':'UNKNOWN intervals clear the traces',
   noOpAction:process.env.REALROM_NOOP!=='0',
-  graph:process.env.FDB_GRAPH?'connectome':'30-neuron mechanism fixture',rows};
+  graph:brainIdentity&&brainIdentity.label==='COMMERCIAL'?'Male CNS, routing profile (COMMERCIAL)':process.env.FDB_GRAPH?'graph, NOT_COMMERCIAL ports':'30-neuron mechanism fixture (NOT_COMMERCIAL)',rows};
 }
 
 (async()=>{

@@ -16,6 +16,11 @@ public final class Experiment {
     public int windowMs = 20;
     public double maxHz = 150, thresholdHz = 30;
     public long seed = 1;
+    /** Male CNS routing profile (RoutingProfile): the 16 port rates drive 16 groups of
+     *  stimulated neurons; null = the 16 ports themselves (fixture, imported graphs). */
+    private int[] stimulus, stimulusGroup;
+    private String sensorProfile = "";
+    private double profileRateHz;
 
     public Experiment(int[] inputs, int[] outputs) {
         if (inputs.length != 16 || (outputs.length != 8 && outputs.length != 12)) throw new IllegalArgumentException("Нужно 16 входов и 8/12 выходов");
@@ -41,9 +46,32 @@ public final class Experiment {
         for (int i = 0; i < 16; i++) {
             double value = brightness[scramble ? permutation[i] : i];
             if (!Double.isFinite(value) || value < 0 || value > 1) throw new IllegalArgumentException("Яркость должна быть 0–1");
-            rates[i] = mode.equals("sham") ? 0 : value * maxHz;
+            rates[i] = mode.equals("sham") ? 0 : value * (stimulus != null ? profileRateHz : maxHz);
         }
         return rates;
+    }
+
+    public void attachProfile(int[] stimulus, int[] group, String sha256, double rateHz) {
+        if (stimulus.length != group.length || stimulus.length < 16 || stimulus.length > 256 || !sha256.matches("[a-f0-9]{64}") || !(rateHz > 0))
+            throw new IllegalArgumentException("Неверный профиль стимуляции");
+        for (int g : group) if (g < 0 || g >= 16) throw new IllegalArgumentException("Неверная группа стимуляции");
+        this.stimulus = stimulus.clone(); this.stimulusGroup = group.clone(); this.sensorProfile = sha256; this.profileRateHz = rateHz;
+    }
+    public String sensorProfile() { return sensorProfile; }
+    /** a reconfigured experiment on the SAME ports keeps the routing profile; other ports drop it */
+    public void keepProfileFrom(Experiment previous) {
+        if (previous != null && previous.stimulus != null && Arrays.equals(inputs, previous.inputs) && Arrays.equals(outputs, previous.outputs))
+            attachProfile(previous.stimulus, previous.stimulusGroup, previous.sensorProfile, previous.profileRateHz);
+    }
+    /** the neurons the engine stimulates: the profile's 256, or the 16 ports */
+    public int[] stimulusInputs() { return stimulus != null ? stimulus : inputs; }
+    /** the 16 port rates spread over the stimulated neurons, one rate per group */
+    public double[] stimulusRates(double[] portRates) {
+        if (portRates.length != 16) throw new IllegalArgumentException("Нужно 16 частот");
+        if (stimulus == null) return portRates;
+        double[] r = new double[stimulus.length];
+        for (int i = 0; i < r.length; i++) r[i] = portRates[stimulusGroup[i]];
+        return r;
     }
 
     public int buttons(Engine.Result result) {

@@ -49,7 +49,10 @@
  }
  function frame(mask,seconds){gameSeconds+=seconds;if(current){current.frames++;current.seconds+=seconds;if(mask!==current.mask||(gmodeMode==='off'&&manualMask&&$('liveHints')?.checked!==false)||agentIntervened)current.valid=false;}}
  function capture(rewardState=null){const previous=current;current=null;if(!previous||!previous.frames)return null;const elapsed=gameSeconds-capturedAt;capturedAt=gameSeconds;return {...previous,elapsed,rewardEnd:rewardCopy(rewardState)};}
- function settle(outcome,reward,interrupted,evidenceKnown=true){
+ /* tier: the AGOD packet's VERIFIED / PROVISIONAL; other reward sources are VERIFIED
+    (an explicitly configured source). A PROVISIONAL reward never trains FDB - the
+    native learner only folds it into the traces, unpaid. */
+ function settle(outcome,reward,interrupted,evidenceKnown=true,tier='VERIFIED'){
   if(!outcome||blocked)return Promise.resolve();
   // Unknown is not a numerical zero: a learned baseline can turn zero into a
   // negative advantage. Clear the native temporal link without calling reward.
@@ -67,7 +70,7 @@
   if(!evidenceKnown){linked=false;current=null;gameSeconds=capturedAt=0;blocked=true;recovering=true;return send('boundary',{unknown:true},true);}
   if(outcome.elapsed>2){linked=false;current=null;gameSeconds=capturedAt=0;blocked=true;recovering=true;return send('boundary',{},true);}
   if(outcome.elapsed<=0){invalidate('интервал результата вне окна пластичности');recover();return Promise.resolve();}
-  return send('reward',{decision:outcome.id,mask:outcome.mask,frames:outcome.frames,seconds:outcome.elapsed,reward,valid:outcome.valid&&!interrupted,frozen:$('freeze').checked||$('learnMode').value!=='train'});
+  return send('reward',{decision:outcome.id,mask:outcome.mask,frames:outcome.frames,seconds:outcome.elapsed,reward,tier:tier==='PROVISIONAL'?'PROVISIONAL':'VERIFIED',valid:outcome.valid&&!interrupted,frozen:$('freeze').checked||$('learnMode').value!=='train'});
  }
  async function drain(){while(waiting.size){await Promise.all([...waiting.values()].map(p=>new Promise(resolve=>{const old=p.resolve;p.resolve=value=>{old(value);resolve();};})));}}
  function configured(version){configurationVersion=Number.isSafeInteger(version)?version:null;bound=null;automaticCheckpoint=null;}

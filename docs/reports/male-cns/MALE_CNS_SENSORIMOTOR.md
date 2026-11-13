@@ -53,19 +53,57 @@ Measured in the production engine, 50 ms:
 | 256 looming projection neurons (LPLC2+LC4) | 5 870 | 305 (1 191) | 218 (834) |
 | 256 mixed LC/LPLC | 4 203 | 214 (510) | 171 (375) |
 
-## This commit: routing ports (research, `--routing`)
+## One routing profile for the app and the bridge (M2.1)
 
-Each of the 16 retina cells drives 16 visual projection neurons of one type on
-one side (8 types x 2 sides); the outputs are the 12 descending neurons vision
-reaches most (6 per side). No neuron is named after a button - the value of a
-descending neuron's activity for an action is left to the learned readout.
-Result: the Male CNS policy's action scores now depend on the input (dark: all
--1; mid: 2.33/0.67/...; bright: 2.33/2.33/...), weights change under verified
-feedback (28 deltas in 20 updates against 0 before). Cost: decision p50 241 ms /
-p95 427 ms, peak RSS 691 MiB on the host - slower than game time (133 ms per
-8-frame decision).
+`app/src/main/assets/male-cns-routing-v1.json`, profile sha256 `c5e53d437c9352a7...`,
+read by ONE class (`RoutingProfile`) in the Android app and in `FdbGameBridge`.
 
-Labelled `NOT_COMMERCIAL` until the Android app binds the same routing ports.
+* **Inputs, retinotopic.** Each LC/LPLC visual projection neuron is placed in its
+  eye's visual field: the synapse-weighted mean optic-lobe column
+  (`assignedOlHex1/2`) of its columnar input partners, and the eye they belong to
+  (1 570 placed). The image is 4 x 4 cells: the left two columns go to the left
+  eye, the right two to the right eye; each cell's patch gets the 16 projection
+  neurons nearest its centre, types taken in turn (`tools/male_cns_routing_profile.py`).
+  Neighbouring image cells drive neighbouring parts of the visual field.
+* **Outputs, from the measured response to these 256 inputs**
+  (`tools/MaleCnsRoutingProfile.java`): a weak background on all groups, each group
+  raised in turn, 3 seeds; 401 of 1 314 descending neurons respond; the 12 with the
+  largest spread across groups and no near-duplicate response (|corr| <= 0.9).
+  They are lateralised and position-specific - e.g. one answers +9.0 spikes / 50 ms
+  to image cell 6 only, another +6.7 to cell 4 only, others to the left or right eye.
+* **Android** binds it in `ConnectomeStore.ports` (Male CNS); `Experiment` spreads the
+  16 port rates over the 256 neurons at the profile's rate on CPU, GPU, dual and
+  isolated paths; a reconfiguration on the same ports keeps the profile, other ports
+  drop it.
+* **Identity.** `FdbLearning.sensorProfile` carries the sha into every checkpoint;
+  a checkpoint made through one profile is refused through another (a new layer
+  starts); without a profile the checkpoint format is unchanged
+  (`RoutingProfileCheck`; full graph validated in `check_full_dual.sh`).
+* **The bridge** loads the asset from next to the graph: COMMERCIAL only on that
+  path; `--manifest-ports` (diagnostics) and the fixture are NOT_COMMERCIAL.
+
+## Typed credit (M2.3)
+
+`FdbLearning.feedback(..., tier)`: VERIFIED trains the weights and the readout;
+PROVISIONAL (an unverified progress gain) does not train FDB at all - its decision
+joins the eligibility traces unpaid and is counted apart; it stays with AGOD as the
+frontier signal. The tier travels from the AGOD packet through the app
+(`lab.js` -> `fdb-feedback.js` -> `NesLabActivity`) and the measurement tool
+(`agod_realrom_check` -> `FdbGameBridge`). Six PROVISIONAL rewards: 0 weight, 0
+readout, 0 update changes; the same six as VERIFIED: 89 native changes; a later
+VERIFIED loss still reaches the provisional decisions through the traces.
+
+## Full episode and the stage detector (M2.2)
+
+* `agod-stage.js`: a control gap of >= 2 s with no resource lost around it, ending
+  in a scene unlike every scene of the stage so far, is a STAGE_TRANSITION_CANDIDATE;
+  a gap with a life lost is a death, never a stage. Synthetic check 8/8.
+* `REALROM_FULL_EPISODE=maxFrames`: the trained learner, frozen, on a freshly
+  loaded cartridge; the entry is replayed without any restore
+  (`Phase.replayEntry`, the state hash equals the original start); restores during
+  play are counted (0); the action trace and transition frames stay private.
+
+FULL_EPISODE_PLACEHOLDER
 
 ## Next, in order
 
