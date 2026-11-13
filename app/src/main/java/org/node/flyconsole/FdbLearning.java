@@ -66,7 +66,7 @@ public final class FdbLearning {
     private String readoutProfile="none";
     private final TreeMap<Integer,double[]> readout=new TreeMap<>(),readoutTrace=new TreeMap<>();
     private long readoutUpdates;
-    public static final int READOUT_LIMIT=64;private static final double READOUT_RATE=.1;
+    public static final int READOUT_LIMIT=128,ACTION_LIMIT=128;private static final double READOUT_RATE=.1;
     /* "action-dn-v1": the readout also sees the OUTPUT neurons' activity - with the
        routing profile these are descending neurons, so what the brain is doing, not
        only what it was shown, decides the action's learned term */
@@ -341,7 +341,7 @@ public final class FdbLearning {
     }
     public Decision decide(String id,Engine.Result result,int[] actions,int allowed,double threshold,double epsilon,boolean training,int[] lesions,double frozenSample,String skillKey){
         if(!training&&!Double.isNaN(frozenSample)&&!(frozenSample>=0&&frozenSample<1))throw new IllegalArgumentException("FDB frozen sample");
-        if(id==null||id.length()>80||result.counts.length!=graph.ids.length||result.steps<=0||!Double.isFinite(threshold)||threshold<=0||!Double.isFinite(epsilon)||epsilon<0||epsilon>1||actions.length<2||actions.length>64)throw new IllegalArgumentException("FDB decision");
+        if(id==null||id.length()>80||result.counts.length!=graph.ids.length||result.steps<=0||!Double.isFinite(threshold)||threshold<=0||!Double.isFinite(epsilon)||epsilon<0||epsilon>1||actions.length<2||actions.length>ACTION_LIMIT)throw new IllegalArgumentException("FDB decision");
         double[] logits=new double[actions.length],prob=new double[actions.length];int eligible=0,best=-1;double maximum=-Double.MAX_VALUE;
         double[] readoutFeatures=null,neural=new double[actions.length],base=new double[actions.length];
         Integer remembered=skillOn()&&skillKey!=null?skills.get(skillKey):null;int skillProposal=remembered==null?-1:remembered;

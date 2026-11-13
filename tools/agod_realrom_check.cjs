@@ -291,9 +291,9 @@ async function learn(built,inPlay,profile,identity,java,extras){
   ?decisionPrior(profile.dto.discovered&&profile.dto.discovered.buttonAttribution,spec,Number(process.env.REALROM_PRIOR||2)):null;
  let actions=prior?prior.actions:actionSet(spec);
  /* a route to distil may use actions outside the decision set (a composite search):
-    the brain's action set then also holds every action the route takes (<= 64) */
+    the brain's action set then also holds every action the route takes (<= 128, FdbLearning.ACTION_LIMIT) */
  if(process.env.REALROM_DISTILL){const used=[...new Set(JSON.parse(fs.readFileSync(process.env.REALROM_DISTILL,'utf8')).masks)];
-  actions=[...new Set([...actions,...used])];if(actions.length>64)throw Error('the route uses more actions than FDB decides between');}
+  actions=[...new Set([...actions,...used])];if(actions.length>128)throw Error('the route uses more actions than FDB decides between');}
  /* REALROM_CREDIT_PROFILE=dual-time-v1: two eligibility traces by game time
     (15 / 90 frames). REALROM_PAUSE=1: an interval in which the passive
     control-authority tracker says the player had no control joins the traces

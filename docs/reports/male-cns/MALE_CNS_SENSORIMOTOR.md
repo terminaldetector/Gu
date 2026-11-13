@@ -1,7 +1,7 @@
 # Male CNS as the agent's brain - where it stands on Contra III
 
 **ROM hash / Male graph hash:** Contra III (SNES) `a93ea87fc835c530b5135c5294433d15eef6dbf656144b387e89ac19cf864996` / Male CNS v1.0 `90d9baae7627a521b08d5112eeb27057994b213bb2ecbc00aae1fb1c52e1cb56`, routing profile `c5e53d437c9352a7`
-**Best full-episode frontier** (frozen, freshly loaded cartridge, 0 restores): AGOD search route past the stage's mid-boss tank (2 748 strides, not yet distilled); progress **580 by the Male CNS policy alone** - its decisions read from 2 048 of its own neurons through an FDB readout fitted to an AGOD route; it reproduces all 548 route steps with its activity identical to training and dies where the route ends. A memorised search route, not steering: started 1-8 frames late it reaches 100-241. Before the population readout: 146 after imitation through 12 descending neurons, 8 without.
+**Best full-episode frontier** (frozen, freshly loaded cartridge, 0 restores): AGOD search route to the stage's final boss (4 404 strides, past the mid-boss tank and the fire section, last life; not yet distilled); progress **580 by the Male CNS policy alone** - its decisions read from 2 048 of its own neurons through an FDB readout fitted to an AGOD route; it reproduces all 548 route steps with its activity identical to training and dies where the route ends. A memorised search route, not steering: started 1-8 frames late it reaches 100-241. Before the population readout: 146 after imitation through 12 descending neurons, 8 without.
 **LEVEL_CLEAR evidence:** none - `UNVERIFIED`. No stage transition in any run; the search frontier stops at 580.
 
 ## Product: Male CNS only
@@ -195,7 +195,11 @@ tank's health among 3 damage counters and its best route took the tank from 246 
 0); the score jumped by ~5 400 and the route went on into the next part of the
 stage (a wall to climb) - 2 748 strides, best progress 1 874 (damage included). A
 search without the damage counters had stood at the same tank for millions of
-frames. Searches seeded with this route continue; no stage transition yet.
+frames. The same search went on through the climb and the fire section to the
+stage's final boss by 2.4 M frames (4 404 strides, still on its last life); no
+stage transition yet. A route that mixes the learner's decision set (before the
+seed point) and composite actions uses 68 actions: FDB's action and readout limit
+is now 128 (the app uses at most 16).
 
 The cartridge's score (the oracle's progress field) is not among the discovered
 fields: it is BCD, and the carry test expects a binary `+1` in the next byte.
