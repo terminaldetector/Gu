@@ -1,8 +1,8 @@
 # Male CNS as the agent's brain - where it stands on Contra III
 
 **ROM hash / Male graph hash:** Contra III (SNES) `a93ea87fc835c530b5135c5294433d15eef6dbf656144b387e89ac19cf864996` / Male CNS v1.0 `90d9baae7627a521b08d5112eeb27057994b213bb2ecbc00aae1fb1c52e1cb56`, routing profile `c5e53d437c9352a7`
-**Best full-episode frontier** (frozen, freshly loaded cartridge, 0 restores): an AGOD search route that CLEARS STAGE 1 (boss beaten, the game enters stage 2 at stride ~4 934; one action trace from the legal start, replayed from a fresh load with no restore) - the Male CNS run of it is in progress; the Male CNS alone reproduces the first 2 748 strides of an earlier route of it (past the mid-boss tank) frozen from a fresh load; progress **580 by the Male CNS policy alone** - its decisions read from 2 048 of its own neurons through an FDB readout fitted to an AGOD route; it reproduces all 548 route steps with its activity identical to training and dies where the route ends. A memorised search route, not steering: started 1-8 frames late it reaches 100-241. Before the population readout: 146 after imitation through 12 descending neurons, 8 without.
-**LEVEL_CLEAR evidence:** for the SEARCH route: the stage detector (r2) reports one STAGE_TRANSITION_CANDIDATE (a 664-frame control gap, no life lost, palette novelty 0.38 against 0.30) and private frames show the overhead stage 2; a private oracle (the stage-number bytes, established by inspection, opened only after a run) is in place. For the Male CNS: pending the frozen run - until it reports, `UNVERIFIED`.
+**Best full-episode frontier:** STAGE 1 CLEARED by the Male CNS policy alone - frozen, freshly loaded cartridge, entry replayed without restore, 0 restores, no RAM read at play time, 5 100 decisions (40 800 frames): it reproduces an AGOD search route through the mid-boss tank and the stage boss into stage 2, its neural activity identical to training on all 5 100 steps. The route was FOUND BY SEARCH (AGOD archive on the research copy) and DISTILLED into an FDB readout of 4 095 Male CNS neurons - a memorised route, not general play (started late, the policy fails: see the robustness tables).
+**LEVEL_CLEAR evidence:** `VERIFIED` - the frozen run's action trace (sha256 `8caa142ed3b16e9425fa7171cba7c8049d041b689d7af55742739e6b082bfe42`), replayed on a fresh load with 0 restores: AGOD stage detector r2 STAGE_TRANSITION_CANDIDATE at frame 39 416 (control gap 664 frames, no life lost, palette novelty 0.383 > 0.30); a private oracle (the stage-number bytes, established by human-style inspection of the search route, opened only after the run): both bytes constant through stage 1, changed only inside that gap, ended exactly +1 and held. Frames and the trace are kept privately.
 
 ## Product: Male CNS only
 
@@ -217,7 +217,38 @@ needs the candidate and the step inside its gap. The search processes keep
 their traces as 16-bit arrays (one ran out of JavaScript heap at 15 000 cells of
 ~8 000 strides).
 
-**Distilled so far:** the post-tank route (2 748 strides) - Male CNS alone,
+## Stage 1 cleared by the Male CNS - what was run, and what it is
+
+1. **Search** (AGOD, research copy of the emulator, restores allowed there only):
+   frontier archive with unwrapped progress, composite actions, causal damage
+   counters, seeded in steps from its own earlier routes. Its route from the legal
+   start clears stage 1 (stage 2 at stride ~4 934) and was checked by replaying it
+   from a fresh load with no restore.
+2. **Distillation** (`REALROM_READOUT=action-pop-v1`): a frozen pass along the route
+   picks the 4 095 Male CNS neurons whose activity varies most (of 11 198); one
+   imitation pass records their activity at each of 5 100 route steps; the readout
+   is fitted to the route's actions (100 % of 5 100 after 391 epochs, 573 s). W0 and
+   the plastic layer are not changed.
+3. **Frozen episode**: a freshly loaded cartridge, entry replayed (same state hash),
+   0 restores, the learner digest unchanged, argmax decisions from the Male CNS
+   (12 descending neurons' score + the readout of the 4 095 neurons): 5 100 of 5 100
+   route steps reproduced, activity identical on all 5 100, 3 lives lost and 1 gained
+   on the way (as on the route), the stage detector reports the transition.
+4. **Verification after the run**: the oracle check above. The first run reported
+   REFUTED because the verifier took the first change of the two stage bytes as the
+   whole step (they step 96 frames apart inside the gap); the verifier now requires
+   the final values +1 with every change inside the gap, and the run's own recorded
+   action trace verifies. A rerun with the corrected verifier in-process is in
+   progress.
+
+What it is not: the policy does not play Contra III in general. In a deterministic
+emulator from the identical start, reproducing a route is close to replaying it;
+on earlier routes a start delayed by 1-8 frames broke the Male CNS policy within
+~250 progress. The search, not the brain, solved the stage; the brain carries the
+solution in its own activity. Making it steer (several routes, perturbed starts) is
+the next step.
+
+**Distilled before:** the post-tank route (2 748 strides) - Male CNS alone,
 population readout (4 095 of 9 980 varying neurons, fitted 100 % in 285 epochs),
 frozen, fresh load: 2 748 of 2 748 route steps reproduced, brain activity
 identical on all of them, alive at the 24 000-frame cap.

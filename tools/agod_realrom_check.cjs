@@ -222,15 +222,18 @@ async function studyRom(file,java){
    one higher than at the start of play, the step taken inside the candidate's gap
    (stage values read per stride by the caller). Only the verdict leaves the run. */
 function oracleStage(romSha256){const p=path.join(ROMS,'oracle.json');if(!fs.existsSync(p))return null;const e=JSON.parse(fs.readFileSync(p,'utf8'))[romSha256];return e&&Array.isArray(e.stage)&&e.stage.length?e.stage:null;}
+/* every oracle stage byte: constant from the start of play to the gap, changes only
+   inside the candidate's gap (several bytes may step at different frames of it -
+   measured: two stage bytes stepped 96 frames apart inside one 664-frame gap), and
+   ends exactly one higher, held to the end of the run */
 function verifyLevelClear(stageTrace,transitions){
  if(!stageTrace)return {verdict:'NO_ORACLE'};if(!transitions.length)return {verdict:'UNVERIFIED',reason:'no stage transition candidate'};
- const start=stageTrace[0].values,t=transitions[0];
- const step=stageTrace.find(x=>x.values.some((v,i)=>v!==start[i]));
- if(!step)return {verdict:'REFUTED',reason:'the oracle stage bytes never changed'};
- const plusOne=step.values.every((v,i)=>v===start[i]+1);
- const inGap=step.frame>=t.gapStart-16&&step.frame<=t.frame+16;
- const after=stageTrace.filter(x=>x.frame>=step.frame).every(x=>x.values.every((v,i)=>v===step.values[i]));
- return {verdict:plusOne&&inGap&&after?'VERIFIED':'REFUTED',stageAdvanced:plusOne,stepInsideGap:inGap,heldAfter:after};
+ const start=stageTrace[0].values,t=transitions[0],lo=t.gapStart-16,hi=(t.decidedAt||t.frame)+16,last=stageTrace[stageTrace.length-1].values;
+ let insideGap=true;const changed=start.map(()=>false);
+ for(let k=1;k<stageTrace.length;k++)stageTrace[k].values.forEach((v,i)=>{if(v!==stageTrace[k-1].values[i]){changed[i]=true;if(stageTrace[k].frame<lo||stageTrace[k].frame>hi)insideGap=false;}});
+ const plusOne=last.every((v,i)=>v===start[i]+1);
+ if(!changed.some(Boolean))return {verdict:'REFUTED',reason:'the oracle stage bytes never changed'};
+ return {verdict:plusOne&&insideGap?'VERIFIED':'REFUTED',stageAdvanced:plusOne,changesOnlyInsideGap:insideGap,heldToEnd:plusOne};
 }
 
 async function exploreRoute(built,inPlay,profile,identity,extras){
