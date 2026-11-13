@@ -2,7 +2,7 @@
 
 **ROM hash / Male graph hash:** Contra III (SNES) `a93ea87fc835c530b5135c5294433d15eef6dbf656144b387e89ac19cf864996` / Male CNS v1.0 `90d9baae7627a521b08d5112eeb27057994b213bb2ecbc00aae1fb1c52e1cb56`, routing profile `c5e53d437c9352a7`
 **Best full-episode frontier:** STAGE 1 CLEARED by the Male CNS policy alone - frozen, freshly loaded cartridge, entry replayed without restore, 0 restores, no RAM read at play time, 5 100 decisions (40 800 frames): it reproduces an AGOD search route through the mid-boss tank and the stage boss into stage 2, its neural activity identical to training on all 5 100 steps. The route was FOUND BY SEARCH (AGOD archive on the research copy) and DISTILLED into an FDB readout of 4 095 Male CNS neurons - a memorised route, not general play (started late, the policy fails: see the robustness tables).
-**LEVEL_CLEAR evidence:** `VERIFIED` - the frozen run's action trace (sha256 `8caa142ed3b16e9425fa7171cba7c8049d041b689d7af55742739e6b082bfe42`), replayed on a fresh load with 0 restores: AGOD stage detector r2 STAGE_TRANSITION_CANDIDATE at frame 39 416 (control gap 664 frames, no life lost, palette novelty 0.383 > 0.30); a private oracle (the stage-number bytes, established by human-style inspection of the search route, opened only after the run): both bytes constant through stage 1, changed only inside that gap, ended exactly +1 and held. Frames and the trace are kept privately.
+**LEVEL_CLEAR evidence:** `VERIFIED` - in the frozen run itself (detector and oracle checked in-process after the episode), and again from that run's recorded action trace (sha256 `8caa142ed3b16e9425fa7171cba7c8049d041b689d7af55742739e6b082bfe42`) replayed on a fresh load with 0 restores: AGOD stage detector r2 STAGE_TRANSITION_CANDIDATE at frame 39 416 (control gap 664 frames, no life lost, palette novelty 0.383 > 0.30); a private oracle (the stage-number bytes, established by human-style inspection of the search route, opened only after the run): both bytes constant through stage 1, changed only inside that gap, ended exactly +1 and held. Frames and the trace are kept privately.
 
 ## Product: Male CNS only
 
@@ -237,9 +237,16 @@ their traces as 16-bit arrays (one ran out of JavaScript heap at 15 000 cells of
 4. **Verification after the run**: the oracle check above. The first run reported
    REFUTED because the verifier took the first change of the two stage bytes as the
    whole step (they step 96 frames apart inside the gap); the verifier now requires
-   the final values +1 with every change inside the gap, and the run's own recorded
-   action trace verifies. A rerun with the corrected verifier in-process is in
-   progress.
+   the final values +1 with every change inside the gap. The whole pipeline rerun
+   from scratch (discovery, distillation, frozen episode) gave the same population,
+   the same fit (391 epochs, 301 178 updates), the same action trace and
+   `LEVEL_CLEAR VERIFIED` in-process. Aggregates: `stage1-clear.json`.
+
+| frozen Male CNS episode, fresh load, 0 restores | decisions | route steps reproduced | lives lost | stage transition | LEVEL_CLEAR |
+|---|---|---|---|---|---|
+| identical start | 5 100 | 5 100 of 5 100 (activity identical on all) | 3 (1 gained) | frame 39 416, gap 664, novelty 0.383 | **VERIFIED** |
+| start 1 frame late | 216 | - | 3, game over | none (progress 171) | UNVERIFIED |
+| start 8 frames late | 164 | - | 3, game over | none (progress 136) | UNVERIFIED |
 
 What it is not: the policy does not play Contra III in general. In a deterministic
 emulator from the identical start, reproducing a route is close to replaying it;

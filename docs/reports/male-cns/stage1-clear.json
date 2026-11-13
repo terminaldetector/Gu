@@ -1,0 +1,94 @@
+{
+ "schema": "gu-male-cns-stage1-clear-v1",
+ "date": "2026-11-13",
+ "rom": {
+  "name": "Contra III (SNES), private copy",
+  "sha256": "a93ea87fc835c530b5135c5294433d15eef6dbf656144b387e89ac19cf864996"
+ },
+ "brain": {
+  "model": "male-cns-v1.0",
+  "label": "COMMERCIAL",
+  "graphSha256": "90d9baae7627a521b08d5112eeb27057994b213bb2ecbc00aae1fb1c52e1cb56",
+  "neurons": 165122,
+  "sensorProfile": "c5e53d437c9352a75103d4b42ce4a0bcc4efbc8349d20477e4b532f6cc9b8304",
+  "stimulated": 256
+ },
+ "route": {
+  "origin": "AGOD frontier archive on the research copy (restores allowed there only); replayed from a fresh load with no restore",
+  "strides": 5100,
+  "stepFrames": 8
+ },
+ "distillation": {
+  "readout": "action-pop-v1",
+  "population": {
+   "neurons": 4095,
+   "varying": 11198,
+   "fit": {
+    "met": 1,
+    "epochs": 391,
+    "updates": 301178,
+    "demonstrations": 5100,
+    "wallSeconds": 551
+   }
+  }
+ },
+ "frozenEpisode": {
+  "runMode": "FROZEN_FULL_EPISODE",
+  "policy": "argmax",
+  "freshLoad": true,
+  "entryReplayedSameState": true,
+  "evalRestores": 0,
+  "humanInputFrames": 0,
+  "framesExecuted": 40800,
+  "decisions": 5100,
+  "losses": 3,
+  "ended": false,
+  "weightsChangedInEval": false,
+  "routeStepsFollowedFromStart": 5100,
+  "routeStepsWithIdenticalBrainActivity": 5100,
+  "transitions": [
+   {
+    "frame": 39416,
+    "gapFrames": 664,
+    "novelty": 0.3825
+   }
+  ],
+  "levelClear": "VERIFIED",
+  "levelClearOracle": {
+   "verdict": "VERIFIED",
+   "stageAdvanced": true,
+   "changesOnlyInsideGap": true,
+   "heldToEnd": true
+  },
+  "actionTraceSha256": "8caa142ed3b16e9425fa7171cba7c8049d041b689d7af55742739e6b082bfe42",
+  "decisionLatencyMs": {
+   "p50": 196,
+   "p95": 230
+  }
+ },
+ "delayedStarts": [
+  {
+   "startDelayFrames": 1,
+   "framesExecuted": 1728,
+   "decisions": 216,
+   "losses": 3,
+   "ended": true,
+   "highestProgress": 171,
+   "levelClear": "UNVERIFIED"
+  },
+  {
+   "startDelayFrames": 8,
+   "framesExecuted": 1312,
+   "decisions": 164,
+   "losses": 3,
+   "ended": true,
+   "highestProgress": 136,
+   "levelClear": "UNVERIFIED"
+  }
+ ],
+ "notes": [
+  "the route was found by search, not by the Male CNS; the Male CNS policy reproduces it from its own neural activity through a fitted readout",
+  "deterministic emulator, identical start: reproducing a route is close to replaying it; delayed starts show the policy does not steer",
+  "oracle: stage-number RAM bytes established by inspection of the search route, kept privately and opened only after the run; offsets are not reported"
+ ]
+}
