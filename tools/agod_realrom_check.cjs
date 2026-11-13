@@ -86,6 +86,21 @@ function actionSet(spec){
  for(const d of dirs)if(buttons[0])out.push(d|buttons[0]);
  return [...new Set(out)].slice(0,12);
 }
+/* COMPOSITE ACTIONS for the search (REALROM_EXPLORE_ACTIONS=composite): every stick
+   position (none, 4 directions, 4 diagonals) with none, one or two of the k action
+   buttons discovery attributed most progress to - from the pad description and the
+   attribution only. The decision set below is capped at 16 for the learner and,
+   measured on a private SNES run-and-gun, had no fire with a direction other than
+   the attributed one and no jump with a direction. 9 x 7 = 63 for k = 3, within
+   FDB's 64-action limit, so a route found with it can be distilled. */
+function compositeActions(attribution,spec,k){
+ const m=n=>(spec.buttons.find(b=>b.name===n)||{}).mask||0,dirNames=['←','→','↑','↓'];
+ const dirs=[0,m('←'),m('→'),m('↑'),m('↓'),m('←')|m('↑'),m('→')|m('↑'),m('←')|m('↓'),m('→')|m('↓')];
+ const btns=(attribution||[]).filter(b=>!dirNames.includes(b.name)&&!['Start','Select','Mode'].includes(b.name)&&spec.buttons.some(x=>x.name===b.name&&x.mask===b.mask))
+  .sort((a,b)=>(b.gainLift||0)-(a.gainLift||0)).slice(0,k).map(b=>b.mask);
+ const sets=[0,...btns];for(let i=0;i<btns.length;i++)for(let j=i+1;j<btns.length;j++)sets.push(btns[i]|btns[j]);
+ const out=[];for(const d of dirs)for(const b of sets)out.push(d|b);return [...new Set(out)].slice(0,64);
+}
 /* REALROM_DECISION=agod: the decision prior from discovery, the same function the app uses */
 const decisionPrior=(attribution,spec,weight)=>Objective.decisionPrior(attribution,spec,weight);
 function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
@@ -204,7 +219,9 @@ async function studyRom(file,java){
 async function exploreRoute(built,inPlay,profile,identity,extras){
  const d=built.driver,spec=d.actionSpec;
  const prior=decisionPrior(profile.dto.discovered&&profile.dto.discovered.buttonAttribution,spec,0);
- const actions=prior?prior.actions:actionSet(spec);
+ const actions=process.env.REALROM_EXPLORE_ACTIONS==='composite'?compositeActions(profile.dto.discovered&&profile.dto.discovered.buttonAttribution,spec,3)
+  :prior?prior.actions:actionSet(spec);
+ console.log('  explore: %d actions (%s), selection %s',actions.length,process.env.REALROM_EXPLORE_ACTIONS==='composite'?'composite':'decision set',process.env.REALROM_EXPLORE_SELECT||'frontier');
  const live=Objective.createLiveReward(profile,MODULES,{identity,sessionId:'explore',policy:'aggressive'});
  const read=live.read,progressOf=live.readProgress,budget=Number(process.env.REALROM_EXPLORE);
  const positionFields=(extras.entryProbe&&extras.entryProbe.axes||[]).filter(a=>a.integrators>0).map(a=>a.fields[0]);
@@ -218,13 +235,18 @@ async function exploreRoute(built,inPlay,profile,identity,extras){
   snapshot(){const s=d.snapshot();return s&&s.bytes?{...s,bytes:zlib.deflateRawSync(s.bytes,{level:1}),packed:true}:s;},
   restore(s){return d.restore(s&&s.packed?{...s,bytes:new Uint8Array(zlib.inflateRawSync(s.bytes)),packed:undefined}:s);}});
  const archive=Explore.createArchive(packed,{actions,readProgress:progressOf,readResource:read,positionFields,
-  maxCells:Number(process.env.REALROM_EXPLORE_CELLS||20000),
+  maxCells:Number(process.env.REALROM_EXPLORE_CELLS||20000),select:process.env.REALROM_EXPLORE_SELECT||'frontier',
   screen:()=>{const [w,h]=dims();return Stage.signature(built.core.pixels,w,h);},seed:Number(process.env.REALROM_EXPLORE_SEED||1),
   allowLoss:process.env.REALROM_EXPLORE_LOSS==='1',floor:profile.dto.discovered.resource.floor,
   ...(process.env.REALROM_EXPLORE_LIFE?{lifeWeight:Number(process.env.REALROM_EXPLORE_LIFE)}:{})});
  const t0=Date.now();let lastLog=0;
+ /* SIGUSR2: write the current best route now (private evidence dir) */
+ let dumpNow=false;const onDump=()=>{dumpNow=true;};process.on('SIGUSR2',onDump);
  while(archive.stats().framesRun<budget){
   archive.explore();
+  if(dumpNow&&process.env.REALROM_EVIDENCE_DIR){dumpNow=false;const b=archive.best(),st0=archive.stats();fs.mkdirSync(process.env.REALROM_EVIDENCE_DIR,{recursive:true});
+   fs.writeFileSync(path.join(process.env.REALROM_EVIDENCE_DIR,'explore-route-partial.json'),JSON.stringify({entrySteps:extras.entrySteps,stepFrames:8,masks:b.trace,progress:b.progress,resource:b.resource,framesRun:st0.framesRun}));
+   console.log('  explore: best route written on request (progress %d, %d strides)',b.progress,b.trace.length);}
   const st=archive.stats();
   if(st.framesRun-lastLog>=budget/20){lastLog=st.framesRun;
    console.log('  explore: %d frames, %d cells (%d evicted), %d explorations, best progress %d (resource %s, route %d strides) %d s, rss %d MiB',
@@ -233,6 +255,7 @@ async function exploreRoute(built,inPlay,profile,identity,extras){
    if(process.env.REALROM_EVIDENCE_DIR){const b=archive.best();fs.mkdirSync(process.env.REALROM_EVIDENCE_DIR,{recursive:true});
     fs.writeFileSync(path.join(process.env.REALROM_EVIDENCE_DIR,'explore-route-partial.json'),JSON.stringify({entrySteps:extras.entrySteps,stepFrames:8,masks:b.trace,progress:b.progress,resource:b.resource,framesRun:st.framesRun}));}}
  }
+ process.removeListener('SIGUSR2',onDump);
  const best=archive.best(),st=archive.stats();
  /* the route, replayed from a freshly loaded cartridge: entry without restore, then
     the trace stride by stride, the stage detector watching - no snapshot anywhere */
@@ -262,7 +285,11 @@ async function learn(built,inPlay,profile,identity,java,extras){
  const d=built.driver,spec=d.actionSpec,core=built.core;
  const prior=process.env.REALROM_DECISION==='agod'
   ?decisionPrior(profile.dto.discovered&&profile.dto.discovered.buttonAttribution,spec,Number(process.env.REALROM_PRIOR||2)):null;
- const actions=prior?prior.actions:actionSet(spec);
+ let actions=prior?prior.actions:actionSet(spec);
+ /* a route to distil may use actions outside the decision set (a composite search):
+    the brain's action set then also holds every action the route takes (<= 64) */
+ if(process.env.REALROM_DISTILL){const used=[...new Set(JSON.parse(fs.readFileSync(process.env.REALROM_DISTILL,'utf8')).masks)];
+  actions=[...new Set([...actions,...used])];if(actions.length>64)throw Error('the route uses more actions than FDB decides between');}
  /* REALROM_CREDIT_PROFILE=dual-time-v1: two eligibility traces by game time
     (15 / 90 frames). REALROM_PAUSE=1: an interval in which the passive
     control-authority tracker says the player had no control joins the traces

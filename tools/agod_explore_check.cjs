@@ -82,6 +82,20 @@ console.log('segmented stage: unwrap %j | raw %j',{reached:withUnwrap.reached,fr
 ok(withUnwrap.reached,'with progress counted as gained, the archive crosses a counter reset and reaches the stage end ('+withUnwrap.frames+' frames)');
 ok(withUnwrap.stats.bestProgress>255,'and its frontier lies past the reset (best progress '+withUnwrap.stats.bestProgress+' > 255)');
 ok(!raw.reached||raw.frames>withUnwrap.frames,'read raw, the same search does not reach it in the same budget, or takes longer ('+(raw.reached?raw.frames+' frames':'not reached')+')');
+/* a stage that needs LIVES: three lives, two avoidable hit zones, then two gates that
+   each take a life whatever the player does - only a route that took no avoidable hit
+   ends with a life left at the end. 'lives' pushes one frontier per lives count. */
+function gated(){const g=game();g.restore({ram:Object.assign(g.readRam(),{[R.LIVES]:3}),frameNo:0});const run1=g.run;
+ g.run=(mask,frames)=>{for(let i=0;i<frames;i++){const r=g.readRam(),x0=r[R.X];run1(mask,1);const r2=g.readRam();
+  if(r2[R.LOCK]===0&&((x0<200&&r2[R.X]>=200)||(x0<220&&r2[R.X]>=220))&&r2[R.LIVES]>0){r2[R.LIVES]--;g.restore({ram:r2,frameNo:i});}}};return g;}
+function searchGated(select){const g=gated();
+ const a=Explore.createArchive(g,{actions:[0,64,128,1,65,129],readProgress:ram=>[ram[R.X]+256*ram[R.STAGE]],readResource:ram=>ram[R.LIVES],
+  positionFields:[R.X],screen:()=>Stage.signature(g.core.pixels,W,H),seed:3,allowLoss:true,floor:0,select});
+ let reached=null;for(let i=0;i<6000&&!reached;i++){a.explore();const b=a.best();if(b&&b.progress>=240&&b.resource>0)reached=b;}
+ return {reached:!!reached,frames:a.stats().framesRun,frontier:a.stats().frontierByResource};}
+const byLives=searchGated('lives'),byFrontier=searchGated('frontier');
+console.log('gated stage: lives %j | frontier %j',byLives,byFrontier);
+ok(byLives.reached,"select 'lives' finds a route that keeps enough lives for two unavoidable hits ("+byLives.frames+' frames)');
 const u1=Explore.unwrapStep(null,[250,3],true),u2=Explore.unwrapStep(u1,[0,2],true),u3=Explore.unwrapStep(u2,[5,1],true);
 ok(u3.value[0]===255&&u3.value[1]===1,'unwrapStep: 250 -> 0 -> 5 is 255 gained; a small fall (3 -> 2 -> 1) stays a fall ('+u3.value+')');
 console.log('\n'+out.join('\n'));

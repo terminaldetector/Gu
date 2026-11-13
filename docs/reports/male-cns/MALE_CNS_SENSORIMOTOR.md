@@ -109,7 +109,7 @@ readout), then one frozen episode of up to 36 000 frames on a fresh load:
 | input encoder | training events verified / provisional | weight changes | full episode: frames, losses, progress, transitions |
 |---|---|---|---|
 | legacy-16 (luminance) | 0 / 2 | 0 | 36 000, 0, **8**, 0 |
-| motion-16 | 11 / 74 | 855 | (killed by a worker restart; short evaluation: progress 0 argmax, 12 sampled) |
+| motion-16 | 11 / 74 | 855 | 36 000, 0, **0**, 0 |
 
 The Male CNS policy, trained only by verified losses, stands still: nothing it
 sees pays it for moving, and progress no longer trains it (M2.3). Progress has to
@@ -142,9 +142,23 @@ stage the archive reaches the end in 1 496 frames against 114 840 read raw
 deflated (823 KB -> ~40 KB on SNES) and past `maxCells` the cells worth least are
 dropped - a run that kept 9 600 full savestates was killed by the memory limit.
 Unwrapped searches on the cartridge go past the old ceiling: 717 and 712 by 1.5 M
-frames, 1 030 and 1 082 by 3-3.5 M frames (two archive seeds, lives valued at 30
-and 8 progress units) - still with one life left on the best cells, still no
-stage transition.
+frames, 1 030 - 1 110 by 3-4 M frames (three archive seeds) - and stop again, all
+three at the same place, with one life left: a locked screen where a tank pins the
+player against the right edge (private frames). From there, firing or jumping to
+the right survives 120 strides and scores nothing; everything else dies within
+about 12.
+
+The search could not even try the obvious answers: its action set is the
+learner's decision set (discovery's attribution, capped at 16), which on this
+cartridge holds fire only alone or with right, and jump only straight up - no
+fire to the left, up or down, no jump with a direction. `REALROM_EXPLORE_ACTIONS=
+composite`: every stick position (with diagonals) with none, one or two of the
+three most-attributed action buttons - 63 actions, still within FDB's 64, so a
+route found with them can be distilled (the brain's action set takes every action
+the route uses). `select: 'lives'` (opt-in) pushes one frontier per number of
+lives left; on the synthetic gated stage it is slower than the default (93 768
+against 1 576 frames), so it is measured, not assumed. Composite searches are
+running.
 
 The cartridge's score (the oracle's progress field) is not among the discovered
 fields: it is BCD, and the carry test expects a binary `+1` in the next byte.

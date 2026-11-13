@@ -44,7 +44,15 @@ const DEFAULTS=Object.freeze({stride:8,horizons:Object.freeze([96,192,384]),hold
     at a fortified wall, so the archive saw the next segment as 510 progress lower
     and never explored it); the trajectory keeps what it had and counts on. Any
     other fall is taken as it is. */
- unwrap:true});
+ unwrap:true,
+ /* select: 'frontier' scores a cell by its distance to the best progress (lives
+    weighted by lifeWeight); 'lives' by its distance to the best progress reached
+    WITH THE SAME resource, so the archive pushes one frontier per number of lives
+    left instead of reaching every obstacle on its last one (on a private SNES
+    run-and-gun the frontier routes met a mid-boss with one life after two early
+    deaths). It spreads the effort over the lives counts: on the synthetic gated
+    stage it is slower than 'frontier' (93 768 against 1 576 frames). */
+ select:'frontier'});
 
 /* per trajectory: raw progress values -> accumulated ones (see DEFAULTS.unwrap) */
 function unwrapStep(track,raw,enabled){
@@ -84,7 +92,7 @@ function createKeyer(options){
 function createArchive(driver,options){
  const o={...DEFAULTS,...(options||{})};
  const random=rng(o.seed);
- const cells=new Map();let explorations=0,framesRun=0,bestProgress=-Infinity,bestCell=null,evicted=0;
+ const cells=new Map();let explorations=0,framesRun=0,bestProgress=-Infinity,bestCell=null,evicted=0;const bestByResource=new Map();
  const total=v=>v.reduce((s,x)=>s+(Number.isFinite(x)?x:0),0);
  function offer(trace,ram,track){
   const k=cellKey(o,ram,o.screen?o.screen():null,track.value),prog=total(track.value),res=o.readResource(ram);
@@ -92,6 +100,7 @@ function createArchive(driver,options){
   if(prev&&(prev.resource>res||(prev.resource===res&&prev.trace.length<=trace.length)))return false;
   cells.set(k,{key:k,trace:trace.slice(),snapshot:driver.snapshot(),progress:prog,resource:res,track,
    chosen:prev?prev.chosen:0,fails:prev?prev.fails:0,found:Date.now()});
+  if(!(bestByResource.get(res)>=prog))bestByResource.set(res,prog);
   if(res>o.floor||!o.allowLoss)if(prog>bestProgress||(prog===bestProgress&&bestCell&&res>bestCell.resource)){bestProgress=prog;bestCell=cells.get(k);}
   if(cells.size>o.maxCells)evict();
   return true;
@@ -107,7 +116,9 @@ function createArchive(driver,options){
  function choose(){
   let best=null,bestScore=-Infinity;
   for(const c of cells.values()){
-   const score=c.progress-bestProgress+(o.allowLoss?o.lifeWeight*c.resource:0)+3/Math.sqrt(c.chosen+1)-0.5*c.fails+random()*0.5;
+   if(o.select==='lives'&&o.allowLoss&&c.resource<=o.floor)continue;
+   const gap=o.select==='lives'?c.progress-bestByResource.get(c.resource):c.progress-bestProgress+(o.allowLoss?o.lifeWeight*c.resource:0);
+   const score=gap+3/Math.sqrt(c.chosen+1)-0.5*c.fails+random()*0.5;
    if(score>bestScore){bestScore=score;best=c;}
   }
   return best;
@@ -135,7 +146,7 @@ function createArchive(driver,options){
  /* start: the legal start state (trace empty) */
  {const ram=driver.readRam();offer([],ram,unwrapStep(null,o.readProgress(ram)||[],o.unwrap));}
  return {revision:EXPLORE_REVISION,explore,
-  stats:()=>({cells:cells.size,evicted,explorations,framesRun,bestProgress,bestResource:bestCell?bestCell.resource:null,bestTraceLength:bestCell?bestCell.trace.length:0}),
+  stats:()=>({cells:cells.size,evicted,explorations,framesRun,frontierByResource:Object.fromEntries([...bestByResource].sort((a,b)=>a[0]-b[0])),bestProgress,bestResource:bestCell?bestCell.resource:null,bestTraceLength:bestCell?bestCell.trace.length:0}),
   best:()=>bestCell?{trace:bestCell.trace.slice(),progress:bestCell.progress,resource:bestCell.resource,snapshot:bestCell.snapshot}:null,
   cells:()=>cells};
 }
