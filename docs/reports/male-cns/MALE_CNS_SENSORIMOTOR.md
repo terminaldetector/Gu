@@ -1,8 +1,8 @@
 # Male CNS as the agent's brain - where it stands on Contra III
 
 **ROM hash / Male graph hash:** Contra III (SNES) `a93ea87fc835c530b5135c5294433d15eef6dbf656144b387e89ac19cf864996` / Male CNS v1.0 `90d9baae7627a521b08d5112eeb27057994b213bb2ecbc00aae1fb1c52e1cb56`, routing profile `c5e53d437c9352a7`
-**Best full-episode frontier** (frozen, freshly loaded cartridge, 0 restores): AGOD search route to the stage's final boss (4 404 strides, past the mid-boss tank and the fire section, last life; not yet distilled); progress **580 by the Male CNS policy alone** - its decisions read from 2 048 of its own neurons through an FDB readout fitted to an AGOD route; it reproduces all 548 route steps with its activity identical to training and dies where the route ends. A memorised search route, not steering: started 1-8 frames late it reaches 100-241. Before the population readout: 146 after imitation through 12 descending neurons, 8 without.
-**LEVEL_CLEAR evidence:** none - `UNVERIFIED`. No stage transition in any run; the search frontier stops at 580.
+**Best full-episode frontier** (frozen, freshly loaded cartridge, 0 restores): an AGOD search route that CLEARS STAGE 1 (boss beaten, the game enters stage 2 at stride ~4 934; one action trace from the legal start, replayed from a fresh load with no restore) - the Male CNS run of it is in progress; the Male CNS alone reproduces the first 2 748 strides of an earlier route of it (past the mid-boss tank) frozen from a fresh load; progress **580 by the Male CNS policy alone** - its decisions read from 2 048 of its own neurons through an FDB readout fitted to an AGOD route; it reproduces all 548 route steps with its activity identical to training and dies where the route ends. A memorised search route, not steering: started 1-8 frames late it reaches 100-241. Before the population readout: 146 after imitation through 12 descending neurons, 8 without.
+**LEVEL_CLEAR evidence:** for the SEARCH route: the stage detector (r2) reports one STAGE_TRANSITION_CANDIDATE (a 664-frame control gap, no life lost, palette novelty 0.38 against 0.30) and private frames show the overhead stage 2; a private oracle (the stage-number bytes, established by inspection, opened only after a run) is in place. For the Male CNS: pending the frozen run - until it reports, `UNVERIFIED`.
 
 ## Product: Male CNS only
 
@@ -200,6 +200,27 @@ stage's final boss by 2.4 M frames (4 404 strides, still on its last life); no
 stage transition yet. A route that mixes the learner's decision set (before the
 seed point) and composite actions uses 68 actions: FDB's action and readout limit
 is now 128 (the app uses at most 16).
+
+**Stage 1 cleared by search.** Seeded at the boss, the archive beat it within
+600 000 frames: its route (7 973 strides) enters the overhead stage 2 at stride
+~4 934 (private frames), score 96 941, a life gained on the way. The stage
+detector r1 MISSED it: control came back while stage 2 was still fading in, and
+judged at that stride the half-drawn scene resembled a stage-1 scene (novelty 0.019
+in 8 x 6 luminance). r2 (`agod-stage`): novelty is the maximum over the first 64
+frames back in control, on a colour palette when the caller gives one (stage-1
+scenes against all earlier ones stayed <= 0.26; stage 2's first scenes 0.39 -
+0.47; threshold 0.30) - the same route now gives exactly one candidate, at the
+clear, and none elsewhere in 7 973 strides (`agod_stage_check` 8/8). The
+oracle's stage bytes (constant through stage 1, +1 exactly across that gap,
+constant after) are opened by `agod_realrom_check` only after a run; VERIFIED
+needs the candidate and the step inside its gap. The search processes keep
+their traces as 16-bit arrays (one ran out of JavaScript heap at 15 000 cells of
+~8 000 strides).
+
+**Distilled so far:** the post-tank route (2 748 strides) - Male CNS alone,
+population readout (4 095 of 9 980 varying neurons, fitted 100 % in 285 epochs),
+frozen, fresh load: 2 748 of 2 748 route steps reproduced, brain activity
+identical on all of them, alive at the 24 000-frame cap.
 
 The cartridge's score (the oracle's progress field) is not among the discovered
 fields: it is BCD, and the carry test expects a binary `+1` in the next byte.

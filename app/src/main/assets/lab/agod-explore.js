@@ -126,7 +126,9 @@ function createArchive(driver,options){
   const k=cellKey(o,ram,o.screen?o.screen():null,track.value)+(o.damage?'|d'+Math.floor(dmg/o.damageBucket):''),prog=total(track.value)+o.damageWeight*dmg,res=o.readResource(ram);
   const prev=cells.get(k);
   if(prev&&(prev.resource>res||(prev.resource===res&&prev.trace.length<=trace.length)))return false;
-  cells.set(k,{key:k,trace:trace.slice(),snapshot:driver.snapshot(),progress:prog,resource:res,track,
+  /* traces as 16-bit arrays: a search that kept 15 000 cells with ~8 000-stride
+     routes as plain arrays ran out of JavaScript heap */
+  cells.set(k,{key:k,trace:Uint16Array.from(trace),snapshot:driver.snapshot(),progress:prog,resource:res,track,
    chosen:prev?prev.chosen:0,fails:prev?prev.fails:0,found:Date.now()});
   if(!(bestByResource.get(res)>=prog))bestByResource.set(res,prog);
   if(res>o.floor||!o.allowLoss)if(prog>bestProgress||(prog===bestProgress&&bestCell&&res>bestCell.resource)){if(prog>bestProgress)lastImprove=explorations;bestProgress=prog;bestCell=cells.get(k);}
@@ -200,7 +202,7 @@ function createArchive(driver,options){
   c.chosen++;explorations++;
   driver.restore(c.snapshot);
   const horizon=o.horizons[Math.floor(random()*o.horizons.length)];
-  const trace=c.trace.slice();let frames=0,added=0,lost=false,track=c.track;
+  const trace=Array.from(c.trace);let frames=0,added=0,lost=false,track=c.track;
   let mask=o.actions[Math.floor(random()*o.actions.length)],left=0;
   const start=o.readResource(driver.readRam());
   while(frames<horizon){
@@ -232,7 +234,7 @@ function createArchive(driver,options){
   /* diagnostics: probe the best cell now; the counters found (addresses - private use only) */
   probeBest:()=>{let t=null;for(const c of cells.values())if(!t||c.progress>t.progress||(c.progress===t.progress&&c.trace.length>t.trace.length))t=c;return t?probe(t):0;},damageCounters:()=>[...damageAddrs],
   stats:()=>({cells:cells.size,evicted,explorations,framesRun,damageCounters:damageAddrs.size,probes,frontierByResource:Object.fromEntries([...bestByResource].sort((a,b)=>a[0]-b[0])),bestProgress,bestResource:bestCell?bestCell.resource:null,bestTraceLength:bestCell?bestCell.trace.length:0}),
-  best:()=>bestCell?{trace:bestCell.trace.slice(),progress:bestCell.progress,resource:bestCell.resource,snapshot:bestCell.snapshot}:null,
+  best:()=>bestCell?{trace:Array.from(bestCell.trace),progress:bestCell.progress,resource:bestCell.resource,snapshot:bestCell.snapshot}:null,
   cells:()=>cells};
 }
 

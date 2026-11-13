@@ -17,7 +17,16 @@
      - ends with control back, and
      - comes back to a scene unlike every scene of the stage so far: the minimum
        signature distance to everything seen before the gap is above `novelty`.
-   A gap that fails any of these is reported with the reason. The detector says
+   A gap that fails any of these is reported with the reason.
+
+   r2 (measured on a private SNES run-and-gun whose stage 1 was cleared by a search
+   route): control came back while the next stage was still fading in, and judged
+   at that stride the dark half-drawn scene resembled a stage-1 scene (novelty
+   0.019) - the clear was missed. Novelty is now the MAXIMUM over the first
+   `minReturnFrames` after control returns, and a caller may pass a colour palette
+   (`scene`, 8 levels per channel) instead of the 8 x 6 luminance grid: across that
+   stage every scene against all earlier ones stayed <= 0.26, the next stage's
+   first scenes were 0.39 - 0.47 (threshold `paletteNovelty` 0.30). The detector says
    CANDIDATE; a LEVEL_CLEAR claim additionally needs the independent post-run
    evidence (frames before/after, the action log) the runner saves.
 
@@ -27,8 +36,8 @@
 (function(root){
 const require_=typeof require==='function'?require:null;
 const Survival=root.FlyAgodSurvival||(require_?require_('./agod-survival.js'):null);
-const STAGE_REVISION='agod-stage-r1';
-const DEFAULTS=Object.freeze({stride:8,minGapFrames:120,lossGuardFrames:120,novelty:0.10,sampleEvery:32,minReturnFrames:64});
+const STAGE_REVISION='agod-stage-r2';
+const DEFAULTS=Object.freeze({stride:8,minGapFrames:120,lossGuardFrames:120,novelty:0.10,paletteNovelty:0.30,sampleEvery:32,minReturnFrames:64});
 
 /* 8 x 6 mean luminance of an RGBA/xRGB frame of width w, height h */
 function signature(pixels,w,h){
@@ -40,6 +49,13 @@ function signature(pixels,w,h){
  return out;
 }
 const distance=(a,b)=>{let s=0;for(let i=0;i<a.length;i++)s+=Math.abs(a[i]-b[i]);return s/a.length;};
+/* colour palette: the share of sampled pixels in each of levels^3 RGB bins */
+function palette(pixels,w,h,levels){
+ const L=levels||8,out=new Float32Array(L*L*L);let n=0;if(!pixels||!w||!h)return null;
+ for(let y=0;y<h;y+=4)for(let x=0;x<w;x+=4){const c=pixels[y*w+x];out[Math.floor((c&255)*L/256)*L*L+Math.floor(((c>>>8)&255)*L/256)*L+Math.floor(((c>>>16)&255)*L/256)]++;n++;}
+ for(let i=0;i<out.length;i++)out[i]/=n;return out;
+}
+const paletteDistance=(a,b)=>{let s=0;for(let i=0;i<a.length;i++)s+=Math.abs(a[i]-b[i]);return s/2;};
 
 /* options: {probe (Phase.probe result in play), readResource(ram)->number, ...DEFAULTS} */
 function createMonitor(options){
@@ -47,7 +63,10 @@ function createMonitor(options){
  const tracker=Survival&&o.probe?Survival.authorityTracker(o.probe):null;
  if(!tracker)return null;
  const seen=[];                 /* scene signatures of the current stage */
- const events=[];let frame=0,gap=null,lastLoss=-1e9,lastResource=null,sinceSample=0,lastGood=null;
+ const events=[];let frame=0,gap=null,lastLoss=-1e9,lastResource=null,sinceSample=0,lastGood=null,returning=null;
+ const novel=s=>{const usePalette=!!s.scene;let v=null;
+  for(const x of seen){const d=usePalette?(x.scene?paletteDistance(x.scene,s.scene):null):(x.sig?distance(x.sig,s.signature):null);if(d!==null)v=v===null?d:Math.min(v,d);}
+  return v;};
  function observe(s){
   /* s: {mask, ramBefore, ramAfter, signature} for one stride */
   frame+=o.stride;
@@ -55,32 +74,39 @@ function createMonitor(options){
   if(Number.isFinite(r)){if(lastResource!==null&&r<lastResource){lastLoss=frame;events.push({kind:'LOSS',frame,from:lastResource,to:r});}lastResource=r;}
   const a=tracker.observe(s.mask,s.ramBefore,s.ramAfter);
   const inControl=a.active&&a.moved;
-  if(!a.dropped&&s.signature){
+  /* after a long gap, judge the scene over the first minReturnFrames back in control */
+  if(returning){
+   const v=(s.signature||s.scene)?novel(s):null;if(v!==null)returning.novelty=returning.novelty===null?v:Math.max(returning.novelty,v);
+   if(frame>=returning.until){finish(returning);returning=null;}
+   else return null;
+  }
+  if(!a.dropped&&(s.signature||s.scene)){
    sinceSample+=o.stride;lastGood=s.signature;
-   if(sinceSample>=o.sampleEvery&&!gap){seen.push(s.signature);sinceSample=0;}
+   if(sinceSample>=o.sampleEvery&&!gap){seen.push({sig:s.signature||null,scene:s.scene||null});sinceSample=0;}
   }
   if(a.dropped&&!gap)gap={start:frame,before:lastGood,lossAt:lastLoss};
   if(gap&&inControl){
    const length=frame-gap.start;
-   const lostDuring=lastLoss>=gap.start-o.lossGuardFrames;
-   let novelty=null;
-   if(s.signature&&seen.length){novelty=Infinity;for(const v of seen)novelty=Math.min(novelty,distance(v,s.signature));}
-   const e={frame,gapStart:gap.start,gapFrames:length,lostResource:lostDuring,novelty:novelty===null?null:+novelty.toFixed(4)};
-   if(length<o.minGapFrames)e.kind='GAP',e.reason='shorter than '+o.minGapFrames+' frames';
-   else if(lostDuring)e.kind='GAP',e.reason='a resource was lost around it (a death)';
-   else if(novelty===null||novelty<o.novelty)e.kind='GAP',e.reason='came back to a scene of this stage (novelty '+e.novelty+')';
-   else{e.kind='STAGE_TRANSITION_CANDIDATE';seen.length=0;}
-   if(e.kind!=='GAP'||length>=o.minGapFrames)events.push(e);
+   const e={frame,gapStart:gap.start,gapFrames:length,lostResource:false,novelty:null,palette:!!s.scene};
+   if(length<o.minGapFrames){e.kind='GAP';e.reason='shorter than '+o.minGapFrames+' frames';}
+   else{returning={e,until:frame+o.minReturnFrames,novelty:(s.signature||s.scene)?novel(s):null};}
    gap=null;
+   if(returning&&frame>=returning.until){finish(returning);returning=null;}
   }
   return null;
  }
+ function finish(r){const e=r.e;e.lostResource=lastLoss>=e.gapStart-o.lossGuardFrames;e.novelty=r.novelty===null?null:+r.novelty.toFixed(4);e.decidedAt=frame;
+  const threshold=e.palette?o.paletteNovelty:o.novelty;
+  if(e.lostResource){e.kind='GAP';e.reason='a resource was lost around it (a death)';}
+  else if(e.novelty===null||e.novelty<threshold){e.kind='GAP';e.reason='came back to a scene of this stage (novelty '+e.novelty+')';}
+  else{e.kind='STAGE_TRANSITION_CANDIDATE';seen.length=0;}
+  events.push(e);}
  return {revision:STAGE_REVISION,observe,events:()=>events.slice(),
   transitions:()=>events.filter(e=>e.kind==='STAGE_TRANSITION_CANDIDATE'),
   state:()=>({frame,inGap:!!gap,stageScenes:seen.length})};
 }
 
-const api=Object.freeze({STAGE_REVISION,DEFAULTS,createMonitor,signature,distance});
+const api=Object.freeze({STAGE_REVISION,DEFAULTS,createMonitor,signature,distance,palette,paletteDistance});
 root.FlyAgodStage=api;
 if(typeof module!=='undefined')module.exports=api;
 })(typeof window==='undefined'?globalThis:window);

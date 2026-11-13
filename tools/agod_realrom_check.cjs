@@ -216,6 +216,23 @@ async function studyRom(file,java){
  return {...report,status:'DONE'};
 }
 
+/* LEVEL_CLEAR verification, opened only AFTER a run: AGOD_PRIVATE_ROMS/oracle.json may
+   hold "stage": RAM offsets a human established by inspection as the stage number.
+   VERIFIED needs the detector's STAGE_TRANSITION_CANDIDATE and every oracle stage byte
+   one higher than at the start of play, the step taken inside the candidate's gap
+   (stage values read per stride by the caller). Only the verdict leaves the run. */
+function oracleStage(romSha256){const p=path.join(ROMS,'oracle.json');if(!fs.existsSync(p))return null;const e=JSON.parse(fs.readFileSync(p,'utf8'))[romSha256];return e&&Array.isArray(e.stage)&&e.stage.length?e.stage:null;}
+function verifyLevelClear(stageTrace,transitions){
+ if(!stageTrace)return {verdict:'NO_ORACLE'};if(!transitions.length)return {verdict:'UNVERIFIED',reason:'no stage transition candidate'};
+ const start=stageTrace[0].values,t=transitions[0];
+ const step=stageTrace.find(x=>x.values.some((v,i)=>v!==start[i]));
+ if(!step)return {verdict:'REFUTED',reason:'the oracle stage bytes never changed'};
+ const plusOne=step.values.every((v,i)=>v===start[i]+1);
+ const inGap=step.frame>=t.gapStart-16&&step.frame<=t.frame+16;
+ const after=stageTrace.filter(x=>x.frame>=step.frame).every(x=>x.values.every((v,i)=>v===step.values[i]));
+ return {verdict:plusOne&&inGap&&after?'VERIFIED':'REFUTED',stageAdvanced:plusOne,stepInsideGap:inGap,heldAfter:after};
+}
+
 async function exploreRoute(built,inPlay,profile,identity,extras){
  const d=built.driver,spec=d.actionSpec;
  const prior=decisionPrior(profile.dto.discovered&&profile.dto.discovered.buttonAttribution,spec,0);
@@ -266,12 +283,15 @@ async function exploreRoute(built,inPlay,profile,identity,extras){
  const fresh=await extras.rebuild(),fd=fresh.driver;let restores=0;
  Phase.replayEntry(fd,extras.entrySteps);const realRestore=fd.restore.bind(fd);fd.restore=x=>{restores++;return realRestore(x);};
  const monitor=Stage.createMonitor({probe:extras.entryProbe,readResource:ram=>read(ram)});
- const fdims=Observation.dims(fresh.core)||[256,224];let progress=0,losses=0;
+ const fdims=Observation.dims(fresh.core)||[256,224];let progress=0,losses=0,framesDone=0;
+ const stageAddrs=oracleStage(identity.romSha256),stageTrace=[];if(stageAddrs)stageTrace.push({frame:0,values:stageAddrs.map(a=>fd.readRam()[a])});
  for(const mask of best.trace){const before=fd.readRam();fd.run(mask,8);const after=fd.readRam();
   const pb=progressOf(before),pa=progressOf(after);for(let i=0;i<pb.length;i++)if(Number.isFinite(pb[i])&&Number.isFinite(pa[i])&&pa[i]>pb[i])progress+=pa[i]-pb[i];
   if(read(after)<read(before))losses+=read(before)-read(after);
-  if(monitor)monitor.observe({mask,ramBefore:before,ramAfter:after,signature:Stage.signature(fresh.core.pixels,fdims[0],fdims[1])});}
+  if(monitor)monitor.observe({mask,ramBefore:before,ramAfter:after,signature:Stage.signature(fresh.core.pixels,fdims[0],fdims[1]),scene:Stage.palette(fresh.core.pixels,fdims[0],fdims[1])});
+  framesDone+=8;if(stageAddrs)stageTrace.push({frame:framesDone,values:stageAddrs.map(a=>after[a])});}
  const transitions=monitor?monitor.transitions():[];
+ const levelClearCheck=verifyLevelClear(stageAddrs?stageTrace:null,transitions);
  fresh.dispose();
  if(process.env.REALROM_EVIDENCE_DIR){fs.mkdirSync(process.env.REALROM_EVIDENCE_DIR,{recursive:true});
   fs.writeFileSync(path.join(process.env.REALROM_EVIDENCE_DIR,'explore-route.json'),JSON.stringify({entrySteps:extras.entrySteps,stepFrames:8,masks:best.trace,events:monitor?monitor.events():[]}));}
@@ -279,9 +299,9 @@ async function exploreRoute(built,inPlay,profile,identity,extras){
   wallSeconds:Math.round((Date.now()-t0)/1000),bestProgress:st.bestProgress,routeStrides:best.trace.length,routeFrames:best.trace.length*8,
   replay:{freshLoad:true,restores,progress,losses,stageTransitions:transitions.map(e=>({frame:e.frame,gapFrames:e.gapFrames,novelty:e.novelty}))},
   routeSha256:crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(best.trace).buffer)).digest('hex'),
-  levelClear:transitions.length?'ROUTE_REACHES_A_STAGE_TRANSITION (search, not autonomous play)':'NOT_REACHED'};
- console.log('  explore result: %d cells, best progress %d, route %d frames; replayed from a fresh load (restores %d): progress %d, losses %d, stage transitions %d -> %s',
-  out.cells,out.bestProgress,out.routeFrames,restores,progress,losses,transitions.length,out.levelClear);
+  levelClear:transitions.length?'ROUTE_REACHES_A_STAGE_TRANSITION (search, not autonomous play)':'NOT_REACHED',levelClearOracle:levelClearCheck};
+ console.log('  explore result: %d cells, best progress %d, route %d frames; replayed from a fresh load (restores %d): progress %d, losses %d, stage transitions %d -> %s; oracle (opened after the run): %s',
+  out.cells,out.bestProgress,out.routeFrames,restores,progress,losses,transitions.length,out.levelClear,levelClearCheck.verdict);
  return out;
 }
 
@@ -553,6 +573,7 @@ async function learn(built,inPlay,profile,identity,java,extras){
     const before0=learnerDigest(await java.call({op:'state'}));
     await java.call({op:'reset'});
     const log=[],t0=Date.now();let frames=0,losses=0,progress=0,best=0,ended_=false,followed=0,activitySame=0;const lat=[];
+    const stageAddrs=oracleStage(identity.romSha256),stageTrace=[];if(stageAddrs)stageTrace.push({frame:0,values:stageAddrs.map(a=>fd.readRam()[a])});
     while(frames<maxFrames){
      const ramBefore=fd.readRam();const t=Date.now();
      const skill=fkeyer?fkeyer.key(ramBefore,Stage.signature(fresh.core.pixels,dims[0],dims[1])):null;
@@ -567,12 +588,15 @@ async function learn(built,inPlay,profile,identity,java,extras){
      const ramAfter=fd.readRam();const rb=read(ramBefore),ra=read(ramAfter);if(ra<rb)losses+=rb-ra;
      const pb=progressOf(ramBefore),pa=progressOf(ramAfter);for(let i=0;i<pb.length;i++)if(Number.isFinite(pb[i])&&Number.isFinite(pa[i])&&pa[i]>pb[i])progress+=pa[i]-pb[i];
      best=Math.max(best,progress);
-     if(monitor)monitor.observe({mask:r.mask,ramBefore,ramAfter,signature:Stage.signature(fresh.core.pixels,dims[0],dims[1])});
+     if(monitor)monitor.observe({mask:r.mask,ramBefore,ramAfter,signature:Stage.signature(fresh.core.pixels,dims[0],dims[1]),scene:Stage.palette(fresh.core.pixels,dims[0],dims[1])});
+     if(stageAddrs)stageTrace.push({frame:frames,values:stageAddrs.map(a=>ramAfter[a])});
      if(ended(ramAfter)){ended_=true;break;}
     }
     const after0=learnerDigest(await java.call({op:'state'}));
     const q=p=>{const s2=[...lat].sort((a,b)=>a-b);return s2.length?s2[Math.min(s2.length-1,Math.floor(p*s2.length))]:null;};
     const transitions=monitor?monitor.transitions():[];
+    /* the oracle, opened only now, after the frozen episode */
+    const levelClearCheck=verifyLevelClear(stageAddrs?stageTrace:null,transitions);
     const logSha=crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(log).buffer)).digest('hex');
     if(process.env.REALROM_EVIDENCE_DIR){fs.mkdirSync(process.env.REALROM_EVIDENCE_DIR,{recursive:true});
      fs.writeFileSync(path.join(process.env.REALROM_EVIDENCE_DIR,'full-episode-actions.json'),JSON.stringify({entrySteps:extras.entrySteps,stepFrames:STEP_FRAMES,masks:log,events:monitor?monitor.events():[]}));}
@@ -580,7 +604,8 @@ async function learn(built,inPlay,profile,identity,java,extras){
      evalRestores:restores,humanInputFrames:0,framesExecuted:frames,decisions:log.length,losses,ended:ended_,
      progress,highestProgress:best,stageEvents:monitor?monitor.events().filter(e=>e.kind!=='LOSS').length:null,
      transitions:transitions.map(e=>({frame:e.frame,gapFrames:e.gapFrames,novelty:e.novelty})),
-     levelClear:transitions.length?'CANDIDATE':'UNVERIFIED',levelClearEvidence:transitions.length?'stage transition detected; frames and action trace kept privately':null,
+     levelClear:levelClearCheck.verdict==='VERIFIED'?'VERIFIED':transitions.length?'CANDIDATE':'UNVERIFIED',levelClearOracle:levelClearCheck,
+     levelClearEvidence:transitions.length?'stage transition detected (frame '+transitions[0].frame+', gap '+transitions[0].gapFrames+' frames, palette novelty '+transitions[0].novelty+'); oracle stage bytes: '+levelClearCheck.verdict+'; frames and action trace kept privately':null,
      weightsChangedInEval:before0!==after0,actionTraceSha256:logSha,
      routeStepsFollowedFromStart:routeMasks?followed:null,routeStrides:routeMasks?routeMasks.length:null,
      routeStepsWithIdenticalBrainActivity:routeActivity.length?activitySame:null,
@@ -594,8 +619,9 @@ async function learn(built,inPlay,profile,identity,java,extras){
     fresh.dispose();
     return episodeResult;
   }
-  fullEpisode=await runEpisode(true);
-  if(distill)fullEpisode.brainOnly=await runEpisode(false);
+  /* REALROM_MEMORY_EPISODE=0: only the brain-only episode (the skill-memory one is a control) */
+  if(distill&&process.env.REALROM_MEMORY_EPISODE==='0'){fullEpisode={brainOnly:await runEpisode(false)};}
+  else{fullEpisode=await runEpisode(true);if(distill)fullEpisode.brainOnly=await runEpisode(false);}
   if(distill&&process.env.REALROM_PERTURB){fullEpisode.brainOnlyPerturbed=[];
    for(const late of String(process.env.REALROM_PERTURB).split(',').map(Number).filter(x=>x>0))fullEpisode.brainOnlyPerturbed.push(await runEpisode(false,late));}
  }
