@@ -136,6 +136,8 @@ node tools/agod_survival_check.cjs
 node tools/agod_realrom_check.cjs
 CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/agod_l1_bridge_check.cjs
 CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/fdb_carry_check.cjs
+CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/fdb_readout_check.cjs
+node tools/realrom_observation_check.cjs
 FDB_EXPANDED_FIXTURE=1 CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/expanded_game_check.cjs
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/TrainingSessionStore.java tools/TrainingSessionStoreCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.TrainingSessionStoreCheck

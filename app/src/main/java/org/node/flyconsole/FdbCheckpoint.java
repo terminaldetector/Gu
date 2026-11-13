@@ -51,7 +51,24 @@ public final class FdbCheckpoint {
             JSONArray rates=new JSONArray();for(Map.Entry<Integer,Double> e:learner.previousRates().entrySet())rates.put(new JSONObject().put("neuron",Long.toString(graph.ids[e.getKey()])).put("hz",e.getValue()));
             state.put("creditProfile",learner.creditProfile()).put("rateContext",new JSONObject().put("mask",learner.previousMask()).put("steps",learner.previousSteps()).put("rates",rates));
         }
-        JSONArray traces=new JSONArray();for(FdbLearning.Trace t:learner.traces())traces.put(new JSONObject().put("source",Long.toString(graph.ids[t.source])).put("target",Long.toString(graph.ids[t.target])).put("eligibility",t.eligibility).put("slowEligibility",dual?t.slowEligibility:null).put("slowAge",dual?t.slowAge:null).put("utility",t.utility).put("support",t.support).put("evidence",t.evidence).put("bad",t.bad));JSONArray nt=new JSONArray();for(FdbLearning.NeuronTrace t:learner.neuronTraces())nt.put(new JSONObject().put("neuron",Long.toString(graph.ids[t.neuron])).put("eligibility",t.eligibility));return state.put("traces",traces).put("neuronTraces",nt);
+        JSONArray traces=new JSONArray();for(FdbLearning.Trace t:learner.traces())traces.put(new JSONObject().put("source",Long.toString(graph.ids[t.source])).put("target",Long.toString(graph.ids[t.target])).put("eligibility",t.eligibility).put("slowEligibility",dual?t.slowEligibility:null).put("slowAge",dual?t.slowAge:null).put("utility",t.utility).put("support",t.support).put("evidence",t.evidence).put("bad",t.bad));JSONArray nt=new JSONArray();for(FdbLearning.NeuronTrace t:learner.neuronTraces())nt.put(new JSONObject().put("neuron",Long.toString(graph.ids[t.neuron])).put("eligibility",t.eligibility));state.put("traces",traces).put("neuronTraces",nt);
+        /* the action readout (research, opt-in) is written only when it is on, so
+           a checkpoint without it is byte-for-byte what it was before */
+        if(!learner.readoutProfile().equals("none")){
+            JSONArray w=new JSONArray(),tr=new JSONArray();
+            for(Map.Entry<Integer,double[]> e:learner.readoutWeights().entrySet())w.put(new JSONObject().put("mask",e.getKey()).put("w",new JSONArray(e.getValue())));
+            for(Map.Entry<Integer,double[]> e:learner.readoutTraces().entrySet())tr.put(new JSONObject().put("mask",e.getKey()).put("e",new JSONArray(e.getValue())));
+            state.put("readout",new JSONObject().put("profile",learner.readoutProfile()).put("features",learner.readoutFeatures()).put("updates",learner.readoutUpdates()).put("weights",w).put("traces",tr));
+        }
+        return state;
+    }
+    private static TreeMap<Integer,double[]> readoutArrays(JSONArray a,String key,int features)throws Exception{
+        if(a.length()>FdbLearning.READOUT_LIMIT)throw new IllegalArgumentException("FDB readout limit");
+        TreeMap<Integer,double[]> out=new TreeMap<>();
+        for(int i=0;i<a.length();i++){JSONObject v=a.getJSONObject(i);int mask=(int)integer(v,"mask",0,4095);JSONArray x=v.getJSONArray(key);
+            if(x.length()!=features)throw new IllegalArgumentException("FDB readout shape");double[] d=new double[features];for(int k=0;k<features;k++){d[k]=x.getDouble(k);if(!Double.isFinite(d[k])||Math.abs(d[k])>4)throw new IllegalArgumentException("FDB readout value");}
+            if(out.put(mask,d)!=null)throw new IllegalArgumentException("Duplicate FDB readout action");}
+        return out;
     }
     public static void restore(FdbLearning learner,JSONObject state,Graph graph,int[] sources,int[] targets)throws Exception{
         if(state.has("graph_sha256")&&!graph.fingerprint().equals(state.getString("graph_sha256")))throw new IllegalArgumentException("FDB checkpoint graph mismatch");
@@ -96,5 +113,13 @@ public final class FdbCheckpoint {
         }
         learner.restore(observations,human,automatic,integer(state,"rng",1,0xffffffffL),number(state,"baseline",-20,20),integer(state,"born",0,max),integer(state,"pruned",0,max),integer(state,"rejected",0,max),traces);
         learner.restoreBaseUpdates(baseUpdates);learner.restoreDynamics(nu,bc,budget,neurons);learner.restoreRates(rates,mask,steps);
+        /* a stored readout must meet a learner configured with the same readout;
+           an old checkpoint (none stored) starts a configured readout from zero */
+        if(state.has("readout")){
+            JSONObject r=state.getJSONObject("readout");String rp=FdbLearning.validateReadoutProfile(r.getString("profile"));
+            if(!rp.equals(learner.readoutProfile()))throw new IllegalArgumentException("FDB readout profile mismatch");
+            int features=(int)integer(r,"features",1,4096);if(features!=learner.readoutFeatures())throw new IllegalArgumentException("FDB readout shape");
+            learner.restoreReadout(rp,readoutArrays(r.getJSONArray("weights"),"w",features),readoutArrays(r.getJSONArray("traces"),"e",features),integer(r,"updates",0,max));
+        }
     }
 }

@@ -183,6 +183,15 @@ function createLiveReward(profile,modules,options){
     that way. 'aggressive': a gain in a progress field also pays, as PROVISIONAL. */
  const policy=settings.policy==='aggressive'?'aggressive':'strict';
  const PROGRESS_UNIT=Number.isFinite(settings.progressUnit)?settings.progressUnit:0.25;
+ /* PAYMENT BUDGET (opt-in, research). Per event a provisional gain never
+    outweighs a verified loss, but on a real run-and-gun ~1 150 of them against
+    ~46 losses outweigh every loss in sum, and the policy learns "advance and
+    die". provisionalBudget caps the provisional total paid between two verified
+    events (a loss resets it); past the cap a gain is UNKNOWN - unpaid, never a
+    zero - and stays unpaid in the ledger sense too (it was never claimed).
+    null keeps the old behaviour exactly. */
+ const BUDGET=Number.isFinite(settings.provisionalBudget)&&settings.provisionalBudget>=0?settings.provisionalBudget:null;
+ let budgetLeft=BUDGET;
  const progressSpecs=(profile.progress||[]).map(field=>parts.Dto.decodeSpecFor(field));
  const readProgress=memory=>progressSpecs.map(spec=>{
   try{const value=parts.Ram.decode(memory,spec);return Number.isFinite(value)?value:null;}
@@ -242,10 +251,16 @@ function createLiveReward(profile,modules,options){
       const eventId=sessionId+':'+profile.goal.id+':'+s.endFrame+':p';
       if(paid.has(eventId))
        return packet('INVALIDATED','this progress was already credited (ledger)',{eventId});
+      let value=PROGRESS_UNIT*Math.min(4,gain);
+      if(BUDGET!==null){
+       if(budgetLeft<=1e-9)
+        return packet('UNKNOWN','provisional budget spent until the next verified event',{delta,gain,budget:BUDGET});
+       value=Math.min(value,budgetLeft);budgetLeft-=value;
+      }
       paid.add(eventId);ledger.push(eventId);
       if(ledger.length>LEDGER_LIMIT)paid.delete(ledger.shift());
       return packet('PROVISIONAL','a field the game destroys on reversal rose',
-       {eventId,channel:'provisional-progress',value:PROGRESS_UNIT*Math.min(4,gain),gain,
+       {eventId,channel:'provisional-progress',value,gain,
         notVerified:'this is a coupled gain, not a verified positive polarity'});
      }
     }
@@ -268,6 +283,7 @@ function createLiveReward(profile,modules,options){
    return packet(claim.status==='INVALIDATED'?'INVALIDATED':'UNKNOWN',claim.reason,{eventId});
   paid.add(eventId);ledger.push(eventId);
   if(ledger.length>LEDGER_LIMIT)paid.delete(ledger.shift());
+  if(BUDGET!==null)budgetLeft=BUDGET;
   /* the ONLY place a value key appears */
   return packet('VERIFIED','verified '+profile.goal.polarity+' event',
    {eventId,value:claim.value,magnitude:eventMagnitude,
@@ -278,6 +294,7 @@ function createLiveReward(profile,modules,options){
   revoke(reason){revoked=String(reason||'revoked');broker.revokeGoal(profile.goal.id,revoked);},
   revoked:()=>revoked,
   counts:()=>({...counts}),
+  budget:()=>BUDGET===null?null:{cap:BUDGET,left:budgetLeft},
   exportLedger:()=>ledger.slice(),
   goalId:profile.goal.id,polarity:profile.goal.polarity});
 }

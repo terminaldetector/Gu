@@ -64,6 +64,15 @@ async function profileOf(platform,bytes){
    return live.observe({ramBefore:before,ramAfter:d.readRam(),endFrame,requestedMask:mask,
     executed:{mask,frames:12,complete:true,manualOverride:false},phase:'PLAYING'});};
   packets={gain:step(profile.progress[0].mask,12),idle:step(0,24),loss:step(profile.actions.cost,36)};
+  /* the payment budget (opt-in): 0.2 between verified events */
+  const budgeted=Objective.createLiveReward(profile,MODULES,{identity,sessionId:'d2b',policy:'aggressive',provisionalBudget:0.2});
+  d.restore(booted);d.run(0,30);
+  const bstep=(mask,endFrame)=>{const before=d.readRam();d.run(mask,4);d.run(0,8);
+   return budgeted.observe({ramBefore:before,ramAfter:d.readRam(),endFrame,requestedMask:mask,
+    executed:{mask,frames:12,complete:true,manualOverride:false},phase:'PLAYING'});};
+  const g=profile.progress[0].mask;
+  packets.budget={first:bstep(g,112),second:bstep(g,124),loss:bstep(profile.actions.cost,136),after:bstep(g,148),
+   state:budgeted.budget(),unbudgeted:live.budget()};
  }
  built.dispose();
  return {status:result.status,profile,packets};
@@ -92,6 +101,14 @@ async function profileOf(platform,bytes){
    ok(p.gain.status==='PROVISIONAL'&&p.gain.value>0&&p.gain.value<1,platform+': a gain pays PROVISIONAL below a verified loss');
    ok(p.idle.status==='UNKNOWN'&&!('value' in p.idle),platform+': an idle interval is UNKNOWN with no value');
    ok(p.loss.status==='VERIFIED'&&p.loss.value===-1,platform+': a loss pays VERIFIED -1');
+   const b=p.budget;
+   console.log('     budget 0.2: %s %s | %s (%s) | loss %s %s | after %s %s (%s) %j',b.first.status,b.first.value,b.second.status,b.second.reason,b.loss.status,b.loss.value,b.after.status,b.after.value,b.after.reason,b.state);
+   ok(b.unbudgeted===null,platform+': without a budget the live reward behaves exactly as before (no budget state)');
+   ok(b.first.status==='PROVISIONAL'&&b.first.value<=0.2+1e-9,platform+': a budgeted gain pays at most the budget ('+b.first.value+')');
+   ok(b.second.status==='UNKNOWN'&&!('value' in b.second),platform+': once the budget is spent a gain is UNKNOWN with no value, not a zero');
+   ok(b.loss.status==='VERIFIED'&&b.loss.value===-1,platform+': a verified loss is paid in full under the budget');
+   ok(b.state&&b.state.left===b.state.cap&&b.after.status!=='INVALIDATED'&&(b.after.status!=='UNKNOWN'||!/budget/.test(b.after.reason)),
+    platform+': and the verified loss resets it (left '+(b.state&&b.state.left)+' of '+(b.state&&b.state.cap)+')');
   }
   if(negativeArgs){
    const negative=cart(generator,platform+'-neg',negativeArgs);

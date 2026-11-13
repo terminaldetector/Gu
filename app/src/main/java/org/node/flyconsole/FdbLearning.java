@@ -27,6 +27,9 @@ public final class FdbLearning {
         private final TreeMap<Integer,Double> neuronGradient=new TreeMap<>();
         private int[] lesions;private int steps;private final TreeMap<Integer,Double> rates=new TreeMap<>();
         private final Set<Integer> blockedDynamics=new HashSet<>();
+        private final TreeMap<Integer,double[]> readoutGradient=new TreeMap<>();
+        /** every candidate's score (neural + readout) and the action set, for inspection */
+        public double[] scores;public int[] actions;
         private Decision(String id,int mask,double probability,LinkedHashMap<Long,Double> gradient){this.id=id;this.mask=mask;this.probability=probability;this.gradient=gradient;}
     }
     private final Graph graph;private final GraphDelta layer;private final int[] sources,targets;
@@ -41,6 +44,38 @@ public final class FdbLearning {
     public void creditProfile(String profile){profile=validateCreditProfile(profile);if(!profile.equals(creditProfile)){boundary();creditProfile=profile;}}
     public String creditProfile(){return creditProfile;}
     private boolean dualCredit(){return !creditProfile.equals("single-v1");}
+    /** ACTION READOUT (opt-in research, "action-v1"). The neural score of an action
+     * is the sum over its buttons of (rate/threshold - 1); "press nothing" has no
+     * buttons, so it scores 0 and wins every frozen argmax while the outputs are
+     * quiet. The readout gives EVERY action in the set, the empty one included, a
+     * learned term w_a . phi(state), phi = the input activities and a bias, added
+     * to its neural score. It is trained only by the verified feedback that
+     * trains the weights, through eligibility traces that decay, carry, pause and
+     * clear exactly like theirs; frozen evaluation changes nothing. "none" keeps
+     * the decision rule exactly as before. */
+    private String readoutProfile="none";
+    private final TreeMap<Integer,double[]> readout=new TreeMap<>(),readoutTrace=new TreeMap<>();
+    private long readoutUpdates;
+    public static final int READOUT_LIMIT=64;private static final double READOUT_RATE=.1;
+    public static String validateReadoutProfile(String profile){if(!"none".equals(profile)&&!"action-v1".equals(profile))throw new IllegalArgumentException("Unknown FDB readout profile");return profile;}
+    public void readoutProfile(String profile){profile=validateReadoutProfile(profile);if(!profile.equals(readoutProfile)){boundary();readoutProfile=profile;readout.clear();readoutTrace.clear();readoutUpdates=0;}}
+    public String readoutProfile(){return readoutProfile;}
+    private boolean readoutOn(){return readoutProfile.equals("action-v1");}
+    public int readoutFeatures(){return sources.length+1;}
+    public TreeMap<Integer,double[]> readoutWeights(){TreeMap<Integer,double[]> c=new TreeMap<>();for(Map.Entry<Integer,double[]> e:readout.entrySet())c.put(e.getKey(),e.getValue().clone());return c;}
+    public TreeMap<Integer,double[]> readoutTraces(){TreeMap<Integer,double[]> c=new TreeMap<>();for(Map.Entry<Integer,double[]> e:readoutTrace.entrySet())c.put(e.getKey(),e.getValue().clone());return c;}
+    public long readoutUpdates(){return readoutUpdates;}
+    public void restoreReadout(String profile,Map<Integer,double[]> weights,Map<Integer,double[]> traces,long updates){
+        if(!validateReadoutProfile(profile).equals(readoutProfile))throw new IllegalArgumentException("FDB readout profile mismatch");
+        if(weights.size()>READOUT_LIMIT||traces.size()>READOUT_LIMIT||updates<0)throw new IllegalArgumentException("FDB readout limit");
+        for(Map<Integer,double[]> m:Arrays.asList(weights,traces))for(Map.Entry<Integer,double[]> e:m.entrySet()){
+            if(e.getKey()<0||e.getKey()>4095||e.getValue().length!=readoutFeatures())throw new IllegalArgumentException("FDB readout shape");
+            for(double v:e.getValue())if(!Double.isFinite(v)||Math.abs(v)>4)throw new IllegalArgumentException("FDB readout value");}
+        readout.clear();readoutTrace.clear();for(Map.Entry<Integer,double[]> e:weights.entrySet())readout.put(e.getKey(),e.getValue().clone());
+        for(Map.Entry<Integer,double[]> e:traces.entrySet())readoutTrace.put(e.getKey(),e.getValue().clone());readoutUpdates=updates;if(!traces.isEmpty())temporalDirty=true;
+    }
+    private double[] phi(Engine.Result result){double[] f=new double[sources.length+1];for(int i=0;i<sources.length;i++)f[i]=activity(result,sources[i]);f[sources.length]=1;return f;}
+    private double readoutScore(int mask,double[] f){double[] w=readout.get(mask);if(w==null)return 0;double s=0;for(int k=0;k<f.length;k++)s+=w[k]*f[k];return Math.max(-4,Math.min(4,s));}
     private double eligibility(Trace t){return dualCredit()?.5*t.eligibility+.5*t.slowEligibility:t.eligibility;}
     private static int[] lesionSet(int[] lesions){int[] out=lesions==null?new int[0]:lesions.clone();Arrays.sort(out);return out;}
     private final TreeMap<Integer,Double> previousRates=new TreeMap<>();
@@ -48,7 +83,7 @@ public final class FdbLearning {
     public Map<Integer,Double> previousRates(){return new TreeMap<>(previousRates);}
     public int previousMask(){return previousMask;}public int previousSteps(){return previousSteps;}
     public void restoreRates(Map<Integer,Double> rates,int mask,int steps){previousRates.clear();previousRates.putAll(rates);previousMask=mask;previousSteps=steps;temporalDirty|=!rates.isEmpty();}
-    private void clearTemporal(){previousRates.clear();previousMask=-1;previousSteps=0;if(temporalDirty)for(Trace t:traces.values()){t.eligibility=0;t.slowEligibility=0;t.slowAge=0;}neuronTraces.clear();temporalDirty=false;}
+    private void clearTemporal(){previousRates.clear();previousMask=-1;previousSteps=0;if(temporalDirty)for(Trace t:traces.values()){t.eligibility=0;t.slowEligibility=0;t.slowAge=0;}neuronTraces.clear();readoutTrace.clear();temporalDirty=false;}
 
     private final int baseLimit;
     private final TreeSet<Integer> neuronCandidates=new TreeSet<>();
@@ -172,14 +207,24 @@ public final class FdbLearning {
     private double random(){long x=rng;x^=(x<<13)&0xffffffffL;x^=x>>>17;x^=(x<<5)&0xffffffffL;rng=x&0xffffffffL;return rng/4294967296.0;}
     public void seed(long seed){rng=(seed&0xffffffffL)==0?1:seed&0xffffffffL;}
     public Decision decide(String id,Engine.Result result,int[] actions,int allowed,double threshold,double epsilon,boolean training,int[] lesions){
+        return decide(id,result,actions,allowed,threshold,epsilon,training,lesions,Double.NaN);
+    }
+    /** frozenSample in [0,1): a FROZEN decision sampled from the policy with a
+     * draw supplied by the caller (an evaluation harness's own seeded stream).
+     * Nothing in the learner moves: no RNG step, no pending decision, so a
+     * sampled evaluation is as frozen as the argmax one. Ignored when training. */
+    public Decision decide(String id,Engine.Result result,int[] actions,int allowed,double threshold,double epsilon,boolean training,int[] lesions,double frozenSample){
+        if(!training&&!Double.isNaN(frozenSample)&&!(frozenSample>=0&&frozenSample<1))throw new IllegalArgumentException("FDB frozen sample");
         if(id==null||id.length()>80||result.counts.length!=graph.ids.length||result.steps<=0||!Double.isFinite(threshold)||threshold<=0||!Double.isFinite(epsilon)||epsilon<0||epsilon>1||actions.length<2||actions.length>64)throw new IllegalArgumentException("FDB decision");
         double[] logits=new double[actions.length],prob=new double[actions.length];int eligible=0,best=-1;double maximum=-Double.MAX_VALUE;
+        double[] readoutFeatures=null;
         Set<Integer> unique=new HashSet<>();
         for(int a=0;a<actions.length;a++){
             int mask=actions[a];if(mask<0||mask>4095||(mask&48)==48||(mask&192)==192||!unique.add(mask))throw new IllegalArgumentException("FDB action set");
             if((mask&~allowed)!=0||mask>=(1<<targets.length)){logits[a]=Double.NEGATIVE_INFINITY;continue;}
             eligible++;double score=0;
             for(int j=0;j<targets.length;j++)if((mask&(1<<j))!=0){double hz=lesioned(targets[j],lesions)?0:result.counts[targets[j]]*10000.0/result.steps;score+=Math.max(-2,Math.min(4,hz/threshold-1));}
+            if(readoutOn())score+=readoutScore(mask,readoutFeatures==null?(readoutFeatures=phi(result)):readoutFeatures);
             logits[a]=score;if(score>maximum){maximum=score;best=a;}
         }
         if(best<0)throw new IllegalArgumentException("FDB has no allowed actions");
@@ -187,6 +232,7 @@ public final class FdbLearning {
         for(int a=0;a<actions.length;a++)prob[a]=prob[a]/sum*(1-epsilon)+(Double.isFinite(logits[a])?epsilon/eligible:0);
         int chosen=best;
         if(training){double sample=random(),acc=0;for(int a=0;a<prob.length;a++){acc+=prob[a];if(sample<acc){chosen=a;break;}}}
+        else if(!Double.isNaN(frozenSample)){double acc=0;for(int a=0;a<prob.length;a++){acc+=prob[a];if(frozenSample<acc){chosen=a;break;}}}
         HashMap<Integer,Double> feedback=new HashMap<>();
         for(int j=0;j<targets.length;j++){
 
@@ -215,6 +261,13 @@ public final class FdbLearning {
         // Exact zeros are not evidence and must not exhaust the bounded trace table.
         if(dualCredit())gradient.entrySet().removeIf(e->e.getValue()==0);
         Decision d=new Decision(id,actions[chosen],prob[chosen],gradient);d.lesions=lesionSet(lesions);d.steps=result.steps;
+        d.scores=logits.clone();d.actions=actions.clone();
+        if(readoutOn()&&training){
+            double share=prob[chosen]>0?(1-epsilon)*Math.exp(logits[chosen]-maximum)/sum/prob[chosen]:1;
+            for(int a=0;a<actions.length;a++)if(Double.isFinite(logits[a])){
+                double g=share*((a==chosen?1:0)-Math.exp(logits[a]-maximum)/sum);if(g==0)continue;
+                double[] v=new double[readoutFeatures.length];for(int k=0;k<v.length;k++)v[k]=g*readoutFeatures[k];d.readoutGradient.put(actions[a],v);}
+        }
         for(int neuron:neuronCandidates)if(!lesioned(neuron,lesions)){
             double hz=result.counts[neuron]*10000.0/result.steps;
             if(hz>250)d.blockedDynamics.add(neuron);d.rates.put(neuron,hz);
@@ -254,6 +307,14 @@ public final class FdbLearning {
                 change(2,t.source,t.target,0,(float)Math.copySign(Math.min(maxWeight,Math.max(.5,rate*maxWeight*Math.abs(t.support))),t.support),maxWeight);changed++;created++;t.support=0;
             }
         }
+        if(readoutOn()&&!readoutTrace.isEmpty()){
+            for(Map.Entry<Integer,double[]> e:readoutTrace.entrySet()){
+                double[] w=readout.get(e.getKey());
+                if(w==null){if(readout.size()>=READOUT_LIMIT)continue;w=new double[e.getValue().length];readout.put(e.getKey(),w);}
+                for(int k=0;k<w.length;k++)w[k]=Math.max(-4,Math.min(4,w[k]+READOUT_RATE*advantage*e.getValue()[k]));
+            }
+            readoutUpdates++;
+        }
         for(int neuron:neuronCandidates)if(!lesioned(neuron,lesions)){
             float old=layer.thresholdOffset(neuron),next=(float)Math.max(-5,Math.min(5,old+rate*.25*5*advantage*neuronTraces.getOrDefault(neuron,0.0)));
             if(Math.abs(next-old)>.000001&&change(4,neuron,neuron,old,next,5))changed++;
@@ -274,6 +335,7 @@ public final class FdbLearning {
             if(timeCredit()){t.slowAge=0;t.slowEligibility*=Math.exp(-gameSeconds/SLOW_TAU_SECONDS);}
             else if(dualCredit()){t.slowAge=Math.min(16,t.slowAge+1);t.slowEligibility=t.slowAge>=16?0:t.slowEligibility*Math.exp(-1.0/8);}
         }
+        for(double[] v:readoutTrace.values())for(int k=0;k<v.length;k++)v[k]*=decay;
         return decay;
     }
     private double accumulate(Decision d,double gameSeconds,int[] lesions){
@@ -283,6 +345,11 @@ public final class FdbLearning {
             Trace t=trace(source,target);if(t!=null){t.eligibility=Math.max(-2,Math.min(2,t.eligibility+e.getValue()*decay));
                 if(dualCredit()){t.slowEligibility=Math.max(-2,Math.min(2,t.slowEligibility+e.getValue()));t.slowAge=0;}
             }
+        }
+        for(Map.Entry<Integer,double[]> e:d.readoutGradient.entrySet()){
+            double[] v=readoutTrace.get(e.getKey());
+            if(v==null){if(readoutTrace.size()>=READOUT_LIMIT)continue;v=new double[e.getValue().length];readoutTrace.put(e.getKey(),v);}
+            for(int k=0;k<v.length;k++)v[k]=Math.max(-2,Math.min(2,v[k]+e.getValue()[k]*decay));
         }
         for(int neuron:neuronCandidates){
             double gradient=d.neuronGradient.getOrDefault(neuron,0.0);
@@ -321,6 +388,8 @@ public final class FdbLearning {
         return true;
     }
     public long paused(){return paused;}
+    /** decisions awaiting their outcome - an evaluation must never add one */
+    public int pendingCount(){return pending.size();}
     public long carried(){return carried;}
     /** Slow trust-region updates of effective root weights; W0 and its sign stay intact.
      * Explicit user deltas outside this region are retained, not silently clamped. */

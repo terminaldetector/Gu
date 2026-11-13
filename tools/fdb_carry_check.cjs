@@ -76,6 +76,23 @@ const ACTIONS=[0,64,128,1,65,129];
   ok(t.mid.creditProfile==='dual-time-v1'&&t.mid.updates===t.before.updates&&t.mid.weights===t.before.weights,
    'dual-time-v1 (fast 15 + slow 90 frames by game time): carries and pauses stay unpaid');
   ok(t.changed>=p.changed,'the 90-frame trace keeps at least as many earlier decisions in reach ('+t.changed+' against '+p.changed+')');
+  /* frozen SAMPLED evaluation: the draw comes from the caller, the learner
+     takes no RNG step and keeps no pending decision */
+  await java.call({op:'init',seed:5,mode:'base'});await java.call({op:'prior',output:6,weight:3});
+  for(let k=0;k<4;k++){const d=await java.call({op:'decide',retina:retina(k),train:true,actions:ACTIONS,epsilon:.2,windowMs:20});
+   await java.call({op:'reward',id:d.id,mask:d.mask,reward:k%2?1:-1,seconds:8/60,frames:8});}
+  await java.call({op:'boundary'});
+  const digest=st=>JSON.stringify([st.weights,st.learningState,st.rng,st.updates,st.pending]);
+  const frozenBefore=await java.call({op:'state'});const masks=new Set();
+  for(let k=0;k<24;k++){const d=await java.call({op:'decide',retina:retina(k),train:false,actions:ACTIONS,epsilon:0,windowMs:20,sample:(k*0.137)%1});masks.add(d.mask);}
+  const frozenAfter=await java.call({op:'state'});
+  ok(digest(frozenBefore)===digest(frozenAfter)&&frozenAfter.pending===0,
+   'frozen sampled decisions change nothing in the learner: weights, traces, RNG, updates, pending ('+frozenAfter.pending+')');
+  ok(masks.size>1,'and they do sample: '+masks.size+' different actions over 24 draws');
+  const trainPath=await java.call({op:'decide',retina:retina(1),train:true,actions:ACTIONS,epsilon:0,windowMs:20});
+  const moved=await java.call({op:'state'});
+  ok(trainPath.id&&moved.rng!==frozenAfter.rng&&moved.pending===1,
+   'the old way to sample (train:true) steps the RNG and leaves a pending decision - why evaluation no longer uses it');
  }finally{java.close();}
  console.log('\n'+out.join('\n'));
  console.log('\n%s — %d/%d',fail.length?'FAIL ('+fail.length+')':'PASS',out.length-fail.length,out.length);

@@ -29,6 +29,7 @@ for(const f of ['agod-ram.js','agod-causal.js','agod-goals.js','agod-reward.js',
 const PD=globalThis.FlyAgodPlatformDriver,Pipeline=globalThis.FlyAgodPipeline,Dto=globalThis.FlyAgodGoalDto,
  Objective=globalThis.FlyAgodObjective,Phase=globalThis.FlyAgodPhase,Survival=globalThis.FlyAgodSurvival;
 const MODULES={Dto,Reward:globalThis.FlyAgodReward,Evidence:globalThis.FlyAgodEvidence,Ram:globalThis.FlyAgodRam};
+const Observation=require('./realrom_observation.cjs');
 
 const args=process.argv.slice(2);
 const flag=name=>args.includes(name);
@@ -66,14 +67,7 @@ function bridge(){
   close:()=>child.stdin.end()};
 }
 /* the learner's eyes: 16 luminance cells, the format FdbGameBridge takes */
-function retina(core){
- const p=core.pixels||(core.ppu&&null);const v=new Array(16).fill(0),n=new Array(16).fill(0);
- if(!p)return v;
- const w=p.length>=320*224?320:256,h=Math.floor(p.length/w);
- for(let y=0;y<h;y+=4)for(let x=0;x<w;x+=4){const c=p[y*w+x];const i=Math.min(3,Math.floor(y*4/h))*4+Math.min(3,Math.floor(x*4/w));
-  v[i]+=(.2126*(c&255)+.7152*((c>>>8)&255)+.0722*((c>>>16)&255))/255;n[i]++;}
- return v.map((s,i)=>n[i]?s/n[i]:0);
-}
+/* the retina is tools/realrom_observation.cjs (legacy-16 is the old function, unchanged) */
 /* the action set, from the pad description: nothing, each direction, the two
    first action buttons, and direction + first button. Pause/menu buttons are
    not actions. */
@@ -212,8 +206,12 @@ async function learn(built,inPlay,profile,identity,java){
  const pauseOnDrop=process.env.REALROM_PAUSE==='1';
  d.restore(inPlay);
  const authorityProbe=pauseOnDrop?Phase.probe(d):null;
+ /* REALROM_READOUT=action-v1 (P2): every action, "press nothing" included,
+    gets a learned score from the verified outcomes (FdbLearning readout) */
+ const readoutProfile=process.env.REALROM_READOUT||'none';
  const init=async seed=>{await java.call({op:'init',seed,mode:'base'});
   if(creditProfile)await java.call({op:'credit',profile:creditProfile});
+  if(readoutProfile!=='none')await java.call({op:'readout',profile:readoutProfile});
   if(prior)for(const p of prior.priors)if(p.weight>0)await java.call({op:'prior',output:p.output,weight:p.weight});};
  const read=Objective.createLiveReward(profile,MODULES,{identity,sessionId:'probe',policy:'aggressive'}).read;
  const progressOf=Objective.createLiveReward(profile,MODULES,{identity,sessionId:'probe2',policy:'aggressive'}).readProgress;
@@ -224,76 +222,151 @@ async function learn(built,inPlay,profile,identity,java){
   out.push(d.snapshot());}return out;};
  const trainStarts=starts(1000,4),evalStarts=starts(5000,3);
  const ended=ram=>read(ram)<=floor;
- async function episode(start,choose,train,steps,live,stats){
-  d.restore(start);d.run(0,1);
-  let n=0,losses=0,progress=0;
-  const authority=pauseOnDrop&&authorityProbe?Survival.authorityTracker(authorityProbe):null;
-  for(;n<steps;n++){
-   const before=d.readRam();
-   const pick=await choose(train);
-   d.run(pick.mask,STEP_FRAMES);
-   const after=d.readRam();
-   const rb=read(before),ra=read(after);if(ra<rb)losses+=rb-ra;
-   const pb=progressOf(before),pa=progressOf(after);
-   for(let i=0;i<pb.length;i++)if(Number.isFinite(pb[i])&&Number.isFinite(pa[i])&&pa[i]>pb[i])progress+=pa[i]-pb[i];
-   /* the tracker sees every stride, so a run of ignored commands is never
-      stitched across strides it did not look at */
-   const noControl=authority?authority.observe(pick.mask,before,after).dropped:false;
-   if(train&&live){
-    stats.frame+=STEP_FRAMES;
-    const packet=live.observe({ramBefore:before,ramAfter:after,endFrame:stats.frame,requestedMask:pick.mask,
-     executed:{mask:pick.mask,frames:STEP_FRAMES,complete:true,manualOverride:false},phase:'PLAYING'});
-    if(packet.status==='VERIFIED'||packet.status==='PROVISIONAL'){
-     stats[packet.status]++;
-     const r=await java.call({op:'reward',id:pick.id,mask:pick.mask,reward:packet.value,seconds:STEP_FRAMES/60,frames:STEP_FRAMES});
-     stats.changed+=r.changed;
-    }else if(process.env.REALROM_CREDIT==='carry'&&packet.status==='UNKNOWN'){
-     /* no verified event: the decision joins the eligibility traces, nothing is
-        paid - or, with no control, the traces only decay */
-     stats.unknown++;
-     const c=await java.call({op:'carry',id:pick.id,mask:pick.mask,seconds:STEP_FRAMES/60,frames:STEP_FRAMES,accumulate:!noControl});
-     if(c.accepted)stats[noControl?'paused':'carried']=(stats[noControl?'paused':'carried']||0)+1;
-    }else{stats.unknown++;await java.call({op:'boundary'});}
-   }
-   if(ended(after)){n++;break;}
+ /* REWIND FAN (REALROM_REWIND=K, training only). At a VERIFIED loss of life
+    the research copy of the emulator returns to the state REALROM_REWIND_BACK
+    frames earlier and runs K branches. Each branch's first decision is the
+    agent's own policy choosing among the actions NOT yet tried from that state
+    (the one the original trajectory took is excluded); the branch then plays
+    on with the policy for up to twice the rewind distance or until a loss.
+    Everything a branch executes is an ordinary training interval from a
+    snapshot - observed after the restore, paid only through the live
+    objective: a branch that dies pays its verified loss, a branch that does
+    not pays nothing for the death it avoided. Branch steps count against the
+    same training budget. The pair (original lost / branch did not) is counted
+    as evidence, not as reward. Never in evaluation, never in a person's game. */
+ const REWIND=Math.max(0,Number(process.env.REALROM_REWIND||0)|0);
+ const BACK_STEPS=Math.max(1,Math.round(Number(process.env.REALROM_REWIND_BACK||96)/STEP_FRAMES));
+ const BRANCH_STEPS=2*BACK_STEPS;
+ /* PAYMENT BUDGET (REALROM_BUDGET=x): provisional progress paid between two
+    verified events is capped at x (a loss of life pays -1); past it a gain is
+    UNKNOWN - carried, unpaid. agod-objective.js createLiveReward. */
+ const BUDGET=process.env.REALROM_BUDGET!==undefined&&process.env.REALROM_BUDGET!==''?Number(process.env.REALROM_BUDGET):null;
+ /* OBSERVATION ENCODER (REALROM_OBS=legacy-16|motion-16|fused-16, P1):
+    tools/realrom_observation.cjs. Its revision is part of the policy's
+    identity in the report; positions come only from the causal probe. */
+ const OBS=process.env.REALROM_OBS||'legacy-16';
+ d.restore(inPlay);
+ const obsProbe=OBS==='fused-16'?Phase.probe(d):null;
+ const observer=Observation.create(OBS,core,{probe:obsProbe,readRam:()=>d.readRam(),readResource:ram=>read(ram),
+  initialResource:profile.dto.discovered.resource.initial});
+ /* the learner's whole state, for "frozen means frozen" */
+ const learnerDigest=st=>crypto.createHash('sha256').update(JSON.stringify([st.weights,st.learningState,st.rng,st.updates,
+  st.baseUpdates,st.neuronUpdates,st.born,st.pruned,st.deltas,st.edges,st.thresholdParameters,st.pending,st.layerBytesEstimate])).digest('hex');
+ /* one executed interval: run, observe, pay or carry */
+ async function step(pick,train,live,stats,authority){
+  const before=d.readRam();
+  d.run(pick.mask,STEP_FRAMES);
+  const after=d.readRam();
+  const rb=read(before),ra=read(after),lost=ra<rb?rb-ra:0;
+  const pb=progressOf(before),pa=progressOf(after);let gained=0;
+  for(let i=0;i<pb.length;i++)if(Number.isFinite(pb[i])&&Number.isFinite(pa[i])&&pa[i]>pb[i])gained+=pa[i]-pb[i];
+  /* the tracker sees every stride, so a run of ignored commands is never
+     stitched across strides it did not look at */
+  const noControl=authority?authority.observe(pick.mask,before,after).dropped:false;
+  let packet=null;
+  if(train&&live){
+   stats.frame+=STEP_FRAMES;
+   packet=live.observe({ramBefore:before,ramAfter:after,endFrame:stats.frame,requestedMask:pick.mask,
+    executed:{mask:pick.mask,frames:STEP_FRAMES,complete:true,manualOverride:false},phase:'PLAYING'});
+   if(packet.status==='VERIFIED'||packet.status==='PROVISIONAL'){
+    stats[packet.status]++;
+    if(packet.status==='PROVISIONAL')stats.provisionalPaid=(stats.provisionalPaid||0)+packet.value;
+    const r=await java.call({op:'reward',id:pick.id,mask:pick.mask,reward:packet.value,seconds:STEP_FRAMES/60,frames:STEP_FRAMES});
+    stats.changed+=r.changed;
+   }else if(process.env.REALROM_CREDIT==='carry'&&packet.status==='UNKNOWN'){
+    /* no verified event: the decision joins the eligibility traces, nothing is
+       paid - or, with no control, the traces only decay */
+    stats.unknown++;
+    if(/budget/.test(packet.reason||''))stats.overBudget=(stats.overBudget||0)+1;
+    const c=await java.call({op:'carry',id:pick.id,mask:pick.mask,seconds:STEP_FRAMES/60,frames:STEP_FRAMES,accumulate:!noControl});
+    if(c.accepted)stats[noControl?'paused':'carried']=(stats[noControl?'paused':'carried']||0)+1;
+   }else{stats.unknown++;await java.call({op:'boundary'});}
   }
-  return {steps:n,losses,progress};
+  return {after,lost,gained,packet};
+ }
+ async function fan(ring,choose,live,stats,budget){
+  const origin=ring[0],here=d.snapshot();
+  const tried=new Set([origin.mask]);let used=0;
+  stats.rewinds=(stats.rewinds||0)+1;
+  for(let b=0;b<REWIND&&used<budget;b++){
+   const others=actions.filter(a=>!tried.has(a));if(others.length<2)break;
+   d.restore(origin.snapshot);observer.reset();await java.call({op:'boundary'});
+   let lost=false;
+   for(let h=0;h<BRANCH_STEPS&&used<budget;h++){
+    const pick=await choose(h===0?others:null);if(h===0)tried.add(pick.mask);
+    const r=await step(pick,true,live,stats,null);used++;
+    if(r.lost){lost=true;break;}
+    if(ended(r.after))break;
+   }
+   stats.branches=(stats.branches||0)+1;stats[lost?'branchLost':'branchSurvived']=(stats[lost?'branchLost':'branchSurvived']||0)+1;
+  }
+  stats.branchSteps=(stats.branchSteps||0)+used;
+  d.restore(here);observer.reset();await java.call({op:'boundary'});
+  return used;
+ }
+ async function episode(start,choose,train,steps,live,stats){
+  d.restore(start);d.run(0,1);observer.reset();
+  let n=0,losses=0,progress=0,extra=0;
+  const authority=pauseOnDrop&&authorityProbe?Survival.authorityTracker(authorityProbe):null;
+  const ring=[];
+  for(;n+extra<steps;n++){
+   const rewinding=train&&live&&REWIND>0;
+   if(rewinding){ring.push({snapshot:d.snapshot(),mask:null});if(ring.length>BACK_STEPS)ring.shift();}
+   const pick=await choose(null);
+   if(rewinding)ring[ring.length-1].mask=pick.mask;
+   const r=await step(pick,train,live,stats,authority);
+   losses+=r.lost;progress+=r.gained;
+   if(ended(r.after)){n++;break;}
+   if(rewinding&&r.packet&&r.packet.status==='VERIFIED'&&r.packet.value<0&&ring.length===BACK_STEPS){
+    extra+=await fan(ring,choose,live,stats,steps-n-1-extra);ring.length=0;
+   }
+  }
+  return {steps:n,extraSteps:extra,frames:n*STEP_FRAMES,losses,progress};
  }
  const rows=[];
  for(const seed of SEEDS){
-  /* REALROM_EVAL=stochastic: evaluation samples from the layer's own policy
-     (decide in sampling mode, epsilon 0) and never sends feedback, so weights
-     and update counts stay frozen - checked below - but the frozen argmax's
-     "press nothing" tie no longer decides every step */
-  /* evaluated twice, both frozen: argmax (what the app's frozen mode does)
-     and sampled from the layer's own policy (no feedback; weights and update
-     counts are checked unchanged below) */
-  const brain=(train,sampled)=>async()=>{const r=await java.call({op:'decide',retina:retina(core),train:train||sampled,actions,
-   epsilon:train?.1:0,windowMs:20});return {mask:r.mask,id:r.id};};
-  const evaluate=async choose=>{const out=[];for(const s of evalStarts)out.push(await episode(s,choose,false,EVAL_STEPS,null,null));return out;};
+  /* evaluated twice, both FROZEN: argmax (what the app's frozen mode does)
+     and sampled from the layer's own policy. The sampled draws come from the
+     harness's own seeded stream (decide train:false, sample:u), so the learner
+     takes no RNG step and keeps no pending decision during evaluation: the
+     whole learner state is compared before and after, not just the weights. */
+  const brain=(train,sampled,stream)=>async only=>{const r=await java.call({op:'decide',retina:observer.observe(),train,actions:only||actions,
+   epsilon:train?.1:0,windowMs:20,...(sampled?{sample:stream()}:{})});return {mask:r.mask,id:r.id};};
+  const evaluate=async make=>{const out=[];for(const s of evalStarts)out.push(await episode(s,make(),false,EVAL_STEPS,null,null));return out;};
+  const sampledBrain=()=>{const stream=rng(seed*7919+5);return brain(false,true,stream);};
   await init(seed);
-  const untrained=await evaluate(brain(false,false));
+  const freshBefore=learnerDigest(await java.call({op:'state'}));
+  const untrained=await evaluate(()=>brain(false,false));
+  const untrainedSampled=await evaluate(sampledBrain);
+  const freshAfter=learnerDigest(await java.call({op:'state'}));
   await init(seed);
-  const untrainedSampled=await evaluate(brain(false,true));
-  await init(seed);
-  const live=Objective.createLiveReward(profile,MODULES,{identity,sessionId:'realrom-'+seed,policy:'aggressive'});
+  const live=Objective.createLiveReward(profile,MODULES,{identity,sessionId:'realrom-'+seed,policy:'aggressive',
+   ...(BUDGET!==null?{provisionalBudget:BUDGET}:{})});
   const stats={VERIFIED:0,PROVISIONAL:0,unknown:0,changed:0,frame:0};
   let done=0,k=0;
-  while(done<TRAIN_STEPS){const e=await episode(trainStarts[k++%trainStarts.length],brain(true,false),true,TRAIN_STEPS-done,live,stats);done+=e.steps;await java.call({op:'boundary'});}
+  while(done<TRAIN_STEPS){const e=await episode(trainStarts[k++%trainStarts.length],brain(true,false),true,TRAIN_STEPS-done,live,stats);done+=e.steps+e.extraSteps;await java.call({op:'boundary'});}
   await java.call({op:'reset'});
   const frozenBefore=await java.call({op:'state'});
-  const trained=await evaluate(brain(false,false));
-  const trainedSampled=await evaluate(brain(false,true));
+  const trained=await evaluate(()=>brain(false,false));
+  const trainedSampled=await evaluate(sampledBrain);
   const frozenAfter=await java.call({op:'state'});
-  const r=rng(seed);const random=await evaluate(async()=>({mask:actions[Math.floor(r()*actions.length)],id:null}));
+  const r=rng(seed);const random=await evaluate(()=>async()=>({mask:actions[Math.floor(r()*actions.length)],id:null}));
   const sum=(list,key)=>list.reduce((s,x)=>s+x[key],0);
-  const row={seed,trainSteps:TRAIN_STEPS,verified:stats.VERIFIED,provisional:stats.PROVISIONAL,unknown:stats.unknown,
-   nativeChanges:stats.changed,carried:stats.carried||0,paused:stats.paused||0,frozenClean:frozenBefore.weights===frozenAfter.weights&&frozenBefore.updates===frozenAfter.updates,
-   untrained:{survivalSteps:sum(untrained,'steps'),losses:sum(untrained,'losses'),progress:sum(untrained,'progress')},
-   trained:{survivalSteps:sum(trained,'steps'),losses:sum(trained,'losses'),progress:sum(trained,'progress')},
-   random:{survivalSteps:sum(random,'steps'),losses:sum(random,'losses'),progress:sum(random,'progress')},
-   untrainedSampled:{survivalSteps:sum(untrainedSampled,'steps'),losses:sum(untrainedSampled,'losses'),progress:sum(untrainedSampled,'progress')},
-   trainedSampled:{survivalSteps:sum(trainedSampled,'steps'),losses:sum(trainedSampled,'losses'),progress:sum(trainedSampled,'progress')}};
+  /* per evaluation: survival, deaths, progress summed and the best single
+     episode (the furthest point one frozen run reached), frames played. No
+     stage-clear detector exists yet, so no row can claim a level: UNVERIFIED. */
+  const evalRow=list=>({survivalSteps:sum(list,'steps'),frames:sum(list,'frames'),losses:sum(list,'losses'),
+   progress:sum(list,'progress'),bestEpisodeProgress:Math.max(...list.map(x=>x.progress)),
+   levelClear:'UNVERIFIED',levelClearEvidence:null});
+  const before=learnerDigest(frozenBefore),after=learnerDigest(frozenAfter);
+  const row={seed,trainSteps:TRAIN_STEPS,trainFrames:stats.frame,verified:stats.VERIFIED,provisional:stats.PROVISIONAL,unknown:stats.unknown,
+   provisionalPaid:+(stats.provisionalPaid||0).toFixed(3),overBudget:stats.overBudget||0,
+   rewinds:stats.rewinds||0,branches:stats.branches||0,branchLost:stats.branchLost||0,branchSurvived:stats.branchSurvived||0,branchSteps:stats.branchSteps||0,
+   nativeChanges:stats.changed,carried:stats.carried||0,paused:stats.paused||0,readoutUpdates:frozenAfter.readoutUpdates||0,
+   frozenClean:before===after&&freshBefore===freshAfter,weightsChangedInEval:frozenBefore.weights!==frozenAfter.weights,
+   learnerStateDigestEval:before===after?before.slice(0,16):'CHANGED',
+   untrained:evalRow(untrained),trained:evalRow(trained),random:evalRow(random),
+   untrainedSampled:evalRow(untrainedSampled),trainedSampled:evalRow(trainedSampled)};
   rows.push(row);
   console.log('  seed %d: verified %d provisional %d native changes %d | survival steps untrained %d trained %d random %d | losses %d/%d/%d | progress %d/%d/%d',
    seed,row.verified,row.provisional,row.nativeChanges,row.untrained.survivalSteps,row.trained.survivalSteps,row.random.survivalSteps,
@@ -301,9 +374,12 @@ async function learn(built,inPlay,profile,identity,java){
   console.log('          sampled: survival untrained %d trained %d | losses %d/%d | progress %d/%d',
    row.untrainedSampled.survivalSteps,row.trainedSampled.survivalSteps,row.untrainedSampled.losses,row.trainedSampled.losses,
    row.untrainedSampled.progress,row.trainedSampled.progress);
+  console.log('          train frames %d, provisional paid %s (over budget %d), rewinds %d: branches %d lost %d survived %d (%d steps) | frozen %s',
+   row.trainFrames,row.provisionalPaid,row.overBudget,row.rewinds,row.branches,row.branchLost,row.branchSurvived,row.branchSteps,row.frozenClean?'clean':'CHANGED');
  }
  return {actions:actions.length,stepFrames:STEP_FRAMES,evalStarts:3,evalStepsCap:EVAL_STEPS,
-  evaluation:'frozen, both argmax (untrained/trained) and sampled from the policy (untrainedSampled/trainedSampled)',
+  evaluation:'frozen, both argmax (untrained/trained) and sampled from the policy with the harness RNG (untrainedSampled/trainedSampled); whole learner state digest compared',
+  encoderRevision:observer.revision,readoutProfile,budget:BUDGET,rewind:REWIND?{branches:REWIND,backFrames:BACK_STEPS*STEP_FRAMES,branchFrames:BRANCH_STEPS*STEP_FRAMES}:null,
   decision:prior?{source:'survival discovery button attribution',actions:prior.actions,priors:prior.priors}:'default action set, no prior',
   creditProfile:creditProfile||'single-v1',pauseOnAuthorityDrop:pauseOnDrop,
   credit:process.env.REALROM_CREDIT==='carry'?'UNKNOWN intervals carried into the traces, unpaid':'UNKNOWN intervals clear the traces',
