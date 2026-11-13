@@ -5,12 +5,20 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import org.json.*;
 
-/** One selected connectome for the existing engines; acquisition is offline at APK build. */
+/** The production connectome is Male CNS v1.0 and nothing else; acquisition is offline at APK build.
+ * FlyWire v783 was removed from the product (directive 2026-11-13): it is neither bundled, nor read,
+ * nor substituted. A stored "flywire-v783" selection is LEGACY and resolves to Male CNS - its
+ * model-bound layers are not migrated. An imported graph is a developer/instrumentation path:
+ * used only when explicitly selected, never chosen automatically. */
 final class ConnectomeStore {
-    static final String FLYWIRE="flywire-v783",MALE="male-cns-v1.0",IMPORTED="imported";
-    static boolean valid(String id){return FLYWIRE.equals(id)||MALE.equals(id)||IMPORTED.equals(id);}
-    static String selected(Context c){String id=c.getSharedPreferences("connectome-model",0).getString("selected",null);return valid(id)?id:new File(c.getFilesDir(),"connectome.fly").exists()?IMPORTED:(MALE.equals(BuildConfig.DEFAULT_CONNECTOME)?MALE:FLYWIRE);}
-    static void select(Context c,String id)throws IOException{if(!valid(id))throw new IOException("Неизвестная модель коннектома");if(!c.getSharedPreferences("connectome-model",0).edit().putString("selected",id).commit())throw new IOException("Выбор модели не сохранён");}
+    static final String MALE="male-cns-v1.0",IMPORTED="imported";
+    /** recognised only to explain it: never loaded */
+    static final String LEGACY_FLYWIRE="flywire-v783";
+    static boolean valid(String id){return MALE.equals(id)||IMPORTED.equals(id);}
+    static boolean legacy(String id){return LEGACY_FLYWIRE.equals(id);}
+    static String selected(Context c){String id=c.getSharedPreferences("connectome-model",0).getString("selected",null);return IMPORTED.equals(id)?IMPORTED:MALE;}
+    static boolean legacySelection(Context c){return legacy(c.getSharedPreferences("connectome-model",0).getString("selected",null));}
+    static void select(Context c,String id)throws IOException{if(!valid(id))throw new IOException(removed(id));if(!c.getSharedPreferences("connectome-model",0).edit().putString("selected",id).commit())throw new IOException("Выбор модели не сохранён");}
     private static String importedSha(Context c){return c.getSharedPreferences("connectome-model",0).getString("importedSha","");}
     private static File importedFile(Context c)throws IOException {
         String sha=importedSha(c);if(sha.isEmpty())return new File(c.getFilesDir(),"connectome.fly");
@@ -36,28 +44,30 @@ final class ConnectomeStore {
     static InputStream source(Context c,String id)throws IOException{
         if(IMPORTED.equals(id))return new FileInputStream(importedFile(c));
         if(MALE.equals(id)){try{return c.getAssets().open("male-cns.fly.gz");}catch(IOException ex){return c.getAssets().open("male-cns.fly");}}
-        try{return c.getAssets().open("brain.fly.gz");}catch(IOException ex){return c.getAssets().open("brain.fly");}
+        throw new IOException(removed(id));
     }
+    static String removed(String id){return legacy(id)?"FlyWire v783 удалён из продукта; встроена только модель Male CNS v1.0":"Неизвестная модель коннектома";}
     static JSONObject manifest(Context c,String id)throws Exception{
         if(IMPORTED.equals(id)){
             JSONObject meta=new JSONObject().put("model_id",id).put("name","Imported graph").put("dynamics","Independent LIF; synthetic or importer-supplied graph");
             String sha=importedSha(c);if(!sha.isEmpty())meta.put("graph_sha256",sha);
             return meta;
         }
-        try(InputStream in=c.getAssets().open(MALE.equals(id)?"male-cns.fly.json":"brain.fly.json");ByteArrayOutputStream out=new ByteArrayOutputStream()){
+        if(!MALE.equals(id))throw new IOException(removed(id));
+        try(InputStream in=c.getAssets().open("male-cns.fly.json");ByteArrayOutputStream out=new ByteArrayOutputStream()){
             byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1){if(out.size()+n>1048576)throw new IOException("Паспорт модели слишком велик");out.write(buffer,0,n);}
             return new JSONObject(new String(out.toByteArray(),StandardCharsets.UTF_8)).put("model_id",id);
         }
     }
     static Graph load(Context c,long budget)throws Exception{return load(c,selected(c),budget);}
-    static String title(String id){return MALE.equals(id)?"Male CNS v1.0 / Traced neurons":IMPORTED.equals(id)?"Imported graph":"FlyWire v783 / Shiu signed model";}
+    static String title(String id){return IMPORTED.equals(id)?"Imported graph":"Male CNS v1.0 / Traced neurons";}
     static Graph candidate(Context c,String id,long budget)throws Exception{
-        if(!valid(id))throw new IOException("Неизвестная модель коннектома");JSONObject meta=manifest(c,id);
+        if(!valid(id))throw new IOException(removed(id));JSONObject meta=manifest(c,id);
         return GraphCache.readNamed(()->source(c,id),budget,meta.optString("graph_sha256",""));
     }
     static Graph load(Context c,String id,long budget)throws Exception{
-        if(!valid(id))throw new IOException("Неизвестная модель коннектома");
-        JSONObject meta;try{meta=manifest(c,id);}catch(IOException ex){if(MALE.equals(id))throw ex;meta=new JSONObject();}
+        if(!valid(id))throw new IOException(removed(id));
+        JSONObject meta=manifest(c,id);
         return GraphCache.loadNamed(id,()->source(c,id),budget,title(id),meta.optString("graph_sha256",""));
     }
     static Experiment ports(Context c,Graph graph,int count)throws Exception{

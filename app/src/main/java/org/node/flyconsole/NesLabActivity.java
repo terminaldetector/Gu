@@ -49,8 +49,8 @@ public final class NesLabActivity extends Activity {
     private volatile String labSystem="nes";
     private String activeFdbLayerId="";
     private final FdbLayerBinding fdbBinding=new FdbLayerBinding();
-    private String graphKind = "FlyWire v783 / Shiu signed model";
-    private String modelId=ConnectomeStore.FLYWIRE;
+    private String graphKind = "Male CNS v1.0 / Traced neurons";
+    private String modelId=ConnectomeStore.MALE;
     private String romHash = "not-loaded";
     private final java.util.ArrayDeque<String> offeredRomHashes = new java.util.ArrayDeque<>();
     private final java.util.Map<String,JSONObject> offeredLibraryRoms=new java.util.HashMap<>();
@@ -163,7 +163,7 @@ public final class NesLabActivity extends Activity {
         invalidateFdbBinding();
         closeGpu();graph=loaded;engine=nextEngine;experiment=next;modelId=id;graphKind=ConnectomeStore.title(id);backend="cpu";neuralConfigured=false;fdbGrowth=null;fdbLearning=null;growthConfiguration=null;learningConfiguration=null;invalidateFdbBinding();latestMask=0;platformPortsPending=true;initialError=null;
     }
-    private void loadGraph(){try{String id=ConnectomeStore.selected(this);Graph loaded=ConnectomeStore.load(this,id,graphBudget());Experiment next=ConnectomeStore.ports(this,loaded,RomImport.wide(labSystem)&&loaded.ids.length>=28?12:8,id);Engine nextEngine=new Engine(loaded);installGraph(loaded,nextEngine,next,id);announce();}catch(Exception|OutOfMemoryError ex){error("Коннектом не загрузился: "+ex.getMessage()+". Предыдущая модель и ручная игра сохранены.");}}
+    private void loadGraph(){try{String id=ConnectomeStore.selected(this);Graph loaded=ConnectomeStore.load(this,id,graphBudget());Experiment next=ConnectomeStore.ports(this,loaded,RomImport.wide(labSystem)&&loaded.ids.length>=28?12:8,id);Engine nextEngine=new Engine(loaded);installGraph(loaded,nextEngine,next,id);announce();}catch(Exception|OutOfMemoryError ex){error("MODEL_UNAVAILABLE: Male CNS не загрузился ("+ex.getMessage()+"). Автономный агент не запускается; ручная игра доступна.");}}
 
     private void announce() {
         if (!pageReady) return;

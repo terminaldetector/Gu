@@ -26,7 +26,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
  }
  for(const system of ['nes','sega','snes','gb']){
   await page.goto('https://flyconsole.local/lab/index.html?system='+system);await page.waitForFunction(()=>loaded&&!romLoading);
-  await page.evaluate(()=>labReady({modelId:'flywire-v783',kind:'scheduler fixture',neurons:30,edges:1,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:buttonNames.length},(_,i)=>String(i+17)),backend:'cpu'}));await page.evaluate(()=>labState.settle());
+  await page.evaluate(()=>labReady({modelId:'male-cns-v1.0',kind:'scheduler fixture',neurons:30,edges:1,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:buttonNames.length},(_,i)=>String(i+17)),backend:'cpu'}));await page.evaluate(()=>labState.settle());
   if(system==='nes')await page.evaluate(()=>{window.realCoreFrame=nes.frame.bind(nes);nes.frame=()=>{const at=performance.now();realCoreFrame();while(performance.now()-at<3){}};});
   for(const rate of [1,3]){const r=await measure(rate,rate===3);rows.push({system,...r});assert(Math.abs(r.actual-rate)<rate*.10,'real core ×'+rate+' '+system+': '+JSON.stringify(r));}
   if(system==='nes'){
@@ -36,12 +36,12 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
    await page.evaluate(()=>{$('fdbJson').value=JSON.stringify({version:2,graph_sha256:graphIdentity.sha256,deltas:[],edges:[],learning:{enabled:true,rate:.05,maxEdges:256,maxWeight:32}});$('trainingBase').checked=false;return $('trainingBase').onchange();});
    assert.equal(await page.evaluate(()=>lastRootConfig.fdb.learning.trainBase),false);
    assert.equal(await page.evaluate(()=>playing||connected),false);
-   await page.reload();await page.waitForFunction(()=>loaded&&!romLoading);await page.evaluate(()=>labReady({modelId:'flywire-v783',kind:'fixture',neurons:30,edges:1,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:8},(_,i)=>String(i+17)),backend:'cpu'}));await page.evaluate(()=>labState.settle());
+   await page.reload();await page.waitForFunction(()=>loaded&&!romLoading);await page.evaluate(()=>labReady({modelId:'male-cns-v1.0',kind:'fixture',neurons:30,edges:1,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:8},(_,i)=>String(i+17)),backend:'cpu'}));await page.evaluate(()=>labState.settle());
    assert.equal(await page.isChecked('#trainingBase'),false,'root choice restored from Layer Set');
    await page.evaluate(()=>{const f=fdbConfiguration();f.neuronDynamics={version:1,thresholdOffsets:[{neuron:'17',offsetMv:-1.25}]};$('fdbJson').value=JSON.stringify(f);$('trainingPlasticity').value='expanded';return $('trainingPlasticity').onchange();});
    assert.equal(await page.evaluate(()=>lastRootConfig.fdb.learning.plasticityMode),'expanded');
    assert.equal(await page.evaluate(()=>lastRootConfig.fdb.learning.maxEdges),2048);
-   await page.reload();await page.waitForFunction(()=>loaded&&!romLoading);await page.evaluate(()=>labReady({modelId:'flywire-v783',kind:'fixture',neurons:30,edges:1,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:8},(_,i)=>String(i+17)),backend:'cpu'}));await page.evaluate(()=>labState.settle());
+   await page.reload();await page.waitForFunction(()=>loaded&&!romLoading);await page.evaluate(()=>labReady({modelId:'male-cns-v1.0',kind:'fixture',neurons:30,edges:1,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:8},(_,i)=>String(i+17)),backend:'cpu'}));await page.evaluate(()=>labState.settle());
    assert.equal(await page.inputValue('#trainingPlasticity'),'expanded','expanded mode restored from Layer Set');
    await page.evaluate(()=>{$('trainingPlasticity').value='base';return $('trainingPlasticity').onchange();});
    assert.equal(await page.evaluate(()=>lastRootConfig.fdb.neuronDynamics.thresholdOffsets[0].offsetMv),-1.25,'disabling expanded mode retains acquired threshold');

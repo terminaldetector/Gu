@@ -31,7 +31,7 @@ public final class InferenceProgram {
    JSONObject row=new JSONObject();row.put("step",i).put("requested_ms",s.ms).put("computed_ms",result.steps*.1).put("end_tick",result.endTick).put("spikes",result.spikes).put("active",result.active).put("wall_ms",result.wallSeconds*1000);
    JSONObject channels=new JSONObject();for(int j=0;j<s.outputs.length;j++){int count=result.counts[s.outputs[j]];channels.put(s.labels[j],new JSONObject().put("id",Long.toString(graph.ids[s.outputs[j]])).put("spikes",count).put("hz",result.steps==0?0:count*10000.0/result.steps));}row.put("outputs",channels);results.put(row);
   }
-  return new JSONObject().put("format","fly-inference-v1").put("model","Java LIF / FlyWire; Brian2 parity unverified").put("dt_ms",.1).put("neurons",graph.ids.length).put("edges",graph.targets.length).put("graph_sha256",graph.fingerprint()).put("seed",seed).put("reset",reset).put("cancelled",cancel.get()).put("total_spikes",totalSpikes).put("results",results);
+  return new JSONObject().put("format","fly-inference-v1").put("model","Java LIF; Brian2 parity unverified").put("dt_ms",.1).put("neurons",graph.ids.length).put("edges",graph.targets.length).put("graph_sha256",graph.fingerprint()).put("seed",seed).put("reset",reset).put("cancelled",cancel.get()).put("total_spikes",totalSpikes).put("results",results);
  }
  private static String string(JSONObject p,String key)throws Exception{Object v=p.get(key);if(!(v instanceof String))throw new IllegalArgumentException(key+": ожидается строка");return (String)v;}
  private static boolean bool(JSONObject p,String key,boolean fallback)throws Exception{if(!p.has(key))return fallback;Object v=p.get(key);if(!(v instanceof Boolean))throw new IllegalArgumentException(key+": ожидается boolean");return (Boolean)v;}

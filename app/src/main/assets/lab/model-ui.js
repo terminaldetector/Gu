@@ -1,8 +1,9 @@
 /* Graph selection is a boundary, never a transfer of learned weights between animals. */
 'use strict';
 (() => {
- const labels={'flywire-v783':'FlyWire v783 · мозг самки','male-cns-v1.0':'Male CNS v1.0 · мозг + VNC самца',imported:'Импортированный граф'};
- const builtins=new Set(['flywire-v783','male-cns-v1.0']);
+ /* Male CNS v1.0 is the only built-in model; FlyWire v783 was removed from the product */
+ const labels={'male-cns-v1.0':'Male CNS v1.0 · мозг + VNC самца',imported:'Импортированный граф'};
+ const builtins=new Set(['male-cns-v1.0']);
  let activeId=null,manifest=null,pending=null,sequence=0,hasImported=false;
  const selectable=id=>builtins.has(id)||(id==='imported'&&hasImported);
  const say=(text,error=false)=>{$('modelStatus').textContent=text;$('modelStatus').className=error?'note error':'note';};
@@ -77,8 +78,8 @@
  };
  window.connectomeModels={select(id){$('connectomeModel').value=id;return select();},pending:()=>!!pending,ready(data){
   if(!data||typeof data!=='object')return;
-  // Older UI fixtures have no model ID; they describe the pre-existing FlyWire build.
-  activeId=typeof data.modelId==='string'?data.modelId:'flywire-v783';
+  // A missing model ID is the built-in model: Male CNS (FlyWire v783 is not a product model any more).
+  activeId=typeof data.modelId==='string'?data.modelId:'male-cns-v1.0';
   manifest=data.modelManifest&&typeof data.modelManifest==='object'&&!Array.isArray(data.modelManifest)?data.modelManifest:null;
   hasImported=data.hasImportedGraph===true||activeId==='imported';
   const imported=$('importedConnectome');imported.hidden=!hasImported;imported.disabled=!hasImported;

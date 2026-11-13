@@ -2,7 +2,9 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const source=fs.readFileSync('app/src/main/assets/lab/model-ui.js','utf8');
 const html=fs.readFileSync('app/src/main/assets/lab/index.html','utf8');
-const FLY='flywire-v783',MALE='male-cns-v1.0';
+/* Male CNS v1.0 is the only built-in model; the switching machinery is
+   exercised between it and the developer import path (FlyWire v783 removed). */
+const FLY='male-cns-v1.0',MALE='imported',REMOVED='flywire-v783';
 function fixture(){
  const nodes={},calls=[],timers=new Map();let timer=0;
  const node=id=>nodes[id]||(nodes[id]={value:'',textContent:'',disabled:false,hidden:false,checked:false});
@@ -16,7 +18,7 @@ function fixture(){
  state.window.layerExperience={activeId:()=>null,autosave:async()=>{calls.push(['autosave']);return false;}};
  state.window.FlyBridge={selectConnectome:id=>calls.push(['bridge',id])};
  vm.createContext(state);vm.runInContext(source,state);
- const announce=(id=FLY,extra={})=>{state.ready=true;state.window.connectomeModels.ready({modelId:id,graph_sha256:id===FLY?'a'.repeat(64):'b'.repeat(64),neurons:64,edges:90,...extra});};
+ const announce=(id=FLY,extra={})=>{state.ready=true;state.window.connectomeModels.ready({modelId:id,graph_sha256:id===FLY?'a'.repeat(64):'b'.repeat(64),neurons:64,edges:90,hasImportedGraph:true,...extra});};
  const choose=id=>{node('connectomeModel').value=id;node('connectomeModel').onchange();};
  return{state,node,calls,timers,announce,choose,apply:()=>node('applyConnectomeModel').onclick(),ack:data=>state.window.labModelSelection(data)};
 }
@@ -48,6 +50,8 @@ function deferred(){let resolve;const promise=new Promise(r=>{resolve=r;});retur
  f=fixture();f.announce();f.state.window.layerExperience.activeId=()=> 'named';f.choose(MALE);await f.apply();assert(!f.calls.some(x=>x[0]==='native'),'failed named autosave protects previous graph');
  f=fixture();f.announce();f.state.loaded=false;f.choose(MALE);await f.apply();assert(!f.calls.some(x=>x[0]==='persist'),'no ROM means no game policy to save');assert(f.calls.some(x=>x[0]==='native'),'can choose graph before opening a ROM');
  const timeout=Array.from(f.timers.values())[0];assert.equal(timeout.ms,120000);timeout.fn();assert.equal(f.node('connectomeModel').value,FLY);assert(!f.node('connectomeModel').disabled);assert(f.node('modelStatus').textContent.includes('не подтвердил'));
- f=fixture();f.announce('imported');assert.equal(f.node('connectomeModel').value,'imported');assert(!f.node('importedConnectome').hidden);assert(f.node('applyConnectomeModel').disabled);f.choose(FLY);await f.apply();f.ack({ok:true,id:FLY});f.announce(FLY);assert(f.node('importedConnectome').hidden);
- console.log('PASS: production model selector, passport metadata, unsupported bridge, pause/drain/save ordering, both ack orders, error preservation, imported identity and timeout');
+ f=fixture();f.announce('imported');assert.equal(f.node('connectomeModel').value,'imported');assert(!f.node('importedConnectome').hidden);assert(f.node('applyConnectomeModel').disabled);f.choose(FLY);await f.apply();f.ack({ok:true,id:FLY});f.announce(FLY,{hasImportedGraph:false});assert(f.node('importedConnectome').hidden);
+ f=fixture();f.announce();f.choose(REMOVED);assert(f.node('applyConnectomeModel').disabled,'FlyWire v783 cannot be applied');
+ assert(!html.includes('value="'+REMOVED+'"'),'the production HTML offers no FlyWire option');assert(!source.includes("'"+REMOVED+"'"),'the selector knows no FlyWire model');
+ console.log('PASS: Male-only production model selector (FlyWire v783 not offered, not applicable), passport metadata, unsupported bridge, pause/drain/save ordering, both ack orders, error preservation, imported identity and timeout');
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -7,9 +7,9 @@ public final class GraphCache {
  private GraphCache(){}
  public interface Source {InputStream open()throws IOException;}
  public static volatile Graph current;
- public static volatile String kind="FlyWire v783 / Shiu signed model";
+ public static volatile String kind="Male CNS v1.0 / Traced neurons";
  public static volatile String notice="";
- public static volatile String modelId="flywire-v783";
+ public static volatile String modelId="male-cns-v1.0";
  private static final HashMap<String,WeakReference<Graph>> namedGraphs=new HashMap<>();
  public static synchronized Graph findNamed(String id,String expectedSha){Graph graph=id.equals(modelId)?current:null;if(graph==null){WeakReference<Graph> ref=namedGraphs.get(id);if(ref!=null)graph=ref.get();}return graph!=null&&(expectedSha==null||expectedSha.isEmpty()||expectedSha.equals(graph.fingerprint()))?graph:null;}
  public static synchronized void rememberNamed(String id,Graph graph){namedGraphs.put(id,new WeakReference<>(graph));}
@@ -27,11 +27,11 @@ public final class GraphCache {
   if(current!=null)return current;Graph loaded;String description;String warning="";
   if(model.exists()){
    try(InputStream in=new FileInputStream(model)){loaded=Graph.read(in,budget);description="Imported graph";}
-   catch(IOException ex){try(InputStream in=bundled.open()){loaded=Graph.read(in,budget);description="FlyWire v783 / Shiu signed model";warning="Сохранённый граф не загружен: "+ex.getMessage()+". Используется встроенный.";}}
-  }else try(InputStream in=bundled.open()){loaded=Graph.read(in,budget);description="FlyWire v783 / Shiu signed model";}
+   catch(IOException ex){try(InputStream in=bundled.open()){loaded=Graph.read(in,budget);description="Male CNS v1.0 / Traced neurons";warning="Сохранённый граф не загружен: "+ex.getMessage()+". Используется встроенный.";}}
+  }else try(InputStream in=bundled.open()){loaded=Graph.read(in,budget);description="Male CNS v1.0 / Traced neurons";}
   loaded.fingerprint();install(loaded,description);notice=warning;return loaded;
  }
- public static synchronized void install(Graph loaded,String description){notice="";kind=description;current=loaded;modelId=description.equals("Imported graph")?"imported":"flywire-v783";rememberNamed(modelId,loaded);}
+ public static synchronized void install(Graph loaded,String description){notice="";kind=description;current=loaded;modelId=description.equals("Imported graph")?"imported":"male-cns-v1.0";rememberNamed(modelId,loaded);}
  public static synchronized String identity(Graph graph){
   if(graph==current)return modelId;
   for(java.util.Map.Entry<String,WeakReference<Graph>> entry:namedGraphs.entrySet())if(entry.getValue().get()==graph)return entry.getKey();

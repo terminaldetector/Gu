@@ -64,7 +64,7 @@ public final class Engine {
 
     public int index(long id) {
         int index = Arrays.binarySearch(graph.ids, id);
-        if (index < 0) throw new IllegalArgumentException("Неизвестный FlyWire ID: " + id);
+        if (index < 0) throw new IllegalArgumentException("Неизвестный ID нейрона: " + id);
         return index;
     }
 

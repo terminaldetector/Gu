@@ -45,7 +45,7 @@ def main():
               'assets/lab/agod-platform-driver.js', 'assets/lab/agod-reward.js',
               'assets/lab/agod-evidence.js', 'assets/lab/sega/genplus.wasm',
               'assets/lab/gb/core.wasm', 'assets/lab/snes/core.wasm',
-              'assets/brain.fly.gz', 'assets/male-cns.fly.gz']
+              'assets/male-cns.fly.gz']
     # The Android build stores `.gz` assets unpacked, under the name without the
     # suffix, and the app opens either. So a connectome is present if EITHER
     # name is in the APK - looking only for `.fly.gz` reported both as missing
@@ -63,7 +63,7 @@ def main():
         path = ASSETS / meta
         cores[system] = json.loads(path.read_text()) if path.exists() else None
     connectomes = {}
-    for name in ['brain.fly.gz', 'male-cns.fly.gz']:
+    for name in ['male-cns.fly.gz']:
         path = ASSETS / name
         connectomes[name] = {'sha256': sha256(path), 'bytes': path.stat().st_size} if path.exists() else None
     manifest = {

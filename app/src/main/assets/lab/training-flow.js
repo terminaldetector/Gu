@@ -20,9 +20,9 @@ function refresh(){
  const help={off:'Ручная игра. Для обучения выберите один из трёх форматов.',auto:'Модель играет самостоятельно. Действия человека и ручные награды не обучают её. Критерий результата задаёт RAM-профиль; без него доступно исследование без оценки успеха.',rec:'REC: играйте сами на обычной скорости. STOP завершает и сохраняет запись, затем отдаёт управление модели в текущей игре.',assist:'Модель играет, ваши нажатия временно заменяют её действие и записываются как подсказки. Награда за этот интервал не приписывается модели. В 2P кнопка «Подсказать модели» временно направляет ввод в порт агента.',eval:'Модель использует приобретённые веса. Подражание, SARSA и FDB заморожены.'};
  $('trainingFlowHelp').textContent=pair()?'Две независимые сети: режим каждого игрока задаётся в его карточке. REC и подсказки доступны одному нейронному игроку.':help[kind];
  $('liveHintTarget').hidden=kind!=='assist'||gmodeMode==='off'||pair();$('liveHintTarget').textContent=$('hintAgent').checked?'Подсказка модели · ON':'Подсказать модели';
- if(graphIdentity?.modelId!==selectedGraph&&!window.connectomeModels?.pending()){$('partnerModel').value=graphIdentity?.modelId||'flywire-v783';selectedGraph=graphIdentity?.modelId;}
+ if(graphIdentity?.modelId!==selectedGraph&&!window.connectomeModels?.pending()){$('partnerModel').value=graphIdentity?.modelId||'male-cns-v1.0';selectedGraph=graphIdentity?.modelId;}
  $('partnerModel').disabled=busy||!ready||!!window.connectomeModels?.pending();$('gmodeLaunch').disabled=busy||!ready||!loaded||labPlatform==='gb'||nes?.twoPlayerSupported===false;
- $('partnerStatus').textContent='Активная модель: '+(graphIdentity?.modelId==='male-cns-v1.0'?'Male CNS':graphIdentity?.modelId==='flywire-v783'?'FlyWire':'загружается')+'. Выбранная модель загружается перед запуском напарника; её обучение восстанавливается отдельно.';
+ $('partnerStatus').textContent='Активная модель: '+(graphIdentity?.modelId==='male-cns-v1.0'?'Male CNS':graphIdentity?.modelId?'другая модель':'загружается')+'. Выбранная модель загружается перед запуском напарника; её обучение восстанавливается отдельно.';
 }
 function rate(value){
  if(![1,2,3,5,10].includes(value))throw Error('Скорость: ×1, ×2, ×3, ×5 или ×10');

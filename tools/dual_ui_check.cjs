@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),Tools=require('../app/src/main/assets/lab/game-tools.js');
-const source=fs.readFileSync('app/src/main/assets/lab/dual-ui.js','utf8'),html=fs.readFileSync('app/src/main/assets/lab/index.html','utf8'),FLY='flywire-v783',MALE='male-cns-v1.0',sha=id=>(id===FLY?'a':'b').repeat(64);
+const source=fs.readFileSync('app/src/main/assets/lab/dual-ui.js','utf8'),html=fs.readFileSync('app/src/main/assets/lab/index.html','utf8'),FLY='male-cns-v1.0',MALE='male-cns-v1.0',sha=id=>'b'.repeat(64);/* both players run the one built-in model, Male CNS */
 function fixture(system='sega',store=new Map()){
  const nodes={},calls=[],timers=new Map(),reads=new Map(),ram=new Uint8Array(131072);let timer=0,session=0,lastConfig;
  const node=id=>nodes[id]||(nodes[id]={value:'',textContent:'',checked:false,disabled:false,hidden:false,innerHTML:''});

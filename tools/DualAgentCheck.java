@@ -9,8 +9,8 @@ import org.json.*;
 
 /** Production scoped CPU/FDB contexts and durable pair checks; no substitute engine. */
 public final class DualAgentCheck {
- private static final String FLY="flywire-v783",MALE="male-cns-v1.0",FIXTURE="mechanism-fixture",ROM=String.format("%064d",17);
- private static final String FLY_SHA="c8b50d82ff3641ddd148723222e3052b209c2662ce587def294553404d3cc2c5",MALE_SHA="90d9baae7627a521b08d5112eeb27057994b213bb2ecbc00aae1fb1c52e1cb56";
+ private static final String MALE="male-cns-v1.0",FIXTURE="mechanism-fixture",ROM=String.format("%064d",17);
+ private static final String MALE_SHA="90d9baae7627a521b08d5112eeb27057994b213bb2ecbc00aae1fb1c52e1cb56";
  private static final long[] MALE_IN={11139,117405,140141,155183,167031,176950,186714,195948,206934,221057,235427,260823,340551,500151,552475,1035284341};
  private static final long[] MALE_OUT={164190,801304,802500,803891,805881,807873,812872,818553,830514,905928,1050032839,1059707690};
  private static void require(boolean value,String message){if(!value)throw new AssertionError(message);}
@@ -108,7 +108,7 @@ public final class DualAgentCheck {
  private static void bridge(Map<String,Graph> graphs)throws Exception{
   File files=Files.createTempDirectory("fly-dual-game-").toFile();DualLayerStore store=new DualLayerStore(files);DualAgentContext[] owners=new DualAgentContext[2];long counter=0;String system="sega",rom=ROM;long[] created={1,1};
   try(BufferedReader input=new BufferedReader(new InputStreamReader(System.in))){String line;while((line=input.readLine())!=null){JSONObject q=new JSONObject(line),result=new JSONObject();String op=q.getString("op");
-   if(op.equals("init")){system=q.getString("system");if(system.equals("gb"))throw new IllegalArgumentException("GB has no independent P2");rom=q.getString("romHash");String[] models={q.optString("p1Model",FLY),q.optString("p2Model",MALE)};DualAgentContext[] next=new DualAgentContext[2];DualLayerStore.Binding[] bindings=new DualLayerStore.Binding[2];
+   if(op.equals("init")){system=q.getString("system");if(system.equals("gb"))throw new IllegalArgumentException("GB has no independent P2");rom=q.getString("romHash");String[] models={q.optString("p1Model",MALE),q.optString("p2Model",MALE)};DualAgentContext[] next=new DualAgentContext[2];DualLayerStore.Binding[] bindings=new DualLayerStore.Binding[2];
     for(int i=0;i<2;i++){Graph graph=graphs.get(models[i]);if(graph==null)throw new IllegalArgumentException("model");bindings[i]=store.prepare(system,rom,graph.fingerprint(),"p"+(i+1),models[i],false);next[i]=context("p"+(i+1),models[i],graph,ports(graph,models[i]),descriptor(graph,ports(graph,models[i]),i==0?11:23,10),null,bindings[i].id);created[i]=bindings[i].createdAt;}
     store.commitPair(bindings,next,system,rom);owners=next;long bytes=owners[0].graph.memoryBytes()+owners[1].graph.memoryBytes();if(owners[0].graph==owners[1].graph)bytes-=12L*owners[0].graph.ids.length+8L*owners[0].graph.targets.length+4;result.put("graphShared",owners[0].graph==owners[1].graph).put("fullGraphs",true).put("pairGraphAndEnginesBytesEstimate",bytes);
    }else if(op.equals("sample")){JSONArray raw=q.getJSONArray("retina"),requests=q.getJSONArray("agents");require(raw.length()==16&&requests.length()==2,"pair sample shape");double[] retina=new double[16];for(int i=0;i<16;i++){retina[i]=raw.getDouble(i);require(Double.isFinite(retina[i])&&retina[i]>=0&&retina[i]<=1,"valid observation");}for(int i=0;i<2;i++)owners[i].validateRequest(requests.getJSONObject(i));JSONArray responses=new JSONArray();for(int i=0;i<2;i++){responses.put(owners[i].sample(requests.getJSONObject(i),retina,"bridge:"+owners[i].id+":"+counter,new AtomicBoolean()));store.save(owners[i],system,rom,created[i]);}counter++;result.put("agents",responses);
@@ -117,8 +117,11 @@ public final class DualAgentCheck {
   }}finally{cleanup(files);}
  }
  public static void main(String[] args)throws Exception{
-  boolean useBridge=args.length>0&&args[0].equals("--bridge");int start=useBridge?1:0;boolean full=args.length-start==2;require(full||(!useBridge&&args.length==0),"Expected FlyWire and Male CNS graph paths; bridge requires both real models");Map<String,Graph> graphs=new LinkedHashMap<>();
-  if(full){Graph fly=read(args[start]),male=read(args[start+1]);require(fly.ids.length==138639&&fly.targets.length==15091983&&fly.fingerprint().equals(FLY_SHA),"full pinned FlyWire universe");require(male.ids.length==165122&&male.targets.length==25563197&&male.fingerprint().equals(MALE_SHA),"full pinned Male CNS universe");graphs.put(FLY,fly);graphs.put(MALE,male);}else graphs.put(FIXTURE,fixture());
+  /* Male CNS v1.0 is the only production graph: the full check takes its one
+     path, both players run it (shared W0, isolated contexts). FlyWire v783 was
+     removed from the product. */
+  boolean useBridge=args.length>0&&args[0].equals("--bridge");int start=useBridge?1:0;boolean full=args.length-start==1;require(full||(!useBridge&&args.length==0),"Expected the Male CNS graph path; the bridge requires the real model");Map<String,Graph> graphs=new LinkedHashMap<>();
+  if(full){Graph male=read(args[start]);require(male.ids.length==165122&&male.targets.length==25563197&&male.fingerprint().equals(MALE_SHA),"full pinned Male CNS universe");graphs.put(MALE,male);}else graphs.put(FIXTURE,fixture());
   if(useBridge){bridge(graphs);return;}requestGuardCheck();discardCheck();JSONArray rows=new JSONArray();for(Map.Entry<String,Graph> graph:graphs.entrySet())rows.put(graphCheck(graph.getValue(),graph.getKey()));storeCheck();System.out.println("PASS: production dual contexts; request serial/frame boundary fencing, shared W0, isolated CPU/FDB/reward/RNG, frozen evaluation, continued checkpoint, strict identity and durable pair rollback; "+(full?"full official graphs":"explicit 30-neuron mechanism fixture"));
   System.out.println(new JSONObject().put("kind","dual-context-isolation-diagnostics").put("fullGraphs",full).put("limits","Controlled technical I/O/rewards, no commercial-game success or biological equivalence. Checkpoint resumes learned topology with reset LIF dynamics.").put("rows",rows));
  }

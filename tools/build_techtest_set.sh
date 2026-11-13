@@ -28,16 +28,13 @@ trap 'cp "$DEFAULT_CONFIG" "$CONFIG"; rm -f "$DEFAULT_CONFIG"' EXIT
 
 # id | label | bundled connectomes | default connectome | autostart | policy | retry s | question
 SET=$(cat <<'EOF'
-T01|FC-T01 Shell|none|flywire-v783|false|aggressive|0|Starts at all? Manual play with no connectome bundled (loading one must fail cleanly).
-T02|FC-T02 FlyWire|flywire|flywire-v783|false|aggressive|0|FlyWire 783 loads and drives the agent on this device; AGOD off.
+T01|FC-T01 Shell|none|male-cns-v1.0|false|aggressive|0|Starts at all? Manual play with no connectome bundled: the brain must report MODEL_UNAVAILABLE, never substitute a graph.
 T03|FC-T03 MaleCNS|male|male-cns-v1.0|false|aggressive|0|Male CNS loads and fits in memory on this device; AGOD off.
-T04|FC-T04 Both noAGOD|both|flywire-v783|false|aggressive|0|Both connectomes bundled, switching between them; AGOD off.
-T05|FC-T05 AGOD button|flywire|flywire-v783|false|aggressive|0|AGOD only when the button is pressed: does a run finish and does the status line say so?
-T06|FC-T06 AGOD auto|flywire|flywire-v783|true|aggressive|0|Production behaviour: background AGOD after ROM load, aggressive reward tier.
-T07|FC-T07 AGOD strict|flywire|flywire-v783|true|strict|0|Background AGOD, verified losses only (no progress tier): compare with T06.
-T08|FC-T08 AGOD fast|flywire|flywire-v783|true|aggressive|10|Background AGOD retried every 10 s once the game advances: CPU/battery/heat stress.
-T09|FC-T09 Full FlyWire|both|flywire-v783|true|aggressive|0|Release candidate: both connectomes, FlyWire by default, background AGOD.
-T10|FC-T10 Full MaleCNS|both|male-cns-v1.0|true|aggressive|0|Release candidate with Male CNS by default, background AGOD.
+T05|FC-T05 AGOD button|male|male-cns-v1.0|false|aggressive|0|AGOD only when the button is pressed: does a run finish and does the status line say so?
+T06|FC-T06 AGOD auto|male|male-cns-v1.0|true|aggressive|0|Production behaviour: background AGOD after ROM load, aggressive reward tier.
+T07|FC-T07 AGOD strict|male|male-cns-v1.0|true|strict|0|Background AGOD, verified losses only (no progress tier): compare with T06.
+T08|FC-T08 AGOD fast|male|male-cns-v1.0|true|aggressive|10|Background AGOD retried every 10 s once the game advances: CPU/battery/heat stress.
+T10|FC-T10 Full MaleCNS|male|male-cns-v1.0|true|aggressive|0|Release candidate: Male CNS (the only built-in graph), background AGOD.
 EOF
 )
 {
@@ -81,7 +78,7 @@ JS
  inside=$(unzip -l "$apk" | awk '{print $4}')
  has_fly=$(echo "$inside" | grep -qx 'assets/brain.fly\(.gz\)\?' && echo yes || echo no)
  has_male=$(echo "$inside" | grep -qx 'assets/male-cns.fly\(.gz\)\?' && echo yes || echo no)
- want_fly=$([ "$assets" = flywire ] || [ "$assets" = both ] && echo yes || echo no)
+ want_fly=no   # FlyWire v783 is never packaged
  want_male=$([ "$assets" = male ] || [ "$assets" = both ] && echo yes || echo no)
  [ "$package" = "org.node.flyconsole.nes.tech.$lower" ] || { echo "WRONG PACKAGE $package"; exit 1; }
  [ "$shown" = "$label" ] || { echo "WRONG LABEL '$shown'"; exit 1; }

@@ -15,7 +15,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
    fdbFeedback(raw){const q=JSON.parse(raw);if(q.op==='bind'){setTimeout(()=>labFdbFeedback({token:q.token,data:{bound:true,layerId:q.layerId,configVersion:q.configVersion}}),1);return;}setTimeout(()=>labFdbFeedback({token:q.token,data:{changed:0}}),1);}
   };
  });
- async function announce(){await page.evaluate(()=>labReady({modelId:'flywire-v783',kind:'hold delivery fixture',neurons:30,edges:1,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:buttonNames.length},(_,i)=>String(i+17)),backend:'cpu'}));await page.evaluate(()=>labState.settle());}
+ async function announce(){await page.evaluate(()=>labReady({modelId:'male-cns-v1.0',kind:'hold delivery fixture',neurons:30,edges:1,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:buttonNames.length},(_,i)=>String(i+17)),backend:'cpu'}));await page.evaluate(()=>labState.settle());}
  for(const system of ['nes','sega','snes','gb']){
   await page.goto('https://flyconsole.local/lab/index.html?system='+system);await page.waitForFunction(()=>loaded&&!romLoading);await announce();
   await page.evaluate(()=>{$('learnMode').value='off';apply(false);});await page.waitForFunction(()=>configurationApplied&&!configuring);

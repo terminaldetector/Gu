@@ -178,7 +178,7 @@ function updateGmodeHud(){
   updateMapFreshness();return;
  }
  badge.textContent=active?'GMODE 2P':'SOLO';badge.className=active?'hud-live':'hud-idle';
- const animal=graphIdentity?.modelId==='male-cns-v1.0'?'Male CNS':graphIdentity?.modelId==='flywire-v783'?'FlyWire':'модель';
+ const animal=graphIdentity?.modelId==='male-cns-v1.0'?'Male CNS':'модель';
  left.textContent=active?(coop?'P1 · ЧЕЛОВЕК':'P1 · '+animal):connected?'P1 · '+animal:'P1 · РУЧНОЙ';
  right.textContent=active?(coop?'P2 · '+animal:'P2 · ЧЕЛОВЕК'):connected?animal+' · P1':'СЕТЬ ВЫКЛ.';
  brain.textContent=connected?(playing?'СЕТЬ ON':'СЕТЬ · ПАУЗА'):'СЕТЬ OFF';brain.className=connected?'hud-live':'hud-idle';

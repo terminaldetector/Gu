@@ -10,13 +10,15 @@ def guSourceId = guDigest.digest().encodeHex().toString()
    chosen set of bundled connectomes and a chosen default connectome. */
 def guTechId = project.findProperty('guTechId')
 def guTechLabel = project.findProperty('guTechLabel') ?: 'FlyConsole'
-def guTechAssets = project.findProperty('guTechAssets') ?: 'both'
-def guTechConnectome = project.findProperty('guTechConnectome') ?: 'flywire-v783'
-if (!(guTechAssets in ['none', 'flywire', 'male', 'both'])) throw new GradleException('guTechAssets must be none, flywire, male or both')
-if (!(guTechConnectome in ['flywire-v783', 'male-cns-v1.0'])) throw new GradleException('guTechConnectome must be flywire-v783 or male-cns-v1.0')
-def guIgnored = []
-if (guTechAssets in ['none', 'male']) guIgnored += ['!brain.fly.gz', '!brain.fly', '!brain.fly.json']
-if (guTechAssets in ['none', 'flywire']) guIgnored += ['!male-cns.fly.gz', '!male-cns.fly', '!male-cns.fly.json']
+/* Male CNS v1.0 is the only built-in production graph (directive 2026-11-13).
+   FlyWire v783 is never packaged: its asset names are always excluded, even if
+   an old checkout still has the files on disk. */
+def guTechAssets = project.findProperty('guTechAssets') ?: 'male'
+def guTechConnectome = project.findProperty('guTechConnectome') ?: 'male-cns-v1.0'
+if (!(guTechAssets in ['none', 'male'])) throw new GradleException('guTechAssets must be male or none: FlyWire v783 was removed from the product')
+if (guTechConnectome != 'male-cns-v1.0') throw new GradleException('guTechConnectome must be male-cns-v1.0: FlyWire v783 was removed from the product')
+def guIgnored = ['!brain.fly.gz', '!brain.fly', '!brain.fly.json']
+if (guTechAssets == 'none') guIgnored += ['!male-cns.fly.gz', '!male-cns.fly', '!male-cns.fly.json']
 android { namespace 'org.node.flyconsole'; compileSdk 35
  defaultConfig { applicationId 'org.node.flyconsole.nes'; minSdk 26; targetSdk 35; versionCode 43; versionName '2.3.0-agod'; buildConfigField 'String', 'GU_SOURCE_ID', '"' + guSourceId + '"'
   buildConfigField 'String', 'DEFAULT_CONNECTOME', '"' + guTechConnectome + '"'

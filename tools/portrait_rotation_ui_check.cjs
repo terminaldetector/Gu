@@ -34,7 +34,7 @@ const assets=path.resolve('app/src/main/assets');let browser;
   await page.setViewportSize({width:406,height:846});await page.waitForTimeout(40);
   assert(await page.evaluate(()=>document.body.classList.contains('landscape-gamepad')),'fixture retains the old profile until queued layout');
   await checkPortrait(system+' portrait before deferred profile callback');
-  await page.evaluate(async()=>{const announce=(modelId,sha)=>labReady({modelId,kind:'rotation graph metadata fixture',neurons:32,edges:64,heapMiB:512,graph_sha256:sha.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:buttonNames.length},(_,i)=>String(i+17)),backend:'cpu'});await announce('flywire-v783','b');await labState.settle();await announce('male-cns-v1.0','c');await labState.settle();});
+  await page.evaluate(async()=>{const announce=(modelId,sha)=>labReady({modelId,kind:'rotation graph metadata fixture',neurons:32,edges:64,heapMiB:512,graph_sha256:sha.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:buttonNames.length},(_,i)=>String(i+17)),backend:'cpu'});await announce('imported','b');await labState.settle();await announce('male-cns-v1.0','c');await labState.settle();});
   await checkPortrait(system+' graph change while portrait layout is deferred');
   await page.evaluate(()=>{window.requestAnimationFrame=rotationRAF;for(const callback of rotationPending.splice(0))rotationRAF(callback);});await page.waitForTimeout(80);assert(!await page.evaluate(()=>document.body.classList.contains('landscape-gamepad')));await checkPortrait(system+' settled portrait');
   fs.mkdirSync('ui-preview',{recursive:true});await page.screenshot({path:'ui-preview/rotation-'+system+'-portrait.png'});

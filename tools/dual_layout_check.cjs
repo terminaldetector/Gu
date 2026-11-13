@@ -18,19 +18,19 @@ const sha=crypto.createHash('sha256').update(Buffer.from(demo.base64,'base64')).
   };
  });
  await page.goto('https://flyconsole.local/lab/index.html');await page.waitForFunction(()=>loaded&&!romLoading);
- await page.evaluate(()=>window.labReady({modelId:'flywire-v783',kind:'64-node presentation fixture',neurons:64,edges:0,graph_sha256:'1'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:8},(_,i)=>String(i+17)),heapMiB:512,backend:'cpu'}));
- await page.evaluate(()=>consoleNavigation.legacy('network'));await page.locator('#dualPanel > summary').click();await page.selectOption('#dual1Model','flywire-v783');await page.selectOption('#dual2Model','male-cns-v1.0');
+ await page.evaluate(()=>window.labReady({modelId:'male-cns-v1.0',kind:'64-node presentation fixture',neurons:64,edges:0,graph_sha256:'1'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:8},(_,i)=>String(i+17)),heapMiB:512,backend:'cpu'}));
+ await page.evaluate(()=>consoleNavigation.legacy('network'));await page.locator('#dualPanel > summary').click();await page.selectOption('#dual1Model','male-cns-v1.0');await page.selectOption('#dual2Model','male-cns-v1.0');
  // This protocol test needs an observed source: unrated manual play is unknown,
  // and must never be turned into synthetic zero-reward outcomes.
  await page.selectOption('#dual1RewardMode','ram');await page.selectOption('#dual2RewardMode','ram');await page.click('#dualStart');
  await page.waitForFunction(()=>window.dualFixtureRequests.filter(q=>q.op==='sample').length>=3).catch(async e=>{console.error(await page.evaluate(()=>({status:$('dualStatus').textContent,error:dualAgents.error(),requests:dualFixtureRequests,frame,playing})));throw e;});
  const live=await page.evaluate(()=>({frame,masks:appliedDualMasks.slice(),samples:dualFixtureRequests.filter(q=>q.op==='sample'),p1:$('gmodeLeft').textContent,p2:$('gmodeRight').textContent,running:dualAgents.running()}));
- assert(live.frame>5&&live.running);assert.deepEqual(live.masks,[128,64]);assert.equal(live.p1,'P1 · FlyWire');assert.equal(live.p2,'P2 · Male CNS');
+ assert(live.frame>5&&live.running);assert.deepEqual(live.masks,[128,64]);assert.equal(live.p1,'P1 · Male CNS');assert.equal(live.p2,'P2 · Male CNS');
  const credit=live.samples.find(q=>q.agents.every(a=>a.outcome));assert(credit,'actual decisions acquire frame outcomes');assert.equal(credit.agents[0].outcome.frames,credit.agents[1].outcome.frames);assert.equal(credit.agents[0].outcome.mask,128);assert.equal(credit.agents[1].outcome.mask,64);
  await page.evaluate(()=>{learningUI.rate(10);window.dualFixtureRequests=[];});await page.waitForTimeout(350);
  const accelerated=await page.evaluate(()=>dualFixtureRequests.filter(q=>q.op==='sample').flatMap(q=>q.agents).filter(a=>a.outcome).map(a=>a.outcome));assert(accelerated.length>2);assert(accelerated.slice(2).every(o=>o.gameSeconds>0&&o.gameSeconds<=.12),'accelerated two-model credit stays within executed game intervals');
  await page.setViewportSize({width:844,height:390});await page.waitForTimeout(80);
- assert(!await page.locator('#landscapeHud').isVisible(),'dual telemetry stays in menus, not the game surface');assert.equal(await page.locator('#landscapeP1 b').textContent(),'P1 · FlyWire');assert.equal(await page.locator('#landscapeP2 b').textContent(),'P2 · Male CNS');
+ assert(!await page.locator('#landscapeHud').isVisible(),'dual telemetry stays in menus, not the game surface');assert.equal(await page.locator('#landscapeP1 b').textContent(),'P1 · Male CNS');assert.equal(await page.locator('#landscapeP2 b').textContent(),'P2 · Male CNS');
  await page.evaluate(()=>$('landscapeConnect').click());await page.waitForFunction(()=>dualAgents.active()&&!dualAgents.running());assert.equal(await page.evaluate(()=>playing),true,'network pause retains the running ROM');
  await page.evaluate(()=>$('landscapeConnect').click());await page.waitForFunction(()=>dualAgents.running());assert(!await page.evaluate(()=>dualFixtureRequests.some(q=>q.op==='configure')),'compact network toggle resumes the existing pair');
  await page.evaluate(()=>{window.labPause();consoleNavigation.legacy('network');});await page.waitForFunction(()=>!dualAgents.running());fs.mkdirSync('ui-preview',{recursive:true});
