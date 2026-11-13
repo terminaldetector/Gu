@@ -239,6 +239,9 @@ async function exploreRoute(built,inPlay,profile,identity,extras){
   screen:()=>{const [w,h]=dims();return Stage.signature(built.core.pixels,w,h);},seed:Number(process.env.REALROM_EXPLORE_SEED||1),
   allowLoss:process.env.REALROM_EXPLORE_LOSS==='1',floor:profile.dto.discovered.resource.floor,
   ...(process.env.REALROM_EXPLORE_LIFE?{lifeWeight:Number(process.env.REALROM_EXPLORE_LIFE)}:{})});
+ if(process.env.REALROM_EXPLORE_SEED_ROUTE){const seed=JSON.parse(fs.readFileSync(process.env.REALROM_EXPLORE_SEED_ROUTE,'utf8'));
+  if(JSON.stringify(seed.entrySteps)!==JSON.stringify(extras.entrySteps))throw Error('the seed route was found from another entry');
+  const r=archive.seedRoute(seed.masks);console.log('  explore: seeded with a %d-stride route (%d cells), best progress %d',r.strides,r.added,archive.stats().bestProgress);}
  const t0=Date.now();let lastLog=0;
  /* SIGUSR2: write the current best route now (private evidence dir) */
  let dumpNow=false;const onDump=()=>{dumpNow=true;};process.on('SIGUSR2',onDump);
@@ -249,8 +252,8 @@ async function exploreRoute(built,inPlay,profile,identity,extras){
    console.log('  explore: best route written on request (progress %d, %d strides)',b.progress,b.trace.length);}
   const st=archive.stats();
   if(st.framesRun-lastLog>=budget/20){lastLog=st.framesRun;
-   console.log('  explore: %d frames, %d cells (%d evicted), %d explorations, best progress %d (resource %s, route %d strides) %d s, rss %d MiB',
-    st.framesRun,st.cells,st.evicted,st.explorations,st.bestProgress,st.bestResource,st.bestTraceLength,Math.round((Date.now()-t0)/1000),Math.round(process.memoryUsage().rss/1048576));
+   console.log('  explore: %d frames, %d cells (%d evicted), %d explorations, best progress %d (resource %s, route %d strides) %d s, rss %d MiB, frontier by resource %j',
+    st.framesRun,st.cells,st.evicted,st.explorations,st.bestProgress,st.bestResource,st.bestTraceLength,Math.round((Date.now()-t0)/1000),Math.round(process.memoryUsage().rss/1048576),st.frontierByResource);
    /* the current best route, private, so it can be checked before the budget ends */
    if(process.env.REALROM_EVIDENCE_DIR){const b=archive.best();fs.mkdirSync(process.env.REALROM_EVIDENCE_DIR,{recursive:true});
     fs.writeFileSync(path.join(process.env.REALROM_EVIDENCE_DIR,'explore-route-partial.json'),JSON.stringify({entrySteps:extras.entrySteps,stepFrames:8,masks:b.trace,progress:b.progress,resource:b.resource,framesRun:st.framesRun}));}}

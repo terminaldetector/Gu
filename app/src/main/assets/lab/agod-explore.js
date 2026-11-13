@@ -145,7 +145,16 @@ function createArchive(driver,options){
  }
  /* start: the legal start state (trace empty) */
  {const ram=driver.readRam();offer([],ram,unwrapStep(null,o.readProgress(ram)||[],o.unwrap));}
- return {revision:EXPLORE_REVISION,explore,
+ const startCell=[...cells.values()][0];
+ /* SEED ROUTE: a route found earlier, replayed from the legal start; every stride is
+    offered as if explored, so the search continues from it (a route found later is
+    still one action trace from the legal start) */
+ function seedRoute(masks){driver.restore(startCell.snapshot);let track=startCell.track;const trace=[];let added=0;
+  for(const mask of masks){driver.run(mask,o.stride);framesRun+=o.stride;trace.push(mask);const ram=driver.readRam();
+   if(o.allowLoss?o.readResource(ram)<=o.floor:false)break;
+   track=unwrapStep(track,o.readProgress(ram)||[],o.unwrap);if(offer(trace,ram,track))added++;}
+  return {strides:trace.length,added};}
+ return {revision:EXPLORE_REVISION,explore,seedRoute,
   stats:()=>({cells:cells.size,evicted,explorations,framesRun,frontierByResource:Object.fromEntries([...bestByResource].sort((a,b)=>a[0]-b[0])),bestProgress,bestResource:bestCell?bestCell.resource:null,bestTraceLength:bestCell?bestCell.trace.length:0}),
   best:()=>bestCell?{trace:bestCell.trace.slice(),progress:bestCell.progress,resource:bestCell.resource,snapshot:bestCell.snapshot}:null,
   cells:()=>cells};
