@@ -8,7 +8,7 @@
    this checks the search and its replay, nothing more. */
 const path=require('node:path');
 const A=path.resolve(__dirname,'..','app/src/main/assets/lab');
-const Phase=require(path.join(A,'agod-phase.js')),Stage=require(path.join(A,'agod-stage.js')),Explore=require(path.join(A,'agod-explore.js'));
+const Phase=require(path.join(A,'agod-phase.js')),Stage=require(path.join(A,'agod-stage.js')),Explore=require(process.env.EXPLORE_MODULE||path.join(A,'agod-explore.js'));
 const out=[],fail=[];const ok=(c,m)=>{out.push((c?'  ok    ':'  FAIL  ')+m);if(!c)fail.push(m);return c;};
 const W=64,H=48,R={X:2,LIVES:4,STAGE:5,LOCK:6,T:7,SCROLL:8};
 function game(){
@@ -53,6 +53,37 @@ ok(restores===0,'the replay restores nothing');
 ok(fresh.readRam()[R.LIVES]===5,'the route loses no life ('+fresh.readRam()[R.LIVES]+' of 5)');
 ok(tr.length===1,'the replayed route triggers exactly one stage transition ('+tr.length+')');
 ok(fresh.readRam()[R.STAGE]===1,'ground truth: the replay is in stage 1');
+/* a bounded archive (maxCells) stays within its bound and still finds the end */
+const g2=game(),small=Explore.createArchive(g2,{actions:[0,64,128,1,65,129],readProgress:ram=>[ram[R.X]+256*ram[R.STAGE]],readResource:ram=>ram[R.LIVES],
+ positionFields:[R.X],screen:()=>Stage.signature(g2.core.pixels,W,H),seed:7,maxCells:20});
+let peak=0,reached=null;
+for(let i=0;i<3000&&!reached;i++){small.explore();peak=Math.max(peak,small.stats().cells);const b=small.best();if(b&&b.progress>=240)reached=b;}
+console.log('bounded archive: %j, peak %d',small.stats(),peak);
+ok(peak<=21&&small.stats().evicted>0,'a bounded archive keeps at most its bound (peak '+peak+' of 20, '+small.stats().evicted+' evicted)');
+ok(!!reached,'and still reaches the stage end ('+small.stats().framesRun+' frames)');
+/* a SEGMENTED stage: the only progress field AGOD has is a per-segment counter that
+   climbs to 255 and restarts at 0 when the next segment begins (x 128 -> 255, then
+   from x 130 again from 0); the stage ends at x >= 240. Counted as gained along the
+   trajectory, the next segment is ahead of the first; read raw, it looks 255 behind. */
+const C=12;
+function segmented(){const g=game();const run=g.run;
+ const counter=()=>{const x=g.readRam()[R.X];return x<130?Math.min(255,x*2):Math.min(255,(x-130)*2);};
+ g.run=(mask,frames)=>{for(let i=0;i<frames;i++){run(mask,1);}};g.counter=counter;return g;}
+function searchSegmented(unwrap){const g=segmented();
+ const a=Explore.createArchive(g,{actions:[0,64,128,1,65,129],readProgress:()=>[g.counter()],readResource:ram=>ram[R.LIVES],
+  positionFields:[R.X],screen:()=>Stage.signature(g.core.pixels,W,H),seed:7,unwrap,horizons:[48],progressBucket:64,positionBucket:64});
+ let reached=null,frames=0;for(let i=0;i<4000&&!reached;i++){a.explore();const b=a.best();
+  /* ground truth from the game itself, never given to the archive */
+  for(const c of a.cells().values())if(!reached){g.restore(c.snapshot);if(g.readRam()[R.STAGE]>=1||g.readRam()[R.X]>=240)reached=c;}
+  frames=a.stats().framesRun;}
+ return {reached:!!reached,frames,stats:a.stats()};}
+const withUnwrap=searchSegmented(true),raw=searchSegmented(false);
+console.log('segmented stage: unwrap %j | raw %j',{reached:withUnwrap.reached,frames:withUnwrap.frames,best:withUnwrap.stats.bestProgress},{reached:raw.reached,frames:raw.frames,best:raw.stats.bestProgress});
+ok(withUnwrap.reached,'with progress counted as gained, the archive crosses a counter reset and reaches the stage end ('+withUnwrap.frames+' frames)');
+ok(withUnwrap.stats.bestProgress>255,'and its frontier lies past the reset (best progress '+withUnwrap.stats.bestProgress+' > 255)');
+ok(!raw.reached||raw.frames>withUnwrap.frames,'read raw, the same search does not reach it in the same budget, or takes longer ('+(raw.reached?raw.frames+' frames':'not reached')+')');
+const u1=Explore.unwrapStep(null,[250,3],true),u2=Explore.unwrapStep(u1,[0,2],true),u3=Explore.unwrapStep(u2,[5,1],true);
+ok(u3.value[0]===255&&u3.value[1]===1,'unwrapStep: 250 -> 0 -> 5 is 255 gained; a small fall (3 -> 2 -> 1) stays a fall ('+u3.value+')');
 console.log('\n'+out.join('\n'));
 console.log('\n%s — %d/%d',fail.length?'FAIL ('+fail.length+')':'PASS',out.length-fail.length,out.length);
 if(fail.length)process.exitCode=1;

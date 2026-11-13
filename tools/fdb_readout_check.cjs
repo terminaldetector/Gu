@@ -95,6 +95,36 @@ const A=Array.from({length:16},(_,i)=>i<8?.9:.05),B=Array.from({length:16},(_,i)
   ok(JSON.stringify(sk0.learningState)===JSON.stringify(sk1.learningState)&&sk1.skills===1,'frozen decisions do not change the skill memory');
   await java.call({op:'reset'});const cpk=await java.call({op:'checkpoint'});const after2=await java.call({op:'state'});
   ok(after2.skillProfile==='skill-v1'&&after2.skills===1&&after2.learningState.skills&&after2.learningState.skills.memory.length===1,'a checkpoint roundtrip keeps the skill memory');
+  /* 8. POPULATION READOUT (action-pop-v1): the readout reads a population of the
+     brain's neurons chosen by how much their activity varies over a sequence of
+     states, is fitted to a demonstrated action per state, and then a FROZEN pass
+     over the same states from the same engine start reproduces every action - with
+     the brain doing exactly the same thing (activity hashes equal) */
+  {const seqRetina=k=>Array.from({length:16},(_,i)=>((i*5+k*7)%16)/16*.9+.05);
+   const SEQ=12,demo=Array.from({length:SEQ},(_,k)=>ACTIONS[(k*5+1)%ACTIONS.length]);
+   await java.call({op:'init',seed:7,mode:'base'});await java.call({op:'readout',profile:'action-pop-v1'});
+   await java.call({op:'reset'});for(let k=0;k<SEQ;k++)await java.call({op:'decide',retina:seqRetina(k),train:false,actions:ACTIONS,epsilon:0,windowMs:20,stats:true});
+   const pop=await java.call({op:'population',size:4095});
+   await java.call({op:'reset'});const hashes=[];
+   for(let k=0;k<SEQ;k++){const d=await java.call({op:'decide',retina:seqRetina(k),train:true,actions:ACTIONS,epsilon:0,windowMs:20});hashes.push(d.activityHash);
+    await java.call({op:'imitate',id:d.id,mask:demo[k]});}
+   await java.call({op:'boundary'});
+   const fit=await java.call({op:'fit',epochs:500,margin:1,rate:.05});
+   const sp0=await java.call({op:'state'});
+   await java.call({op:'reset'});let same=0,hashSame=0;
+   for(let k=0;k<SEQ;k++){const d=await java.call({op:'decide',retina:seqRetina(k),train:false,actions:ACTIONS,epsilon:0,windowMs:20});if(d.mask===demo[k])same++;if(d.activityHash===hashes[k])hashSame++;}
+   const sp1=await java.call({op:'state'});
+   console.log('population readout: %d of %d neurons varied, fit %j, frozen pass %d/%d actions, %d/%d activity hashes equal',pop.population,pop.varying,fit,same,SEQ,hashSame,SEQ);
+   ok(pop.population>0&&pop.population===sp0.population,'the population is chosen from the varying neurons ('+pop.population+')');
+   ok(fit.met===1&&fit.demonstrations===SEQ,'the readout is fitted to every demonstrated step ('+fit.met+', '+fit.epochs+' epochs)');
+   ok(hashSame===SEQ,'a frozen pass from the same engine start sees the brain do exactly the same thing ('+hashSame+'/'+SEQ+' activity hashes)');
+   ok(same===SEQ,'and the frozen decisions reproduce every demonstrated action ('+same+'/'+SEQ+')');
+   ok(JSON.stringify(sp0.learningState)===JSON.stringify(sp1.learningState),'frozen decisions change nothing in the population readout');
+   await java.call({op:'reset'});const before=[];for(let k=0;k<3;k++)before.push(JSON.stringify((await java.call({op:'decide',retina:seqRetina(k),train:false,actions:ACTIONS,epsilon:0,windowMs:20})).scores));
+   await java.call({op:'checkpoint'});const after=[];for(let k=0;k<3;k++)after.push(JSON.stringify((await java.call({op:'decide',retina:seqRetina(k),train:false,actions:ACTIONS,epsilon:0,windowMs:20})).scores));
+   const sp2=await java.call({op:'state'});
+   ok(before.join()===after.join()&&sp2.population===pop.population&&sp2.learningState.readout.population.length===pop.population,
+    'a checkpoint roundtrip keeps the population and every score');}
   /* 6. none: the checkpoint has no readout block at all */
   await java.call({op:'init',seed:7,mode:'base'});
   const none=await java.call({op:'state'});

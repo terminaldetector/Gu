@@ -22,7 +22,7 @@
    of the resource. Every stride's state is offered to the archive. */
 'use strict';
 (function(root){
-const EXPLORE_REVISION='agod-explore-r1';
+const EXPLORE_REVISION='agod-explore-r2';
 const DEFAULTS=Object.freeze({stride:8,horizons:Object.freeze([96,192,384]),holdMin:1,holdMax:4,
  progressBucket:4,positionBucket:16,screenLevels:3,seed:1,
  /* allowLoss: a branch goes on through a loss of the resource (a respawn) and
@@ -32,15 +32,35 @@ const DEFAULTS=Object.freeze({stride:8,horizons:Object.freeze([96,192,384]),hold
     is then never crossed (measured on a private SNES run-and-gun: stuck at
     progress 176 after 100 000 frames). lifeWeight: how much progress one unit
     of resource is worth when choosing where to explore from. */
- allowLoss:false,floor:0,lifeWeight:8});
+ allowLoss:false,floor:0,lifeWeight:8,
+ /* maxCells: a bound on the archive (each cell holds a savestate). Past it the
+    cells worth least - lowest progress plus resource, then most often chosen -
+    are dropped, a tenth at a time; the start and the best cell never are. */
+ maxCells:Infinity,
+ /* unwrap: progress is what a trajectory has GAINED. A progress counter that falls
+    from its upper half to under a quarter of that value while in play has wrapped
+    or been reset for the next segment (measured on a private SNES run-and-gun: two
+    per-segment scroll counters climb to 255 and restart at 0 where the screen locks
+    at a fortified wall, so the archive saw the next segment as 510 progress lower
+    and never explored it); the trajectory keeps what it had and counts on. Any
+    other fall is taken as it is. */
+ unwrap:true});
 
+/* per trajectory: raw progress values -> accumulated ones (see DEFAULTS.unwrap) */
+function unwrapStep(track,raw,enabled){
+ const off=track?track.off.slice():raw.map(()=>0),last=track?track.last.slice():raw.slice();
+ for(let i=0;i<raw.length;i++){const v=raw[i],p=last[i];
+  if(enabled&&Number.isFinite(v)&&Number.isFinite(p)&&p>=128&&v*4<=p)off[i]+=p;
+  if(Number.isFinite(v))last[i]=v;}
+ return {off,last,value:raw.map((v,i)=>Number.isFinite(v)?v+off[i]:v)};
+}
 function rng(seed){let s=seed>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
 
 /* THE CELL KEY, shared by the archive and by FDB's skill memory (distillation), so
    both name a state the same way: progress fields (bucketed), controlled position
    (bucketed), resource, coarse screen. Nothing game-specific. */
-function cellKey(o,ram,scr){
- const prog=(o.readProgress(ram)||[]).map(v=>Number.isFinite(v)?Math.floor(v/o.progressBucket):-1);
+function cellKey(o,ram,scr,progressValues){
+ const prog=(progressValues||o.readProgress(ram)||[]).map(v=>Number.isFinite(v)?Math.floor(v/o.progressBucket):-1);
  const pos=(o.positionFields||[]).map(a=>Math.floor(ram[a]/o.positionBucket));
  let s='';if(scr)for(let i=0;i<scr.length;i++)s+=Math.min(o.screenLevels-1,Math.floor(scr[i]*o.screenLevels));
  return prog.join(',')+'|'+pos.join(',')+'|'+o.readResource(ram)+'|'+s;
@@ -64,17 +84,25 @@ function createKeyer(options){
 function createArchive(driver,options){
  const o={...DEFAULTS,...(options||{})};
  const random=rng(o.seed);
- const cells=new Map();let explorations=0,framesRun=0,bestProgress=-Infinity,bestCell=null;
+ const cells=new Map();let explorations=0,framesRun=0,bestProgress=-Infinity,bestCell=null,evicted=0;
  const total=v=>v.reduce((s,x)=>s+(Number.isFinite(x)?x:0),0);
- const key=ram=>cellKey(o,ram,o.screen?o.screen():null);
- function offer(trace,ram){
-  const k=key(ram),prog=total(o.readProgress(ram)||[]),res=o.readResource(ram);
+ function offer(trace,ram,track){
+  const k=cellKey(o,ram,o.screen?o.screen():null,track.value),prog=total(track.value),res=o.readResource(ram);
   const prev=cells.get(k);
   if(prev&&(prev.resource>res||(prev.resource===res&&prev.trace.length<=trace.length)))return false;
-  cells.set(k,{key:k,trace:trace.slice(),snapshot:driver.snapshot(),progress:prog,resource:res,
+  cells.set(k,{key:k,trace:trace.slice(),snapshot:driver.snapshot(),progress:prog,resource:res,track,
    chosen:prev?prev.chosen:0,fails:prev?prev.fails:0,found:Date.now()});
   if(res>o.floor||!o.allowLoss)if(prog>bestProgress||(prog===bestProgress&&bestCell&&res>bestCell.resource)){bestProgress=prog;bestCell=cells.get(k);}
+  if(cells.size>o.maxCells)evict();
   return true;
+ }
+ const worth=c=>c.progress+(o.allowLoss?o.lifeWeight*c.resource:0);
+ function evict(){
+  const drop=Math.max(1,Math.ceil(cells.size-o.maxCells*0.9));
+  const order=[...cells.values()].filter(c=>c!==bestCell&&c.trace.length>0)
+   .sort((x,y)=>(worth(x)-worth(y))||(y.chosen-x.chosen));
+  for(let i=0;i<drop&&i<order.length;i++)cells.delete(order[i].key);
+  evicted+=Math.min(drop,order.length);
  }
  function choose(){
   let best=null,bestScore=-Infinity;
@@ -89,7 +117,7 @@ function createArchive(driver,options){
   c.chosen++;explorations++;
   driver.restore(c.snapshot);
   const horizon=o.horizons[Math.floor(random()*o.horizons.length)];
-  const trace=c.trace.slice();let frames=0,added=0,lost=false;
+  const trace=c.trace.slice();let frames=0,added=0,lost=false,track=c.track;
   let mask=o.actions[Math.floor(random()*o.actions.length)],left=0;
   const start=o.readResource(driver.readRam());
   while(frames<horizon){
@@ -98,20 +126,21 @@ function createArchive(driver,options){
    const ram=driver.readRam();
    const res=o.readResource(ram);
    if(res<start){lost=true;if(!o.allowLoss||res<=o.floor)break;}
-   if(offer(trace,ram))added++;
+   track=unwrapStep(track,o.readProgress(ram)||[],o.unwrap);
+   if(offer(trace,ram,track))added++;
   }
   if(!added)c.fails++;
   return {from:c.key,horizon,frames,added,lost};
  }
  /* start: the legal start state (trace empty) */
- offer([],driver.readRam());
+ {const ram=driver.readRam();offer([],ram,unwrapStep(null,o.readProgress(ram)||[],o.unwrap));}
  return {revision:EXPLORE_REVISION,explore,
-  stats:()=>({cells:cells.size,explorations,framesRun,bestProgress,bestResource:bestCell?bestCell.resource:null,bestTraceLength:bestCell?bestCell.trace.length:0}),
+  stats:()=>({cells:cells.size,evicted,explorations,framesRun,bestProgress,bestResource:bestCell?bestCell.resource:null,bestTraceLength:bestCell?bestCell.trace.length:0}),
   best:()=>bestCell?{trace:bestCell.trace.slice(),progress:bestCell.progress,resource:bestCell.resource,snapshot:bestCell.snapshot}:null,
   cells:()=>cells};
 }
 
-const api=Object.freeze({EXPLORE_REVISION,DEFAULTS,createArchive,cellKey,createKeyer});
+const api=Object.freeze({EXPLORE_REVISION,DEFAULTS,createArchive,cellKey,createKeyer,unwrapStep});
 root.FlyAgodExplore=api;
 if(typeof module!=='undefined')module.exports=api;
 })(typeof window==='undefined'?globalThis:window);

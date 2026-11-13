@@ -210,7 +210,15 @@ async function exploreRoute(built,inPlay,profile,identity,extras){
  const positionFields=(extras.entryProbe&&extras.entryProbe.axes||[]).filter(a=>a.integrators>0).map(a=>a.fields[0]);
  const dims=()=>Observation.dims(built.core)||[256,224];
  d.restore(inPlay);
- const archive=Explore.createArchive(d,{actions,readProgress:progressOf,readResource:read,positionFields,
+ /* the archive keeps a savestate per cell: 823 KB each on SNES, about 39 KB after
+    a level-1 deflate (~1 ms) - measured: 9 600 uncompressed cells ran this
+    process out of memory. REALROM_EXPLORE_CELLS bounds the archive (default 20 000). */
+ const zlib=require('zlib');
+ const packed=Object.assign(Object.create(d),{
+  snapshot(){const s=d.snapshot();return s&&s.bytes?{...s,bytes:zlib.deflateRawSync(s.bytes,{level:1}),packed:true}:s;},
+  restore(s){return d.restore(s&&s.packed?{...s,bytes:new Uint8Array(zlib.inflateRawSync(s.bytes)),packed:undefined}:s);}});
+ const archive=Explore.createArchive(packed,{actions,readProgress:progressOf,readResource:read,positionFields,
+  maxCells:Number(process.env.REALROM_EXPLORE_CELLS||20000),
   screen:()=>{const [w,h]=dims();return Stage.signature(built.core.pixels,w,h);},seed:Number(process.env.REALROM_EXPLORE_SEED||1),
   allowLoss:process.env.REALROM_EXPLORE_LOSS==='1',floor:profile.dto.discovered.resource.floor,
   ...(process.env.REALROM_EXPLORE_LIFE?{lifeWeight:Number(process.env.REALROM_EXPLORE_LIFE)}:{})});
@@ -219,8 +227,8 @@ async function exploreRoute(built,inPlay,profile,identity,extras){
   archive.explore();
   const st=archive.stats();
   if(st.framesRun-lastLog>=budget/20){lastLog=st.framesRun;
-   console.log('  explore: %d frames, %d cells, %d explorations, best progress %d (resource %s, route %d strides) %d s',
-    st.framesRun,st.cells,st.explorations,st.bestProgress,st.bestResource,st.bestTraceLength,Math.round((Date.now()-t0)/1000));}
+   console.log('  explore: %d frames, %d cells (%d evicted), %d explorations, best progress %d (resource %s, route %d strides) %d s, rss %d MiB',
+    st.framesRun,st.cells,st.evicted,st.explorations,st.bestProgress,st.bestResource,st.bestTraceLength,Math.round((Date.now()-t0)/1000),Math.round(process.memoryUsage().rss/1048576));}
  }
  const best=archive.best(),st=archive.stats();
  /* the route, replayed from a freshly loaded cartridge: entry without restore, then
@@ -449,7 +457,7 @@ async function learn(built,inPlay,profile,identity,java,extras){
      freshly loaded cartridge with no restore, gave the same entry and ran; the
      demonstrations are (state key, action) along that replay. Keys: the archive's
      cell + dwell (agod-explore.js), from what AGOD sees. */
-  let distill=null,routeKeys=null,routeMasks=null,firstOffRoute=null;const keyOptions={readProgress:progressOf,readResource:ram=>read(ram),
+  let distill=null,routeKeys=null,routeMasks=null,firstOffRoute=null,populationInfo=null;const routeActivity=[];const keyOptions={readProgress:progressOf,readResource:ram=>read(ram),
    positionFields:(extras.entryProbe&&extras.entryProbe.axes||[]).filter(a=>a.integrators>0).map(a=>a.fields[0])};
   if(process.env.REALROM_DISTILL){
    const route=JSON.parse(fs.readFileSync(process.env.REALROM_DISTILL,'utf8'));routeMasks=route.masks;
@@ -463,26 +471,45 @@ async function learn(built,inPlay,profile,identity,java,extras){
    /* IMITATION: the brain's readout learns the route - REALROM_IMITATE passes, each on its
       own freshly loaded cartridge, a training decision per route step from what the
       brain sees there, then the readout step towards the route's action (no reward) */
-   const passes=Number(process.env.REALROM_IMITATE||0);let imitated=0;
-   for(let pass=0;pass<passes;pass++){
-    const ib=await extras.rebuild(),idv=ib.driver;Phase.replayEntry(idv,extras.entrySteps);
+   /* POPULATION READOUT (REALROM_READOUT=action-pop-v1): first a frozen pass along the
+      route collects every neuron's activity; the REALROM_POPULATION (default 2048)
+      neurons that vary most become the readout's population; one imitation pass
+      records what they do at each route step; the readout is then fitted to the
+      route (FdbLearning.fitImitation) - the brain's own activity, nothing from RAM */
+   const pop=readoutProfile==='action-pop-v1';
+   const routePass=async(fn)=>{const ib=await extras.rebuild(),idv=ib.driver;Phase.replayEntry(idv,extras.entrySteps);
     const iobs=Observation.create(OBS,ib.core,{probe:obsProbe,readRam:()=>idv.readRam(),readResource:ram=>read(ram),initialResource:profile.dto.discovered.resource.initial});
-    await java.call({op:'reset'});
-    for(const mask of route.masks){const dd=await java.call({op:'decide',retina:iobs.observe(),train:true,actions,epsilon:0,windowMs:20});
-     const im=await java.call({op:'imitate',id:dd.id,mask});if(im.accepted)imitated++;idv.run(mask,STEP_FRAMES);}
-    ib.dispose();await java.call({op:'boundary'});
+    await java.call({op:'reset'});for(let k=0;k<route.masks.length;k++){await fn(iobs.observe(),route.masks[k],k);idv.run(route.masks[k],STEP_FRAMES);}
+    ib.dispose();await java.call({op:'boundary'});};
+   if(pop){await routePass(async retina=>{await java.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:20,stats:true});});
+    const chosen=await java.call({op:'population',size:Number(process.env.REALROM_POPULATION||2048)});
+    populationInfo={neurons:chosen.population,varying:chosen.varying};
+    console.log('  population: %d neurons varied along the route, %d read by the readout',chosen.varying,chosen.population);}
+   const passes=Number(process.env.REALROM_IMITATE||(pop?1:0));let imitated=0;
+   for(let pass=0;pass<passes;pass++){
+    await routePass(async(retina,mask,k)=>{const dd=await java.call({op:'decide',retina,train:true,actions,epsilon:0,windowMs:20});
+     if(pass===0)routeActivity[k]=dd.activityHash;
+     const im=await java.call({op:'imitate',id:dd.id,mask});if(im.accepted)imitated++;});
     console.log('  imitation pass %d: %d route steps',pass+1,route.masks.length);
    }
+   if(pop){const t=Date.now();const fit=await java.call({op:'fit',epochs:Number(process.env.REALROM_FIT_EPOCHS||400),margin:1,rate:.05});
+    populationInfo.fit={met:fit.met,epochs:fit.epochs,updates:fit.fitUpdates,demonstrations:fit.demonstrations,wallSeconds:Math.round((Date.now()-t)/1000)};
+    console.log('  readout fitted to the route: %s of %d demonstrations met after %d epochs (%d updates, %d s)',(fit.met*100).toFixed(1)+'%',fit.demonstrations,fit.epochs,fit.fitUpdates,populationInfo.fit.wallSeconds);}
    const st=await java.call({op:'state'});
-   distill={imitationPasses:passes,imitated,routeStrides:route.masks.length,replayRestores:rRestores,demonstrations:steps.length,distinctKeys:new Set(steps.map(x=>x[0])).size,memory:st.skills,
+   distill={imitationPasses:passes,imitated,readout:readoutProfile,population:populationInfo,routeStrides:route.masks.length,replayRestores:rRestores,demonstrations:steps.length,distinctKeys:new Set(steps.map(x=>x[0])).size,memory:st.skills,
     routeEntrySameState:routeEntryHash===extras.inPlayHash};routeKeys=steps.map(x=>x[0]);
    console.log('  distill: route %d strides replayed from a fresh load (restores %d) -> %d demonstrations, %d distinct state keys in FDB skill memory',
     route.masks.length,rRestores,steps.length,distill.distinctKeys);
   }
-  async function runEpisode(useMemory){
+  /* perturb (REALROM_PERTURB=frames): the episode starts that many idle frames late, so
+     from the first decision on the brain sees what it never saw on the route - in a
+     deterministic emulator reproducing a route from the identical start is close to
+     replaying it; this shows whether the policy still steers when the input differs */
+  async function runEpisode(useMemory,perturb){
     const fresh=await extras.rebuild();const fd=fresh.driver;let restores=0;
     Phase.replayEntry(fd,extras.entrySteps);
     const sameStart=fd.stateHash()===extras.inPlayHash;
+    if(perturb)fd.run(0,perturb);
     const realRestore=fd.restore.bind(fd);fd.restore=x=>{restores++;return realRestore(x);};
     const fobs=Observation.create(OBS,fresh.core,{probe:obsProbe,readRam:()=>fd.readRam(),readResource:ram=>read(ram),initialResource:profile.dto.discovered.resource.initial});
     const monitor=Stage.createMonitor({probe:extras.entryProbe,readResource:ram=>read(ram)});
@@ -491,7 +518,7 @@ async function learn(built,inPlay,profile,identity,java,extras){
     const fkeyer=distill&&useMemory?Explore.createKeyer(keyOptions):null;let proposals=0,memoryDecided=0,brainAgreed=0;
     const before0=learnerDigest(await java.call({op:'state'}));
     await java.call({op:'reset'});
-    const log=[],t0=Date.now();let frames=0,losses=0,progress=0,best=0,ended_=false,followed=0;const lat=[];
+    const log=[],t0=Date.now();let frames=0,losses=0,progress=0,best=0,ended_=false,followed=0,activitySame=0;const lat=[];
     while(frames<maxFrames){
      const ramBefore=fd.readRam();const t=Date.now();
      const skill=fkeyer?fkeyer.key(ramBefore,Stage.signature(fresh.core.pixels,dims[0],dims[1])):null;
@@ -501,6 +528,7 @@ async function learn(built,inPlay,profile,identity,java,extras){
       /* private console only: keys carry RAM-derived values */
       console.log('  [private] first state off the route at decision %d:\n    route %s\n    live  %s',log.length,routeKeys[log.length],skill);}
      if(routeMasks&&followed===log.length&&log.length<routeMasks.length&&r.mask===routeMasks[log.length])followed++;
+     if(routeActivity.length&&log.length<routeActivity.length&&r.activityHash===routeActivity[log.length])activitySame++;
      fd.run(r.mask,STEP_FRAMES);frames+=STEP_FRAMES;log.push(r.mask);
      const ramAfter=fd.readRam();const rb=read(ramBefore),ra=read(ramAfter);if(ra<rb)losses+=rb-ra;
      const pb=progressOf(ramBefore),pa=progressOf(ramAfter);for(let i=0;i<pb.length;i++)if(Number.isFinite(pb[i])&&Number.isFinite(pa[i])&&pa[i]>pb[i])progress+=pa[i]-pb[i];
@@ -514,24 +542,28 @@ async function learn(built,inPlay,profile,identity,java,extras){
     const logSha=crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(log).buffer)).digest('hex');
     if(process.env.REALROM_EVIDENCE_DIR){fs.mkdirSync(process.env.REALROM_EVIDENCE_DIR,{recursive:true});
      fs.writeFileSync(path.join(process.env.REALROM_EVIDENCE_DIR,'full-episode-actions.json'),JSON.stringify({entrySteps:extras.entrySteps,stepFrames:STEP_FRAMES,masks:log,events:monitor?monitor.events():[]}));}
-    const episodeResult={runMode:'FROZEN_FULL_EPISODE',memory:!!fkeyer,policy:sampled?'sampled (harness stream)':'argmax',freshLoad:true,entryReplayedSameState:sameStart,
+    const episodeResult={runMode:'FROZEN_FULL_EPISODE',memory:!!fkeyer,startDelayFrames:perturb||0,policy:sampled?'sampled (harness stream)':'argmax',freshLoad:true,entryReplayedSameState:sameStart,
      evalRestores:restores,humanInputFrames:0,framesExecuted:frames,decisions:log.length,losses,ended:ended_,
      progress,highestProgress:best,stageEvents:monitor?monitor.events().filter(e=>e.kind!=='LOSS').length:null,
      transitions:transitions.map(e=>({frame:e.frame,gapFrames:e.gapFrames,novelty:e.novelty})),
      levelClear:transitions.length?'CANDIDATE':'UNVERIFIED',levelClearEvidence:transitions.length?'stage transition detected; frames and action trace kept privately':null,
      weightsChangedInEval:before0!==after0,actionTraceSha256:logSha,
      routeStepsFollowedFromStart:routeMasks?followed:null,routeStrides:routeMasks?routeMasks.length:null,
+     routeStepsWithIdenticalBrainActivity:routeActivity.length?activitySame:null,
      distill,skillMemory:distill?{decisionsWithProposal:proposals,decidedByMemoryAgainstBrain:memoryDecided,brainAlreadyAgreed:brainAgreed,firstDecisionOffRoute:firstOffRoute}:null,decisionLatencyMs:{p50:q(.5),p95:q(.95)},wallSeconds:Math.round((Date.now()-t0)/1000)};
-    if(routeMasks)console.log('  route steps reproduced from the start before the first deviation: %d of %d',followed,routeMasks.length);
+    if(routeMasks)console.log('  route steps reproduced from the start before the first deviation: %d of %d%s',followed,routeMasks.length,
+     routeActivity.length?' (brain activity identical to the imitation pass on '+activitySame+' steps)':'');
     if(distill&&fkeyer)console.log('  skill memory in the frozen episode: %d of %d decisions had a proposal; it overrode the brain %d times, the brain already agreed %d times',
      proposals,log.length,memoryDecided,brainAgreed);
     console.log('  FULL EPISODE (%s%s): fresh load, entry same state %s, restores %d | frames %d, decisions %d, losses %d, ended %s | progress %d | stage transitions %d -> LEVEL_CLEAR %s | frozen %s | p50 %s ms',
-     episodeResult.policy,fkeyer?', skill memory':(distill?', brain only':''),sameStart,restores,frames,log.length,losses,ended_,best,transitions.length,episodeResult.levelClear,before0===after0?'clean':'CHANGED',episodeResult.decisionLatencyMs.p50);
+     episodeResult.policy,(fkeyer?', skill memory':(distill?', brain only':''))+(perturb?', start '+perturb+' frames late':''),sameStart,restores,frames,log.length,losses,ended_,best,transitions.length,episodeResult.levelClear,before0===after0?'clean':'CHANGED',episodeResult.decisionLatencyMs.p50);
     fresh.dispose();
     return episodeResult;
   }
   fullEpisode=await runEpisode(true);
   if(distill)fullEpisode.brainOnly=await runEpisode(false);
+  if(distill&&process.env.REALROM_PERTURB){fullEpisode.brainOnlyPerturbed=[];
+   for(const late of String(process.env.REALROM_PERTURB).split(',').map(Number).filter(x=>x>0))fullEpisode.brainOnlyPerturbed.push(await runEpisode(false,late));}
  }
  return {brain:brainIdentity,actions:actions.length,stepFrames:STEP_FRAMES,evalStarts:3,evalStepsCap:EVAL_STEPS,fullEpisode,
   evaluation:'frozen, both argmax (untrained/trained) and sampled from the policy with the harness RNG (untrainedSampled/trainedSampled); whole learner state digest compared',

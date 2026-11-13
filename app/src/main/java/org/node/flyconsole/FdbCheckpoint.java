@@ -60,7 +60,9 @@ public final class FdbCheckpoint {
             JSONArray w=new JSONArray(),tr=new JSONArray();
             for(Map.Entry<Integer,double[]> e:learner.readoutWeights().entrySet())w.put(new JSONObject().put("mask",e.getKey()).put("w",new JSONArray(e.getValue())));
             for(Map.Entry<Integer,double[]> e:learner.readoutTraces().entrySet())tr.put(new JSONObject().put("mask",e.getKey()).put("e",new JSONArray(e.getValue())));
-            state.put("readout",new JSONObject().put("profile",learner.readoutProfile()).put("features",learner.readoutFeatures()).put("updates",learner.readoutUpdates()).put("weights",w).put("traces",tr));
+            JSONObject ro=new JSONObject().put("profile",learner.readoutProfile()).put("features",learner.readoutFeatures()).put("updates",learner.readoutUpdates()).put("weights",w).put("traces",tr);
+            if(learner.readoutProfile().equals("action-pop-v1"))ro.put("population",new JSONArray(learner.readoutPopulation()));
+            state.put("readout",ro);
         }
         /* the skill memory (research, opt-in) likewise only when it is on */
         if(!learner.skillProfile().equals("none")){
@@ -126,6 +128,8 @@ public final class FdbCheckpoint {
         if(state.has("readout")){
             JSONObject r=state.getJSONObject("readout");String rp=FdbLearning.validateReadoutProfile(r.getString("profile"));
             if(!rp.equals(learner.readoutProfile()))throw new IllegalArgumentException("FDB readout profile mismatch");
+            if(rp.equals("action-pop-v1")){JSONArray pa=r.getJSONArray("population");if(pa.length()>FdbLearning.POPULATION_LIMIT)throw new IllegalArgumentException("FDB population limit");
+                int[] pop=new int[pa.length()];for(int i=0;i<pop.length;i++)pop[i]=pa.getInt(i);learner.readoutPopulation(pop);}
             int features=(int)integer(r,"features",1,4096);if(features!=learner.readoutFeatures())throw new IllegalArgumentException("FDB readout shape");
             learner.restoreReadout(rp,readoutArrays(r.getJSONArray("weights"),"w",features),readoutArrays(r.getJSONArray("traces"),"e",features),integer(r,"updates",0,max));
         }

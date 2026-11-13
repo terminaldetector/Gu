@@ -1,7 +1,7 @@
 # Male CNS as the agent's brain - where it stands on Contra III
 
 **ROM hash / Male graph hash:** Contra III (SNES) `a93ea87fc835c530b5135c5294433d15eef6dbf656144b387e89ac19cf864996` / Male CNS v1.0 `90d9baae7627a521b08d5112eeb27057994b213bb2ecbc00aae1fb1c52e1cb56`, routing profile `c5e53d437c9352a7`
-**Best full-episode frontier** (frozen, freshly loaded cartridge, 0 restores): progress **580** with FDB's skill memory replaying an AGOD route (the brain alone agreed with it on 10 % of the steps); **146** by the Male CNS policy alone after imitating that route; **8** by the Male CNS policy alone without it.
+**Best full-episode frontier** (frozen, freshly loaded cartridge, 0 restores): progress **580 by the Male CNS policy alone** - its decisions read from 2 048 of its own neurons through an FDB readout fitted to an AGOD route; it reproduces all 548 route steps with its activity identical to training, and dies where the route ends (a search route, memorised: robustness to a changed start is being measured). Before the population readout: 146 after imitation through 12 descending neurons, 8 without.
 **LEVEL_CLEAR evidence:** none - `UNVERIFIED`. No stage transition in any run; the search frontier stops at 580.
 
 ## Product: Male CNS only
@@ -126,15 +126,25 @@ the game. Every route replays from a fresh load with 0 restores and the same
 progress (two fresh loads fed the same route never diverge - checked stride by
 stride). No route reaches a stage transition yet.
 
-Why it stops at 580 (private frame and RAM inspection, offsets not reported): two
-of the four discovered progress fields are one-byte counters that climb to 255
-where the screen stops scrolling - in front of a fortified wall at the end of the
-scrolling part - and stay there; 580 is that ceiling plus the other two fields.
-Past it nothing AGOD reads as progress moves, while the route arrives with its
-last life. The cartridge's score (the oracle's progress field) is not among the
-discovered fields: it is BCD, and the carry test expected a binary `+1` in the
-next byte. A run that values a life at 60 progress units was killed by the
-memory limit (9 600 cells, each with a full savestate).
+Why it stopped at 580 (private frame and RAM inspection, offsets not reported):
+two of the four discovered progress fields are per-segment scroll counters. They
+climb to 255 in front of a fortified wall at the end of the first scrolling part
+and restart at 0 when the screen locks for the next segment - with the player
+alive (580 = 255 + 255 + the other two fields). The archive read the next segment
+as 510 progress BEHIND the wall and never explored from it. Discovery could not
+see this: its runs never reach the end of a segment.
+
+Fix (`agod-explore` r2, `unwrap`): progress is what a trajectory has gained - a
+counter that falls from its upper half to under a quarter of that value in play
+continues from where it was; any other fall stays a fall. On a synthetic segmented
+stage the archive reaches the end in 1 496 frames against 114 840 read raw
+(`agod_explore_check` 11/11). The archive is also bounded now: savestates are kept
+deflated (823 KB -> ~40 KB on SNES) and past `maxCells` the cells worth least are
+dropped - a run that kept 9 600 full savestates was killed by the memory limit.
+Unwrapped searches on the cartridge are running.
+
+The cartridge's score (the oracle's progress field) is not among the discovered
+fields: it is BCD, and the carry test expects a binary `+1` in the next byte.
 
 **FDB skill memory** (`FdbLearning` skill-v1, opt-in): (state key -> action) from a
 route replayed on its own fresh load; the key is AGOD's cell (progress, controlled
@@ -152,21 +162,43 @@ fresh load:
 | skill memory + brain, after 3 imitation passes (readout over descending-neuron activity, `action-dn-v1`) | 548 of 548 | 580 | 3 | 55 of 548 (10 %) |
 | **brain alone**, after the same imitation | 0 | 146 | 3 (game over at frame 1 296) | - |
 
-What this says: the route is carried by FDB's memory, not by the Male CNS policy.
-Imitation made the brain alone go forward (146 against 8) but not follow the
-route; the 16-cell input and a linear readout of 12 descending neurons do not tell
-548 route states apart. That, and a route that actually reaches the stage end, are
-the two things between this and a Male CNS level clear.
+With 12 descending neurons the route was carried by FDB's memory, not by the Male
+CNS policy: 28 numbers per decision do not tell 548 route states apart.
+
+**Population readout** (`FdbLearning` readout `action-pop-v1`, opt-in): the readout
+reads a population of the brain's own neurons - a frozen pass along the route
+measures every neuron's activity, the 2 048 that vary most (of 8 441 that vary at
+all) become the population - and is fitted to the route's action at each step
+(`fitImitation`: multi-class margin perceptron over the readout only; W0, the
+plastic layer and the traces do not change). The engine starts from the same seed
+for the imitation pass and for every evaluation, and every decision reports a
+digest of all 165 122 spike counts, so "the brain did the same thing" is checked,
+not assumed.
+
+| | route steps reproduced from the start | progress | losses | brain activity identical to training | readout fit |
+|---|---|---|---|---|---|
+| **Male CNS alone**, population readout, frozen, fresh load | **548 of 548** | **580** | 3 (game over after the route) | 548 of 548 steps | 100 % of 548 after 148 epochs, 4 s |
+| the same with the skill memory present | 548 of 548 | 580 | 3 | 548 of 548 | memory never had to override the brain (0 of 548) |
+
+Reproducible: a second run from scratch gave the same population, the same fit
+(148 epochs) and the same episode. The decisions are the brain's: nothing is read
+from RAM at play time, the action is the argmax of the descending neurons' score
+plus the readout of the population's spike counts.
+
+What this does NOT show yet: that the policy steers. The emulator is
+deterministic and the engine starts identically, so reproducing a route is close
+to replaying it. Episodes that start 1, 2, 4 and 8 frames late (the brain sees
+images it never saw) are running; until they report, this is distillation of one
+route, not play. And the route itself ends at the first segment's wall.
 
 
 
 ## Next, in order
 
-1. A route to the stage end: a progress signal past the scroll ceiling (decimal
-   carries accepted by the progress test, so a score counts) and an archive with
-   bounded memory that keeps routes arriving with more lives.
-2. The brain carrying the route: inputs that tell route states apart (the
-   profile's 256 neurons driven per neuron from local image motion instead of 16
-   shared rates) and imitation through the plastic layer, measured by "route steps
-   reproduced from the start" with the memory off.
+1. A route to the stage end: the unwrapping, bounded archive is searching; if the
+   wall itself stops it, a signal for destroying it (decimal carries accepted by
+   the progress test, so a score counts).
+2. The brain steering, not only replaying: robustness to a changed start; then
+   demonstrations from perturbed runs labelled by the route's cells (the same AGOD
+   cell, the route's action there) so the readout covers the route's neighbourhood.
 3. Only then: engine time (event-driven LIF), Android device runs.

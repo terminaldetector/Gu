@@ -44,13 +44,20 @@ public final class FdbGameBridge {
    ArrayList<Integer> ts=new ArrayList<>();ArrayList<Float> ws=new ArrayList<>();int[] offsets=new int[31];for(int i=0;i<30;i++){offsets[i]=ts.size();if(i<16){ts.add(16+i%2);ws.add(8f);}else if(i==16||i==17){ts.add(out[i-16+6]);ws.add(16f);}}offsets[30]=ts.size();int[] targets=new int[ts.size()];float[] weights=new float[ts.size()];for(int i=0;i<ts.size();i++){targets[i]=ts.get(i);weights[i]=ws.get(i);}graph=new Graph(graph.ids,offsets,targets,weights);
   }
   String plasticity="base";int cap=128;
-  Engine engine=null;GraphDelta layer=null;FdbLearning learner=null;long counter=0;int seed=1;
+  Engine engine=null;GraphDelta layer=null;FdbLearning learner=null;long counter=0;int seed=1;double[] statSum=null,statSq=null;int statN=0;
   try(BufferedReader reader=new BufferedReader(new InputStreamReader(System.in))){String line;while((line=reader.readLine())!=null){JSONObject q=new JSONObject(line),r=new JSONObject();String op=q.getString("op");
    if(op.equals("init")){seed=q.getInt("seed");layer=new GraphDelta(graph.ids.length);String mode=q.getString("mode");if(mode.equals("fixed")){for(int source:in)layer.addEdge(source,out[6],8);}
     plasticity=q.optString("plasticityMode","base");cap=plasticity.equals("wexo")||plasticity.equals("expanded")?2048:128;learner=new FdbLearning(graph,layer,in,out,.1,cap,127,true,plasticity);learner.sensorProfile(sensorFinal);learner.seed(seed);engine=new Engine(graph);engine.reset(seed);counter=0;r.put("neurons",graph.ids.length).put("baseEdges",graph.targets.length).put("graphSha",graph.fingerprint()).put("model",labelFinal).put("ports",portsFinal).put("stimulated",stimFinal.length).put("sensorProfile",sensorFinal).put("commercial",commercialFinal).put("label",commercialFinal?"COMMERCIAL":"NOT_COMMERCIAL");
    }else if(op.equals("reset")){engine.reset(seed);learner.boundary();}
    else if(op.equals("decide")){JSONArray retina=q.getJSONArray("retina");double[] rates=new double[stimFinal.length];for(int i=0;i<rates.length;i++)rates[i]=retina.getDouble(stimGroupFinal[i])*rateFinal;Engine.Options options=new Engine.Options();options.delta=layer;
     long started=System.nanoTime();Engine.Result result=engine.advance(stimFinal,rates,q.optInt("windowMs",20),options,new AtomicBoolean());int[] actions={0,64,128};if(q.has("actions")){JSONArray list=q.getJSONArray("actions");actions=new int[list.length()];for(int i=0;i<actions.length;i++)actions[i]=list.getInt(i);}
+    /* stats: per-neuron activity statistics over the decisions that ask for them (the
+       population readout's choice of neurons); activityHash: a digest of every
+       neuron's spike count in the window - equal hashes mean the brain did exactly
+       the same thing */
+    if(q.optBoolean("stats",false)){if(statSum==null||statSum.length!=result.counts.length){statSum=new double[result.counts.length];statSq=new double[result.counts.length];statN=0;}
+     for(int i=0;i<result.counts.length;i++){double a=Math.min(1,result.counts[i]*10.0/result.steps);statSum[i]+=a;statSq[i]+=a*a;}statN++;}
+    long ah=0xcbf29ce484222325L;for(int c:result.counts){ah^=c;ah*=0x100000001b3L;}r.put("activityHash",Long.toHexString(ah));
     FdbLearning.Decision decision=learner.decide("game-"+(counter++),result,actions,4095,30,q.optDouble("epsilon",.1),q.getBoolean("train"),null,q.has("sample")?q.getDouble("sample"):Double.NaN,q.has("skill")?q.getString("skill"):null);r.put("id",decision.id).put("mask",decision.mask).put("scores",new JSONArray(decision.scores)).put("brainMask",decision.brainMask).put("skillProposal",decision.skillProposal).put("skillDecided",decision.skillDecided).put("wallMs",result.wallSeconds*1000).put("spikes",result.spikes).put("decisionWallMs",(System.nanoTime()-started)/1e6);
    }else if(op.equals("reward")){
     /* typed credit: "tier" VERIFIED trains, PROVISIONAL only joins the traces unpaid;
@@ -61,6 +68,16 @@ public final class FdbGameBridge {
    else if(op.equals("readout")){learner.readoutProfile(q.getString("profile"));}
    else if(op.equals("skill")){learner.skillProfile(q.getString("profile"));}
    else if(op.equals("imitate")){r.put("accepted",learner.imitate(q.getString("id"),q.getInt("mask")));}
+   /* population (action-pop-v1): given neurons, or the "size" neurons whose activity
+      varied most over the decisions taken with stats:true (then the statistics clear) */
+   else if(op.equals("population")){int[] pop;
+    if(q.has("neurons")){JSONArray a=q.getJSONArray("neurons");pop=new int[a.length()];for(int i=0;i<pop.length;i++)pop[i]=a.getInt(i);}
+    else{int size=q.getInt("size");if(statSum==null||statN<2)throw new IllegalStateException("no activity statistics");
+     ArrayList<double[]> v=new ArrayList<>();for(int i=0;i<statSum.length;i++){double m=statSum[i]/statN,var=statSq[i]/statN-m*m;if(var>1e-12)v.add(new double[]{var,i});}
+     v.sort((x,y)->x[0]!=y[0]?Double.compare(y[0],x[0]):Double.compare(x[1],y[1]));r.put("varying",v.size());
+     pop=new int[Math.min(size,v.size())];for(int i=0;i<pop.length;i++)pop[i]=(int)v.get(i)[1];Arrays.sort(pop);statSum=null;statSq=null;statN=0;}
+    learner.readoutPopulation(pop);r.put("population",pop.length);}
+   else if(op.equals("fit")){double[] f=learner.fitImitation(q.optInt("epochs",200),q.optDouble("margin",1),q.optDouble("rate",.05));r.put("met",f[0]).put("epochs",(int)f[1]).put("fitUpdates",(long)f[2]).put("demonstrations",learner.imitationSetSize());}
    else if(op.equals("demonstrate")){JSONArray steps=q.getJSONArray("steps");for(int i=0;i<steps.length();i++){JSONArray st=steps.getJSONArray(i);learner.demonstrate(st.getString(0),st.getInt(1));}r.put("skills",learner.skillCount()).put("imitations",learner.imitations());}
    /* the production answer to an UNKNOWN interval: clear the temporal link, pay nothing */
    else if(op.equals("boundary")){learner.boundary();}
@@ -68,7 +85,7 @@ public final class FdbGameBridge {
    else if(op.equals("prior")){int target=out[q.getInt("output")];for(int source:in)layer.addEdge(source,target,(float)q.optDouble("weight",8));}
    else if(op.equals("checkpoint")){JSONObject state=FdbCheckpoint.save(learner,graph,in,out);GraphDelta restored=new GraphDelta(graph.ids.length);for(GraphDelta.Edge e:layer.edges())restored.addEdge(e.source,e.target,e.weight);for(GraphDelta.Edge e:layer.deltas())restored.addWeightDelta(e.source,e.target,e.weight);FdbCheckpoint.restoreThresholds(restored,new JSONObject().put("neuronDynamics",FdbCheckpoint.thresholdState(layer,graph)),graph);FdbLearning next=new FdbLearning(graph,restored,in,out,.1,cap,127,true,plasticity);next.creditProfile(learner.creditProfile());next.readoutProfile(learner.readoutProfile());next.sensorProfile(learner.sensorProfile());next.skillProfile(learner.skillProfile());FdbCheckpoint.restore(next,new JSONObject(state.toString()),graph,in,out);next.boundary();learner=next;layer=restored;engine.reset(seed);r.put("format",4);}
    else if(!op.equals("state"))throw new IllegalArgumentException(op);
-   r.put("plasticityMode",plasticity).put("baseUpdates",learner.baseUpdates()).put("neuronUpdates",learner.neuronUpdates()).put("budgetClips",learner.budgetClips()).put("thresholdParameters",layer.thresholds().size()).put("deltas",layer.deltaCount()).put("edges",layer.growthCount()).put("born",learner.born()).put("pruned",learner.pruned()).put("updates",learner.automatic()).put("layerBytesEstimate",layer.memoryBytes()+learner.memoryBytes()).put("graphAndEngineBytesEstimate",graph.memoryBytes()).put("rng",learner.rng()).put("carried",learner.carried()).put("paused",learner.paused()).put("provisionalSeen",learner.provisionalSeen()).put("verifiedPaid",learner.verifiedPaid()).put("pending",learner.pendingCount()).put("readoutProfile",learner.readoutProfile()).put("skillProfile",learner.skillProfile()).put("skills",learner.skillCount()).put("imitations",learner.imitations()).put("readoutUpdates",learner.readoutUpdates()).put("creditProfile",learner.creditProfile());if(op.equals("state"))r.put("weights",layer.genome().substring(layer.genome().indexOf(";d="))).put("learningState",FdbCheckpoint.save(learner,graph,in,out));System.out.println(r.toString());
+   r.put("plasticityMode",plasticity).put("baseUpdates",learner.baseUpdates()).put("neuronUpdates",learner.neuronUpdates()).put("budgetClips",learner.budgetClips()).put("thresholdParameters",layer.thresholds().size()).put("deltas",layer.deltaCount()).put("edges",layer.growthCount()).put("born",learner.born()).put("pruned",learner.pruned()).put("updates",learner.automatic()).put("layerBytesEstimate",layer.memoryBytes()+learner.memoryBytes()).put("graphAndEngineBytesEstimate",graph.memoryBytes()).put("rng",learner.rng()).put("carried",learner.carried()).put("paused",learner.paused()).put("provisionalSeen",learner.provisionalSeen()).put("verifiedPaid",learner.verifiedPaid()).put("pending",learner.pendingCount()).put("readoutProfile",learner.readoutProfile()).put("skillProfile",learner.skillProfile()).put("skills",learner.skillCount()).put("imitations",learner.imitations()).put("readoutUpdates",learner.readoutUpdates()).put("population",learner.readoutPopulation().length).put("imitationSet",learner.imitationSetSize()).put("creditProfile",learner.creditProfile());if(op.equals("state"))r.put("weights",layer.genome().substring(layer.genome().indexOf(";d="))).put("learningState",FdbCheckpoint.save(learner,graph,in,out));System.out.println(r.toString());
   }}
  }
 }
