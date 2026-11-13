@@ -64,7 +64,14 @@ const DEFAULTS=Object.freeze({stride:8,horizons:Object.freeze([96,192,384]),hold
     whose health byte falls only under fire needs ~60 strides of hits, an
     exploration on the last life survives ~20, and the archive stood still for
     millions of frames without it. */
- damage:false,damageWeight:1,damageBucket:4,damageStep:16,probeEvery:200,probeStrides:16,probeRounds:3});
+ damage:false,damageWeight:1,damageBucket:4,damageStep:16,probeEvery:200,probeStrides:16,probeRounds:3,
+ /* directionMask: the pad's direction bits. With it each probe round runs the SAME
+    stick sequence twice, without and with the action buttons, and a counter must
+    fall only when the buttons are added (in >= 2 rounds) - measured on a private
+    cartridge: "idle vs act" alone took bytes that fall whenever the player walks
+    (on-screen positions of other sprites) for damage, 23 of them. At most
+    maxCounters are kept. */
+ directionMask:0,maxCounters:4});
 
 /* per trajectory: raw progress values -> accumulated ones (see DEFAULTS.unwrap) */
 function unwrapStep(track,raw,enabled){
@@ -106,7 +113,7 @@ function createArchive(driver,options){
  const random=rng(o.seed);
  const cells=new Map();let explorations=0,framesRun=0,bestProgress=-Infinity,bestCell=null,evicted=0;const bestByResource=new Map();
  const damageAddrs=new Set(),probed=new Set();let probes=0,lastImprove=0;
- const dealt=(before,after)=>{let d=0;for(const a of damageAddrs){const f=before[a]-after[a];if(f>0&&f<=o.damageStep)d+=f;}return d;};
+ const dealt=(before,after)=>{let d=0;for(const a of damageAddrs){const f=before[a]-after[a];if(f>0&&f<=o.damageStep)d+=f;}return Math.min(d,o.damageStep);};
  const total=v=>v.reduce((s,x)=>s+(Number.isFinite(x)?x:0),0);
  function offer(trace,ram,track){
   const dmg=o.damage?track.dmg||0:0;
@@ -148,10 +155,19 @@ function createArchive(driver,options){
     if(quiet>0)quiet--;else for(let a=0;a<ram.length;a++){const f=prev[a]-ram[a];if(f>0&&f<=o.damageStep)falls.set(a,(falls.get(a)||0)+1);else if(f<0)rises.add(a);}
     prev=ram;if(o.readResource(ram)<r0&&(!o.allowLoss||o.readResource(ram)<=o.floor))break;}
    return {falls,rises};};
-  const idle=run(()=>0),acted=[];
-  for(let r=0;r<o.probeRounds;r++){let m=0,left=0;acted.push(run(()=>{if(left<=0){do m=o.actions[Math.floor(random()*o.actions.length)];while(m===0&&o.actions.length>1);left=o.holdMin+Math.floor(random()*(o.holdMax-o.holdMin+1));}left--;return m;}));}
-  let found=0;const cand=new Map();for(const x of acted)for(const [a,n] of x.falls)cand.set(a,(cand.get(a)||0)+n);
-  for(const [a,n] of cand)if(n>=2&&!idle.falls.has(a)&&!idle.rises.has(a)&&acted.every(x=>!x.rises.has(a))&&!damageAddrs.has(a)){damageAddrs.add(a);found++;}
+  const idle=run(()=>0),rounds=[];
+  const withButtons=o.actions.filter(m=>m&~o.directionMask);
+  for(let r=0;r<o.probeRounds;r++){const seq=[];let m=0,left=0;
+   for(let k=0;k<o.probeStrides;k++){if(left<=0){const pool=o.directionMask&&withButtons.length?withButtons:o.actions;do m=pool[Math.floor(random()*pool.length)];while(m===0&&pool.length>1);left=o.holdMin+Math.floor(random()*(o.holdMax-o.holdMin+1));}left--;seq.push(m);}
+   const acted=run(k=>seq[k]),moved=o.directionMask?run(k=>seq[k]&o.directionMask):null;rounds.push({acted,moved});}
+  const score=new Map();
+  for(const {acted,moved} of rounds)for(const [a,n] of acted.falls){
+   if(acted.rises.has(a)||(moved&&(moved.falls.has(a)||moved.rises.has(a))))continue;
+   const s0=score.get(a)||{rounds:0,falls:0};s0.rounds++;s0.falls+=n;score.set(a,s0);}
+  const need=Math.min(2,o.probeRounds);let found=0;
+  const ranked=[...score].filter(([a,x])=>x.rounds>=need&&x.falls>=2&&!idle.falls.has(a)&&!idle.rises.has(a)&&!damageAddrs.has(a)
+   &&rounds.every(r=>!r.acted.rises.has(a)&&!(r.moved&&r.moved.rises.has(a)))).sort((x,y)=>(y[1].rounds-x[1].rounds)||(y[1].falls-x[1].falls)||(x[0]-y[0]));
+  for(const [a] of ranked){if(damageAddrs.size>=o.maxCounters)break;damageAddrs.add(a);found++;}
   lastImprove=explorations;return found;}
  function explore(){
   if(o.damage&&explorations-lastImprove>=o.probeEvery){let target=null;for(const c of cells.values())if(!probed.has(c.key)&&(c.resource>o.floor||!o.allowLoss)&&(!target||c.progress>target.progress))target=c;if(target)probe(target);else lastImprove=explorations;}

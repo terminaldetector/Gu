@@ -117,7 +117,7 @@ function boss(){let ram=new Uint8Array(64),frameNo=0;const px=new Uint32Array(W*
   snapshot:()=>({ram:ram.slice(),frameNo}),restore(s){ram=s.ram.slice();frameNo=s.frameNo;draw();}};}
 function searchBoss(damage){const g=boss();
  const a=Explore.createArchive(g,{actions:[0,128,1,32,129,33],readProgress:ram=>[ram[R.X]],readResource:ram=>ram[R.LIVES],
-  positionFields:[R.X],screen:()=>Stage.signature(g.core.pixels,W,H),seed:5,damage,probeEvery:100});
+  positionFields:[R.X],screen:()=>Stage.signature(g.core.pixels,W,H),seed:5,damage,probeEvery:100,directionMask:16|32|64|128});
  let reached=null;for(let i=0;i<6000&&!reached;i++){a.explore();for(const c of a.cells().values())if(!reached&&c.snapshot.ram[R.X]>=240)reached=c;}
  return {reached:!!reached,frames:a.stats().framesRun,best:a.stats().bestProgress,counters:a.stats().damageCounters,probes:a.stats().probes};}
 const withDamage=searchBoss(true),without=searchBoss(false);

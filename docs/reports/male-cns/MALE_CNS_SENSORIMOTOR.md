@@ -175,7 +175,13 @@ bytes that fall in small steps only when the player acts and never rise; what a
 trajectory has made them fall is part of its cell and of its progress. On a
 synthetic boss (health not drawn, a fight longer than any exploration, one life)
 the archive wins in 15 128 frames with it and never in 563 392 without it
-(`agod_explore_check` 14/14). Cartridge searches with it are running.
+(`agod_explore_check` 14/14). On the cartridge the first version ("idle against
+act") took 23 bytes for damage counters - bytes that fall whenever the player
+walks, such as other sprites' screen positions - and its "progress" grew while the
+tank stood unharmed. Now each probe round runs the same stick sequence with and
+without the action buttons and a counter must fall only when the buttons are added
+(at most 4 counters; damage per stride capped). Cartridge searches with it are
+running.
 
 The cartridge's score (the oracle's progress field) is not among the discovered
 fields: it is BCD, and the carry test expects a binary `+1` in the next byte.

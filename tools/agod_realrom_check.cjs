@@ -235,7 +235,7 @@ async function exploreRoute(built,inPlay,profile,identity,extras){
   snapshot(){const s=d.snapshot();return s&&s.bytes?{...s,bytes:zlib.deflateRawSync(s.bytes,{level:1}),packed:true}:s;},
   restore(s){return d.restore(s&&s.packed?{...s,bytes:new Uint8Array(zlib.inflateRawSync(s.bytes)),packed:undefined}:s);}});
  const archive=Explore.createArchive(packed,{actions,readProgress:progressOf,readResource:read,positionFields,
-  maxCells:Number(process.env.REALROM_EXPLORE_CELLS||20000),select:process.env.REALROM_EXPLORE_SELECT||'frontier',damage:process.env.REALROM_EXPLORE_DAMAGE==='1',
+  maxCells:Number(process.env.REALROM_EXPLORE_CELLS||20000),select:process.env.REALROM_EXPLORE_SELECT||'frontier',damage:process.env.REALROM_EXPLORE_DAMAGE==='1',directionMask:spec.buttons.filter(b=>['←','→','↑','↓'].includes(b.name)).reduce((m,b)=>m|b.mask,0),
   screen:()=>{const [w,h]=dims();return Stage.signature(built.core.pixels,w,h);},seed:Number(process.env.REALROM_EXPLORE_SEED||1),
   allowLoss:process.env.REALROM_EXPLORE_LOSS==='1',floor:profile.dto.discovered.resource.floor,
   ...(process.env.REALROM_EXPLORE_LIFE?{lifeWeight:Number(process.env.REALROM_EXPLORE_LIFE)}:{})});
