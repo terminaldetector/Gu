@@ -228,7 +228,10 @@ async function exploreRoute(built,inPlay,profile,identity,extras){
   const st=archive.stats();
   if(st.framesRun-lastLog>=budget/20){lastLog=st.framesRun;
    console.log('  explore: %d frames, %d cells (%d evicted), %d explorations, best progress %d (resource %s, route %d strides) %d s, rss %d MiB',
-    st.framesRun,st.cells,st.evicted,st.explorations,st.bestProgress,st.bestResource,st.bestTraceLength,Math.round((Date.now()-t0)/1000),Math.round(process.memoryUsage().rss/1048576));}
+    st.framesRun,st.cells,st.evicted,st.explorations,st.bestProgress,st.bestResource,st.bestTraceLength,Math.round((Date.now()-t0)/1000),Math.round(process.memoryUsage().rss/1048576));
+   /* the current best route, private, so it can be checked before the budget ends */
+   if(process.env.REALROM_EVIDENCE_DIR){const b=archive.best();fs.mkdirSync(process.env.REALROM_EVIDENCE_DIR,{recursive:true});
+    fs.writeFileSync(path.join(process.env.REALROM_EVIDENCE_DIR,'explore-route-partial.json'),JSON.stringify({entrySteps:extras.entrySteps,stepFrames:8,masks:b.trace,progress:b.progress,resource:b.resource,framesRun:st.framesRun}));}}
  }
  const best=archive.best(),st=archive.stats();
  /* the route, replayed from a freshly loaded cartridge: entry without restore, then

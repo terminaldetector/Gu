@@ -1,7 +1,7 @@
 # Male CNS as the agent's brain - where it stands on Contra III
 
 **ROM hash / Male graph hash:** Contra III (SNES) `a93ea87fc835c530b5135c5294433d15eef6dbf656144b387e89ac19cf864996` / Male CNS v1.0 `90d9baae7627a521b08d5112eeb27057994b213bb2ecbc00aae1fb1c52e1cb56`, routing profile `c5e53d437c9352a7`
-**Best full-episode frontier** (frozen, freshly loaded cartridge, 0 restores): progress **580 by the Male CNS policy alone** - its decisions read from 2 048 of its own neurons through an FDB readout fitted to an AGOD route; it reproduces all 548 route steps with its activity identical to training, and dies where the route ends (a search route, memorised: robustness to a changed start is being measured). Before the population readout: 146 after imitation through 12 descending neurons, 8 without.
+**Best full-episode frontier** (frozen, freshly loaded cartridge, 0 restores): progress **580 by the Male CNS policy alone** - its decisions read from 2 048 of its own neurons through an FDB readout fitted to an AGOD route; it reproduces all 548 route steps with its activity identical to training and dies where the route ends. A memorised search route, not steering: started 1-8 frames late it reaches 100-241. Before the population readout: 146 after imitation through 12 descending neurons, 8 without.
 **LEVEL_CLEAR evidence:** none - `UNVERIFIED`. No stage transition in any run; the search frontier stops at 580.
 
 ## Product: Male CNS only
@@ -141,7 +141,10 @@ stage the archive reaches the end in 1 496 frames against 114 840 read raw
 (`agod_explore_check` 11/11). The archive is also bounded now: savestates are kept
 deflated (823 KB -> ~40 KB on SNES) and past `maxCells` the cells worth least are
 dropped - a run that kept 9 600 full savestates was killed by the memory limit.
-Unwrapped searches on the cartridge are running.
+Unwrapped searches on the cartridge go past the old ceiling: 717 and 712 by 1.5 M
+frames, 1 030 and 1 082 by 3-3.5 M frames (two archive seeds, lives valued at 30
+and 8 progress units) - still with one life left on the best cells, still no
+stage transition.
 
 The cartridge's score (the oracle's progress field) is not among the discovered
 fields: it is BCD, and the carry test expects a binary `+1` in the next byte.
@@ -185,11 +188,23 @@ Reproducible: a second run from scratch gave the same population, the same fit
 from RAM at play time, the action is the argmax of the descending neurons' score
 plus the readout of the population's spike counts.
 
-What this does NOT show yet: that the policy steers. The emulator is
-deterministic and the engine starts identically, so reproducing a route is close
-to replaying it. Episodes that start 1, 2, 4 and 8 frames late (the brain sees
-images it never saw) are running; until they report, this is distillation of one
-route, not play. And the route itself ends at the first segment's wall.
+What this does NOT show: that the policy steers. The emulator is deterministic and
+the engine starts identically, so reproducing a route is close to replaying it.
+Measured by starting the episode a few frames late - the brain then sees images it
+never saw - against the route's own actions replayed blind from the same late
+start:
+
+| start delay (frames) | 0 | 1 | 2 | 4 | 8 |
+|---|---|---|---|---|---|
+| Male CNS alone, population readout (progress) | 580 | 100 | 135 | 114 | 241 |
+| the route's actions replayed open-loop (progress) | 580 | 580 | 160 | 158 | 150 |
+
+One frame late the route still works blind, and the brain does not: its readout
+fitted 548 exact activity patterns, a slightly different image gives a different
+pattern and a different action. Eight frames late it goes further than the blind
+replay, but every delayed episode ends in a game over before progress 250. So this
+is the distillation of one search route into the Male CNS, not play; and the route
+itself is fragile (blind, it survives one frame of delay, not two).
 
 
 
