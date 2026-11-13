@@ -1,8 +1,8 @@
-# Male CNS as the agent's brain - where it stood, what was in the way
+# Male CNS as the agent's brain - where it stands on Contra III
 
-**ROM hash / Male graph hash:** Contra III (SNES) `a93ea87fc835c530b5135c5294433d15eef6dbf656144b387e89ac19cf864996` / Male CNS v1.0 `90d9baae7627a521b08d5112eeb27057994b213bb2ecbc00aae1fb1c52e1cb56`
-**Best full-episode frontier:** none on Male CNS yet - until this commit the Male CNS policy could not press a button at all (below); every earlier real-ROM number was the 30-neuron fixture (`NOT_COMMERCIAL`).
-**LEVEL_CLEAR evidence:** none - `UNVERIFIED`.
+**ROM hash / Male graph hash:** Contra III (SNES) `a93ea87fc835c530b5135c5294433d15eef6dbf656144b387e89ac19cf864996` / Male CNS v1.0 `90d9baae7627a521b08d5112eeb27057994b213bb2ecbc00aae1fb1c52e1cb56`, routing profile `c5e53d437c9352a7`
+**Best full-episode frontier** (frozen, freshly loaded cartridge, 0 restores): progress **580** with FDB's skill memory replaying an AGOD route (the brain alone agreed with it on 10 % of the steps); **146** by the Male CNS policy alone after imitating that route; **8** by the Male CNS policy alone without it.
+**LEVEL_CLEAR evidence:** none - `UNVERIFIED`. No stage transition in any run; the search frontier stops at 580.
 
 ## Product: Male CNS only
 
@@ -103,11 +103,70 @@ VERIFIED loss still reaches the provisional decisions through the traces.
   (`Phase.replayEntry`, the state hash equals the original start); restores during
   play are counted (0); the action trace and transition frames stay private.
 
-FULL_EPISODE_PLACEHOLDER
+Measured on Contra III, seed 11, 2 400 training decisions (typed credit, action
+readout), then one frozen episode of up to 36 000 frames on a fresh load:
+
+| input encoder | training events verified / provisional | weight changes | full episode: frames, losses, progress, transitions |
+|---|---|---|---|
+| legacy-16 (luminance) | 0 / 2 | 0 | 36 000, 0, **8**, 0 |
+| motion-16 | 11 / 74 | 855 | (killed by a worker restart; short evaluation: progress 0 argmax, 12 sampled) |
+
+The Male CNS policy, trained only by verified losses, stands still: nothing it
+sees pays it for moving, and progress no longer trains it (M2.3). Progress has to
+come from search.
+
+## Search and distillation (stages B and C)
+
+**Frontier archive on the real cartridge** (`REALROM_EXPLORE`, research copy only).
+With the first loss ending a branch the frontier stopped at progress 176 after
+100 000 frames. Allowing a branch to go on through a loss (lives are part of the
+cell; `allowLoss`) moved it to 523 / 580 (two archive seeds) by 1.2 M frames - and
+there it stops: the best cells have one life left, every attempt from them ends
+the game. Every route replays from a fresh load with 0 restores and the same
+progress (two fresh loads fed the same route never diverge - checked stride by
+stride). No route reaches a stage transition yet.
+
+Why it stops at 580 (private frame and RAM inspection, offsets not reported): two
+of the four discovered progress fields are one-byte counters that climb to 255
+where the screen stops scrolling - in front of a fortified wall at the end of the
+scrolling part - and stay there; 580 is that ceiling plus the other two fields.
+Past it nothing AGOD reads as progress moves, while the route arrives with its
+last life. The cartridge's score (the oracle's progress field) is not among the
+discovered fields: it is BCD, and the carry test expected a binary `+1` in the
+next byte. A run that values a life at 60 progress units was killed by the
+memory limit (9 600 cells, each with a full savestate).
+
+**FDB skill memory** (`FdbLearning` skill-v1, opt-in): (state key -> action) from a
+route replayed on its own fresh load; the key is AGOD's cell (progress, controlled
+position, lives, coarse screen) with the number of earlier visits to that cell and
+the dwell in it - without the visit count 548 route steps gave 494 keys and a
+frozen run left the route at decision 10. Where it holds a verified action it
+decides; each decision records what the brain alone would have chosen.
+
+**Distilling the 580 route** (548 strides) into the Male CNS agent, frozen run on a
+fresh load:
+
+| | route steps reproduced from the start | progress | losses | brain agreed with the route |
+|---|---|---|---|---|
+| skill memory + brain | 548 of 548 | 580 | 3 (game over after the route ends) | 27 of 548 (5 %) |
+| skill memory + brain, after 3 imitation passes (readout over descending-neuron activity, `action-dn-v1`) | 548 of 548 | 580 | 3 | 55 of 548 (10 %) |
+| **brain alone**, after the same imitation | 0 | 146 | 3 (game over at frame 1 296) | - |
+
+What this says: the route is carried by FDB's memory, not by the Male CNS policy.
+Imitation made the brain alone go forward (146 against 8) but not follow the
+route; the 16-cell input and a linear readout of 12 descending neurons do not tell
+548 route states apart. That, and a route that actually reaches the stage end, are
+the two things between this and a Male CNS level clear.
+
+
 
 ## Next, in order
 
-1. Android binds the routing ports (16 groups -> 256 projection neurons, 12
-   descending outputs) - same profile headless and on the device.
-2. Engine time: event-driven LIF (section 7) - a decision must fit 133 ms.
-3. Frontier archive search on Contra III with this brain, then a frozen run.
+1. A route to the stage end: a progress signal past the scroll ceiling (decimal
+   carries accepted by the progress test, so a score counts) and an archive with
+   bounded memory that keeps routes arriving with more lives.
+2. The brain carrying the route: inputs that tell route states apart (the
+   profile's 256 neurons driven per neuron from local image motion instead of 16
+   shared rates) and imitation through the plastic layer, measured by "route steps
+   reproduced from the start" with the memory off.
+3. Only then: engine time (event-driven LIF), Android device runs.

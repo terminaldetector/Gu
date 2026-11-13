@@ -30,6 +30,9 @@ public final class FdbLearning {
         private final TreeMap<Integer,double[]> readoutGradient=new TreeMap<>();
         /** every candidate's score (neural + readout) and the action set, for inspection */
         public double[] scores;public int[] actions;
+        /** the brain's own choice (no skill bias), the memory's proposal (-1: none), and whether the memory changed the choice */
+        public int brainMask=-1,skillProposal=-1;public boolean skillDecided;
+        private double[] pure,features;
         private Decision(String id,int mask,double probability,LinkedHashMap<Long,Double> gradient){this.id=id;this.mask=mask;this.probability=probability;this.gradient=gradient;}
     }
     private final Graph graph;private final GraphDelta layer;private final int[] sources,targets;
@@ -64,11 +67,15 @@ public final class FdbLearning {
     private final TreeMap<Integer,double[]> readout=new TreeMap<>(),readoutTrace=new TreeMap<>();
     private long readoutUpdates;
     public static final int READOUT_LIMIT=64;private static final double READOUT_RATE=.1;
-    public static String validateReadoutProfile(String profile){if(!"none".equals(profile)&&!"action-v1".equals(profile))throw new IllegalArgumentException("Unknown FDB readout profile");return profile;}
+    /* "action-dn-v1": the readout also sees the OUTPUT neurons' activity - with the
+       routing profile these are descending neurons, so what the brain is doing, not
+       only what it was shown, decides the action's learned term */
+    public static String validateReadoutProfile(String profile){if(!"none".equals(profile)&&!"action-v1".equals(profile)&&!"action-dn-v1".equals(profile))throw new IllegalArgumentException("Unknown FDB readout profile");return profile;}
     public void readoutProfile(String profile){profile=validateReadoutProfile(profile);if(!profile.equals(readoutProfile)){boundary();readoutProfile=profile;readout.clear();readoutTrace.clear();readoutUpdates=0;}}
     public String readoutProfile(){return readoutProfile;}
-    private boolean readoutOn(){return readoutProfile.equals("action-v1");}
-    public int readoutFeatures(){return sources.length+1;}
+    private boolean readoutOn(){return readoutProfile.equals("action-v1")||readoutProfile.equals("action-dn-v1");}
+    private boolean readoutDn(){return readoutProfile.equals("action-dn-v1");}
+    public int readoutFeatures(){return sources.length+(readoutDn()?targets.length:0)+1;}
     public TreeMap<Integer,double[]> readoutWeights(){TreeMap<Integer,double[]> c=new TreeMap<>();for(Map.Entry<Integer,double[]> e:readout.entrySet())c.put(e.getKey(),e.getValue().clone());return c;}
     public TreeMap<Integer,double[]> readoutTraces(){TreeMap<Integer,double[]> c=new TreeMap<>();for(Map.Entry<Integer,double[]> e:readoutTrace.entrySet())c.put(e.getKey(),e.getValue().clone());return c;}
     public long readoutUpdates(){return readoutUpdates;}
@@ -81,7 +88,59 @@ public final class FdbLearning {
         readout.clear();readoutTrace.clear();for(Map.Entry<Integer,double[]> e:weights.entrySet())readout.put(e.getKey(),e.getValue().clone());
         for(Map.Entry<Integer,double[]> e:traces.entrySet())readoutTrace.put(e.getKey(),e.getValue().clone());readoutUpdates=updates;if(!traces.isEmpty())temporalDirty=true;
     }
-    private double[] phi(Engine.Result result){double[] f=new double[sources.length+1];for(int i=0;i<sources.length;i++)f[i]=activity(result,sources[i]);f[sources.length]=1;return f;}
+    /** SKILL MEMORY (opt-in research, "skill-v1"; directive 2026-11-13, 5.4/6). FDB's
+     *  episodic layer: for an AGOD state key (cell + dwell, computed by the caller
+     *  from what AGOD sees) the action a VERIFIED route took there. It is filled
+     *  only by demonstrate() from a route whose replay from a fresh load was checked,
+     *  never by reward; at decision time it adds SKILL_BIAS to that action's score -
+     *  the neural score and the readout are still computed for every action, and
+     *  each decision reports whether the memory proposed the choice. Frozen
+     *  decisions never change it. "none" leaves decisions exactly as before. */
+    private String skillProfile="none";
+    private final HashMap<String,Integer> skills=new HashMap<>();
+    private long skillDemos;
+    /* the bias is larger than any neural score sum (12 buttons x 4): where the memory
+       holds a verified action it decides; everywhere else the brain does. A +6 bias
+       was measured too weak on a real cartridge - the first decision left the route
+       and no remembered state was met again (4 proposals in 750 decisions). */
+    public static final int SKILL_LIMIT=65536;public static final double SKILL_BIAS=100;
+    public static String validateSkillProfile(String p){if(!"none".equals(p)&&!"skill-v1".equals(p))throw new IllegalArgumentException("Unknown FDB skill profile");return p;}
+    public void skillProfile(String p){p=validateSkillProfile(p);if(!p.equals(skillProfile)){skillProfile=p;skills.clear();skillDemos=0;}}
+    public String skillProfile(){return skillProfile;}
+    private boolean skillOn(){return skillProfile.equals("skill-v1");}
+    public void demonstrate(String key,int mask){
+        if(!skillOn())throw new IllegalStateException("FDB skill memory is off");
+        if(key==null||key.isEmpty()||key.length()>512||mask<0||mask>4095||(mask&48)==48||(mask&192)==192)throw new IllegalArgumentException("FDB demonstration");
+        if(!skills.containsKey(key)&&skills.size()>=SKILL_LIMIT)return;
+        skills.put(key,mask);skillDemos++;
+    }
+    public int skillCount(){return skills.size();}
+    public long skillDemos(){return skillDemos;}
+    public TreeMap<String,Integer> skillMemory(){return new TreeMap<>(skills);}
+    public void restoreSkills(String profile,Map<String,Integer> memory,long demos){
+        if(!validateSkillProfile(profile).equals(skillProfile))throw new IllegalArgumentException("FDB skill profile mismatch");
+        if(memory.size()>SKILL_LIMIT||demos<0)throw new IllegalArgumentException("FDB skill limit");
+        skills.clear();for(Map.Entry<String,Integer> e:memory.entrySet()){int m=e.getValue();if(e.getKey().isEmpty()||e.getKey().length()>512||m<0||m>4095)throw new IllegalArgumentException("FDB skill entry");skills.put(e.getKey(),m);}
+        skillDemos=demos;
+    }
+    private double[] phi(Engine.Result result){double[] f=new double[readoutFeatures()];for(int i=0;i<sources.length;i++)f[i]=activity(result,sources[i]);
+        if(readoutDn())for(int j=0;j<targets.length;j++)f[sources.length+j]=activity(result,targets[j]);f[f.length-1]=1;return f;}
+    /** IMITATION (distillation of a VERIFIED route): move the readout towards the
+     *  route's action for the decision just made - the softmax cross-entropy step
+     *  w_a += rate * (1[a=route] - p_a) * phi over the decision's own action set. Only
+     *  for a decision taken in training on the replayed route; no reward, no
+     *  baseline, no weight of W0 or of the plastic layer is touched. */
+    private long imitations;public long imitations(){return imitations;}
+    private static final double IMITATE_RATE=.2;
+    public boolean imitate(String id,int demoMask){
+        if(!readoutOn())throw new IllegalStateException("FDB readout is off");
+        Decision d=pending.remove(id);if(d==null||d.features==null||d.pure==null)return false;
+        int demo=-1;for(int a=0;a<d.actions.length;a++)if(d.actions[a]==demoMask)demo=a;if(demo<0)return false;
+        for(int a=0;a<d.actions.length;a++){if(!Double.isFinite(d.scores[a]))continue;double g=(a==demo?1:0)-d.pure[a];if(g==0)continue;
+            double[] w=readout.get(d.actions[a]);if(w==null){if(readout.size()>=READOUT_LIMIT)continue;w=new double[d.features.length];readout.put(d.actions[a],w);}
+            for(int k=0;k<w.length;k++)w[k]=Math.max(-4,Math.min(4,w[k]+IMITATE_RATE*g*d.features[k]));}
+        imitations++;readoutUpdates++;return true;
+    }
     private double readoutScore(int mask,double[] f){double[] w=readout.get(mask);if(w==null)return 0;double s=0;for(int k=0;k<f.length;k++)s+=w[k]*f[k];return Math.max(-4,Math.min(4,s));}
     private double eligibility(Trace t){return dualCredit()?.5*t.eligibility+.5*t.slowEligibility:t.eligibility;}
     private static int[] lesionSet(int[] lesions){int[] out=lesions==null?new int[0]:lesions.clone();Arrays.sort(out);return out;}
@@ -221,10 +280,15 @@ public final class FdbLearning {
      * Nothing in the learner moves: no RNG step, no pending decision, so a
      * sampled evaluation is as frozen as the argmax one. Ignored when training. */
     public Decision decide(String id,Engine.Result result,int[] actions,int allowed,double threshold,double epsilon,boolean training,int[] lesions,double frozenSample){
+        return decide(id,result,actions,allowed,threshold,epsilon,training,lesions,frozenSample,null);
+    }
+    public Decision decide(String id,Engine.Result result,int[] actions,int allowed,double threshold,double epsilon,boolean training,int[] lesions,double frozenSample,String skillKey){
         if(!training&&!Double.isNaN(frozenSample)&&!(frozenSample>=0&&frozenSample<1))throw new IllegalArgumentException("FDB frozen sample");
         if(id==null||id.length()>80||result.counts.length!=graph.ids.length||result.steps<=0||!Double.isFinite(threshold)||threshold<=0||!Double.isFinite(epsilon)||epsilon<0||epsilon>1||actions.length<2||actions.length>64)throw new IllegalArgumentException("FDB decision");
         double[] logits=new double[actions.length],prob=new double[actions.length];int eligible=0,best=-1;double maximum=-Double.MAX_VALUE;
-        double[] readoutFeatures=null;
+        double[] readoutFeatures=null,neural=new double[actions.length];
+        Integer remembered=skillOn()&&skillKey!=null?skills.get(skillKey):null;int skillProposal=remembered==null?-1:remembered;
+        for(int a=0;a<actions.length;a++)neural[a]=Double.NEGATIVE_INFINITY;
         Set<Integer> unique=new HashSet<>();
         for(int a=0;a<actions.length;a++){
             int mask=actions[a];if(mask<0||mask>4095||(mask&48)==48||(mask&192)==192||!unique.add(mask))throw new IllegalArgumentException("FDB action set");
@@ -232,6 +296,8 @@ public final class FdbLearning {
             eligible++;double score=0;
             for(int j=0;j<targets.length;j++)if((mask&(1<<j))!=0){double hz=lesioned(targets[j],lesions)?0:result.counts[targets[j]]*10000.0/result.steps;score+=Math.max(-2,Math.min(4,hz/threshold-1));}
             if(readoutOn())score+=readoutScore(mask,readoutFeatures==null?(readoutFeatures=phi(result)):readoutFeatures);
+            neural[a]=score;
+            if(skillProposal>=0&&mask==skillProposal)score+=SKILL_BIAS;
             logits[a]=score;if(score>maximum){maximum=score;best=a;}
         }
         if(best<0)throw new IllegalArgumentException("FDB has no allowed actions");
@@ -269,6 +335,10 @@ public final class FdbLearning {
         if(dualCredit())gradient.entrySet().removeIf(e->e.getValue()==0);
         Decision d=new Decision(id,actions[chosen],prob[chosen],gradient);d.lesions=lesionSet(lesions);d.steps=result.steps;
         d.scores=logits.clone();d.actions=actions.clone();
+        if(readoutOn()&&training){d.features=readoutFeatures;d.pure=new double[actions.length];for(int a=0;a<actions.length;a++)d.pure[a]=Double.isFinite(logits[a])?Math.exp(logits[a]-maximum)/sum:0;}
+        /* what the brain alone (neural score + readout) would have picked, and whether the memory proposed the choice */
+        int brainBest=-1;for(int a=0;a<actions.length;a++)if(Double.isFinite(neural[a])&&(brainBest<0||neural[a]>neural[brainBest]))brainBest=a;
+        d.brainMask=brainBest>=0?actions[brainBest]:-1;d.skillProposal=skillProposal;d.skillDecided=skillProposal>=0&&actions[chosen]==skillProposal&&d.brainMask!=skillProposal;
         if(readoutOn()&&training){
             double share=prob[chosen]>0?(1-epsilon)*Math.exp(logits[chosen]-maximum)/sum/prob[chosen]:1;
             for(int a=0;a<actions.length;a++)if(Double.isFinite(logits[a])){

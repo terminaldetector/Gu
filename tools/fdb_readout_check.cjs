@@ -77,10 +77,29 @@ const A=Array.from({length:16},(_,i)=>i<8?.9:.05),B=Array.from({length:16},(_,i)
   ok(cp.format===4&&pre[0]===post[0]&&pre[1]===post[1]&&after.readoutProfile==='action-v1'&&after.readoutUpdates===s2.readoutUpdates,
    'a checkpoint roundtrip keeps every action score in both contexts and the update count');
   ok(after.learningState.readout&&after.learningState.readout.weights.length>0,'the checkpoint carries the readout block');
+  /* 7. SKILL MEMORY (skill-v1): demonstrations of a verified route steer frozen
+     decisions in the demonstrated states only; the brain's own choice is reported */
+  await java.call({op:'init',seed:7,mode:'base'});
+  const plain=await frozen(A);
+  await java.call({op:'skill',profile:'skill-v1'});
+  const wanted=ACTIONS.find(m=>m!==plain.mask&&m!==0);
+  await java.call({op:'demonstrate',steps:[['cell-A#0',wanted]]});
+  const remembered=await java.call({op:'decide',retina:A,train:false,actions:ACTIONS,epsilon:0,windowMs:20,skill:'cell-A#0'});
+  const unknownCell=await java.call({op:'decide',retina:A,train:false,actions:ACTIONS,epsilon:0,windowMs:20,skill:'cell-Z#0'});
+  ok(remembered.mask===wanted&&remembered.skillProposal===wanted&&remembered.brainMask===plain.mask&&remembered.skillDecided===true,
+   'in a demonstrated state the frozen decision follows the memory ('+wanted+'), and reports the brain\'s own choice ('+remembered.brainMask+')');
+  ok(unknownCell.mask===plain.mask&&unknownCell.skillProposal===-1,'in a state never demonstrated there is no proposal: the brain decides');
+  const sk0=await java.call({op:'state'});
+  for(let k=0;k<5;k++)await java.call({op:'decide',retina:B,train:false,actions:ACTIONS,epsilon:0,windowMs:20,skill:'cell-A#0'});
+  const sk1=await java.call({op:'state'});
+  ok(JSON.stringify(sk0.learningState)===JSON.stringify(sk1.learningState)&&sk1.skills===1,'frozen decisions do not change the skill memory');
+  await java.call({op:'reset'});const cpk=await java.call({op:'checkpoint'});const after2=await java.call({op:'state'});
+  ok(after2.skillProfile==='skill-v1'&&after2.skills===1&&after2.learningState.skills&&after2.learningState.skills.memory.length===1,'a checkpoint roundtrip keeps the skill memory');
   /* 6. none: the checkpoint has no readout block at all */
   await java.call({op:'init',seed:7,mode:'base'});
   const none=await java.call({op:'state'});
   ok(!('readout' in none.learningState)&&none.readoutProfile==='none','with the readout off the checkpoint is what it was: no readout block');
+  ok(!('skills' in none.learningState)&&none.skillProfile==='none','and with the skill memory off: no skills block');
  }finally{java.close();}
  console.log('\n'+out.join('\n'));
  console.log('\n%s — %d/%d',fail.length?'FAIL ('+fail.length+')':'PASS',out.length-fail.length,out.length);

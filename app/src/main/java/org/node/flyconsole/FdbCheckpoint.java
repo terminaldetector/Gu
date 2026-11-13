@@ -62,6 +62,11 @@ public final class FdbCheckpoint {
             for(Map.Entry<Integer,double[]> e:learner.readoutTraces().entrySet())tr.put(new JSONObject().put("mask",e.getKey()).put("e",new JSONArray(e.getValue())));
             state.put("readout",new JSONObject().put("profile",learner.readoutProfile()).put("features",learner.readoutFeatures()).put("updates",learner.readoutUpdates()).put("weights",w).put("traces",tr));
         }
+        /* the skill memory (research, opt-in) likewise only when it is on */
+        if(!learner.skillProfile().equals("none")){
+            JSONArray m=new JSONArray();for(Map.Entry<String,Integer> e:learner.skillMemory().entrySet())m.put(new JSONArray().put(e.getKey()).put(e.getValue()));
+            state.put("skills",new JSONObject().put("profile",learner.skillProfile()).put("demos",learner.skillDemos()).put("memory",m));
+        }
         return state;
     }
     private static TreeMap<Integer,double[]> readoutArrays(JSONArray a,String key,int features)throws Exception{
@@ -123,6 +128,13 @@ public final class FdbCheckpoint {
             if(!rp.equals(learner.readoutProfile()))throw new IllegalArgumentException("FDB readout profile mismatch");
             int features=(int)integer(r,"features",1,4096);if(features!=learner.readoutFeatures())throw new IllegalArgumentException("FDB readout shape");
             learner.restoreReadout(rp,readoutArrays(r.getJSONArray("weights"),"w",features),readoutArrays(r.getJSONArray("traces"),"e",features),integer(r,"updates",0,max));
+        }
+        if(state.has("skills")){
+            JSONObject k=state.getJSONObject("skills");String sp=FdbLearning.validateSkillProfile(k.getString("profile"));
+            if(!sp.equals(learner.skillProfile()))throw new IllegalArgumentException("FDB skill profile mismatch");
+            JSONArray m=k.getJSONArray("memory");if(m.length()>FdbLearning.SKILL_LIMIT)throw new IllegalArgumentException("FDB skill limit");
+            HashMap<String,Integer> memory=new HashMap<>();for(int i=0;i<m.length();i++){JSONArray e=m.getJSONArray(i);if(memory.put(e.getString(0),(int)e.getLong(1))!=null)throw new IllegalArgumentException("Duplicate FDB skill");}
+            learner.restoreSkills(sp,memory,integer(k,"demos",0,max));
         }
     }
 }
