@@ -64,14 +64,20 @@ const DEFAULTS=Object.freeze({stride:8,horizons:Object.freeze([96,192,384]),hold
     whose health byte falls only under fire needs ~60 strides of hits, an
     exploration on the last life survives ~20, and the archive stood still for
     millions of frames without it. */
- damage:false,damageWeight:1,damageBucket:4,damageStep:16,probeEvery:200,probeStrides:16,probeRounds:3,
+ damage:false,damageWeight:1,damageBucket:4,damageStep:16,probeEvery:200,probeStrides:16,probeRounds:8,
  /* directionMask: the pad's direction bits. With it each probe round runs the SAME
     stick sequence twice, without and with the action buttons, and a counter must
     fall only when the buttons are added (in >= 2 rounds) - measured on a private
     cartridge: "idle vs act" alone took bytes that fall whenever the player walks
     (on-screen positions of other sprites) for damage, 23 of them. At most
     maxCounters are kept. */
- directionMask:0,maxCounters:4});
+ directionMask:0,maxCounters:4,
+ /* horizontalMasks [left, right]: with them each round also runs the button sequence
+    MIRRORED (left and right swapped); a counter must fall less there and never rise
+    - damage is aimed. Measured on the cartridge: with the button test alone the
+    counters still included one that falls under any fire and wraps around (a
+    projectile or weapon counter), while the tank's health stayed untouched. */
+ horizontalMasks:null});
 
 /* per trajectory: raw progress values -> accumulated ones (see DEFAULTS.unwrap) */
 function unwrapStep(track,raw,enabled){
@@ -157,20 +163,39 @@ function createArchive(driver,options){
    return {falls,rises};};
   const idle=run(()=>0),rounds=[];
   const withButtons=o.actions.filter(m=>m&~o.directionMask);
-  for(let r=0;r<o.probeRounds;r++){const seq=[];let m=0,left=0;
-   for(let k=0;k<o.probeStrides;k++){if(left<=0){const pool=o.directionMask&&withButtons.length?withButtons:o.actions;do m=pool[Math.floor(random()*pool.length)];while(m===0&&pool.length>1);left=o.holdMin+Math.floor(random()*(o.holdMax-o.holdMin+1));}left--;seq.push(m);}
-   const acted=run(k=>seq[k]),moved=o.directionMask?run(k=>seq[k]&o.directionMask):null;rounds.push({acted,moved});}
+  /* each round HOLDS one action with buttons for the whole round (a different one each
+     round, horizontal ones first so the mirror means something): the simplest
+     intervention, and on a dangerous screen a random sequence dies before it aims
+     twice */
+  const pool=(o.directionMask&&withButtons.length?withButtons:o.actions.filter(m=>m!==0)).slice();
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  if(o.horizontalMasks)pool.sort((x,y)=>((y&(o.horizontalMasks[0]|o.horizontalMasks[1]))?1:0)-((x&(o.horizontalMasks[0]|o.horizontalMasks[1]))?1:0));
+  for(let r=0;r<o.probeRounds&&r<pool.length;r++){const held=pool[r],seq=Array(o.probeStrides).fill(held);
+   const hmask=o.horizontalMasks?o.horizontalMasks[0]|o.horizontalMasks[1]:0,aimed=!!(held&hmask);
+   const mirror=m=>{const [l,r]=o.horizontalMasks;return (m&~(l|r))|((m&l)?r:0)|((m&r)?l:0);};
+   const acted=run(k=>seq[k]),moved=o.directionMask?run(k=>seq[k]&o.directionMask):null,mirrored=aimed?run(k=>mirror(seq[k])):null;
+   rounds.push({acted,moved,mirrored});}
   const score=new Map();
-  for(const {acted,moved} of rounds)for(const [a,n] of acted.falls){
+  for(const {acted,moved,mirrored} of rounds)for(const [a,n] of acted.falls){
    if(acted.rises.has(a)||(moved&&(moved.falls.has(a)||moved.rises.has(a))))continue;
-   const s0=score.get(a)||{rounds:0,falls:0};s0.rounds++;s0.falls+=n;score.set(a,s0);}
+   if(mirrored&&(mirrored.rises.has(a)||(mirrored.falls.get(a)||0)>=n))continue;
+   const s0=score.get(a)||{rounds:0,aimed:0,falls:0};s0.rounds++;if(mirrored)s0.aimed++;s0.falls+=n;score.set(a,s0);}
   const need=Math.min(2,o.probeRounds);let found=0;
-  const ranked=[...score].filter(([a,x])=>x.rounds>=need&&x.falls>=2&&!idle.falls.has(a)&&!idle.rises.has(a)&&!damageAddrs.has(a)
-   &&rounds.every(r=>!r.acted.rises.has(a)&&!(r.moved&&r.moved.rises.has(a)))).sort((x,y)=>(y[1].rounds-x[1].rounds)||(y[1].falls-x[1].falls)||(x[0]-y[0]));
+  /* at least one AIMED pass (the mirrored hold made it fall less) when the pad has
+     left and right: a counter that falls under any fire is never aimed */
+  const ranked=[...score].filter(([a,x])=>x.rounds>=need&&x.falls>=2&&(!o.horizontalMasks||x.aimed>=1)&&!idle.falls.has(a)&&!idle.rises.has(a)&&!damageAddrs.has(a)
+   &&rounds.every(r=>!r.acted.rises.has(a)&&!(r.moved&&r.moved.rises.has(a))&&!(r.mirrored&&r.mirrored.rises.has(a)))).sort((x,y)=>(y[1].rounds-x[1].rounds)||(y[1].falls-x[1].falls)||(x[0]-y[0]));
   for(const [a] of ranked){if(damageAddrs.size>=o.maxCounters)break;damageAddrs.add(a);found++;}
   lastImprove=explorations;return found;}
  function explore(){
-  if(o.damage&&explorations-lastImprove>=o.probeEvery){let target=null;for(const c of cells.values())if(!probed.has(c.key)&&(c.resource>o.floor||!o.allowLoss)&&(!target||c.progress>target.progress))target=c;if(target)probe(target);else lastImprove=explorations;}
+  /* probe target: the highest progress, then alternately the LONGEST and the shortest
+     trace - on a locked screen many cells share the frontier's progress; the
+     obstacle may arrive late in it (measured: the earliest such cell lay ~150 strides
+     before a mid-boss appeared), while the latest may be a moment before an
+     unavoidable hit (synthetic boss) */
+  if(o.damage&&explorations-lastImprove>=o.probeEvery){const late=probes%2===0;let target=null;
+   for(const c of cells.values())if(!probed.has(c.key)&&(c.resource>o.floor||!o.allowLoss)&&(!target||c.progress>target.progress||(c.progress===target.progress&&(late?c.trace.length>target.trace.length:c.trace.length<target.trace.length))))target=c;
+   if(target)probe(target);else lastImprove=explorations;}
   const c=choose();if(!c)return null;
   c.chosen++;explorations++;
   driver.restore(c.snapshot);
@@ -204,6 +229,8 @@ function createArchive(driver,options){
    track=unwrapStep(track,o.readProgress(ram)||[],o.unwrap);if(o.damage&&damageAddrs.size)track.dmg+=dealt(before,ram);if(offer(trace,ram,track))added++;}
   return {strides:trace.length,added};}
  return {revision:EXPLORE_REVISION,explore,seedRoute,
+  /* diagnostics: probe the best cell now; the counters found (addresses - private use only) */
+  probeBest:()=>{let t=null;for(const c of cells.values())if(!t||c.progress>t.progress||(c.progress===t.progress&&c.trace.length>t.trace.length))t=c;return t?probe(t):0;},damageCounters:()=>[...damageAddrs],
   stats:()=>({cells:cells.size,evicted,explorations,framesRun,damageCounters:damageAddrs.size,probes,frontierByResource:Object.fromEntries([...bestByResource].sort((a,b)=>a[0]-b[0])),bestProgress,bestResource:bestCell?bestCell.resource:null,bestTraceLength:bestCell?bestCell.trace.length:0}),
   best:()=>bestCell?{trace:bestCell.trace.slice(),progress:bestCell.progress,resource:bestCell.resource,snapshot:bestCell.snapshot}:null,
   cells:()=>cells};

@@ -178,9 +178,15 @@ the archive wins in 15 128 frames with it and never in 563 392 without it
 (`agod_explore_check` 14/14). On the cartridge the first version ("idle against
 act") took 23 bytes for damage counters - bytes that fall whenever the player
 walks, such as other sprites' screen positions - and its "progress" grew while the
-tank stood unharmed. Now each probe round runs the same stick sequence with and
-without the action buttons and a counter must fall only when the buttons are added
-(at most 4 counters; damage per stride capped). Cartridge searches with it are
+tank stood unharmed. The probe now (a) holds one action with buttons per round, a
+different one each round; (b) runs the same hold without the buttons, and, for a
+left/right hold, mirrored - a counter must fall only with the buttons, fall less
+when mirrored in at least one aimed round, and never rise; (c) probes alternately
+the latest and the earliest frontier cell (on the locked screen the earliest lay
+~150 strides before the tank arrived). Checked privately at the tank: it now finds
+the tank's health byte and nothing that falls under any fire. Held interventions
+also show the fight is winnable: holding fire to the left takes the tank from 250
+to 166 in 16 strides with the player alive. Cartridge searches with this probe are
 running.
 
 The cartridge's score (the oracle's progress field) is not among the discovered
