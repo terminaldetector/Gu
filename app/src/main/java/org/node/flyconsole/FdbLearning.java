@@ -81,7 +81,7 @@ public final class FdbLearning {
     private boolean readoutDn(){return readoutProfile.equals("action-dn-v1");}
     private boolean readoutPop(){return readoutProfile.equals("action-pop-v1");}
     public int readoutFeatures(){return readoutPop()?population.length+1:sources.length+(readoutDn()?targets.length:0)+1;}
-    public static final int POPULATION_LIMIT=4095,IMITATION_LIMIT=20000;private static final double POP_SCORE_CLIP=32;
+    public static final int POPULATION_LIMIT=4095,IMITATION_LIMIT=60000;private static final double POP_SCORE_CLIP=32;
     private int[] population=new int[0];
     /** the readout's population (action-pop-v1): distinct neuron indices; setting it
      *  starts the readout from zero */
@@ -178,6 +178,22 @@ public final class FdbLearning {
      *  {demonstrations met (fraction), epochs run, updates}. */
     private static final class Demo{final float[] f;final int[] actions;final double[] base;final int demo;Demo(float[] f,int[] a,double[] b,int d){this.f=f;actions=a;base=b;demo=d;}}
     private final ArrayList<Demo> imitationSet=new ArrayList<>();
+    /** the demonstrations to / from a stream (several bridges record trajectories in
+     *  parallel and one learner fits them all); the population must be the same */
+    public void writeImitation(java.io.DataOutputStream o)throws java.io.IOException{
+        o.writeInt(0x46445031);o.writeInt(population.length);for(int n:population)o.writeInt(n);o.writeInt(imitationSet.size());
+        for(Demo x:imitationSet){o.writeInt(x.f.length);for(float v:x.f)o.writeFloat(v);o.writeInt(x.actions.length);for(int a:x.actions)o.writeInt(a);for(double b:x.base)o.writeDouble(b);o.writeInt(x.demo);}
+    }
+    public int readImitation(java.io.DataInputStream in)throws java.io.IOException{
+        if(!readoutPop())throw new IllegalStateException("FDB population readout is off");
+        if(in.readInt()!=0x46445031)throw new java.io.IOException("imitation stream");int pn=in.readInt();if(pn!=population.length)throw new java.io.IOException("imitation stream: another population");
+        for(int i=0;i<pn;i++)if(in.readInt()!=population[i])throw new java.io.IOException("imitation stream: another population");
+        int n=in.readInt(),added=0;
+        for(int k=0;k<n;k++){int fl=in.readInt();if(fl!=population.length+1)throw new java.io.IOException("imitation stream shape");float[] f=new float[fl];for(int i=0;i<fl;i++)f[i]=in.readFloat();
+            int al=in.readInt();if(al<2||al>ACTION_LIMIT)throw new java.io.IOException("imitation stream actions");int[] a=new int[al];for(int i=0;i<al;i++)a[i]=in.readInt();double[] b=new double[al];for(int i=0;i<al;i++)b[i]=in.readDouble();int d=in.readInt();
+            if(d<0||d>=al)throw new java.io.IOException("imitation stream label");if(imitationSet.size()>=IMITATION_LIMIT)break;imitationSet.add(new Demo(f,a,b,d));imitations++;added++;}
+        return added;
+    }
     public int imitationSetSize(){return imitationSet.size();}
     public double[] fitImitation(int epochs,double margin,double rate){return fitImitation(epochs,margin,rate,0);}
     /** dropout in [0,0.9): each epoch every demonstration is seen with that fraction of

@@ -2,6 +2,8 @@ package org.node.flyconsole;
 import org.json.*;import java.io.*;import java.util.*;import java.util.concurrent.atomic.AtomicBoolean;
 /** Headless harness calls the production CPU and learner against actual WASM game frames. */
 public final class FdbGameBridge {
+ /* a policy checkpoint never carries the skill memory (evaluations run with it off) */
+ static JSONObject stripSkills(JSONObject state){state.remove("skills");return state;}
  public static void main(String[] args)throws Exception{
   /* GRAPH AND PORTS. With a graph path the bridge reads the graph's own manifest
      (male-cns.fly.gz -> male-cns.fly.json), checks the pinned SHA-256 and binds
@@ -78,7 +80,7 @@ public final class FdbGameBridge {
       untouched plastic layer is supported (distillation never trains it) */
    else if(op.equals("saveCheckpoint")){if(layer.deltaCount()!=0||layer.growthCount()!=0||!layer.thresholds().isEmpty())throw new IllegalStateException("saveCheckpoint: the plastic layer has changed");
     JSONObject f=new JSONObject().put("format","gu-fdb-bridge-checkpoint-v1").put("graphSha",graph.fingerprint()).put("sensorProfile",learner.sensorProfile()).put("readoutProfile",learner.readoutProfile())
-     .put("plasticityMode",plasticity).put("seed",seed).put("learningState",FdbCheckpoint.save(learner,graph,in,out));
+     .put("plasticityMode",plasticity).put("seed",seed).put("learningState",stripSkills(FdbCheckpoint.save(learner,graph,in,out)));
     try(Writer w=new OutputStreamWriter(new FileOutputStream(q.getString("path")),java.nio.charset.StandardCharsets.UTF_8)){w.write(f.toString());}
     r.put("dataset",learner.readoutDataset()).put("population",learner.readoutPopulation().length);}
    else if(op.equals("loadCheckpoint")){JSONObject f=new JSONObject(new String(java.nio.file.Files.readAllBytes(new File(q.getString("path")).toPath()),java.nio.charset.StandardCharsets.UTF_8));
@@ -87,9 +89,18 @@ public final class FdbGameBridge {
     if(!sensorFinal.equals(f.getString("sensorProfile")))throw new IOException("checkpoint belongs to another sensor profile");
     seed=f.getInt("seed");plasticity=f.getString("plasticityMode");layer=new GraphDelta(graph.ids.length);cap=plasticity.equals("wexo")||plasticity.equals("expanded")?2048:128;
     learner=new FdbLearning(graph,layer,in,out,.1,cap,127,true,plasticity);learner.sensorProfile(sensorFinal);learner.seed(seed);learner.readoutProfile(f.getString("readoutProfile"));
-    FdbCheckpoint.restore(learner,f.getJSONObject("learningState"),graph,in,out);learner.boundary();engine=new Engine(graph);engine.reset(seed);engineSlots.clear();counter=0;
+    JSONObject ls=f.getJSONObject("learningState");boolean hadSkills=ls.has("skills");stripSkills(ls);r.put("skillMemoryDropped",hadSkills);
+    FdbCheckpoint.restore(learner,ls,graph,in,out);learner.boundary();engine=new Engine(graph);engine.reset(seed);engineSlots.clear();counter=0;
     r.put("dataset",learner.readoutDataset()).put("population",learner.readoutPopulation().length).put("readoutProfile",learner.readoutProfile());}
    else if(op.equals("dataset")){learner.readoutDataset(q.getString("id"));}
+   /* parallel distillation: activity statistics and demonstrations to and from private files */
+   else if(op.equals("statsDump")){try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(q.getString("path"))))){o.writeInt(statN);o.writeInt(statSum.length);for(int i=0;i<statSum.length;i++){o.writeDouble(statSum[i]);o.writeDouble(statSq[i]);}}r.put("n",statN);}
+   else if(op.equals("statsLoad")){try(DataInputStream in2=new DataInputStream(new BufferedInputStream(new FileInputStream(q.getString("path"))))){int n=in2.readInt(),len=in2.readInt();
+     if(statSum==null){statSum=new double[len];statSq=new double[len];statN=0;}if(len!=statSum.length)throw new IOException("stats shape");
+     for(int i=0;i<len;i++){statSum[i]+=in2.readDouble();statSq[i]+=in2.readDouble();}statN+=n;}r.put("n",statN);}
+   else if(op.equals("imitationDump")){try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(q.getString("path"))))){learner.writeImitation(o);}r.put("demonstrations",learner.imitationSetSize());}
+   else if(op.equals("imitationLoad")){try(DataInputStream in2=new DataInputStream(new BufferedInputStream(new FileInputStream(q.getString("path"))))){r.put("added",learner.readImitation(in2));}r.put("demonstrations",learner.imitationSetSize());}
+   else if(op.equals("populationGet")){r.put("neurons",new JSONArray(learner.readoutPopulation()));}
    else if(op.equals("imitate")){r.put("accepted",learner.imitate(q.getString("id"),q.getInt("mask")));}
    /* population (action-pop-v1): given neurons, or the "size" neurons whose activity
       varied most over the decisions taken with stats:true (then the statistics clear) */

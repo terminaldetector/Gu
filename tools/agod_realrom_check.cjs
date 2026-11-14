@@ -687,19 +687,34 @@ async function learn(built,inPlay,profile,identity,java,extras){
      if(JSON.stringify(t.entrySteps)!==JSON.stringify(extras.entrySteps))throw Error('a training trajectory was made from another entry');
      return {id:t.perturbation?t.perturbation.id:'reference',delay:t.perturbation?t.perturbation.delay||0:0,disturb:t.perturbation?t.perturbation.disturb:null,
       masks:t.masks,kinds:t.kinds||t.masks.map(()=>'R'),sha:crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(t.masks).buffer)).digest('hex')};});
-    const trajPass=async(t,fn)=>{const ib=await extras.rebuild(),idv=ib.driver;Phase.replayEntry(idv,extras.entrySteps);if(t.delay)idv.run(0,t.delay);
+    /* every pass runs in its own worker bridge (REALROM_WORKERS, default 4; same engine
+       seed, the same reset per trajectory - the activity is the same as in one bridge);
+       statistics and demonstrations come back through private files, demonstrations
+       loaded in trajectory order so the fit is deterministic */
+    const tmpBase=process.env.REALROM_EVIDENCE_DIR||require('os').tmpdir();fs.mkdirSync(tmpBase,{recursive:true});
+    const tmp=fs.mkdtempSync(path.join(tmpBase,'trainset-'));
+    const nW=Math.max(1,Math.min(set.length,Number(process.env.REALROM_WORKERS||4)));
+    const seedNow=SEEDS[SEEDS.length-1];
+    const workers=[];for(let w=0;w<nW;w++){const b=bridge();await b.call({op:'init',seed:seedNow,mode:'base'});await b.call({op:'readout',profile:readoutProfile});workers.push(b);}
+    const trajPass=async(jb,t,fn)=>{const ib=await extras.rebuild(),idv=ib.driver;Phase.replayEntry(idv,extras.entrySteps);if(t.delay)idv.run(0,t.delay);
      const iobs=Observation.create(OBS,ib.core,{probe:obsProbe,readRam:()=>idv.readRam(),readResource:ram=>read(ram),initialResource:profile.dto.discovered.resource.initial});
-     await java.call({op:'reset'});for(let k=0;k<t.masks.length;k++){await fn(iobs.observe(),t.masks[k],t.kinds[k]);idv.run(t.masks[k],STEP_FRAMES);}
-     ib.dispose();await java.call({op:'boundary'});};
-    for(const t of set){await trajPass(t,async retina=>{await java.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:20,stats:true});});
-     console.log('  training set: activity statistics over %s (%d decisions)',t.id,t.masks.length);}
+     await jb.call({op:'reset'});for(let k=0;k<t.masks.length;k++){await fn(jb,iobs.observe(),t.masks[k],t.kinds[k]);idv.run(t.masks[k],STEP_FRAMES);}
+     ib.dispose();await jb.call({op:'boundary'});};
+    const runQueue=async job=>{let next=0;await Promise.all(workers.map(async jb=>{while(next<set.length){const i=next++;await job(jb,set[i],i);}}));};
+    await runQueue(async(jb,t,i)=>{await trajPass(jb,t,async(b,retina)=>{await b.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:20,stats:true});});
+     console.log('  training set: activity statistics over %s (%d decisions)',t.id,t.masks.length);});
+    for(let w=0;w<nW;w++){const f=path.join(tmp,'stats-'+w+'.bin');await workers[w].call({op:'statsDump',path:f});await java.call({op:'statsLoad',path:f});fs.unlinkSync(f);}
     const chosen=await java.call({op:'population',size:Number(process.env.REALROM_POPULATION||2048)});
-    const provenance=[];
-    for(const t of set){const lab={R:0,P:0,C:0,D:0};
-     await trajPass(t,async(retina,mask,kind)=>{if(kind==='D'){await java.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:20});lab.D++;return;}
-      const dd=await java.call({op:'decide',retina,train:true,actions,epsilon:0,windowMs:20});const im=await java.call({op:'imitate',id:dd.id,mask});if(im.accepted)lab[kind]++;});
-     provenance.push({id:t.id,delay:t.delay,disturb:t.disturb,decisions:t.masks.length,labelled:{reference:lab.R,policy:lab.P,correction:lab.C},disturbanceUnlabelled:lab.D,traceSha256:t.sha});
-     console.log('  training set: imitation over %s - labelled R %d, P %d, C %d; D %d left unlabelled',t.id,lab.R,lab.P,lab.C,lab.D);}
+    const neurons=(await java.call({op:'populationGet'})).neurons;
+    const provenance=new Array(set.length);
+    await runQueue(async(jb,t,i)=>{const lab={R:0,P:0,C:0,D:0};await jb.call({op:'population',neurons});
+     await trajPass(jb,t,async(b,retina,mask,kind)=>{if(kind==='D'){await b.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:20});lab.D++;return;}
+      const dd=await b.call({op:'decide',retina,train:true,actions,epsilon:0,windowMs:20});const im=await b.call({op:'imitate',id:dd.id,mask});if(im.accepted)lab[kind]++;});
+     await jb.call({op:'imitationDump',path:path.join(tmp,'demo-'+i+'.bin')});
+     provenance[i]={id:t.id,delay:t.delay,disturb:t.disturb,decisions:t.masks.length,labelled:{reference:lab.R,policy:lab.P,correction:lab.C},disturbanceUnlabelled:lab.D,traceSha256:t.sha};
+     console.log('  training set: imitation over %s - labelled R %d, P %d, C %d; D %d left unlabelled',t.id,lab.R,lab.P,lab.C,lab.D);});
+    for(let i=0;i<set.length;i++){const f=path.join(tmp,'demo-'+i+'.bin');await java.call({op:'imitationLoad',path:f});fs.unlinkSync(f);}
+    for(const w of workers)w.close();fs.rmdirSync(tmp);
     const tf=Date.now();const fit=await java.call({op:'fit',epochs:Number(process.env.REALROM_FIT_EPOCHS||400),margin:Number(process.env.REALROM_FIT_MARGIN||1),rate:.05,dropout:Number(process.env.REALROM_FIT_DROPOUT||0)});
     const id='set:'+crypto.createHash('sha256').update(JSON.stringify(provenance.map(x=>[x.id,x.delay,x.disturb,x.traceSha256,x.labelled]))).digest('hex').slice(0,16);
     await java.call({op:'dataset',id});
