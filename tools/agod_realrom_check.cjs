@@ -61,7 +61,7 @@ const TRAIN_STEPS=Number(process.env.REALROM_TRAIN_STEPS||2400),EVAL_STEPS=Numbe
 function bridge(){
  const child=spawn(process.env.JAVA||'java',['-Xmx2g','-cp',process.env.CODE_CLASSPATH,
   'org.node.flyconsole.FdbGameBridge',...(process.env.FDB_GRAPH?[process.env.FDB_GRAPH]:[])],
-  {stdio:['pipe','pipe','ignore']});
+  {stdio:['pipe','pipe',process.env.REALROM_BRIDGE_LOG?fs.openSync(process.env.REALROM_BRIDGE_LOG,'a'):'ignore']});
  const pending=[];
  readline.createInterface({input:child.stdout}).on('line',line=>{const p=pending.shift();if(p)p.resolve(JSON.parse(line));});
  child.on('exit',code=>{while(pending.length)pending.shift().reject(Error('Java bridge exited '+code));});
