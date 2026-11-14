@@ -272,7 +272,7 @@ async function recoveryTeacher(ctx){
  const dirMask=spec.buttons.filter(b=>['←','→','↑','↓'].includes(b.name)).reduce((m,b)=>m|b.mask,0);
  const horiz=[(spec.buttons.find(b=>b.name==='←')||{}).mask||0,(spec.buttons.find(b=>b.name==='→')||{}).mask||0];
  const BACK=Number(process.env.REALROM_TEACHER_BACK||16),STALL=Number(process.env.REALROM_TEACHER_STALL||400),
-  BUDGET=Number(process.env.REALROM_TEACHER_BUDGET||300000),MAXS=Number(process.env.REALROM_TEACHER_MAX||6500),KEEP=24;
+  BUDGET=Number(process.env.REALROM_TEACHER_BUDGET||300000),MAXS=Number(process.env.REALROM_TEACHER_MAX||6500),KEEP=24,MINIMAL=process.env.REALROM_TEACHER_MINIMAL==='1';
  const total=t=>t.value.reduce((a,v)=>a+(Number.isFinite(v)?v:0),0);
  const results=[];
  for(const p of perts){
@@ -396,13 +396,40 @@ async function recoveryTeacher(ctx){
     masks.length=c.stride;kinds.length=c.stride;td.restore(c.emu);await java.call({op:'engineRestore',slot:c.slot});
     while(ckpts.length&&ckpts[ckpts.length-1].stride>c.stride){const x=ckpts.pop();await java.call({op:'engineDrop',slot:x.slot});}
     track=c.track;best=c.best;lastGain=c.lastGain;
-    for(const m of corr){if(masks.length%8===0&&masks.length>ckpts[ckpts.length-1].stride)await saveCk();
-     await java.call({op:'decide',retina:tobs.observe(),train:false,actions,epsilon:0,windowMs:20});await step(m,'C');}
+    /* MINIMAL INTERVENTION (REALROM_TEACHER_MINIMAL=1). An archive trace is one random
+       sequence among the many that survive: measured, its actions carry 5.9 bits each,
+       ~uniform over the 63 composite actions, so they are not a function of the state a
+       readout could learn. Here, walking the verified correction, at every decision the
+       brain's own choice is tried first, then the actions nearest to it (fewest buttons
+       changed), each with the rest of the correction and the SAME acceptance test (alive,
+       length, progress or damage); the archive's action is kept only where none passes.
+       By induction the remaining correction stays valid at every step. Labels: P where
+       the policy's own action passed, C where it had to change. */
+    const pop=x=>{let n=0;for(;x;x&=x-1)n++;return n;};
+    const checkFrom=(state,seq,dmgIn)=>{td.restore(state);let tr=track,dmgS=dmgIn;
+     for(const m of seq){const b=td.readRam();td.run(m,STEP_FRAMES);const a=td.readRam();if(read(a)<startRes)return false;tr=Explore.unwrapStep(tr,progressOf(a)||[],true);
+      let d0=0;for(const ad of counters){const fl=b[ad]-a[ad];if(fl>0&&fl<=16)d0+=fl;}dmgS+=Math.min(d0,16);}
+     return total(tr)-total(c.track)+dmgS>=needProg;};
+    let dmgA=0,minKept=0,minNear=0,minArchive=0,minChecks=0;
+    for(let i=0;i<corr.length;i++){if(masks.length%8===0&&masks.length>ckpts[ckpts.length-1].stride)await saveCk();
+     const r=await java.call({op:'decide',retina:tobs.observe(),train:false,actions,epsilon:0,windowMs:20});
+     let pick=corr[i],kind='C';
+     if(MINIMAL){
+      if(r.mask===corr[i]){kind='P';minKept++;}
+      else{const here=td.snapshot(),rest=corr.slice(i+1);
+       const near=actions.filter(a=>a!==r.mask).map(a=>({a,d:pop(a^r.mask)})).filter(x=>x.d<=2).sort((x,y)=>x.d-y.d||x.a-y.a).slice(0,12).map(x=>x.a);
+       let found=null;for(const a of [r.mask,...near]){if(a===corr[i]){found=a;break;}minChecks++;if(checkFrom(here,[a,...rest],dmgA)){found=a;break;}}
+       if(found===null){minArchive++;}else{pick=found;if(found===r.mask){kind='P';minKept++;}else minNear++;}
+       td.restore(here);}}
+     const b=td.readRam();await step(pick,kind);const a=td.readRam();
+     let d0=0;for(const ad of counters){const fl=b[ad]-a[ad];if(fl>0&&fl<=16)d0+=fl;}dmgA+=Math.min(d0,16);}
+    if(MINIMAL)console.log('  teacher %s: minimal intervention - %d of %d correction decisions are the policy\'s own, %d nearest to it, %d the archive\'s (%d checks)',p.id,minKept,corr.length,minNear,minArchive,minChecks);
     /* the stall clock is NOT reset here: a correction that only survives leaves it
        running (measured: with the reset, a trajectory dodged the final boss for 1 000
        decisions without a stall, and never cleared). */
     for(const ad of counters)knownCounters.add(ad);
-    corrections.push({from:c.stride,length:corr.length,failure:f,type,searchFrames:arch.stats().framesRun,damageCounters:counters.length,counters,actionsDifferingFromPolicy:differs,policyTailLength:policyTail.length});
+    corrections.push({from:c.stride,length:corr.length,failure:f,type,searchFrames:arch.stats().framesRun,damageCounters:counters.length,counters,actionsDifferingFromPolicy:differs,policyTailLength:policyTail.length,
+     minimal:MINIMAL?{policy:minKept,nearest:minNear,archive:minArchive,checks:minChecks}:null});
     console.log('  teacher %s: %s at decision %d -> correction from %d, %d decisions, found in %d frames (verified)',p.id,type,f,c.stride,corr.length,arch.stats().framesRun);
     continue;
    }
