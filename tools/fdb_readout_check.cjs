@@ -117,6 +117,7 @@ const A=Array.from({length:16},(_,i)=>i<8?.9:.05),B=Array.from({length:16},(_,i)
    console.log('population readout: %d of %d neurons varied, fit %j, frozen pass %d/%d actions, %d/%d activity hashes equal',pop.population,pop.varying,fit,same,SEQ,hashSame,SEQ);
    ok(pop.population>0&&pop.population===sp0.population,'the population is chosen from the varying neurons ('+pop.population+')');
    ok(fit.met===1&&fit.demonstrations===SEQ,'the readout is fitted to every demonstrated step ('+fit.met+', '+fit.epochs+' epochs)');
+   {const pm=(await java.call({op:'imitationMet'})).met;ok(pm.length===SEQ&&[...pm].filter(x=>x==='1').length/SEQ===fit.met,'the per-demonstration fit agrees with the total ('+pm.length+' entries)');}
    ok(hashSame===SEQ,'a frozen pass from the same engine start sees the brain do exactly the same thing ('+hashSame+'/'+SEQ+' activity hashes)');
    ok(same===SEQ,'and the frozen decisions reproduce every demonstrated action ('+same+'/'+SEQ+')');
    ok(JSON.stringify(sp0.learningState)===JSON.stringify(sp1.learningState),'frozen decisions change nothing in the population readout');

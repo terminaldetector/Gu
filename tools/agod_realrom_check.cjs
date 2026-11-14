@@ -788,19 +788,27 @@ async function learn(built,inPlay,profile,identity,java,extras){
     const chosen=await java.call({op:'population',size:Number(process.env.REALROM_POPULATION||2048)});
     const neurons=(await java.call({op:'populationGet'})).neurons;
     const provenance=new Array(set.length);
-    await runQueue(async(jb,t,i)=>{const lab={R:0,P:0,C:0,D:0};await jb.call({op:'population',neurons});
+    const demoKinds=new Array(set.length);
+    await runQueue(async(jb,t,i)=>{const lab={R:0,P:0,C:0,D:0};demoKinds[i]=[];await jb.call({op:'population',neurons});
      await trajPass(jb,t,async(b,retina,mask,kind)=>{if(kind!=='R'&&kind!=='P'&&kind!=='C'){await b.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:20});lab.D++;return;}
-      const dd=await b.call({op:'decide',retina,train:true,actions,epsilon:0,windowMs:20});const im=await b.call({op:'imitate',id:dd.id,mask});if(im.accepted)lab[kind]++;});
+      const dd=await b.call({op:'decide',retina,train:true,actions,epsilon:0,windowMs:20});const im=await b.call({op:'imitate',id:dd.id,mask});if(im.accepted){lab[kind]++;demoKinds[i].push(kind);}});
      await jb.call({op:'imitationDump',path:path.join(tmp,'demo-'+i+'.bin')});
      provenance[i]={id:t.id,delay:t.delay,disturb:t.disturb,decisions:t.masks.length,labelled:{reference:lab.R,policy:lab.P,correction:lab.C},disturbanceUnlabelled:lab.D,traceSha256:t.sha};
      console.log('  training set: imitation over %s - labelled R %d, P %d, C %d; D %d left unlabelled',t.id,lab.R,lab.P,lab.C,lab.D);});
     for(let i=0;i<set.length;i++){const f=path.join(tmp,'demo-'+i+'.bin');await java.call({op:'imitationLoad',path:f});fs.unlinkSync(f);}
     for(const w of workers)w.close();fs.rmdirSync(tmp);
     const tf=Date.now();const fit=await java.call({op:'fit',epochs:Number(process.env.REALROM_FIT_EPOCHS||400),margin:Number(process.env.REALROM_FIT_MARGIN||1),rate:.05,dropout:Number(process.env.REALROM_FIT_DROPOUT||0)});
+    /* the fit by provenance: where the readout's argmax is the demonstrated action, per
+       trajectory and label kind - labels that conflict over indistinguishable states show
+       up here, not in the total */
+    const metStr=(await java.call({op:'imitationMet'})).met;let off=0;const fitBy={};
+    for(let i=0;i<set.length;i++){const row={};for(const k of demoKinds[i]){row[k]=row[k]||[0,0];row[k][1]++;if(metStr[off++]==='1')row[k][0]++;}
+     fitBy[set[i].id]=Object.fromEntries(Object.entries(row).map(([k,[m,n]])=>[k,{met:m,of:n}]));
+     console.log('  training fit %s: %s',set[i].id,Object.entries(row).map(([k,[m,n]])=>k+' '+(100*m/n).toFixed(1)+'% of '+n).join(', '));}
     const id='set:'+crypto.createHash('sha256').update(JSON.stringify(provenance.map(x=>[x.id,x.delay,x.disturb,x.traceSha256,x.labelled]))).digest('hex').slice(0,16);
     await java.call({op:'dataset',id});
     distill={trainingSet:provenance,readout:readoutProfile,population:{neurons:chosen.population,varying:chosen.varying},
-     fit:{met:fit.met,epochs:fit.epochs,updates:fit.fitUpdates,demonstrations:fit.demonstrations,wallSeconds:Math.round((Date.now()-tf)/1000)},dataset:id,actions:actions.length,routeStrides:route.masks.length};
+     fit:{met:fit.met,epochs:fit.epochs,updates:fit.fitUpdates,demonstrations:fit.demonstrations,wallSeconds:Math.round((Date.now()-tf)/1000),byProvenance:fitBy},dataset:id,actions:actions.length,routeStrides:route.masks.length};
     console.log('  training set %s: %d trajectories, population %d of %d varying, readout fitted to %s of %d demonstrations after %d epochs',id,set.length,chosen.population,chosen.varying,(fit.met*100).toFixed(1)+'%',fit.demonstrations,fit.epochs);
     if(process.env.REALROM_SAVE_CHECKPOINT){const sv=await java.call({op:'saveCheckpoint',path:process.env.REALROM_SAVE_CHECKPOINT});console.log('  learner saved to a private checkpoint (population %d, dataset %s)',sv.population,id);}
    }

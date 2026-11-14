@@ -195,6 +195,9 @@ public final class FdbLearning {
         return added;
     }
     public int imitationSetSize(){return imitationSet.size();}
+    /** per demonstration, in set order: '1' where the readout's argmax is the demonstrated
+     *  action, '0' where not (the caller breaks the fit down by provenance) */
+    public String imitationMet(){StringBuilder b=new StringBuilder(imitationSet.size());for(Demo x:imitationSet){double[] t=total(x);int best=-1;for(int a=0;a<t.length;a++)if(Double.isFinite(t[a])&&(best<0||t[a]>t[best]))best=a;b.append(best==x.demo?'1':'0');}return b.toString();}
     public double[] fitImitation(int epochs,double margin,double rate){return fitImitation(epochs,margin,rate,0);}
     /** dropout in [0,0.9): each epoch every demonstration is seen with that fraction of
      *  its population features silenced (a fixed-seed stream, so a fit is reproducible) -
