@@ -62,6 +62,7 @@ public final class FdbCheckpoint {
             for(Map.Entry<Integer,double[]> e:learner.readoutTraces().entrySet())tr.put(new JSONObject().put("mask",e.getKey()).put("e",new JSONArray(e.getValue())));
             JSONObject ro=new JSONObject().put("profile",learner.readoutProfile()).put("features",learner.readoutFeatures()).put("updates",learner.readoutUpdates()).put("weights",w).put("traces",tr);
             if(learner.readoutProfile().equals("action-pop-v1"))ro.put("population",new JSONArray(learner.readoutPopulation()));
+            if(!learner.readoutDataset().isEmpty())ro.put("dataset",learner.readoutDataset());
             state.put("readout",ro);
         }
         /* the skill memory (research, opt-in) likewise only when it is on */
@@ -131,6 +132,7 @@ public final class FdbCheckpoint {
             if(rp.equals("action-pop-v1")){JSONArray pa=r.getJSONArray("population");if(pa.length()>FdbLearning.POPULATION_LIMIT)throw new IllegalArgumentException("FDB population limit");
                 int[] pop=new int[pa.length()];for(int i=0;i<pop.length;i++)pop[i]=pa.getInt(i);learner.readoutPopulation(pop);}
             int features=(int)integer(r,"features",1,4096);if(features!=learner.readoutFeatures())throw new IllegalArgumentException("FDB readout shape");
+            if(r.has("dataset"))learner.readoutDataset(r.getString("dataset"));
             learner.restoreReadout(rp,readoutArrays(r.getJSONArray("weights"),"w",features),readoutArrays(r.getJSONArray("traces"),"e",features),integer(r,"updates",0,max));
         }
         if(state.has("skills")){

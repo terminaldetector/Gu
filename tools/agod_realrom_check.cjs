@@ -236,6 +236,148 @@ function verifyLevelClear(stageTrace,transitions){
  return {verdict:plusOne&&insideGap?'VERIFIED':'REFUTED',stageAdvanced:plusOne,changesOnlyInsideGap:insideGap,heldToEnd:plusOne};
 }
 
+/* ===== M4-01 RECOVERY TEACHER (research copy only; never an evaluation) =====
+   Perturbation spec REALROM_TEACHER: entries separated by ';', each a list of k=v:
+   id, delay (idle frames before the first decision), at/len/kind/seed (an in-episode
+   disturbance: from decision `at`, `len` decisions overridden - kind idle | wrong |
+   hold). For each: the CURRENT frozen Male CNS policy plays from that origin on the
+   research emulator, checkpointing emulator AND brain engine every 8 decisions. At a
+   failure (a life lost, or REALROM_TEACHER_STALL decisions without progress) both
+   roll back to a checkpoint >= REALROM_TEACHER_BACK decisions before it, and the AGOD
+   frontier archive (composite actions, causal damage counters, no life may be lost)
+   searches a correction FROM THAT STATE: alive past the failure point by BACK
+   decisions, and no less progress than the policy had made. The correction is replayed
+   from its own origin and checked before it is accepted; the brain then observes it
+   (its activity continues exactly) and the policy resumes. A disturbance is never
+   searched away: a correction starts after it. Every decision keeps its provenance:
+   P policy, C correction, D disturbance. A state no correction was found for ends the
+   trajectory as UNSOLVED. Finally the whole trajectory is replayed from a fresh load
+   with the stage detector; the oracle is opened only then. Nothing is labelled with
+   the reference route's action by assumption. */
+function parsePerturbations(specText){
+ return String(specText).split(';').map(x=>x.trim()).filter(Boolean).map((entry,i)=>{const o={id:'p'+i,delay:0,disturb:null};
+  const kv=Object.fromEntries(entry.split(',').map(x=>x.split('=').map(y=>y.trim())));
+  if(kv.id)o.id=kv.id;if(kv.delay)o.delay=Number(kv.delay);
+  if(kv.at)o.disturb={at:Number(kv.at),len:Number(kv.len||4),kind:kv.kind||'idle',seed:Number(kv.seed||1)};
+  return o;});
+}
+function packDriver(d){const zlib=require('zlib');return Object.assign(Object.create(d),{
+ snapshot(){const s=d.snapshot();return s&&s.bytes?{...s,bytes:zlib.deflateRawSync(s.bytes,{level:1}),packed:true}:s;},
+ restore(s){return d.restore(s&&s.packed?{...s,bytes:new Uint8Array(zlib.inflateRawSync(s.bytes)),packed:undefined}:s);}});}
+async function recoveryTeacher(ctx){
+ const {java,actions,profile,identity,extras,read,progressOf,floor,keyOptions,obsProbe,spec}=ctx;
+ const OBS=process.env.REALROM_OBS||'legacy-16';
+ const perts=parsePerturbations(process.env.REALROM_TEACHER);
+ const exploreActions=compositeActions(profile.dto.discovered.buttonAttribution,spec,3);
+ const dirMask=spec.buttons.filter(b=>['←','→','↑','↓'].includes(b.name)).reduce((m,b)=>m|b.mask,0);
+ const horiz=[(spec.buttons.find(b=>b.name==='←')||{}).mask||0,(spec.buttons.find(b=>b.name==='→')||{}).mask||0];
+ const BACK=Number(process.env.REALROM_TEACHER_BACK||16),STALL=Number(process.env.REALROM_TEACHER_STALL||400),
+  BUDGET=Number(process.env.REALROM_TEACHER_BUDGET||300000),MAXS=Number(process.env.REALROM_TEACHER_MAX||6500),KEEP=24;
+ const total=t=>t.value.reduce((a,v)=>a+(Number.isFinite(v)?v:0),0);
+ const results=[];
+ for(const p of perts){
+  const t0=Date.now();
+  const tb=await extras.rebuild(),td=tb.driver;Phase.replayEntry(td,extras.entrySteps);if(p.delay)td.run(0,p.delay);
+  const dims=Observation.dims(tb.core)||[256,224];
+  const tobs=Observation.create(OBS,tb.core,{probe:obsProbe,readRam:()=>td.readRam(),readResource:ram=>read(ram),initialResource:profile.dto.discovered.resource.initial});
+  await java.call({op:'reset'});await java.call({op:'engineDrop'});
+  const masks=[],kinds=[],corrections=[];const failures={loss:0,stall:0};let unsolved=null,searchFrames=0,slotSeq=0;
+  let track=Explore.unwrapStep(null,progressOf(td.readRam())||[],true),best=total(track),lastGain=0;
+  const ckpts=[];
+  const saveCk=async()=>{const slot=++slotSeq;await java.call({op:'engineSave',slot});ckpts.push({stride:masks.length,emu:td.snapshot(),slot,track,best,lastGain});
+   while(ckpts.length>KEEP+1){const x=ckpts.splice(1,1)[0];await java.call({op:'engineDrop',slot:x.slot});}};
+  const dEnd=p.disturb?p.disturb.at+p.disturb.len:-1;
+  const drng=rng((p.disturb?p.disturb.seed:1)*7919+13);
+  const disturbMask=k=>p.disturb.kind==='idle'?0:p.disturb.kind==='hold'?(masks[k-1]||0):exploreActions[Math.floor(drng()*exploreActions.length)];
+  const step=async(mask,kind)=>{const before=td.readRam();td.run(mask,STEP_FRAMES);masks.push(mask);kinds.push(kind);
+   const after=td.readRam();track=Explore.unwrapStep(track,progressOf(after)||[],true);const pr=total(track);if(pr>best){best=pr;lastGain=masks.length;}
+   return {lost:read(after)<read(before),dead:read(after)<=floor};};
+  /* stage clear check: the trajectory so far on a fresh load, with the detector */
+  const stageCheck=async()=>{const vb=await extras.rebuild(),vd=vb.driver;Phase.replayEntry(vd,extras.entrySteps);if(p.delay)vd.run(0,p.delay);
+   const mon=Stage.createMonitor({probe:extras.entryProbe,readResource:ram=>read(ram)});const vdims=Observation.dims(vb.core)||[256,224];let k=0,at=-1;
+   for(const m of masks){const b=vd.readRam();vd.run(m,STEP_FRAMES);const a=vd.readRam();k++;
+    mon.observe({mask:m,ramBefore:b,ramAfter:a,signature:Stage.signature(vb.core.pixels,vdims[0],vdims[1]),scene:Stage.palette(vb.core.pixels,vdims[0],vdims[1])});
+    if(at<0&&mon.transitions().length)at=k;}
+   vb.dispose();return at;};
+  await saveCk();let cleared=-1,nextCheck=3200;
+  while(masks.length<MAXS&&!unsolved){
+   if(masks.length%8===0&&masks.length>ckpts[ckpts.length-1].stride)await saveCk();
+   const k=masks.length;
+   const r=await java.call({op:'decide',retina:tobs.observe(),train:false,actions,epsilon:0,windowMs:20});
+   const inD=p.disturb&&k>=p.disturb.at&&k<dEnd;
+   const o=await step(inD?disturbMask(k):r.mask,inD?'D':'P');
+   const stalled=masks.length-lastGain>=STALL;
+   if(o.lost||stalled){
+    const f=masks.length,type=o.lost?'loss':'stall';failures[type]++;
+    const progAtF=best;
+    /* the checkpoint: >= BACK decisions before the failure (else the latest before it).
+       A disturbance is never searched away: after one began, the correction starts at or
+       after its end; before one, the correction may not reach into it. */
+    const dAt=p.disturb?p.disturb.at:Infinity,afterD=f>dAt;
+    const allowed=x=>x.stride<=f-1&&(!afterD||x.stride>=dEnd);
+    let c=null;for(let i=ckpts.length-1;i>=0;i--)if(allowed(ckpts[i])&&ckpts[i].stride<=f-BACK){c=ckpts[i];break;}
+    if(!c)for(let i=ckpts.length-1;i>=0;i--)if(allowed(ckpts[i])){c=ckpts[i];break;}
+    if(!c){unsolved={stride:f,failure:f,type,reason:'no checkpoint after the disturbance before the failure'};console.log('  teacher %s: UNSOLVED %s at decision %d (no state after the disturbance to correct from)',p.id,type,f);break;}
+    td.restore(c.emu);
+    const maxLen=!afterD&&Number.isFinite(dAt)?dAt-c.stride:Infinity;
+    const startRes=read(td.readRam()),needSurvive=Math.min(maxLen,f-c.stride+BACK),needProg=Math.max(0,progAtF-c.best)+(type==='stall'?16:0);
+    const arch=Explore.createArchive(packDriver(td),{actions:exploreActions,readProgress:progressOf,readResource:read,positionFields:keyOptions.positionFields,
+     screen:()=>Stage.signature(tb.core.pixels,dims[0],dims[1]),seed:1000+results.length*97+corrections.length,allowLoss:false,floor,
+     damage:true,directionMask:dirMask,horizontalMasks:horiz,maxCells:6000,probeEvery:100});
+    const base=arch.stats().bestProgress;let goal=null;
+    const findGoal=()=>{let g=null;for(const cell of arch.cells().values())if(cell.resource>=startRes&&cell.trace.length>=needSurvive&&cell.progress-base>=needProg&&(!g||cell.progress>g.progress||(cell.progress===g.progress&&cell.trace.length<g.trace.length)))g=cell;return g;};
+    for(let n=0;arch.stats().framesRun<BUDGET&&!goal;n++){arch.explore();if(n%5===4)goal=findGoal();}
+    if(!goal)goal=findGoal();
+    searchFrames+=arch.stats().framesRun;
+    if(!goal){unsolved={stride:c.stride,failure:f,type,searchFrames:arch.stats().framesRun,cells:arch.stats().cells};
+     console.log('  teacher %s: UNSOLVED %s at decision %d (from checkpoint %d, %d frames searched)',p.id,type,f,c.stride,arch.stats().framesRun);break;}
+    const corr=Array.from(goal.trace).slice(0,maxLen),counters=arch.damageCounters();
+    /* independent replay of the correction from its own origin */
+    td.restore(c.emu);let tr=c.track,alive=true,dmg=0;
+    for(const m of corr){const b=td.readRam();td.run(m,STEP_FRAMES);const a=td.readRam();if(read(a)<startRes)alive=false;tr=Explore.unwrapStep(tr,progressOf(a)||[],true);
+     let d0=0;for(const ad of counters){const fl=b[ad]-a[ad];if(fl>0&&fl<=16)d0+=fl;}dmg+=Math.min(d0,16);}
+    const gained=total(tr)-total(c.track)+dmg;
+    const verified=alive&&corr.length>=needSurvive&&gained>=needProg;
+    if(!verified){unsolved={stride:c.stride,failure:f,type,reason:'correction did not replay'};console.log('  teacher %s: correction failed its replay',p.id);break;}
+    /* accept: emulator and brain back to the checkpoint, the brain observes the correction */
+    const policyTail=masks.slice(c.stride,c.stride+corr.length);let differs=0;for(let i=0;i<corr.length;i++)if(corr[i]!==policyTail[i])differs++;
+    masks.length=c.stride;kinds.length=c.stride;td.restore(c.emu);await java.call({op:'engineRestore',slot:c.slot});
+    while(ckpts.length&&ckpts[ckpts.length-1].stride>c.stride){const x=ckpts.pop();await java.call({op:'engineDrop',slot:x.slot});}
+    track=c.track;best=c.best;lastGain=c.lastGain;
+    for(const m of corr){if(masks.length%8===0&&masks.length>ckpts[ckpts.length-1].stride)await saveCk();
+     await java.call({op:'decide',retina:tobs.observe(),train:false,actions,epsilon:0,windowMs:20});await step(m,'C');}
+    lastGain=masks.length;
+    corrections.push({from:c.stride,length:corr.length,failure:f,type,searchFrames:arch.stats().framesRun,damageCounters:counters.length,actionsDifferingFromPolicy:differs,policyTailLength:policyTail.length});
+    console.log('  teacher %s: %s at decision %d -> correction from %d, %d decisions, found in %d frames (verified)',p.id,type,f,c.stride,corr.length,arch.stats().framesRun);
+    continue;
+   }
+   if(masks.length>=nextCheck){nextCheck+=400;const at=await stageCheck();if(at>0){cleared=at;
+    const keep=Math.min(masks.length,at+64);masks.length=keep;kinds.length=keep;break;}}
+  }
+  /* final verification: fresh load, entry, the same delay, the whole trajectory, no restore */
+  const vb=await extras.rebuild(),vd=vb.driver;Phase.replayEntry(vd,extras.entrySteps);if(p.delay)vd.run(0,p.delay);let vRestores=0;const vr=vd.restore.bind(vd);vd.restore=x=>{vRestores++;return vr(x);};
+  const mon=Stage.createMonitor({probe:extras.entryProbe,readResource:ram=>read(ram)});const vdims=Observation.dims(vb.core)||[256,224];
+  const stageAddrs=oracleStage(identity.romSha256),stageTrace=[];if(stageAddrs)stageTrace.push({frame:0,values:stageAddrs.map(a=>vd.readRam()[a])});
+  let fr=0,losses=0;for(const m of masks){const b=vd.readRam();vd.run(m,STEP_FRAMES);fr+=STEP_FRAMES;const a=vd.readRam();if(read(a)<read(b))losses+=read(b)-read(a);
+   mon.observe({mask:m,ramBefore:b,ramAfter:a,signature:Stage.signature(vb.core.pixels,vdims[0],vdims[1]),scene:Stage.palette(vb.core.pixels,vdims[0],vdims[1])});
+   if(stageAddrs)stageTrace.push({frame:fr,values:stageAddrs.map(x=>a[x])});}
+  const transitions=mon.transitions(),verdict=verifyLevelClear(stageAddrs?stageTrace:null,transitions);vb.dispose();tb.dispose();
+  await java.call({op:'engineDrop'});
+  const count=kd=>kinds.filter(x=>x===kd).length;
+  const traceSha=crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(masks).buffer)).digest('hex');
+  const res={id:p.id,delay:p.delay,disturb:p.disturb,decisions:masks.length,policyDecisions:count('P'),correctionDecisions:count('C'),disturbanceDecisions:count('D'),
+   corrections:corrections.length,failures,unsolved,searchFrames,replay:{freshLoad:true,restores:vRestores,losses,transitions:transitions.map(e=>({frame:e.frame,gapFrames:e.gapFrames,novelty:e.novelty}))},
+   levelClear:verdict.verdict,levelClearOracle:verdict,traceSha256:traceSha,wallSeconds:Math.round((Date.now()-t0)/1000)};
+  results.push(res);
+  if(process.env.REALROM_EVIDENCE_DIR){fs.mkdirSync(process.env.REALROM_EVIDENCE_DIR,{recursive:true});
+   fs.writeFileSync(path.join(process.env.REALROM_EVIDENCE_DIR,'teacher-'+p.id+'.json'),JSON.stringify({perturbation:p,entrySteps:extras.entrySteps,stepFrames:STEP_FRAMES,masks,kinds,corrections,unsolved,traceSha256:traceSha,levelClear:verdict.verdict}));}
+  console.log('  TEACHER %s (delay %d%s): %d decisions = %d policy + %d correction + %d disturbance; %d corrections, failures %j, unsolved %s | replay: restores %d, losses %d, transitions %d -> %s | %d s',
+   p.id,p.delay,p.disturb?', disturb '+p.disturb.kind+'@'+p.disturb.at+'x'+p.disturb.len:'',masks.length,res.policyDecisions,res.correctionDecisions,res.disturbanceDecisions,corrections.length,failures,
+   unsolved?unsolved.type+'@'+unsolved.failure:'none',vRestores,losses,transitions.length,verdict.verdict,res.wallSeconds);
+ }
+ return results;
+}
+
 async function exploreRoute(built,inPlay,profile,identity,extras){
  const d=built.driver,spec=d.actionSpec;
  const prior=decisionPrior(profile.dto.discovered&&profile.dto.discovered.buttonAttribution,spec,0);
@@ -317,6 +459,11 @@ async function learn(built,inPlay,profile,identity,java,extras){
     the brain's action set then also holds every action the route takes (<= 128, FdbLearning.ACTION_LIMIT) */
  if(process.env.REALROM_DISTILL){const used=[...new Set(JSON.parse(fs.readFileSync(process.env.REALROM_DISTILL,'utf8')).masks)];
   actions=[...new Set([...actions,...used])];if(actions.length>128)throw Error('the route uses more actions than FDB decides between');}
+ /* M4-02: a training set of several trajectories - the brain's action set holds every
+    action any of them takes. REALROM_ACTIONS_FROM adds the actions of further files
+    (an evaluation of a checkpoint trained on them must decide between the same set). */
+ for(const f of [...String(process.env.REALROM_TRAINSET||'').split(';'),...String(process.env.REALROM_ACTIONS_FROM||'').split(';')].filter(Boolean)){
+  actions=[...new Set([...actions,...JSON.parse(fs.readFileSync(f,'utf8')).masks])];if(actions.length>128)throw Error('the training set uses more actions than FDB decides between');}
  /* REALROM_CREDIT_PROFILE=dual-time-v1: two eligibility traces by game time
     (15 / 90 frames). REALROM_PAUSE=1: an interval in which the passive
     control-authority tracker says the player had no control joins the traces
@@ -523,6 +670,45 @@ async function learn(built,inPlay,profile,identity,java,extras){
    const keyer=Explore.createKeyer(keyOptions),rdims=Observation.dims(rb.core)||[256,224],steps=[];
    for(const mask of route.masks){steps.push([keyer.key(rd.readRam(),Stage.signature(rb.core.pixels,rdims[0],rdims[1])),mask]);rd.run(mask,STEP_FRAMES);}
    rb.dispose();
+   /* REALROM_LOAD_CHECKPOINT=path: the learner (readout, population, dataset identity)
+      from a private file written by REALROM_SAVE_CHECKPOINT - no distillation passes */
+   const loadPath=process.env.REALROM_LOAD_CHECKPOINT;
+   if(loadPath){const ld=await java.call({op:'loadCheckpoint',path:loadPath});
+    distill={loaded:true,readout:ld.readoutProfile,population:{neurons:ld.population},dataset:ld.dataset,routeStrides:route.masks.length,routeEntrySameState:routeEntryHash===extras.inPlayHash};
+    console.log('  learner loaded from a private checkpoint: readout %s, population %d, dataset %s',ld.readoutProfile,ld.population,ld.dataset);}
+   else if(process.env.REALROM_TRAINSET){
+    /* M4-02 MULTI-TRAJECTORY DISTILLATION: every training trajectory replayed from its own
+       origin (fresh load, entry, its start delay; its disturbance decisions are in its
+       trace) with the brain observing. The population is chosen from the UNION of their
+       activity statistics; the readout is fitted to every decision labelled R (reference
+       route), P (the policy's own, kept) or C (a verified AGOD correction) - never D (an
+       injected disturbance) and nothing by assumption. W0 and the plastic layer unchanged. */
+    const set=process.env.REALROM_TRAINSET.split(';').filter(Boolean).map(f=>{const t=JSON.parse(fs.readFileSync(f,'utf8'));
+     if(JSON.stringify(t.entrySteps)!==JSON.stringify(extras.entrySteps))throw Error('a training trajectory was made from another entry');
+     return {id:t.perturbation?t.perturbation.id:'reference',delay:t.perturbation?t.perturbation.delay||0:0,disturb:t.perturbation?t.perturbation.disturb:null,
+      masks:t.masks,kinds:t.kinds||t.masks.map(()=>'R'),sha:crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(t.masks).buffer)).digest('hex')};});
+    const trajPass=async(t,fn)=>{const ib=await extras.rebuild(),idv=ib.driver;Phase.replayEntry(idv,extras.entrySteps);if(t.delay)idv.run(0,t.delay);
+     const iobs=Observation.create(OBS,ib.core,{probe:obsProbe,readRam:()=>idv.readRam(),readResource:ram=>read(ram),initialResource:profile.dto.discovered.resource.initial});
+     await java.call({op:'reset'});for(let k=0;k<t.masks.length;k++){await fn(iobs.observe(),t.masks[k],t.kinds[k]);idv.run(t.masks[k],STEP_FRAMES);}
+     ib.dispose();await java.call({op:'boundary'});};
+    for(const t of set){await trajPass(t,async retina=>{await java.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:20,stats:true});});
+     console.log('  training set: activity statistics over %s (%d decisions)',t.id,t.masks.length);}
+    const chosen=await java.call({op:'population',size:Number(process.env.REALROM_POPULATION||2048)});
+    const provenance=[];
+    for(const t of set){const lab={R:0,P:0,C:0,D:0};
+     await trajPass(t,async(retina,mask,kind)=>{if(kind==='D'){await java.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:20});lab.D++;return;}
+      const dd=await java.call({op:'decide',retina,train:true,actions,epsilon:0,windowMs:20});const im=await java.call({op:'imitate',id:dd.id,mask});if(im.accepted)lab[kind]++;});
+     provenance.push({id:t.id,delay:t.delay,disturb:t.disturb,decisions:t.masks.length,labelled:{reference:lab.R,policy:lab.P,correction:lab.C},disturbanceUnlabelled:lab.D,traceSha256:t.sha});
+     console.log('  training set: imitation over %s - labelled R %d, P %d, C %d; D %d left unlabelled',t.id,lab.R,lab.P,lab.C,lab.D);}
+    const tf=Date.now();const fit=await java.call({op:'fit',epochs:Number(process.env.REALROM_FIT_EPOCHS||400),margin:Number(process.env.REALROM_FIT_MARGIN||1),rate:.05,dropout:Number(process.env.REALROM_FIT_DROPOUT||0)});
+    const id='set:'+crypto.createHash('sha256').update(JSON.stringify(provenance.map(x=>[x.id,x.delay,x.disturb,x.traceSha256,x.labelled]))).digest('hex').slice(0,16);
+    await java.call({op:'dataset',id});
+    distill={trainingSet:provenance,readout:readoutProfile,population:{neurons:chosen.population,varying:chosen.varying},
+     fit:{met:fit.met,epochs:fit.epochs,updates:fit.fitUpdates,demonstrations:fit.demonstrations,wallSeconds:Math.round((Date.now()-tf)/1000)},dataset:id,actions:actions.length,routeStrides:route.masks.length};
+    console.log('  training set %s: %d trajectories, population %d of %d varying, readout fitted to %s of %d demonstrations after %d epochs',id,set.length,chosen.population,chosen.varying,(fit.met*100).toFixed(1)+'%',fit.demonstrations,fit.epochs);
+    if(process.env.REALROM_SAVE_CHECKPOINT){const sv=await java.call({op:'saveCheckpoint',path:process.env.REALROM_SAVE_CHECKPOINT});console.log('  learner saved to a private checkpoint (population %d, dataset %s)',sv.population,id);}
+   }
+   else{
    await java.call({op:'skill',profile:'skill-v1'});
    for(let i=0;i<steps.length;i+=500)await java.call({op:'demonstrate',steps:steps.slice(i,i+500)});
    /* IMITATION: the brain's readout learns the route - REALROM_IMITATE passes, each on its
@@ -557,12 +743,16 @@ async function learn(built,inPlay,profile,identity,java,extras){
     routeEntrySameState:routeEntryHash===extras.inPlayHash};routeKeys=steps.map(x=>x[0]);
    console.log('  distill: route %d strides replayed from a fresh load (restores %d) -> %d demonstrations, %d distinct state keys in FDB skill memory',
     route.masks.length,rRestores,steps.length,distill.distinctKeys);
+   if(process.env.REALROM_SAVE_CHECKPOINT){const id='route:'+crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(route.masks).buffer)).digest('hex').slice(0,16)+'/delay0';
+    await java.call({op:'dataset',id});const sv=await java.call({op:'saveCheckpoint',path:process.env.REALROM_SAVE_CHECKPOINT});distill.dataset=id;
+    console.log('  learner saved to a private checkpoint (population %d, dataset %s)',sv.population,id);}
+   }
   }
   /* perturb (REALROM_PERTURB=frames): the episode starts that many idle frames late, so
      from the first decision on the brain sees what it never saw on the route - in a
      deterministic emulator reproducing a route from the identical start is close to
      replaying it; this shows whether the policy still steers when the input differs */
-  async function runEpisode(useMemory,perturb){
+  async function runEpisode(useMemory,perturb,disturb){
     const fresh=await extras.rebuild();const fd=fresh.driver;let restores=0;
     Phase.replayEntry(fd,extras.entrySteps);
     const sameStart=fd.stateHash()===extras.inPlayHash;
@@ -575,7 +765,7 @@ async function learn(built,inPlay,profile,identity,java,extras){
     const fkeyer=distill&&useMemory?Explore.createKeyer(keyOptions):null;let proposals=0,memoryDecided=0,brainAgreed=0;
     const before0=learnerDigest(await java.call({op:'state'}));
     await java.call({op:'reset'});
-    const log=[],t0=Date.now();let frames=0,losses=0,progress=0,best=0,ended_=false,followed=0,activitySame=0;const lat=[];
+    const log=[],t0=Date.now();let frames=0,losses=0,progress=0,best=0,ended_=false,followed=0,activitySame=0,firstDivergence=null,disturbedDecisions=0,progressAtDisturbEnd=null,lossesAfterDisturb=0;const lat=[];
     const stageAddrs=oracleStage(identity.romSha256),stageTrace=[];if(stageAddrs)stageTrace.push({frame:0,values:stageAddrs.map(a=>fd.readRam()[a])});
     while(frames<maxFrames){
      const ramBefore=fd.readRam();const t=Date.now();
@@ -587,8 +777,14 @@ async function learn(built,inPlay,profile,identity,java,extras){
       console.log('  [private] first state off the route at decision %d:\n    route %s\n    live  %s',log.length,routeKeys[log.length],skill);}
      if(routeMasks&&followed===log.length&&log.length<routeMasks.length&&r.mask===routeMasks[log.length])followed++;
      if(routeActivity.length&&log.length<routeActivity.length&&r.activityHash===routeActivity[log.length])activitySame++;
-     fd.run(r.mask,STEP_FRAMES);frames+=STEP_FRAMES;log.push(r.mask);
-     const ramAfter=fd.readRam();const rb=read(ramBefore),ra=read(ramAfter);if(ra<rb)losses+=rb-ra;
+     /* M4-03 in-episode disturbance: the brain keeps observing, its action is overridden */
+     const inDist=disturb&&log.length>=disturb.at&&log.length<disturb.at+disturb.len;
+     const actMask=inDist?(disturb.kind==='idle'?0:disturb.kind==='hold'?(log[log.length-1]||0):disturb.pick()):r.mask;
+     if(firstDivergence===null&&routeMasks&&log.length<routeMasks.length&&r.mask!==routeMasks[log.length])firstDivergence=log.length;
+     if(inDist)disturbedDecisions++;
+     fd.run(actMask,STEP_FRAMES);frames+=STEP_FRAMES;log.push(actMask);
+     const ramAfter=fd.readRam();const rb=read(ramBefore),ra=read(ramAfter);if(ra<rb){losses+=rb-ra;if(disturb&&log.length>disturb.at)lossesAfterDisturb+=rb-ra;}
+     if(disturb&&log.length===disturb.at+disturb.len)progressAtDisturbEnd=progress;
      const pb=progressOf(ramBefore),pa=progressOf(ramAfter);for(let i=0;i<pb.length;i++)if(Number.isFinite(pb[i])&&Number.isFinite(pa[i])&&pa[i]>pb[i])progress+=pa[i]-pb[i];
      best=Math.max(best,progress);
      if(monitor)monitor.observe({mask:r.mask,ramBefore,ramAfter,signature:Stage.signature(fresh.core.pixels,dims[0],dims[1]),scene:Stage.palette(fresh.core.pixels,dims[0],dims[1])});
@@ -603,7 +799,10 @@ async function learn(built,inPlay,profile,identity,java,extras){
     const logSha=crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(log).buffer)).digest('hex');
     if(process.env.REALROM_EVIDENCE_DIR){fs.mkdirSync(process.env.REALROM_EVIDENCE_DIR,{recursive:true});
      fs.writeFileSync(path.join(process.env.REALROM_EVIDENCE_DIR,'full-episode-actions.json'),JSON.stringify({entrySteps:extras.entrySteps,stepFrames:STEP_FRAMES,masks:log,events:monitor?monitor.events():[]}));}
-    const episodeResult={runMode:'FROZEN_FULL_EPISODE',memory:!!fkeyer,startDelayFrames:perturb||0,policy:sampled?'sampled (harness stream)':'argmax',freshLoad:true,entryReplayedSameState:sameStart,
+    const episodeResult={runMode:'FROZEN_FULL_EPISODE',memory:!!fkeyer,startDelayFrames:perturb||0,
+     disturbance:disturb?{at:disturb.at,len:disturb.len,kind:disturb.kind,seed:disturb.seed,decisionsOverridden:disturbedDecisions,lossesAfter:lossesAfterDisturb,
+      progressGainedAfter:progressAtDisturbEnd===null?null:best-progressAtDisturbEnd,recovered:progressAtDisturbEnd!==null&&!ended_&&best>progressAtDisturbEnd}:null,
+     firstPolicyDivergenceFromRoute:firstDivergence,policy:sampled?'sampled (harness stream)':'argmax',freshLoad:true,entryReplayedSameState:sameStart,
      evalRestores:restores,humanInputFrames:0,framesExecuted:frames,decisions:log.length,losses,ended:ended_,
      progress,highestProgress:best,stageEvents:monitor?monitor.events().filter(e=>e.kind!=='LOSS').length:null,
      transitions:transitions.map(e=>({frame:e.frame,gapFrames:e.gapFrames,novelty:e.novelty})),
@@ -622,11 +821,38 @@ async function learn(built,inPlay,profile,identity,java,extras){
     fresh.dispose();
     return episodeResult;
   }
-  /* REALROM_MEMORY_EPISODE=0: only the brain-only episode (the skill-memory one is a control) */
-  if(distill&&process.env.REALROM_MEMORY_EPISODE==='0'){fullEpisode={brainOnly:await runEpisode(false)};}
+  /* REALROM_MEMORY_EPISODE=0: only the brain-only episode (the skill-memory one is a control);
+     REALROM_SKIP_EPISODES=1: none (a teacher run) */
+  if(process.env.REALROM_SKIP_EPISODES==='1'){fullEpisode={skipped:true};}
+  else if(distill&&process.env.REALROM_MEMORY_EPISODE==='0'){fullEpisode={brainOnly:await runEpisode(false)};}
   else{fullEpisode=await runEpisode(true);if(distill)fullEpisode.brainOnly=await runEpisode(false);}
   if(distill&&process.env.REALROM_PERTURB){fullEpisode.brainOnlyPerturbed=[];
    for(const late of String(process.env.REALROM_PERTURB).split(',').map(Number).filter(x=>x>0))fullEpisode.brainOnlyPerturbed.push(await runEpisode(false,late));}
+  /* M4-03: REALROM_EVAL (the teacher's perturbation syntax): frozen brain-only episodes
+     under each perturbation, and the reference route replayed BLIND under the same one */
+  if(distill&&process.env.REALROM_EVAL){fullEpisode.evaluation=[];
+   const exploreActions=compositeActions(profile.dto.discovered.buttonAttribution,spec,3);
+   for(const p of parsePerturbations(process.env.REALROM_EVAL)){
+    const mkDist=()=>p.disturb?{...p.disturb,pick:(r=>()=>exploreActions[Math.floor(r()*exploreActions.length)])(rng(p.disturb.seed*7919+13))}:null;
+    const brain=await runEpisode(false,p.delay,mkDist());
+    /* blind replay: the route's own actions, the same delay and disturbance, no brain */
+    const ob=await extras.rebuild(),od=ob.driver;Phase.replayEntry(od,extras.entrySteps);if(p.delay)od.run(0,p.delay);
+    const omon=Stage.createMonitor({probe:extras.entryProbe,readResource:ram=>read(ram)});const odims=Observation.dims(ob.core)||[256,224];
+    const sa=oracleStage(identity.romSha256),st=[];if(sa)st.push({frame:0,values:sa.map(a=>od.readRam()[a])});
+    const dd=mkDist();let ofr=0,olos=0,oprog=0,oended=false,last=0;const olog=[];
+    for(let k=0;k<routeMasks.length&&ofr<maxFrames;k++){const inD=dd&&k>=dd.at&&k<dd.at+dd.len;const m=inD?(dd.kind==='idle'?0:dd.kind==='hold'?last:dd.pick()):routeMasks[k];last=m;
+     const b=od.readRam();od.run(m,STEP_FRAMES);ofr+=STEP_FRAMES;const a=od.readRam();if(read(a)<read(b))olos+=read(b)-read(a);
+     const pb=progressOf(b),pa=progressOf(a);for(let i=0;i<pb.length;i++)if(Number.isFinite(pb[i])&&Number.isFinite(pa[i])&&pa[i]>pb[i])oprog+=pa[i]-pb[i];
+     omon.observe({mask:m,ramBefore:b,ramAfter:a,signature:Stage.signature(ob.core.pixels,odims[0],odims[1]),scene:Stage.palette(ob.core.pixels,odims[0],odims[1])});
+     if(sa)st.push({frame:ofr,values:sa.map(x=>a[x])});if(ended(a)){oended=true;break;}}
+    const ov=verifyLevelClear(sa?st:null,omon.transitions());ob.dispose();
+    fullEpisode.evaluation.push({id:p.id,delay:p.delay,disturb:p.disturb,brain:{levelClear:brain.levelClear,ended:brain.ended,losses:brain.losses,frames:brain.framesExecuted,
+      progress:brain.highestProgress,latencyMs:brain.decisionLatencyMs,firstDivergence:brain.firstPolicyDivergenceFromRoute,disturbance:brain.disturbance,frozen:!brain.weightsChangedInEval,restores:brain.evalRestores},
+     openLoop:{levelClear:ov.verdict,ended:oended,losses:olos,frames:ofr,progress:oprog}});
+    console.log('  EVAL %s (delay %d%s): brain %s, game over %s, losses %d, progress %d | blind replay %s, game over %s, losses %d, progress %d',p.id,p.delay,
+     p.disturb?', '+p.disturb.kind+'@'+p.disturb.at+'x'+p.disturb.len:'',brain.levelClear,brain.ended,brain.losses,brain.highestProgress,ov.verdict,oended,olos,oprog);}
+  }
+  if(distill&&process.env.REALROM_TEACHER)fullEpisode.teacher=await recoveryTeacher({java,actions,profile,identity,extras,read,progressOf,floor,keyOptions,obsProbe,spec});
  }
  return {brain:brainIdentity,actions:actions.length,stepFrames:STEP_FRAMES,evalStarts:3,evalStepsCap:EVAL_STEPS,fullEpisode,
   evaluation:'frozen, both argmax (untrained/trained) and sampled from the policy with the harness RNG (untrainedSampled/trainedSampled); whole learner state digest compared',

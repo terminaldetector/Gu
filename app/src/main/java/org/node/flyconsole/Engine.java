@@ -62,6 +62,36 @@ public final class Engine {
         random = new Random(seed);
     }
 
+    /** EXACT STATE COPY (research recovery teacher, directive M4-01): voltages, currents,
+     *  refractory counters, the pending-spike ring, the tick and the Poisson input
+     *  generator's position. Restoring it continues the dynamics bit for bit; nothing
+     *  about the dynamics changes. The generator's position depends on how many
+     *  decisions ran since reset, so a reset plus warm-up cannot stand in for it. */
+    public static final class State {
+        private final double[] voltage, current; private final int[] refractory; private final float[][] pending;
+        private final long tick; private final byte[] random;
+        private State(double[] v, double[] c, int[] r, float[][] p, long t, byte[] rnd) { voltage = v; current = c; refractory = r; pending = p; tick = t; random = rnd; }
+        public long bytes() { return voltage.length * 20L + (long) pending.length * pending[0].length * 4 + random.length; }
+    }
+    public State snapshot() {
+        float[][] p = new float[pending.length][];
+        for (int i = 0; i < p.length; i++) p[i] = pending[i].clone();
+        try (java.io.ByteArrayOutputStream b = new java.io.ByteArrayOutputStream(); java.io.ObjectOutputStream o = new java.io.ObjectOutputStream(b)) {
+            o.writeObject(random); o.flush();
+            return new State(voltage.clone(), current.clone(), refractory.clone(), p, tick, b.toByteArray());
+        } catch (java.io.IOException e) { throw new IllegalStateException("engine snapshot", e); }
+    }
+    public void restore(State s) {
+        if (s.voltage.length != voltage.length || s.pending.length != pending.length) throw new IllegalArgumentException("engine state shape");
+        System.arraycopy(s.voltage, 0, voltage, 0, voltage.length);
+        System.arraycopy(s.current, 0, current, 0, current.length);
+        System.arraycopy(s.refractory, 0, refractory, 0, refractory.length);
+        for (int i = 0; i < pending.length; i++) System.arraycopy(s.pending[i], 0, pending[i], 0, pending[i].length);
+        tick = s.tick;
+        try (java.io.ObjectInputStream o = new java.io.ObjectInputStream(new java.io.ByteArrayInputStream(s.random))) { random = (Random) o.readObject(); }
+        catch (java.io.IOException | ClassNotFoundException e) { throw new IllegalStateException("engine restore", e); }
+    }
+
     public int index(long id) {
         int index = Arrays.binarySearch(graph.ids, id);
         if (index < 0) throw new IllegalArgumentException("Неизвестный ID нейрона: " + id);

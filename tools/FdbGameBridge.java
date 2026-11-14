@@ -45,6 +45,7 @@ public final class FdbGameBridge {
   }
   String plasticity="base";int cap=128;
   Engine engine=null;GraphDelta layer=null;FdbLearning learner=null;long counter=0;int seed=1;double[] statSum=null,statSq=null;int statN=0;
+  final HashMap<Integer,Engine.State> engineSlots=new HashMap<>();
   try(BufferedReader reader=new BufferedReader(new InputStreamReader(System.in))){String line;while((line=reader.readLine())!=null){JSONObject q=new JSONObject(line),r=new JSONObject();String op=q.getString("op");
    if(op.equals("init")){seed=q.getInt("seed");layer=new GraphDelta(graph.ids.length);String mode=q.getString("mode");if(mode.equals("fixed")){for(int source:in)layer.addEdge(source,out[6],8);}
     plasticity=q.optString("plasticityMode","base");cap=plasticity.equals("wexo")||plasticity.equals("expanded")?2048:128;learner=new FdbLearning(graph,layer,in,out,.1,cap,127,true,plasticity);learner.sensorProfile(sensorFinal);learner.seed(seed);engine=new Engine(graph);engine.reset(seed);counter=0;r.put("neurons",graph.ids.length).put("baseEdges",graph.targets.length).put("graphSha",graph.fingerprint()).put("model",labelFinal).put("ports",portsFinal).put("stimulated",stimFinal.length).put("sensorProfile",sensorFinal).put("commercial",commercialFinal).put("label",commercialFinal?"COMMERCIAL":"NOT_COMMERCIAL");
@@ -67,6 +68,28 @@ public final class FdbGameBridge {
    else if(op.equals("credit")){learner.creditProfile(q.getString("profile"));}
    else if(op.equals("readout")){learner.readoutProfile(q.getString("profile"));}
    else if(op.equals("skill")){learner.skillProfile(q.getString("profile"));}
+   /* ENGINE SLOTS (research recovery teacher): an exact copy of the spiking engine's
+      state, kept in memory, so the brain can be rolled back with the research
+      emulator; never used in a frozen evaluation */
+   else if(op.equals("engineSave")){int slot=q.getInt("slot");if(engineSlots.size()>=64&&!engineSlots.containsKey(slot))throw new IllegalStateException("engine slots");engineSlots.put(slot,engine.snapshot());r.put("slots",engineSlots.size());}
+   else if(op.equals("engineRestore")){Engine.State st=engineSlots.get(q.getInt("slot"));if(st==null)throw new IllegalArgumentException("no engine slot");engine.restore(st);}
+   else if(op.equals("engineDrop")){if(q.has("slot"))engineSlots.remove(q.getInt("slot"));else engineSlots.clear();r.put("slots",engineSlots.size());}
+   /* the learner to and from a private file (checkpoint JSON + identity); only an
+      untouched plastic layer is supported (distillation never trains it) */
+   else if(op.equals("saveCheckpoint")){if(layer.deltaCount()!=0||layer.growthCount()!=0||!layer.thresholds().isEmpty())throw new IllegalStateException("saveCheckpoint: the plastic layer has changed");
+    JSONObject f=new JSONObject().put("format","gu-fdb-bridge-checkpoint-v1").put("graphSha",graph.fingerprint()).put("sensorProfile",learner.sensorProfile()).put("readoutProfile",learner.readoutProfile())
+     .put("plasticityMode",plasticity).put("seed",seed).put("learningState",FdbCheckpoint.save(learner,graph,in,out));
+    try(Writer w=new OutputStreamWriter(new FileOutputStream(q.getString("path")),java.nio.charset.StandardCharsets.UTF_8)){w.write(f.toString());}
+    r.put("dataset",learner.readoutDataset()).put("population",learner.readoutPopulation().length);}
+   else if(op.equals("loadCheckpoint")){JSONObject f=new JSONObject(new String(java.nio.file.Files.readAllBytes(new File(q.getString("path")).toPath()),java.nio.charset.StandardCharsets.UTF_8));
+    if(!"gu-fdb-bridge-checkpoint-v1".equals(f.optString("format")))throw new IOException("checkpoint format");
+    if(!graph.fingerprint().equals(f.getString("graphSha")))throw new IOException("checkpoint belongs to another graph");
+    if(!sensorFinal.equals(f.getString("sensorProfile")))throw new IOException("checkpoint belongs to another sensor profile");
+    seed=f.getInt("seed");plasticity=f.getString("plasticityMode");layer=new GraphDelta(graph.ids.length);cap=plasticity.equals("wexo")||plasticity.equals("expanded")?2048:128;
+    learner=new FdbLearning(graph,layer,in,out,.1,cap,127,true,plasticity);learner.sensorProfile(sensorFinal);learner.seed(seed);learner.readoutProfile(f.getString("readoutProfile"));
+    FdbCheckpoint.restore(learner,f.getJSONObject("learningState"),graph,in,out);learner.boundary();engine=new Engine(graph);engine.reset(seed);engineSlots.clear();counter=0;
+    r.put("dataset",learner.readoutDataset()).put("population",learner.readoutPopulation().length).put("readoutProfile",learner.readoutProfile());}
+   else if(op.equals("dataset")){learner.readoutDataset(q.getString("id"));}
    else if(op.equals("imitate")){r.put("accepted",learner.imitate(q.getString("id"),q.getInt("mask")));}
    /* population (action-pop-v1): given neurons, or the "size" neurons whose activity
       varied most over the decisions taken with stats:true (then the statistics clear) */

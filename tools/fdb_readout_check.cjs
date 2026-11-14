@@ -125,6 +125,29 @@ const A=Array.from({length:16},(_,i)=>i<8?.9:.05),B=Array.from({length:16},(_,i)
    const sp2=await java.call({op:'state'});
    ok(before.join()===after.join()&&sp2.population===pop.population&&sp2.learningState.readout.population.length===pop.population,
     'a checkpoint roundtrip keeps the population and every score');}
+  /* 9. ENGINE SLOTS and FILE CHECKPOINT (recovery teacher, M4-01): an engine state saved
+     mid-episode and restored continues bit for bit (the same activity hashes and
+     actions); a learner saved to a file and loaded into a fresh bridge state decides
+     exactly as before, with its population and dataset identity */
+  {const ret=k=>Array.from({length:16},(_,i)=>((i*3+k*5)%16)/16*.9+.05);
+   await java.call({op:'init',seed:7,mode:'base'});await java.call({op:'readout',profile:'action-pop-v1'});
+   await java.call({op:'reset'});for(let k=0;k<6;k++)await java.call({op:'decide',retina:ret(k),train:false,actions:ACTIONS,epsilon:0,windowMs:20,stats:true});
+   await java.call({op:'population',size:4095});await java.call({op:'reset'});
+   for(let k=0;k<6;k++){const d=await java.call({op:'decide',retina:ret(k),train:true,actions:ACTIONS,epsilon:0,windowMs:20});await java.call({op:'imitate',id:d.id,mask:ACTIONS[(k*7+2)%ACTIONS.length]});}
+   await java.call({op:'fit',epochs:300,margin:1,rate:.05});await java.call({op:'dataset',id:'fixture-set-1'});
+   await java.call({op:'reset'});for(let k=0;k<3;k++)await java.call({op:'decide',retina:ret(k),train:false,actions:ACTIONS,epsilon:0,windowMs:20});
+   await java.call({op:'engineSave',slot:1});
+   const run=async()=>{const h=[];for(let k=3;k<9;k++){const d=await java.call({op:'decide',retina:ret(k),train:false,actions:ACTIONS,epsilon:0,windowMs:20});h.push(d.activityHash+':'+d.mask);}return h.join(',');};
+   const first=await run();await java.call({op:'engineRestore',slot:1});const second=await run();
+   ok(first===second,'an engine state restored mid-episode continues bit for bit (6 decisions, the same activity hashes and actions)');
+   await java.call({op:'reset'});const s1=[];for(let k=0;k<4;k++)s1.push(JSON.stringify((await java.call({op:'decide',retina:ret(k),train:false,actions:ACTIONS,epsilon:0,windowMs:20})).scores));
+   const file=require('os').tmpdir()+'/fdb-readout-check-'+process.pid+'.json';
+   const saved=await java.call({op:'saveCheckpoint',path:file});
+   await java.call({op:'init',seed:7,mode:'base'});
+   const loaded=await java.call({op:'loadCheckpoint',path:file});require('fs').unlinkSync(file);
+   const s2=[];for(let k=0;k<4;k++)s2.push(JSON.stringify((await java.call({op:'decide',retina:ret(k),train:false,actions:ACTIONS,epsilon:0,windowMs:20})).scores));
+   ok(s1.join()===s2.join()&&loaded.dataset==='fixture-set-1'&&loaded.population===saved.population&&saved.population>0,
+    'a learner saved to a file and loaded back decides identically, with its population ('+loaded.population+') and dataset identity');}
   /* 6. none: the checkpoint has no readout block at all */
   await java.call({op:'init',seed:7,mode:'base'});
   const none=await java.call({op:'state'});

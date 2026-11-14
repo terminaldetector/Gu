@@ -92,6 +92,11 @@ public final class FdbLearning {
         boundary();population=neurons.clone();readout.clear();readoutTrace.clear();readoutUpdates=0;imitationSet.clear();
     }
     public int[] readoutPopulation(){return population.clone();}
+    /* the identity of the training set the readout was fitted to (directive M4-02): the
+       caller's digest of its trajectories and their provenance, carried in checkpoints */
+    private String readoutDataset="";
+    public void readoutDataset(String id){if(id==null||id.length()>256)throw new IllegalArgumentException("FDB readout dataset");readoutDataset=id;}
+    public String readoutDataset(){return readoutDataset;}
     public TreeMap<Integer,double[]> readoutWeights(){TreeMap<Integer,double[]> c=new TreeMap<>();for(Map.Entry<Integer,double[]> e:readout.entrySet())c.put(e.getKey(),e.getValue().clone());return c;}
     public TreeMap<Integer,double[]> readoutTraces(){TreeMap<Integer,double[]> c=new TreeMap<>();for(Map.Entry<Integer,double[]> e:readoutTrace.entrySet())c.put(e.getKey(),e.getValue().clone());return c;}
     public long readoutUpdates(){return readoutUpdates;}
