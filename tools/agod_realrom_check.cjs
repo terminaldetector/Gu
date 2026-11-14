@@ -281,7 +281,7 @@ async function recoveryTeacher(ctx){
   const dims=Observation.dims(tb.core)||[256,224];
   const tobs=Observation.create(OBS,tb.core,{probe:obsProbe,readRam:()=>td.readRam(),readResource:ram=>read(ram),initialResource:profile.dto.discovered.resource.initial});
   await java.call({op:'reset'});await java.call({op:'engineDrop'});
-  const masks=[],kinds=[],corrections=[];const failures={loss:0,stall:0};let unsolved=null,searchFrames=0,slotSeq=0;
+  const masks=[],kinds=[],corrections=[],accepted=[];const failures={loss:0,stall:0};let unsolved=null,searchFrames=0,slotSeq=0;
   let track=Explore.unwrapStep(null,progressOf(td.readRam())||[],true),best=total(track),lastGain=0;
   const ckpts=[];
   const saveCk=async()=>{const slot=++slotSeq;await java.call({op:'engineSave',slot});ckpts.push({stride:masks.length,emu:td.snapshot(),slot,track,best,lastGain});
@@ -310,27 +310,46 @@ async function recoveryTeacher(ctx){
    if(o.lost||stalled){
     const f=masks.length,type=o.lost?'loss':'stall';failures[type]++;
     const progAtF=best;
+    const failState={emu:td.snapshot(),slot:900000+f};await java.call({op:'engineSave',slot:failState.slot});
     /* the checkpoint: >= BACK decisions before the failure (else the latest before it).
        A disturbance is never searched away: after one began, the correction starts at or
-       after its end; before one, the correction may not reach into it. */
+       after its end; before one, the correction may not reach into it. If the search
+       fails, it ESCALATES to earlier checkpoints (~32 and ~64 decisions further back);
+       if every attempt fails and lives remain, the loss is ACCEPTED - the game goes on
+       after the respawn, and the BACK policy decisions that led to it are marked X
+       (never labelled). Only a game over ends the trajectory as UNSOLVED. */
     const dAt=p.disturb?p.disturb.at:Infinity,afterD=f>dAt;
     const allowed=x=>x.stride<=f-1&&(!afterD||x.stride>=dEnd);
-    let c=null;for(let i=ckpts.length-1;i>=0;i--)if(allowed(ckpts[i])&&ckpts[i].stride<=f-BACK){c=ckpts[i];break;}
-    if(!c)for(let i=ckpts.length-1;i>=0;i--)if(allowed(ckpts[i])){c=ckpts[i];break;}
-    if(!c){unsolved={stride:f,failure:f,type,reason:'no checkpoint after the disturbance before the failure'};console.log('  teacher %s: UNSOLVED %s at decision %d (no state after the disturbance to correct from)',p.id,type,f);break;}
-    td.restore(c.emu);
-    const maxLen=!afterD&&Number.isFinite(dAt)?dAt-c.stride:Infinity;
-    const startRes=read(td.readRam()),needSurvive=Math.min(maxLen,f-c.stride+BACK),needProg=Math.max(0,progAtF-c.best)+(type==='stall'?16:0);
-    const arch=Explore.createArchive(packDriver(td),{actions:exploreActions,readProgress:progressOf,readResource:read,positionFields:keyOptions.positionFields,
-     screen:()=>Stage.signature(tb.core.pixels,dims[0],dims[1]),seed:1000+results.length*97+corrections.length,allowLoss:false,floor,
-     damage:true,directionMask:dirMask,horizontalMasks:horiz,maxCells:6000,probeEvery:100});
-    const base=arch.stats().bestProgress;let goal=null;
-    const findGoal=()=>{let g=null;for(const cell of arch.cells().values())if(cell.resource>=startRes&&cell.trace.length>=needSurvive&&cell.progress-base>=needProg&&(!g||cell.progress>g.progress||(cell.progress===g.progress&&cell.trace.length<g.trace.length)))g=cell;return g;};
-    for(let n=0;arch.stats().framesRun<BUDGET&&!goal;n++){arch.explore();if(n%5===4)goal=findGoal();}
-    if(!goal)goal=findGoal();
-    searchFrames+=arch.stats().framesRun;
-    if(!goal){unsolved={stride:c.stride,failure:f,type,searchFrames:arch.stats().framesRun,cells:arch.stats().cells};
-     console.log('  teacher %s: UNSOLVED %s at decision %d (from checkpoint %d, %d frames searched)',p.id,type,f,c.stride,arch.stats().framesRun);break;}
+    const tries=[];{let lim=f-BACK;for(let attempt=0;attempt<3;attempt++){let c0=null;for(let i=ckpts.length-1;i>=0;i--)if(allowed(ckpts[i])&&ckpts[i].stride<=lim){c0=ckpts[i];break;}
+      if(!c0&&attempt===0)for(let i=ckpts.length-1;i>=0;i--)if(allowed(ckpts[i])){c0=ckpts[i];break;}
+      if(!c0||tries.includes(c0))break;tries.push(c0);lim=c0.stride-32;}}
+    let c=null,goal=null,arch=null,maxLen=Infinity,needSurvive=0,needProg=0,startRes=0,triedFrames=0;
+    for(const c0 of tries){
+     td.restore(c0.emu);
+     maxLen=!afterD&&Number.isFinite(dAt)?dAt-c0.stride:Infinity;
+     startRes=read(td.readRam());needSurvive=Math.min(maxLen,f-c0.stride+BACK);needProg=Math.max(0,progAtF-c0.best)+(type==='stall'?16:0);
+     arch=Explore.createArchive(packDriver(td),{actions:exploreActions,readProgress:progressOf,readResource:read,positionFields:keyOptions.positionFields,
+      screen:()=>Stage.signature(tb.core.pixels,dims[0],dims[1]),seed:1000+results.length*97+corrections.length*7+tries.indexOf(c0),allowLoss:false,floor,
+      damage:true,directionMask:dirMask,horizontalMasks:horiz,maxCells:6000,probeEvery:100});
+     const base=arch.stats().bestProgress;
+     const findGoal=()=>{let g=null;for(const cell of arch.cells().values())if(cell.resource>=startRes&&cell.trace.length>=needSurvive&&cell.progress-base>=needProg&&(!g||cell.progress>g.progress||(cell.progress===g.progress&&cell.trace.length<g.trace.length)))g=cell;return g;};
+     for(let n=0;arch.stats().framesRun<BUDGET&&!goal;n++){arch.explore();if(n%5===4)goal=findGoal();}
+     if(!goal)goal=findGoal();
+     triedFrames+=arch.stats().framesRun;searchFrames+=arch.stats().framesRun;
+     if(goal){c=c0;break;}
+     console.log('  teacher %s: no correction from %d for the %s at %d (%d frames) - %s',p.id,c0.stride,type,f,arch.stats().framesRun,tries.indexOf(c0)<tries.length-1?'trying an earlier state':'no earlier state left');
+    }
+    if(!goal){
+     /* nothing found: back to the failure state as it was, and accept the loss unless the game is over */
+     if(o.dead){unsolved={stride:tries.length?tries[tries.length-1].stride:f,failure:f,type,searchFrames:triedFrames,reason:tries.length?'no correction from '+tries.length+' states':'no state after the disturbance to correct from'};
+      console.log('  teacher %s: UNSOLVED %s at decision %d (game over; %d states tried, %d frames)',p.id,type,f,tries.length,triedFrames);break;}
+     td.restore(failState.emu);await java.call({op:'engineRestore',slot:failState.slot});await java.call({op:'engineDrop',slot:failState.slot});
+     for(let i=Math.max(0,f-BACK);i<f;i++)if(kinds[i]==='P')kinds[i]='X';
+     accepted.push({failure:f,type,statesTried:tries.length,searchFrames:triedFrames});lastGain=masks.length;
+     console.log('  teacher %s: %s at decision %d ACCEPTED (no correction from %d states, %d frames); %d decisions before it left unlabelled',p.id,type,f,tries.length,triedFrames,Math.min(BACK,f));
+     continue;
+    }
+    await java.call({op:'engineDrop',slot:failState.slot});
     const corr=Array.from(goal.trace).slice(0,maxLen),counters=arch.damageCounters();
     /* independent replay of the correction from its own origin */
     td.restore(c.emu);let tr=c.track,alive=true,dmg=0;
@@ -366,13 +385,13 @@ async function recoveryTeacher(ctx){
   const count=kd=>kinds.filter(x=>x===kd).length;
   const traceSha=crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(masks).buffer)).digest('hex');
   const res={id:p.id,delay:p.delay,disturb:p.disturb,decisions:masks.length,policyDecisions:count('P'),correctionDecisions:count('C'),disturbanceDecisions:count('D'),
-   corrections:corrections.length,failures,unsolved,searchFrames,replay:{freshLoad:true,restores:vRestores,losses,transitions:transitions.map(e=>({frame:e.frame,gapFrames:e.gapFrames,novelty:e.novelty}))},
+   corrections:corrections.length,acceptedLosses:accepted.length,unlabelledBeforeAcceptedLoss:count('X'),failures,unsolved,searchFrames,replay:{freshLoad:true,restores:vRestores,losses,transitions:transitions.map(e=>({frame:e.frame,gapFrames:e.gapFrames,novelty:e.novelty}))},
    levelClear:verdict.verdict,levelClearOracle:verdict,traceSha256:traceSha,wallSeconds:Math.round((Date.now()-t0)/1000)};
   results.push(res);
   if(process.env.REALROM_EVIDENCE_DIR){fs.mkdirSync(process.env.REALROM_EVIDENCE_DIR,{recursive:true});
-   fs.writeFileSync(path.join(process.env.REALROM_EVIDENCE_DIR,'teacher-'+p.id+'.json'),JSON.stringify({perturbation:p,entrySteps:extras.entrySteps,stepFrames:STEP_FRAMES,masks,kinds,corrections,unsolved,traceSha256:traceSha,levelClear:verdict.verdict}));}
-  console.log('  TEACHER %s (delay %d%s): %d decisions = %d policy + %d correction + %d disturbance; %d corrections, failures %j, unsolved %s | replay: restores %d, losses %d, transitions %d -> %s | %d s',
-   p.id,p.delay,p.disturb?', disturb '+p.disturb.kind+'@'+p.disturb.at+'x'+p.disturb.len:'',masks.length,res.policyDecisions,res.correctionDecisions,res.disturbanceDecisions,corrections.length,failures,
+   fs.writeFileSync(path.join(process.env.REALROM_EVIDENCE_DIR,'teacher-'+p.id+'.json'),JSON.stringify({perturbation:p,entrySteps:extras.entrySteps,stepFrames:STEP_FRAMES,masks,kinds,corrections,accepted,unsolved,traceSha256:traceSha,levelClear:verdict.verdict}));}
+  console.log('  TEACHER %s (delay %d%s): %d decisions = %d policy (+%d unlabelled) + %d correction + %d disturbance; %d corrections, %d losses accepted, failures %j, unsolved %s | replay: restores %d, losses %d, transitions %d -> %s | %d s',
+   p.id,p.delay,p.disturb?', disturb '+p.disturb.kind+'@'+p.disturb.at+'x'+p.disturb.len:'',masks.length,res.policyDecisions,count('X'),res.correctionDecisions,res.disturbanceDecisions,corrections.length,accepted.length,failures,
    unsolved?unsolved.type+'@'+unsolved.failure:'none',vRestores,losses,transitions.length,verdict.verdict,res.wallSeconds);
  }
  return results;
@@ -708,7 +727,7 @@ async function learn(built,inPlay,profile,identity,java,extras){
     const neurons=(await java.call({op:'populationGet'})).neurons;
     const provenance=new Array(set.length);
     await runQueue(async(jb,t,i)=>{const lab={R:0,P:0,C:0,D:0};await jb.call({op:'population',neurons});
-     await trajPass(jb,t,async(b,retina,mask,kind)=>{if(kind==='D'){await b.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:20});lab.D++;return;}
+     await trajPass(jb,t,async(b,retina,mask,kind)=>{if(kind!=='R'&&kind!=='P'&&kind!=='C'){await b.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:20});lab.D++;return;}
       const dd=await b.call({op:'decide',retina,train:true,actions,epsilon:0,windowMs:20});const im=await b.call({op:'imitate',id:dd.id,mask});if(im.accepted)lab[kind]++;});
      await jb.call({op:'imitationDump',path:path.join(tmp,'demo-'+i+'.bin')});
      provenance[i]={id:t.id,delay:t.delay,disturb:t.disturb,decisions:t.masks.length,labelled:{reference:lab.R,policy:lab.P,correction:lab.C},disturbanceUnlabelled:lab.D,traceSha256:t.sha};
