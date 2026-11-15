@@ -272,7 +272,8 @@ async function recoveryTeacher(ctx){
  const dirMask=spec.buttons.filter(b=>['←','→','↑','↓'].includes(b.name)).reduce((m,b)=>m|b.mask,0);
  const horiz=[(spec.buttons.find(b=>b.name==='←')||{}).mask||0,(spec.buttons.find(b=>b.name==='→')||{}).mask||0];
  const BACK=Number(process.env.REALROM_TEACHER_BACK||16),STALL=Number(process.env.REALROM_TEACHER_STALL||400),
-  BUDGET=Number(process.env.REALROM_TEACHER_BUDGET||300000),MAXS=Number(process.env.REALROM_TEACHER_MAX||6500),KEEP=24,MINIMAL=process.env.REALROM_TEACHER_MINIMAL==='1';
+  BUDGET=Number(process.env.REALROM_TEACHER_BUDGET||300000),MAXS=Number(process.env.REALROM_TEACHER_MAX||6500),KEEP=24,MINIMAL=process.env.REALROM_TEACHER_MINIMAL==='1',
+  REPLAY_ONLY=process.env.REALROM_TEACHER_REPLAY_ONLY==='1';
  const total=t=>t.value.reduce((a,v)=>a+(Number.isFinite(v)?v:0),0);
  const results=[];
  for(const p of perts){
@@ -320,17 +321,22 @@ async function recoveryTeacher(ctx){
    if(file){const prev=JSON.parse(fs.readFileSync(file,'utf8'));
     if(prev.perturbation.delay!==p.delay||JSON.stringify(prev.perturbation.disturb)!==JSON.stringify(p.disturb))throw new Error('resume: perturbation mismatch for '+p.id);
     let cut=prev.masks.length;if(prev.unsolved)cut=Math.min(cut,prev.unsolved.stride);
+    if(process.env.REALROM_TEACHER_CUT)cut=Math.min(cut,Number(process.env.REALROM_TEACHER_CUT));
+    /* REPLAY ONLY (REALROM_TEACHER_REPLAY_ONLY=1, diagnostics): no brain, no search - the
+       recorded trajectory goes straight to the fresh-load verification below. */
+    if(REPLAY_ONLY){masks.push(...prev.masks.slice(0,cut));kinds.push(...(prev.kinds||prev.masks.map(()=>'R')).slice(0,cut));cut=0;}
     const learnt=new Map();for(const c of prev.corrections||[])if(c.counters){const e=c.from+c.length;learnt.set(e,(learnt.get(e)||[]).concat(c.counters));}
     for(let n=0;n<cut;n++){if(masks.length%8===0&&masks.length>ckpts[ckpts.length-1].stride)await saveCk();
      await java.call({op:'decide',retina:tobs.observe(),train:false,actions,epsilon:0,windowMs:20});
      await step(prev.masks[n],prev.kinds[n]);for(const ad of learnt.get(masks.length)||[])knownCounters.add(ad);
-     if(masks.length-lastGain>=STALL){resumeStall=true;break;}}
+     /* as live: the clock is read after policy and disturbance steps, not inside a correction */
+     if(prev.kinds[n]!=='C'&&masks.length-lastGain>=STALL){resumeStall=true;break;}}
     for(const c of prev.corrections||[])if(c.from+c.length<=masks.length){corrections.push(c);failures[c.type]++;searchFrames+=c.searchFrames||0;}
     for(const a of prev.accepted||[])if(a.failure<=masks.length){accepted.push(a);failures[a.type]++;searchFrames+=a.searchFrames||0;}
     nextCheck=Math.max(3200,Math.ceil((masks.length+1)/400)*400);nextDump=Math.ceil((masks.length+1)/500)*500;
     console.log('  teacher %s: resumed %d of %d decisions from %s (%d corrections, %d accepted kept)%s',p.id,masks.length,prev.masks.length,path.basename(file),corrections.length,accepted.length,
      resumeStall?' - the stall clock runs out there':'');}}
-  while(masks.length<MAXS&&!unsolved){
+  while(!REPLAY_ONLY&&masks.length<MAXS&&!unsolved){
    if(masks.length%8===0&&masks.length>ckpts[ckpts.length-1].stride)await saveCk();
    if(masks.length>=nextDump){nextDump+=500;dump('teacher-'+p.id+'.partial.json');}
    let o,stalled;
@@ -409,7 +415,12 @@ async function recoveryTeacher(ctx){
     const checkFrom=(state,seq,dmgIn)=>{td.restore(state);let tr=track,dmgS=dmgIn;
      for(const m of seq){const b=td.readRam();td.run(m,STEP_FRAMES);const a=td.readRam();if(read(a)<startRes)return false;tr=Explore.unwrapStep(tr,progressOf(a)||[],true);
       let d0=0;for(const ad of counters){const fl=b[ad]-a[ad];if(fl>0&&fl<=16)d0+=fl;}dmgS+=Math.min(d0,16);}
-     return total(tr)-total(c.track)+dmgS>=needProg;};
+     return total(tr)-total(c.track)+dmgS>=needMin;};
+    /* the bar is the GAIN the verified correction itself made (progress + causal damage),
+       not just the failure's minimum: measured, with the minimum a relabelled correction
+       kept only the survival - at the end-of-level wall (scroll held until it falls) three
+       trajectories then survived 7 000 decisions and never brought it down. */
+    const needMin=Math.max(needProg,gained);
     let dmgA=0,minKept=0,minNear=0,minArchive=0,minChecks=0;
     for(let i=0;i<corr.length;i++){if(masks.length%8===0&&masks.length>ckpts[ckpts.length-1].stride)await saveCk();
      const r=await java.call({op:'decide',retina:tobs.observe(),train:false,actions,epsilon:0,windowMs:20});
@@ -429,7 +440,7 @@ async function recoveryTeacher(ctx){
        decisions without a stall, and never cleared). */
     for(const ad of counters)knownCounters.add(ad);
     corrections.push({from:c.stride,length:corr.length,failure:f,type,searchFrames:arch.stats().framesRun,damageCounters:counters.length,counters,actionsDifferingFromPolicy:differs,policyTailLength:policyTail.length,
-     minimal:MINIMAL?{policy:minKept,nearest:minNear,archive:minArchive,checks:minChecks}:null});
+     gained,minimal:MINIMAL?{policy:minKept,nearest:minNear,archive:minArchive,checks:minChecks,criterion:'gain'}:null});
     console.log('  teacher %s: %s at decision %d -> correction from %d, %d decisions, found in %d frames (verified)',p.id,type,f,c.stride,corr.length,arch.stats().framesRun);
     continue;
    }
@@ -440,7 +451,11 @@ async function recoveryTeacher(ctx){
   const vb=await extras.rebuild(),vd=vb.driver;Phase.replayEntry(vd,extras.entrySteps);if(p.delay)vd.run(0,p.delay);let vRestores=0;const vr=vd.restore.bind(vd);vd.restore=x=>{vRestores++;return vr(x);};
   const mon=Stage.createMonitor({probe:extras.entryProbe,readResource:ram=>read(ram)});const vdims=Observation.dims(vb.core)||[256,224];
   const stageAddrs=oracleStage(identity.romSha256),stageTrace=[];if(stageAddrs)stageTrace.push({frame:0,values:stageAddrs.map(a=>vd.readRam()[a])});
-  let fr=0,losses=0;for(const m of masks){const b=vd.readRam();vd.run(m,STEP_FRAMES);fr+=STEP_FRAMES;const a=vd.readRam();if(read(a)<read(b))losses+=read(b)-read(a);
+  /* timeline (private evidence): every 250 decisions the unwrapped progress, the
+     resource and the losses so far - where a trajectory stops advancing */
+  let fr=0,losses=0,vtrack=Explore.unwrapStep(null,progressOf(vd.readRam())||[],true);const timeline=[];
+  for(const m of masks){const b=vd.readRam();vd.run(m,STEP_FRAMES);fr+=STEP_FRAMES;const a=vd.readRam();if(read(a)<read(b))losses+=read(b)-read(a);
+   vtrack=Explore.unwrapStep(vtrack,progressOf(a)||[],true);if((fr/STEP_FRAMES)%250===0)timeline.push([fr/STEP_FRAMES,Math.round(total(vtrack)),read(a),losses]);
    mon.observe({mask:m,ramBefore:b,ramAfter:a,signature:Stage.signature(vb.core.pixels,vdims[0],vdims[1]),scene:Stage.palette(vb.core.pixels,vdims[0],vdims[1])});
    if(stageAddrs)stageTrace.push({frame:fr,values:stageAddrs.map(x=>a[x])});}
   const transitions=mon.transitions(),verdict=verifyLevelClear(stageAddrs?stageTrace:null,transitions);vb.dispose();tb.dispose();
@@ -448,10 +463,10 @@ async function recoveryTeacher(ctx){
   const count=kd=>kinds.filter(x=>x===kd).length;
   const traceSha=crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(masks).buffer)).digest('hex');
   const res={id:p.id,delay:p.delay,disturb:p.disturb,decisions:masks.length,policyDecisions:count('P'),correctionDecisions:count('C'),disturbanceDecisions:count('D'),
-   corrections:corrections.length,acceptedLosses:accepted.length,unlabelledBeforeAcceptedLoss:count('X'),failures,unsolved,searchFrames,replay:{freshLoad:true,restores:vRestores,losses,transitions:transitions.map(e=>({frame:e.frame,gapFrames:e.gapFrames,novelty:e.novelty}))},
+   corrections:corrections.length,acceptedLosses:accepted.length,unlabelledBeforeAcceptedLoss:count('X'),failures,unsolved,searchFrames,replay:{freshLoad:true,restores:vRestores,losses,transitions:transitions.map(e=>({frame:e.frame,gapFrames:e.gapFrames,novelty:e.novelty})),timeline},
    levelClear:verdict.verdict,levelClearOracle:verdict,traceSha256:traceSha,wallSeconds:Math.round((Date.now()-t0)/1000)};
   results.push(res);
-  if(evDir){dump('teacher-'+p.id+'.json',{traceSha256:traceSha,levelClear:verdict.verdict});try{fs.unlinkSync(path.join(evDir,'teacher-'+p.id+'.partial.json'));}catch(e){}}
+  if(evDir&&!REPLAY_ONLY){dump('teacher-'+p.id+'.json',{traceSha256:traceSha,levelClear:verdict.verdict});try{fs.unlinkSync(path.join(evDir,'teacher-'+p.id+'.partial.json'));}catch(e){}}
   console.log('  TEACHER %s (delay %d%s): %d decisions = %d policy (+%d unlabelled) + %d correction + %d disturbance; %d corrections, %d losses accepted, failures %j, unsolved %s | replay: restores %d, losses %d, transitions %d -> %s | %d s',
    p.id,p.delay,p.disturb?', disturb '+p.disturb.kind+'@'+p.disturb.at+'x'+p.disturb.len:'',masks.length,res.policyDecisions,count('X'),res.correctionDecisions,res.disturbanceDecisions,corrections.length,accepted.length,failures,
    unsolved?unsolved.type+'@'+unsolved.failure:'none',vRestores,losses,transitions.length,verdict.verdict,res.wallSeconds);
