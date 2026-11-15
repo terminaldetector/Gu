@@ -155,13 +155,19 @@ public final class FdbLearning {
      *  baseline, no weight of W0 or of the plastic layer is touched. */
     private long imitations;public long imitations(){return imitations;}
     private static final double IMITATE_RATE=.2;
-    public boolean imitate(String id,int demoMask){
+    public boolean imitate(String id,int demoMask){return imitate(id,demoMask,null);}
+    /** suitable (action-pop-v1 only, may be null): every action VERIFIED fit for the
+     *  decision's state on the research emulator, the demonstrated one among them; the
+     *  demonstration is then met by any of them (see fitImitation) */
+    public boolean imitate(String id,int demoMask,int[] suitable){
         if(!readoutOn())throw new IllegalStateException("FDB readout is off");
         Decision d=pending.remove(id);if(d==null||d.features==null||d.pure==null)return false;
         int demo=-1;for(int a=0;a<d.actions.length;a++)if(d.actions[a]==demoMask)demo=a;if(demo<0)return false;
+        if(suitable!=null&&!readoutPop())throw new IllegalStateException("FDB suitable sets need the population readout");
         /* the population readout keeps the demonstration for fitImitation() instead of one step */
         if(readoutPop()){if(imitationSet.size()>=IMITATION_LIMIT)return false;float[] f=new float[d.features.length];for(int k=0;k<f.length;k++)f[k]=(float)d.features[k];
-            imitationSet.add(new Demo(f,d.actions.clone(),d.base.clone(),demo));imitations++;return true;}
+            boolean[] ok=null;if(suitable!=null){ok=new boolean[d.actions.length];ok[demo]=true;for(int m:suitable)for(int a=0;a<d.actions.length;a++)if(d.actions[a]==m)ok[a]=true;}
+            imitationSet.add(new Demo(f,d.actions.clone(),d.base.clone(),demo,ok));imitations++;return true;}
         for(int a=0;a<d.actions.length;a++){if(!Double.isFinite(d.scores[a]))continue;double g=(a==demo?1:0)-d.pure[a];if(g==0)continue;
             double[] w=readout.get(d.actions[a]);if(w==null){if(readout.size()>=READOUT_LIMIT)continue;w=new double[d.features.length];readout.put(d.actions[a],w);}
             for(int k=0;k<w.length;k++)w[k]=Math.max(-4,Math.min(4,w[k]+IMITATE_RATE*g*d.features[k]));}
@@ -176,28 +182,39 @@ public final class FdbLearning {
      *  strongest rival - until every demonstration is met or the epochs run out. Only
      *  the readout changes: W0, the plastic layer and the traces do not. Returns
      *  {demonstrations met (fraction), epochs run, updates}. */
-    private static final class Demo{final float[] f;final int[] actions;final double[] base;final int demo;Demo(float[] f,int[] a,double[] b,int d){this.f=f;actions=a;base=b;demo=d;}}
+    /*  SUITABLE SETS (M4-02): a demonstration may carry the set of actions verified fit
+     *  for its state (ok); it is met when the argmax is any of them, and the fit moves
+     *  towards the strongest suitable action and away from the strongest unsuitable one
+     *  (a latent-label perceptron) - so the readout settles on whichever suitable action
+     *  is consistent across similar states, instead of one trajectory's arbitrary pick. */
+    private static final class Demo{final float[] f;final int[] actions;final double[] base;final int demo;final boolean[] ok;
+        Demo(float[] f,int[] a,double[] b,int d,boolean[] ok){this.f=f;actions=a;base=b;demo=d;this.ok=ok;}
+        boolean suitable(int a){return ok==null?a==demo:ok[a];}}
     private final ArrayList<Demo> imitationSet=new ArrayList<>();
     /** the demonstrations to / from a stream (several bridges record trajectories in
      *  parallel and one learner fits them all); the population must be the same */
     public void writeImitation(java.io.DataOutputStream o)throws java.io.IOException{
-        o.writeInt(0x46445031);o.writeInt(population.length);for(int n:population)o.writeInt(n);o.writeInt(imitationSet.size());
-        for(Demo x:imitationSet){o.writeInt(x.f.length);for(float v:x.f)o.writeFloat(v);o.writeInt(x.actions.length);for(int a:x.actions)o.writeInt(a);for(double b:x.base)o.writeDouble(b);o.writeInt(x.demo);}
+        boolean sets=false;for(Demo x:imitationSet)if(x.ok!=null)sets=true;
+        o.writeInt(sets?0x46445032:0x46445031);o.writeInt(population.length);for(int n:population)o.writeInt(n);o.writeInt(imitationSet.size());
+        for(Demo x:imitationSet){o.writeInt(x.f.length);for(float v:x.f)o.writeFloat(v);o.writeInt(x.actions.length);for(int a:x.actions)o.writeInt(a);for(double b:x.base)o.writeDouble(b);o.writeInt(x.demo);
+            if(sets){if(x.ok==null)o.writeInt(-1);else{int n=0;for(boolean v:x.ok)if(v)n++;o.writeInt(n);for(int a=0;a<x.ok.length;a++)if(x.ok[a])o.writeInt(a);}}}
     }
     public int readImitation(java.io.DataInputStream in)throws java.io.IOException{
         if(!readoutPop())throw new IllegalStateException("FDB population readout is off");
-        if(in.readInt()!=0x46445031)throw new java.io.IOException("imitation stream");int pn=in.readInt();if(pn!=population.length)throw new java.io.IOException("imitation stream: another population");
+        int magic=in.readInt();if(magic!=0x46445031&&magic!=0x46445032)throw new java.io.IOException("imitation stream");boolean sets=magic==0x46445032;int pn=in.readInt();if(pn!=population.length)throw new java.io.IOException("imitation stream: another population");
         for(int i=0;i<pn;i++)if(in.readInt()!=population[i])throw new java.io.IOException("imitation stream: another population");
         int n=in.readInt(),added=0;
         for(int k=0;k<n;k++){int fl=in.readInt();if(fl!=population.length+1)throw new java.io.IOException("imitation stream shape");float[] f=new float[fl];for(int i=0;i<fl;i++)f[i]=in.readFloat();
             int al=in.readInt();if(al<2||al>ACTION_LIMIT)throw new java.io.IOException("imitation stream actions");int[] a=new int[al];for(int i=0;i<al;i++)a[i]=in.readInt();double[] b=new double[al];for(int i=0;i<al;i++)b[i]=in.readDouble();int d=in.readInt();
-            if(d<0||d>=al)throw new java.io.IOException("imitation stream label");if(imitationSet.size()>=IMITATION_LIMIT)break;imitationSet.add(new Demo(f,a,b,d));imitations++;added++;}
+            if(d<0||d>=al)throw new java.io.IOException("imitation stream label");
+            boolean[] ok=null;if(sets){int sn=in.readInt();if(sn>=0){if(sn>al)throw new java.io.IOException("imitation stream set");ok=new boolean[al];for(int i=0;i<sn;i++){int x=in.readInt();if(x<0||x>=al)throw new java.io.IOException("imitation stream set");ok[x]=true;}if(!ok[d])throw new java.io.IOException("imitation stream: the demonstrated action outside its set");}}
+            if(imitationSet.size()>=IMITATION_LIMIT)break;imitationSet.add(new Demo(f,a,b,d,ok));imitations++;added++;}
         return added;
     }
     public int imitationSetSize(){return imitationSet.size();}
     /** per demonstration, in set order: '1' where the readout's argmax is the demonstrated
      *  action, '0' where not (the caller breaks the fit down by provenance) */
-    public String imitationMet(){StringBuilder b=new StringBuilder(imitationSet.size());for(Demo x:imitationSet){double[] t=total(x);int best=-1;for(int a=0;a<t.length;a++)if(Double.isFinite(t[a])&&(best<0||t[a]>t[best]))best=a;b.append(best==x.demo?'1':'0');}return b.toString();}
+    public String imitationMet(){StringBuilder b=new StringBuilder(imitationSet.size());for(Demo x:imitationSet){double[] t=total(x);int best=-1;for(int a=0;a<t.length;a++)if(Double.isFinite(t[a])&&(best<0||t[a]>t[best]))best=a;b.append(best>=0&&x.suitable(best)?'1':'0');}return b.toString();}
     public double[] fitImitation(int epochs,double margin,double rate){return fitImitation(epochs,margin,rate,0);}
     /** dropout in [0,0.9): each epoch every demonstration is seen with that fraction of
      *  its population features silenced (a fixed-seed stream, so a fit is reproducible) -
@@ -209,12 +226,13 @@ public final class FdbLearning {
         for(;run<epochs;run++){int errors=0;
             for(Demo x:imitationSet){float[] f=x.f;
                 if(dropout>0){f=x.f.clone();for(int k=0;k<f.length-1;k++){drop^=(drop<<13)&0xffffffffL;drop^=drop>>>17;drop^=(drop<<5)&0xffffffffL;drop&=0xffffffffL;if(drop/4294967296.0<dropout)f[k]=0;}}
-                double[] total=total(x,f);int rival=-1;
-                for(int a=0;a<x.actions.length;a++)if(a!=x.demo&&Double.isFinite(total[a])&&(rival<0||total[a]>total[rival]))rival=a;
-                if(rival<0||total[x.demo]-total[rival]>=margin)continue;errors++;updates++;
-                step(x.actions[x.demo],f,rate);step(x.actions[rival],f,-rate);}
+                double[] total=total(x,f);int rival=-1,target=x.demo;
+                if(x.ok!=null)for(int a=0;a<x.actions.length;a++)if(x.ok[a]&&Double.isFinite(total[a])&&total[a]>total[target])target=a;
+                for(int a=0;a<x.actions.length;a++)if(!x.suitable(a)&&Double.isFinite(total[a])&&(rival<0||total[a]>total[rival]))rival=a;
+                if(rival<0||total[target]-total[rival]>=margin)continue;errors++;updates++;
+                step(x.actions[target],f,rate);step(x.actions[rival],f,-rate);}
             if(errors==0){run++;break;}}
-        int met=0;for(Demo x:imitationSet){double[] total=total(x);int best=-1;for(int a=0;a<total.length;a++)if(Double.isFinite(total[a])&&(best<0||total[a]>total[best]))best=a;if(best==x.demo)met++;}
+        int met=0;for(Demo x:imitationSet){double[] total=total(x);int best=-1;for(int a=0;a<total.length;a++)if(Double.isFinite(total[a])&&(best<0||total[a]>total[best]))best=a;if(best>=0&&x.suitable(best))met++;}
         readoutUpdates+=updates;
         return new double[]{imitationSet.isEmpty()?0:met/(double)imitationSet.size(),run,updates};
     }

@@ -40,6 +40,19 @@ public final class FdbLearningCheck {
   int[] offsets=new int[31];Arrays.fill(offsets,1);offsets[0]=0;Graph base=new Graph(g.ids,offsets,new int[]{16},new float[]{3});GraphDelta bd=new GraphDelta(30);bd.addWeightDelta(0,16,2);l=learner(base,bd);l.observe(retina,1,0,true,null,false);
   for(int i=0;i<10;i++){a=l.decide("base-"+i,active(),new int[]{0,1},4095,100,0,true,null);l.feedback(a.id,a.mask,1,.1,6,true,false,null);}
   require(base.weights[0]==3&&bd.weightDelta(0,16)==2&&!bd.hasEdge(0,16),"W0 and explicit delta are preserved, births do not duplicate base edges");
+  /* suitable sets (M4-02): conflicting single labels over one state cannot all be met;
+     the same demonstrations with their verified suitable sets can, by one consistent action */
+  for(boolean sets:new boolean[]{false,true}){d=new GraphDelta(30);l=learner(g,d);l.readoutProfile("action-pop-v1");l.readoutPopulation(new int[]{0,28});
+   int[] acts={0,1,2,3};
+   for(int i=0;i<12;i++){a=l.decide("demo-"+i,active(),acts,4095,100,0,true,null);require(l.imitate(a.id,i%2==0?1:2,sets?new int[]{1,2,3}:null),"demonstration kept");}
+   double[] fit=l.fitImitation(200,1,.05);String met=l.imitationMet();
+   if(sets)require(fit[0]==1&&met.equals("111111111111"),"suitable sets are met by one consistent action");
+   else require(fit[0]<=.5,"conflicting single labels over one state cannot all be met");
+   if(sets){java.io.ByteArrayOutputStream bo=new java.io.ByteArrayOutputStream();try(java.io.DataOutputStream o2=new java.io.DataOutputStream(bo)){l.writeImitation(o2);}catch(java.io.IOException e){throw new AssertionError(e);}
+    FdbLearning l2=learner(g,new GraphDelta(30));l2.readoutProfile("action-pop-v1");l2.readoutPopulation(new int[]{0,28});
+    try(java.io.DataInputStream i2=new java.io.DataInputStream(new java.io.ByteArrayInputStream(bo.toByteArray()))){require(l2.readImitation(i2)==12,"stream keeps every demonstration");}catch(java.io.IOException e){throw new AssertionError(e);}
+    require(l2.fitImitation(200,1,.05)[0]==1,"suitable sets survive the stream");}}
+  System.out.println("PASS: FDB suitable-set imitation (set-valued fit, stream round trip)");
   System.out.println("PASS: FDB action-specific eligibility, delayed rewards, negative evidence pruning, CPU removal, bounded internal credit, frozen RNG, interventions, immutable W0 / explicit delta");
  }
 }

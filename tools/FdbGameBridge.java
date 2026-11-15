@@ -104,7 +104,8 @@ public final class FdbGameBridge {
    else if(op.equals("imitationDump")){try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(q.getString("path"))))){learner.writeImitation(o);}r.put("demonstrations",learner.imitationSetSize());}
    else if(op.equals("imitationLoad")){try(DataInputStream in2=new DataInputStream(new BufferedInputStream(new FileInputStream(q.getString("path"))))){r.put("added",learner.readImitation(in2));}r.put("demonstrations",learner.imitationSetSize());}
    else if(op.equals("populationGet")){r.put("neurons",new JSONArray(learner.readoutPopulation()));}
-   else if(op.equals("imitate")){r.put("accepted",learner.imitate(q.getString("id"),q.getInt("mask")));}
+   else if(op.equals("imitate")){int[] suit=null;if(q.has("suitable")){JSONArray a=q.getJSONArray("suitable");suit=new int[a.length()];for(int i=0;i<suit.length;i++)suit[i]=a.getInt(i);}
+    r.put("accepted",learner.imitate(q.getString("id"),q.getInt("mask"),suit));}
    /* population (action-pop-v1): given neurons, or the "size" neurons whose activity
       varied most over the decisions taken with stats:true (then the statistics clear) */
    else if(op.equals("population")){int[] pop;

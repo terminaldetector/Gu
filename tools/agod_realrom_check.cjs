@@ -267,6 +267,76 @@ function parsePerturbations(specText){
 function packDriver(d){const zlib=require('zlib');return Object.assign(Object.create(d),{
  snapshot(){const s=d.snapshot();return s&&s.bytes?{...s,bytes:zlib.deflateRawSync(s.bytes,{level:1}),packed:true}:s;},
  restore(s){return d.restore(s&&s.packed?{...s,bytes:new Uint8Array(zlib.inflateRawSync(s.bytes)),packed:undefined}:s);}});}
+/* M4-02 ACTION SUITABILITY (REALROM_SUITABILITY=file[;file..], research emulator only).
+   Measured (private probe): the reference route's actions are not a function of what the
+   brain sees - the most common one is 11% of decisions, and the decision with the most
+   similar screen elsewhere on the route has the same action 8% of the time. A readout
+   that meets such labels needs a clock. Here every decision of a VERIFIED trajectory is
+   asked which actions are fit for its state: from the exact state, each action of the
+   brain's set replaces the trajectory's one, the trajectory's own actions follow for
+   REALROM_SUIT_H decisions, and the action is SUITABLE when no life goes that the
+   trajectory keeps and the progress plus the causal damage (counters established by the
+   AGOD archives of the recovery corrections) is no less than the trajectory's own by then;
+   a branch whose whole emulator state (savestate bytes) becomes equal to the
+   trajectory's has the trajectory's own future and is suitable. The trajectory's own
+   action is suitable by construction. Disturbance decisions are not asked. Output:
+   private JSON per trajectory (REALROM_SUIT_OUT), the suitable set per decision. */
+async function suitabilityLabeller(ctx){
+ const {actions,extras,read,progressOf}=ctx;
+ const crypto=require('crypto');
+ const H=Number(process.env.REALROM_SUIT_H||16),out=process.env.REALROM_SUIT_OUT;fs.mkdirSync(out,{recursive:true});
+ const files=process.env.REALROM_SUITABILITY.split(';').filter(Boolean);
+ const counterFiles=[...files,...String(process.env.REALROM_SUIT_COUNTERS_FROM||'').split(';').filter(Boolean)];
+ const counters=[...new Set(counterFiles.flatMap(f=>(JSON.parse(fs.readFileSync(f,'utf8')).corrections||[]).flatMap(c=>c.counters||[])))];
+ const [from0,to0]=String(process.env.REALROM_SUIT_RANGE||'0,1e9').split(',').map(Number),STRIDE=Math.max(1,Number(process.env.REALROM_SUIT_STRIDE||1));
+ const total=t=>t.value.reduce((a,v)=>a+(Number.isFinite(v)?v:0),0);
+ const fall=(b,a)=>{let d=0;for(const ad of counters){const f=b[ad]-a[ad];if(f>0&&f<=16)d+=f;}return Math.min(d,16);};
+ const ramKey=ram=>crypto.createHash('sha1').update(Buffer.from(ram)).digest('hex');
+ const fullKey=d=>crypto.createHash('sha1').update(Buffer.from(d.snapshot().bytes)).digest('hex');
+ const results=[];
+ for(const f of files){
+  const t=JSON.parse(fs.readFileSync(f,'utf8')),p=t.perturbation||{id:'reference',delay:0},kinds=t.kinds||t.masks.map(()=>'R'),M=t.masks,N=M.length;
+  if(JSON.stringify(t.entrySteps)!==JSON.stringify(extras.entrySteps))throw Error('suitability: another entry');
+  const from=Math.max(0,from0),to=Math.min(N,to0);
+  const b=await extras.rebuild(),d=b.driver;Phase.replayEntry(d,extras.entrySteps);if(p.delay)d.run(0,p.delay);
+  /* pass 1: the trajectory's own course - lives, progress, cumulative damage, RAM key */
+  const lives=new Float64Array(N+1),prog=new Float64Array(N+1),dmg=new Float64Array(N+1),rk=new Array(N+1);
+  let track=Explore.unwrapStep(null,progressOf(d.readRam())||[],true);let ram=d.readRam();lives[0]=read(ram);prog[0]=total(track);rk[0]=ramKey(ram);
+  const t1=Date.now();
+  for(let k=0;k<N;k++){const bf=ram;d.run(M[k],STEP_FRAMES);ram=d.readRam();track=Explore.unwrapStep(track,progressOf(ram)||[],true);
+   lives[k+1]=read(ram);prog[k+1]=total(track);dmg[k+1]=dmg[k]+fall(bf,ram);rk[k+1]=ramKey(ram);}
+  const pass1=(Date.now()-t1)/1000;
+  /* pass 2: from each decision's exact state, every action */
+  b.dispose();const b2=await extras.rebuild(),d2=b2.driver;Phase.replayEntry(d2,extras.entrySteps);if(p.delay)d2.run(0,p.delay);
+  let tr2=Explore.unwrapStep(null,progressOf(d2.readRam())||[],true);
+  const trAt=[];const suitable=new Array(N).fill(null);const stat={asked:0,branches:0,converged:0,lifeLost:0,behind:0,suitable:0,steps:0};const t2=Date.now();
+  for(let k=0;k<to;k++){
+   if(k>=from&&kinds[k]!=='D'&&k%STRIDE===0){stat.asked++;const here=d2.snapshot(),trHere=tr2,set=[M[k]];
+    for(const a of actions){if(a===M[k])continue;stat.branches++;d2.restore(here);let tr=trHere,ok=true,dm=0,r0=d2.readRam(),conv=false;
+     const end=Math.min(N,k+1+H);
+     for(let j=k;j<end;j++){const bf=r0;d2.run(j===k?a:M[j],STEP_FRAMES);stat.steps++;r0=d2.readRam();tr=Explore.unwrapStep(tr,progressOf(r0)||[],true);dm+=fall(bf,r0);
+      if(read(r0)<lives[j+1]){ok=false;stat.lifeLost++;break;}
+      if(ramKey(r0)===rk[j+1]){/* RAM equal: confirm on the whole state against the trajectory's own */
+       const mine=fullKey(d2);if(!trAt[j+1]){const s=d2.snapshot();d2.restore(here);for(let i=k;i<=j;i++)d2.run(M[i],STEP_FRAMES);trAt[j+1]=fullKey(d2);d2.restore(s);}
+       if(mine===trAt[j+1]){conv=true;break;}}}
+     if(conv){stat.converged++;set.push(a);continue;}
+     if(!ok)continue;
+     const jEnd=Math.min(N,k+1+H);if(total(tr)+dm>=prog[jEnd]-prog[k]+total(trHere)+(dmg[jEnd]-dmg[k])){set.push(a);}else stat.behind++;}
+    d2.restore(here);suitable[k]=set.sort((x,y)=>x-y);stat.suitable+=set.length;}
+   const bf=d2.readRam();d2.run(M[k],STEP_FRAMES);tr2=Explore.unwrapStep(tr2,progressOf(d2.readRam())||[],true);
+   if(k%250===0&&k>=from)console.log('  suitability %s: decision %d of %d, mean suitable %s of %d, %s s',p.id,k,to,(stat.suitable/Math.max(1,stat.asked)).toFixed(1),actions.length,((Date.now()-t2)/1000).toFixed(0));}
+  b2.dispose();
+  const sizes=suitable.filter(Boolean).map(s=>s.length),only=sizes.filter(x=>x===1).length;
+  const freq={};for(const s of suitable)if(s)for(const a of s)freq[a]=(freq[a]||0)+1;
+  const r={id:p.id,file:path.basename(f),stride:STRIDE,traceSha256:crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(M).buffer)).digest('hex'),range:[from,to],horizon:H,actions,counters:counters.length,stat,
+   meanSuitable:sizes.reduce((a,x)=>a+x,0)/Math.max(1,sizes.length),onlyOwn:only,pass1Seconds:pass1,seconds:(Date.now()-t2)/1000,suitable};
+  fs.writeFileSync(path.join(out,'suit-'+p.id+'-'+from+'-'+to+'.json'),JSON.stringify(r));
+  const top=Object.entries(freq).sort((x,y)=>y[1]-x[1]).slice(0,6).map(([a,n])=>a+':'+(100*n/sizes.length).toFixed(0)+'%');
+  console.log('  SUITABILITY %s [%d,%d) H %d: %d asked, mean %s of %d actions suitable, only the own action %d; branches %d (converged %d, life lost %d, behind %d); most often suitable %s | %s s',
+   p.id,from,to,H,stat.asked,r.meanSuitable.toFixed(1),actions.length,only,stat.branches,stat.converged,stat.lifeLost,stat.behind,top.join(' '),r.seconds.toFixed(0));
+  results.push(Object.assign({},r,{suitable:undefined}));}
+ return results;
+}
 async function recoveryTeacher(ctx){
  const {java,actions,profile,identity,extras,read,progressOf,floor,keyOptions,obsProbe,spec}=ctx;
  const OBS=process.env.REALROM_OBS||'legacy-16';
@@ -786,8 +856,18 @@ async function learn(built,inPlay,profile,identity,java,extras){
        stated weight, part of the dataset identity */
     const set=process.env.REALROM_TRAINSET.split(';').filter(Boolean).map(e=>{const wm=/\*([2-4])$/.exec(e),f=wm?e.slice(0,-2):e,weight=wm?Number(wm[1]):1;const t=JSON.parse(fs.readFileSync(f,'utf8'));
      if(JSON.stringify(t.entrySteps)!==JSON.stringify(extras.entrySteps))throw Error('a training trajectory was made from another entry');
-     return {id:t.perturbation?t.perturbation.id:'reference',delay:t.perturbation?t.perturbation.delay||0:0,disturb:t.perturbation?t.perturbation.disturb:null,
-      weight,masks:t.masks,kinds:t.kinds||t.masks.map(()=>'R'),sha:crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(t.masks).buffer)).digest('hex')};})
+     const sha=crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(t.masks).buffer)).digest('hex'),tid=t.perturbation?t.perturbation.id:'reference';
+     /* REALROM_SUITABLE_DIR: the suitable sets the labeller wrote for this trajectory
+        (suit-<id>-<from>-<to>.json, matched by trace hash); a decision with a set is
+        met by any action in it */
+     let suitable=null,suitH=null,suitSha=null;const sd=process.env.REALROM_SUITABLE_DIR;
+     if(sd){suitable=new Array(t.masks.length).fill(null);for(const fn of fs.readdirSync(sd).filter(x=>x.startsWith('suit-'+tid+'-')&&x.endsWith('.json'))){const u=JSON.parse(fs.readFileSync(path.join(sd,fn),'utf8'));
+       if(u.traceSha256!==sha)continue;if(suitH!==null&&u.horizon!==suitH)throw Error('suitable sets with two horizons for '+tid);suitH=u.horizon;
+       u.suitable.forEach((x,k)=>{if(x){if(!x.includes(t.masks[k]))throw Error('suitable set without the trajectory action');suitable[k]=x;}});}
+      const n=suitable.filter(Boolean).length;if(!n)suitable=null;else suitSha=crypto.createHash('sha256').update(JSON.stringify(suitable)).digest('hex').slice(0,16);
+      console.log('  training set: %s - suitable sets for %d of %d decisions%s',tid,n,t.masks.length,n?' (horizon '+suitH+')':'');}
+     return {id:tid,delay:t.perturbation?t.perturbation.delay||0:0,disturb:t.perturbation?t.perturbation.disturb:null,
+      weight,masks:t.masks,kinds:t.kinds||t.masks.map(()=>'R'),sha,suitable,suitH,suitSha};})
     /* REALROM_TRAIN_ENGINE_SEEDS=a,b,..: every trajectory is replayed once per engine
        seed (the Poisson input stream). The labels are game actions verified on the
        emulator, valid whatever the brain's noise; a readout that has to meet them under
@@ -826,9 +906,10 @@ async function learn(built,inPlay,profile,identity,java,extras){
     const demoKinds=new Array(set.length),demoAt=new Array(set.length);
     await runQueue(async(jb,t,i)=>{const lab={R:0,P:0,C:0,D:0};demoKinds[i]=[];demoAt[i]=[];let at=0;await jb.call({op:'population',neurons});
      await trajPass(jb,t,async(b,retina,mask,kind)=>{const k0=at++;if(kind!=='R'&&kind!=='P'&&kind!=='C'){await b.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:WINDOW_MS});lab.D++;return;}
-      const dd=await b.call({op:'decide',retina,train:true,actions,epsilon:0,windowMs:WINDOW_MS});const im=await b.call({op:'imitate',id:dd.id,mask});if(im.accepted){lab[kind]++;demoKinds[i].push(kind);demoAt[i].push(k0);}});
+      if(t.suitable&&!t.suitable[k0]&&process.env.REALROM_SUITABLE_ONLY==='1'){await b.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:WINDOW_MS});return;}
+      const dd=await b.call({op:'decide',retina,train:true,actions,epsilon:0,windowMs:WINDOW_MS});const im=await b.call({op:'imitate',id:dd.id,mask,...(t.suitable&&t.suitable[k0]?{suitable:t.suitable[k0]}:{})});if(im.accepted){lab[kind]++;demoKinds[i].push(kind);demoAt[i].push(k0);}});
      await jb.call({op:'imitationDump',path:path.join(tmp,'demo-'+i+'.bin')});
-     provenance[i]={id:t.id,delay:t.delay,disturb:t.disturb,weight:t.weight,engineSeed:t.engine||null,decisions:t.masks.length,labelled:{reference:lab.R,policy:lab.P,correction:lab.C},disturbanceUnlabelled:lab.D,traceSha256:t.sha};
+     provenance[i]={id:t.id,delay:t.delay,disturb:t.disturb,weight:t.weight,engineSeed:t.engine||null,suitable:t.suitable?{horizon:t.suitH,sha:t.suitSha,decisions:t.suitable.filter(Boolean).length,only:process.env.REALROM_SUITABLE_ONLY==='1'}:null,decisions:t.masks.length,labelled:{reference:lab.R,policy:lab.P,correction:lab.C},disturbanceUnlabelled:lab.D,traceSha256:t.sha};
      console.log('  training set: imitation over %s - labelled R %d, P %d, C %d; D %d left unlabelled',t.id,lab.R,lab.P,lab.C,lab.D);});
     if(PROBE){for(let i=0;i<set.length;i++)fs.renameSync(path.join(tmp,'demo-'+i+'.bin'),path.join(PROBE,'demo-'+set[i].id+'.bin'));for(const w of workers)w.close();fs.rmdirSync(tmp);
      console.log('  PROBE: %d passes kept in %s (window %d ms)',set.length,PROBE,WINDOW_MS);process.exit(0);}
@@ -847,7 +928,7 @@ async function learn(built,inPlay,profile,identity,java,extras){
      const hist={};for(const d of miss){const b=Math.floor(d/500)*500;hist[b]=(hist[b]||0)+1;}
      console.log('  training fit %s%s: %s | misses first at %s, per 500 %j',set[i].id,set[i].weight>1?' (x'+set[i].weight+')':'',Object.entries(row).map(([k,[m,n]])=>k+' '+(100*m/n).toFixed(1)+'% of '+n).join(', '),
       miss.length?miss.slice(0,6).join(','):'-',hist);}
-    const id='set:'+crypto.createHash('sha256').update(JSON.stringify(provenance.map(x=>[x.id,x.delay,x.disturb,x.traceSha256,x.labelled].concat(x.weight>1?[x.weight]:[],x.engineSeed?[x.engineSeed]:[])))).digest('hex').slice(0,16);
+    const id='set:'+crypto.createHash('sha256').update(JSON.stringify(provenance.map(x=>[x.id,x.delay,x.disturb,x.traceSha256,x.labelled].concat(x.weight>1?[x.weight]:[],x.engineSeed?[x.engineSeed]:[],x.suitable?[x.suitable]:[])).concat(WINDOW_MS!==20?[['window',WINDOW_MS]]:[]))).digest('hex').slice(0,16);
     await java.call({op:'dataset',id});
     distill={trainingSet:provenance,readout:readoutProfile,population:{neurons:chosen.population,varying:chosen.varying},
      fit:{met:fit.met,epochs:fit.epochs,updates:fit.fitUpdates,demonstrations:fit.demonstrations,wallSeconds:Math.round((Date.now()-tf)/1000),byProvenance:fitBy},dataset:id,actions:actions.length,routeStrides:route.masks.length};
@@ -1001,6 +1082,7 @@ async function learn(built,inPlay,profile,identity,java,extras){
     console.log('  EVAL %s (delay %d%s%s): brain %s, game over %s, losses %d, progress %d | blind replay %s, game over %s, losses %d, progress %d',p.id,p.delay,
      p.disturb?', '+p.disturb.kind+'@'+p.disturb.at+'x'+p.disturb.len:'',p.engine?', engine seed '+p.engine:'',brain.levelClear,brain.ended,brain.losses,brain.highestProgress,ov.verdict,oended,olos,oprog);}
   }
+  if(process.env.REALROM_SUITABILITY)fullEpisode.suitability=await suitabilityLabeller({actions,extras,read,progressOf});
   if(distill&&process.env.REALROM_TEACHER)fullEpisode.teacher=await recoveryTeacher({java,actions,profile,identity,extras,read,progressOf,floor,keyOptions,obsProbe,spec});
  }
  return {brain:brainIdentity,actions:actions.length,stepFrames:STEP_FRAMES,evalStarts:3,evalStepsCap:EVAL_STEPS,fullEpisode,
