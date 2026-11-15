@@ -317,32 +317,33 @@ async function suitabilityLabeller(ctx){
   /* pass 2: from each decision's exact state, every action */
   b.dispose();const b2=await extras.rebuild(),d2=b2.driver;Phase.replayEntry(d2,extras.entrySteps);if(p.delay)d2.run(0,p.delay);
   let tr2=Explore.unwrapStep(null,progressOf(d2.readRam())||[],true);
-  const trAt=[];const suitable=new Array(N).fill(null);const stat={asked:0,branches:0,converged:0,lifeLost:0,behind:0,suitable:0,steps:0};const t2=Date.now();
+  const trAt=[];const suitable=new Array(N).fill(null),lifeLost=new Array(N).fill(null);const stat={asked:0,branches:0,converged:0,lifeLost:0,behind:0,suitable:0,steps:0};const t2=Date.now();
   for(let k=0;k<to;k++){
-   if(k>=from&&kinds[k]!=='D'&&k%STRIDE===0){stat.asked++;const here=d2.snapshot(),trHere=tr2,set=[M[k]];
+   if(k>=from&&kinds[k]!=='D'&&k%STRIDE===0){stat.asked++;const here=d2.snapshot(),trHere=tr2,set=[M[k]],lost=[];
     for(const a of actions){if(a===M[k])continue;stat.branches++;d2.restore(here);let tr=trHere,ok=true,dm=0,r0=d2.readRam(),conv=false;
      const end=Math.min(N,k+1+H);
      for(let j=k;j<end;j++){const bf=r0;d2.run(j===k?a:M[j],STEP_FRAMES);stat.steps++;r0=d2.readRam();tr=Explore.unwrapStep(tr,progressOf(r0)||[],true);dm+=fall(bf,r0);
-      if(read(r0)<lives[j+1]){ok=false;stat.lifeLost++;break;}
+      if(read(r0)<lives[j+1]){ok=false;stat.lifeLost++;lost.push(a);break;}
       if(ramKey(r0)===rk[j+1]){/* RAM equal: confirm on the whole state against the trajectory's own */
        const mine=fullKey(d2);if(!trAt[j+1]){const s=d2.snapshot();d2.restore(here);for(let i=k;i<=j;i++)d2.run(M[i],STEP_FRAMES);trAt[j+1]=fullKey(d2);d2.restore(s);}
        if(mine===trAt[j+1]){conv=true;break;}}}
      if(conv){stat.converged++;set.push(a);continue;}
      if(!ok)continue;
      const jEnd=Math.min(N,k+1+H);if(total(tr)+dm>=prog[jEnd]-prog[k]+total(trHere)+(dmg[jEnd]-dmg[k])){set.push(a);}else stat.behind++;}
-    d2.restore(here);suitable[k]=set.sort((x,y)=>x-y);stat.suitable+=set.length;}
+    d2.restore(here);suitable[k]=set.sort((x,y)=>x-y);lifeLost[k]=lost.sort((x,y)=>x-y);stat.suitable+=set.length;}
    const bf=d2.readRam();d2.run(M[k],STEP_FRAMES);tr2=Explore.unwrapStep(tr2,progressOf(d2.readRam())||[],true);
    if(k%250===0&&k>=from)console.log('  suitability %s: decision %d of %d, mean suitable %s of %d, %s s',p.id,k,to,(stat.suitable/Math.max(1,stat.asked)).toFixed(1),actions.length,((Date.now()-t2)/1000).toFixed(0));}
   b2.dispose();
   const sizes=suitable.filter(Boolean).map(s=>s.length),only=sizes.filter(x=>x===1).length;
   const freq={};for(const s of suitable)if(s)for(const a of s)freq[a]=(freq[a]||0)+1;
   const r={id:p.id,file:path.basename(f),stride:STRIDE,traceSha256:crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(M).buffer)).digest('hex'),range:[from,to],horizon:H,actions,counters:counters.length,stat,
-   meanSuitable:sizes.reduce((a,x)=>a+x,0)/Math.max(1,sizes.length),onlyOwn:only,pass1Seconds:pass1,seconds:(Date.now()-t2)/1000,suitable};
+   meanSuitable:sizes.reduce((a,x)=>a+x,0)/Math.max(1,sizes.length),onlyOwn:only,pass1Seconds:pass1,seconds:(Date.now()-t2)/1000,suitable,
+   /* the actions whose branch lost a life the trajectory kept (a subset of the unsuitable) */lifeLost};
   fs.writeFileSync(path.join(out,'suit-'+p.id+'-'+from+'-'+to+'.json'),JSON.stringify(r));
   const top=Object.entries(freq).sort((x,y)=>y[1]-x[1]).slice(0,6).map(([a,n])=>a+':'+(100*n/sizes.length).toFixed(0)+'%');
   console.log('  SUITABILITY %s [%d,%d) H %d: %d asked, mean %s of %d actions suitable, only the own action %d; branches %d (converged %d, life lost %d, behind %d); most often suitable %s | %s s',
    p.id,from,to,H,stat.asked,r.meanSuitable.toFixed(1),actions.length,only,stat.branches,stat.converged,stat.lifeLost,stat.behind,top.join(' '),r.seconds.toFixed(0));
-  results.push(Object.assign({},r,{suitable:undefined}));}
+  results.push(Object.assign({},r,{suitable:undefined,lifeLost:undefined}));}
  return results;
 }
 async function recoveryTeacher(ctx){
