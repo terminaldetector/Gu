@@ -1,0 +1,23 @@
+{
+  "type": "gu-architecture-reset-baseline",
+  "schema": 1,
+  "baselineCommit": "2be2daed1399bef6328d45a353cd43bf4a325a16",
+  "baselineBranch": "research/agod-neural-e0-e1",
+  "archiveBranch": "archive/gu-2be2dae-male-cns-fdb",
+  "archiveTag": {"name": "archive/gu-2be2dae-male-cns-fdb", "pushed": false, "reason": "git proxy policy refuses tag pushes (HTTP 403); the archive branch points at the same commit"},
+  "mainUnchanged": "000c619e9c0f151d47dbfe68bc2488462cca9ecf",
+  "ci": {
+    "workflow": "Android APK", "runId": 43703791646, "conclusion": "success", "durationSeconds": 789,
+    "steps": {"build_sega": "11s", "build_retro (emsdk 3.1.57)": "84s", "check.sh": "308s", "ui_checks_24": "191s", "gpu_runtime_check": "1s", "bundle_data": "29s", "male_cns_cpu": "4s", "check_full_dual": "23s", "gradle_assemble_lint": "52s"}
+  },
+  "local": {
+    "host": "x86_64 4 vCPU, exported copy (git archive), cores gb/snes built with emcc 3.1.6",
+    "checkSh": {"exit": 0, "seconds": 438, "commands": 154, "passLines": 158, "blockedByDesign": ["agod_realrom_check (AGOD_PRIVATE_ROMS not set: nothing reported as passed)"]},
+    "agodCounts": {"agod_platform_driver_check": "85/85", "agod_g4_platform_scenarios": "68/68", "agod_d2_progress_check": "60/60", "agod_d1_frontier_check": "39/39", "agod_g5_sequence_check": "28/28", "agod_survival_check": "26/26", "agod_explore_check": "14/14", "agod_stage_check": "8/8"},
+    "ui": {"passed": 23, "of": 24, "failed": ["platform_ui"], "note": "deterministic locally (GB loadState: frame 17 vs 5); green in CI; environment deviation: local emcc 3.1.6 cores vs CI emsdk 3.1.57"},
+    "apkDebug": {"bytes": 151089763, "sha256": "ca55e34c7bc95bd8e8d99ad92221d2a1e580d1be074c8d28aa8cc96649a874ef",
+      "compressedMB": {"assets/male-cns.fly": 91.63, "lib/*/libmlkit_google_ocr_pipeline.so (4 ABI)": 41.03, "assets/lab/snes": 6.0, "assets/lab/sega": 4.97, "assets/lab/gb": 1.4, "classes*.dex": 3.58, "assets/mlkit-google-ocr-models": 1.28}},
+    "minimalKeepOnlyTree": {"passed": 25, "of": 26, "failed": ["emulation_clock_check (reads lab.js, REWRITE)"]}
+  },
+  "researchBaselinePrivateCorpus": "Issue #8 / M4 aggregates only (P0 VERIFIED at delay 0 on engine seed 11 only; game over at delays 1/2/4/8 and disturbances; open-loop replay VERIFIED at d0 only; teacher t-d5 and t-x2100 VERIFIED on fresh load). Not a CI gate; ROM, RAM offsets, frames and traces stay private."
+}
