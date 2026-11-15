@@ -303,8 +303,16 @@ async function suitabilityLabeller(ctx){
   const lives=new Float64Array(N+1),prog=new Float64Array(N+1),dmg=new Float64Array(N+1),rk=new Array(N+1);
   let track=Explore.unwrapStep(null,progressOf(d.readRam())||[],true);let ram=d.readRam();lives[0]=read(ram);prog[0]=total(track);rk[0]=ramKey(ram);
   const t1=Date.now();
+  /* DIAGNOSTIC (REALROM_SUIT_FRAMES=dir): the screen the learner would face at each
+     decision, as the encoder's GW x GH luminance grid, Float32 per decision - private
+     evidence for an offline test of what an observation can tell; never committed */
+  const framesDir=process.env.REALROM_SUIT_FRAMES,frameFd=framesDir?(fs.mkdirSync(framesDir,{recursive:true}),fs.openSync(path.join(framesDir,'grid-'+p.id+'.f32'),'w')):null;
+  const dumpFrame=()=>{if(frameFd===null)return;const g=Observation.grid(b.core)||new Float32Array(Observation.GW*Observation.GH);fs.writeSync(frameFd,Buffer.from(g.buffer,g.byteOffset,g.byteLength));};
+  dumpFrame();
   for(let k=0;k<N;k++){const bf=ram;d.run(M[k],STEP_FRAMES);ram=d.readRam();track=Explore.unwrapStep(track,progressOf(ram)||[],true);
-   lives[k+1]=read(ram);prog[k+1]=total(track);dmg[k+1]=dmg[k]+fall(bf,ram);rk[k+1]=ramKey(ram);}
+   lives[k+1]=read(ram);prog[k+1]=total(track);dmg[k+1]=dmg[k]+fall(bf,ram);rk[k+1]=ramKey(ram);dumpFrame();}
+  if(frameFd!==null){fs.closeSync(frameFd);console.log('  suitability %s: %d frames of %dx%d written',p.id,N+1,Observation.GW,Observation.GH);}
+  if(process.env.REALROM_SUIT_PASS1_ONLY==='1'){b.dispose();continue;}
   const pass1=(Date.now()-t1)/1000;
   /* pass 2: from each decision's exact state, every action */
   b.dispose();const b2=await extras.rebuild(),d2=b2.driver;Phase.replayEntry(d2,extras.entrySteps);if(p.delay)d2.run(0,p.delay);
