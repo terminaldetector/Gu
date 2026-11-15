@@ -281,6 +281,62 @@ function packDriver(d){const zlib=require('zlib');return Object.assign(Object.cr
    trajectory's has the trajectory's own future and is suitable. The trajectory's own
    action is suitable by construction. Disturbance decisions are not asked. Output:
    private JSON per trajectory (REALROM_SUIT_OUT), the suitable set per decision. */
+/* DIAGNOSTIC UPPER BOUND, NOT THE AGENT (directive M4-02c, REALROM_DIAG_POSITION=1):
+   is "find where you are on the verified route by the screen, then act as the
+   route's verified-suitable actions there say" enough to survive an unseen
+   perturbation? A brainless controller over the route's own private screens and
+   labels - it reads the route, so it can never stand for the Male CNS; it bounds
+   what any policy that only re-locates itself on the route could do. The level
+   clear is judged as everywhere: the stage detector, the oracle only post-run.
+   REALROM_DIAG_EVAL     perturbations (the teacher's syntax)
+   REALROM_DIAG_FRAMES   the route's grid file (labeller REALROM_SUIT_FRAMES)
+   REALROM_DIAG_SETS     the route's suitability files (';'-separated)
+   REALROM_DIAG_MODES    route = the route's action at the matched decision;
+                         voteW = the action most often verified suitable within
+                         +-W route decisions of it; const = the action most often
+                         suitable over the whole route */
+async function positionController(ctx){
+ const {extras,read,progressOf,ended,identity,exploreActions,routeMasks,maxDecisions}=ctx;
+ const GW=Observation.GW,GH=Observation.GH,C=16,Rr=12;
+ const pool=g=>{const o=new Float64Array(C*Rr),n=new Float64Array(C*Rr);for(let y=0;y<GH;y++)for(let x=0;x<GW;x++){const i=Math.floor(y*Rr/GH)*C+Math.floor(x*C/GW);o[i]+=g[y*GW+x];n[i]++;}return o.map((v,i)=>v/n[i]);};
+ const buf=fs.readFileSync(process.env.REALROM_DIAG_FRAMES),T=buf.length/(4*GW*GH);
+ const ref=Array.from({length:T},(_,t)=>pool(new Float32Array(buf.buffer,buf.byteOffset+t*4*GW*GH,GW*GH)));
+ const sets=[];for(const f of process.env.REALROM_DIAG_SETS.split(';').filter(Boolean)){const u=JSON.parse(fs.readFileSync(f,'utf8'));u.suitable.forEach((x,k)=>{if(x)sets[k]=x;});}
+ const freq=new Map();for(const x of sets)if(x)for(const a of x)freq.set(a,(freq.get(a)||0)+1);
+ const constA=[...freq.entries()].sort((a,b)=>b[1]-a[1])[0][0];
+ const vote=(c,W)=>{const sc=new Map();for(let k=Math.max(0,c-W);k<=Math.min(sets.length-1,c+W);k++)if(sets[k])for(const a of sets[k])sc.set(a,(sc.get(a)||0)+1);
+  let b=constA,bs=-1;for(const [a,v] of sc){const s=v+1e-6*(freq.get(a)||0);if(s>bs){bs=s;b=a;}}return b;};
+ const d2=(a,b)=>{let s=0;for(let i=0;i<a.length;i++)s+=(a[i]-b[i])**2;return s;};
+ /* REALROM_DIAG_CLOCK=x: leaving the expected next decision costs x times the route's
+    median screen change per decision - so the tracker advances with time and re-syncs
+    only on a clearly better match; 0 = screen only (identical screens to the next) */
+ const steps=[];for(let t=0;t+1<T;t++)steps.push(d2(ref[t],ref[t+1]));steps.sort((a,b)=>a-b);
+ const LAMBDA=Math.max(1e-7,Number(process.env.REALROM_DIAG_CLOCK||0)*(steps[steps.length>>1]||0));
+ const out=[];
+ for(const p of parsePerturbations(process.env.REALROM_DIAG_EVAL))for(const mode of (process.env.REALROM_DIAG_MODES||'route,vote8').split(',')){
+  const b=await extras.rebuild(),d=b.driver;Phase.replayEntry(d,extras.entrySteps);if(p.delay)d.run(0,p.delay);
+  const mon=Stage.createMonitor({probe:extras.entryProbe,readResource:ram=>read(ram)});const dims=Observation.dims(b.core)||[256,224];
+  const sa=oracleStage(identity.romSha256),st=[];if(sa)st.push({frame:0,values:sa.map(a=>d.readRam()[a])});
+  const dr=p.disturb?rng(p.disturb.seed*7919+13):null;
+  let pos=-1,fr=0,los=0,prog=0,isEnded=false,last=0,best=0,bestAt=0,stalled=false;const W=Number((mode.match(/^vote(\d+)$/)||[])[1]||0);
+  for(let k=0;k<maxDecisions;k++){
+   /* the screen before decision k; identical screens go to the expected next decision */
+   const g=Observation.grid(b.core);if(g){const f=pool(g);let bi=pos+1,bd=Infinity;for(let i=Math.max(0,pos-8);i<=Math.min(T-1,pos+48);i++){const e=d2(f,ref[i])+LAMBDA*Math.abs(i-pos-1);if(e<bd){bd=e;bi=i;}}pos=bi;}
+   const inD=p.disturb&&k>=p.disturb.at&&k<p.disturb.at+p.disturb.len;
+   const m=inD?(p.disturb.kind==='idle'?0:p.disturb.kind==='hold'?last:exploreActions[Math.floor(dr()*exploreActions.length)])
+    :mode==='blind'?routeMasks[Math.min(routeMasks.length-1,k)]:mode==='route'?routeMasks[Math.max(0,Math.min(routeMasks.length-1,pos))]:mode==='const'?constA:vote(Math.max(0,pos),W);last=m;
+   const bf=d.readRam();d.run(m,STEP_FRAMES);fr+=STEP_FRAMES;const af=d.readRam();if(read(af)<read(bf))los+=read(bf)-read(af);
+   const pb=progressOf(bf),pa=progressOf(af);for(let i=0;i<pb.length;i++)if(Number.isFinite(pb[i])&&Number.isFinite(pa[i])&&pa[i]>pb[i])prog+=pa[i]-pb[i];
+   mon.observe({mask:m,ramBefore:bf,ramAfter:af,signature:Stage.signature(b.core.pixels,dims[0],dims[1]),scene:Stage.palette(b.core.pixels,dims[0],dims[1])});
+   if(sa)st.push({frame:fr,values:sa.map(x=>af[x])});
+   if(prog>best){best=prog;bestAt=k;}if(k-bestAt>Number(process.env.REALROM_DIAG_STALL||2500)){stalled=true;break;}
+   if(ended(af)){isEnded=true;break;}if(mon.transitions().length)break;}
+  const v=verifyLevelClear(sa?st:null,mon.transitions());b.dispose();
+  const r={id:p.id,delay:p.delay,disturb:p.disturb,mode,levelClear:v.verdict,ended:isEnded,stalled,losses:los,progress:prog,decisions:fr/STEP_FRAMES,lastRoutePosition:pos};out.push(r);
+  console.log('  POSITION-DIAG %s (delay %d%s) %s: %s, game over %s, stalled %s, losses %d, progress %d, decisions %d, route position %d of %d',p.id,p.delay,p.disturb?', '+p.disturb.kind+'@'+p.disturb.at+'x'+p.disturb.len:'',mode,v.verdict,isEnded,stalled,los,prog,fr/STEP_FRAMES,pos,T-1);}
+ return {kind:'diagnostic upper bound - reads the route; not the agent',results:out};
+}
+
 async function suitabilityLabeller(ctx){
  const {actions,extras,read,progressOf}=ctx;
  const crypto=require('crypto');
@@ -289,6 +345,7 @@ async function suitabilityLabeller(ctx){
  const counterFiles=[...files,...String(process.env.REALROM_SUIT_COUNTERS_FROM||'').split(';').filter(Boolean)];
  const counters=[...new Set(counterFiles.flatMap(f=>(JSON.parse(fs.readFileSync(f,'utf8')).corrections||[]).flatMap(c=>c.counters||[])))];
  const [from0,to0]=String(process.env.REALROM_SUIT_RANGE||'0,1e9').split(',').map(Number),STRIDE=Math.max(1,Number(process.env.REALROM_SUIT_STRIDE||1));
+ const HOLD=process.env.REALROM_SUIT_MODE==='hold';
  const total=t=>t.value.reduce((a,v)=>a+(Number.isFinite(v)?v:0),0);
  const fall=(b,a)=>{let d=0;for(const ad of counters){const f=b[ad]-a[ad];if(f>0&&f<=16)d+=f;}return Math.min(d,16);};
  const ramKey=ram=>crypto.createHash('sha1').update(Buffer.from(ram)).digest('hex');
@@ -319,7 +376,12 @@ async function suitabilityLabeller(ctx){
   let tr2=Explore.unwrapStep(null,progressOf(d2.readRam())||[],true);
   const trAt=[];const suitable=new Array(N).fill(null),lifeLost=new Array(N).fill(null);const stat={asked:0,branches:0,converged:0,lifeLost:0,behind:0,suitable:0,steps:0};const t2=Date.now();
   for(let k=0;k<to;k++){
-   if(k>=from&&kinds[k]!=='D'&&k%STRIDE===0){stat.asked++;const here=d2.snapshot(),trHere=tr2,set=[M[k]],lost=[];
+   /* REALROM_SUIT_MODE=hold: IMMINENT DANGER only - each action held for H decisions from the
+      exact state, no route continuation; lifeLost = the actions that lost a life, no suitable set */
+   if(HOLD&&k>=from&&kinds[k]!=='D'&&k%STRIDE===0){stat.asked++;const here=d2.snapshot(),lost=[];
+    for(const a of actions){stat.branches++;d2.restore(here);for(let j=0;j<H;j++){d2.run(a,STEP_FRAMES);stat.steps++;if(read(d2.readRam())<lives[k]){lost.push(a);stat.lifeLost++;break;}}}
+    d2.restore(here);lifeLost[k]=lost.sort((x,y)=>x-y);}
+   else if(k>=from&&kinds[k]!=='D'&&k%STRIDE===0){stat.asked++;const here=d2.snapshot(),trHere=tr2,set=[M[k]],lost=[];
     for(const a of actions){if(a===M[k])continue;stat.branches++;d2.restore(here);let tr=trHere,ok=true,dm=0,r0=d2.readRam(),conv=false;
      const end=Math.min(N,k+1+H);
      for(let j=k;j<end;j++){const bf=r0;d2.run(j===k?a:M[j],STEP_FRAMES);stat.steps++;r0=d2.readRam();tr=Explore.unwrapStep(tr,progressOf(r0)||[],true);dm+=fall(bf,r0);
@@ -339,7 +401,7 @@ async function suitabilityLabeller(ctx){
   const r={id:p.id,file:path.basename(f),stride:STRIDE,traceSha256:crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(M).buffer)).digest('hex'),range:[from,to],horizon:H,actions,counters:counters.length,stat,
    meanSuitable:sizes.reduce((a,x)=>a+x,0)/Math.max(1,sizes.length),onlyOwn:only,pass1Seconds:pass1,seconds:(Date.now()-t2)/1000,suitable,
    /* the actions whose branch lost a life the trajectory kept (a subset of the unsuitable) */lifeLost};
-  fs.writeFileSync(path.join(out,'suit-'+p.id+'-'+from+'-'+to+'.json'),JSON.stringify(r));
+  fs.writeFileSync(path.join(out,(HOLD?'hold-':'suit-')+p.id+'-'+from+'-'+to+'.json'),JSON.stringify(Object.assign(r,{mode:HOLD?'hold':'route-continuation'})));
   const top=Object.entries(freq).sort((x,y)=>y[1]-x[1]).slice(0,6).map(([a,n])=>a+':'+(100*n/sizes.length).toFixed(0)+'%');
   console.log('  SUITABILITY %s [%d,%d) H %d: %d asked, mean %s of %d actions suitable, only the own action %d; branches %d (converged %d, life lost %d, behind %d); most often suitable %s | %s s',
    p.id,from,to,H,stat.asked,r.meanSuitable.toFixed(1),actions.length,only,stat.branches,stat.converged,stat.lifeLost,stat.behind,top.join(' '),r.seconds.toFixed(0));
@@ -1092,6 +1154,8 @@ async function learn(built,inPlay,profile,identity,java,extras){
      p.disturb?', '+p.disturb.kind+'@'+p.disturb.at+'x'+p.disturb.len:'',p.engine?', engine seed '+p.engine:'',brain.levelClear,brain.ended,brain.losses,brain.highestProgress,ov.verdict,oended,olos,oprog);}
   }
   if(process.env.REALROM_SUITABILITY)fullEpisode.suitability=await suitabilityLabeller({actions,extras,read,progressOf});
+  if(process.env.REALROM_DIAG_POSITION==='1')fullEpisode.positionDiagnostic=await positionController({extras,read,progressOf,ended,identity,routeMasks,
+   exploreActions:compositeActions(profile.dto.discovered.buttonAttribution,spec,3),maxDecisions:Number(process.env.REALROM_DIAG_MAX||9000)});
   if(distill&&process.env.REALROM_TEACHER)fullEpisode.teacher=await recoveryTeacher({java,actions,profile,identity,extras,read,progressOf,floor,keyOptions,obsProbe,spec});
  }
  return {brain:brainIdentity,actions:actions.length,stepFrames:STEP_FRAMES,evalStarts:3,evalStepsCap:EVAL_STEPS,fullEpisode,
