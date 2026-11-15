@@ -779,10 +779,12 @@ async function learn(built,inPlay,profile,identity,java,extras){
        activity statistics; the readout is fitted to every decision labelled R (reference
        route), P (the policy's own, kept) or C (a verified AGOD correction) - never D (an
        injected disturbance) and nothing by assumption. W0 and the plastic layer unchanged. */
-    const set=process.env.REALROM_TRAINSET.split(';').filter(Boolean).map(f=>{const t=JSON.parse(fs.readFileSync(f,'utf8'));
+    /* an entry may end in *k (k=2..4): its demonstrations enter the fit k times - a
+       stated weight, part of the dataset identity */
+    const set=process.env.REALROM_TRAINSET.split(';').filter(Boolean).map(e=>{const wm=/\*([2-4])$/.exec(e),f=wm?e.slice(0,-2):e,weight=wm?Number(wm[1]):1;const t=JSON.parse(fs.readFileSync(f,'utf8'));
      if(JSON.stringify(t.entrySteps)!==JSON.stringify(extras.entrySteps))throw Error('a training trajectory was made from another entry');
      return {id:t.perturbation?t.perturbation.id:'reference',delay:t.perturbation?t.perturbation.delay||0:0,disturb:t.perturbation?t.perturbation.disturb:null,
-      masks:t.masks,kinds:t.kinds||t.masks.map(()=>'R'),sha:crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(t.masks).buffer)).digest('hex')};});
+      weight,masks:t.masks,kinds:t.kinds||t.masks.map(()=>'R'),sha:crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(t.masks).buffer)).digest('hex')};});
     /* every pass runs in its own worker bridge (REALROM_WORKERS, default 4; same engine
        seed, the same reset per trajectory - the activity is the same as in one bridge);
        statistics and demonstrations come back through private files, demonstrations
@@ -803,24 +805,29 @@ async function learn(built,inPlay,profile,identity,java,extras){
     const chosen=await java.call({op:'population',size:Number(process.env.REALROM_POPULATION||2048)});
     const neurons=(await java.call({op:'populationGet'})).neurons;
     const provenance=new Array(set.length);
-    const demoKinds=new Array(set.length);
-    await runQueue(async(jb,t,i)=>{const lab={R:0,P:0,C:0,D:0};demoKinds[i]=[];await jb.call({op:'population',neurons});
-     await trajPass(jb,t,async(b,retina,mask,kind)=>{if(kind!=='R'&&kind!=='P'&&kind!=='C'){await b.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:20});lab.D++;return;}
-      const dd=await b.call({op:'decide',retina,train:true,actions,epsilon:0,windowMs:20});const im=await b.call({op:'imitate',id:dd.id,mask});if(im.accepted){lab[kind]++;demoKinds[i].push(kind);}});
+    const demoKinds=new Array(set.length),demoAt=new Array(set.length);
+    await runQueue(async(jb,t,i)=>{const lab={R:0,P:0,C:0,D:0};demoKinds[i]=[];demoAt[i]=[];let at=0;await jb.call({op:'population',neurons});
+     await trajPass(jb,t,async(b,retina,mask,kind)=>{const k0=at++;if(kind!=='R'&&kind!=='P'&&kind!=='C'){await b.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:20});lab.D++;return;}
+      const dd=await b.call({op:'decide',retina,train:true,actions,epsilon:0,windowMs:20});const im=await b.call({op:'imitate',id:dd.id,mask});if(im.accepted){lab[kind]++;demoKinds[i].push(kind);demoAt[i].push(k0);}});
      await jb.call({op:'imitationDump',path:path.join(tmp,'demo-'+i+'.bin')});
-     provenance[i]={id:t.id,delay:t.delay,disturb:t.disturb,decisions:t.masks.length,labelled:{reference:lab.R,policy:lab.P,correction:lab.C},disturbanceUnlabelled:lab.D,traceSha256:t.sha};
+     provenance[i]={id:t.id,delay:t.delay,disturb:t.disturb,weight:t.weight,decisions:t.masks.length,labelled:{reference:lab.R,policy:lab.P,correction:lab.C},disturbanceUnlabelled:lab.D,traceSha256:t.sha};
      console.log('  training set: imitation over %s - labelled R %d, P %d, C %d; D %d left unlabelled',t.id,lab.R,lab.P,lab.C,lab.D);});
-    for(let i=0;i<set.length;i++){const f=path.join(tmp,'demo-'+i+'.bin');await java.call({op:'imitationLoad',path:f});fs.unlinkSync(f);}
+    for(let i=0;i<set.length;i++){const f=path.join(tmp,'demo-'+i+'.bin');for(let r=0;r<set[i].weight;r++)await java.call({op:'imitationLoad',path:f});fs.unlinkSync(f);}
     for(const w of workers)w.close();fs.rmdirSync(tmp);
     const tf=Date.now();const fit=await java.call({op:'fit',epochs:Number(process.env.REALROM_FIT_EPOCHS||400),margin:Number(process.env.REALROM_FIT_MARGIN||1),rate:.05,dropout:Number(process.env.REALROM_FIT_DROPOUT||0)});
     /* the fit by provenance: where the readout's argmax is the demonstrated action, per
        trajectory and label kind - labels that conflict over indistinguishable states show
        up here, not in the total */
     const metStr=(await java.call({op:'imitationMet'})).met;let off=0;const fitBy={};
-    for(let i=0;i<set.length;i++){const row={};for(const k of demoKinds[i]){row[k]=row[k]||[0,0];row[k][1]++;if(metStr[off++]==='1')row[k][0]++;}
+    for(let i=0;i<set.length;i++){const row={},miss=[];for(let r=0;r<set[i].weight;r++){let j=0;for(const k of demoKinds[i]){const met=metStr[off++]==='1';if(r>0){j++;continue;}
+      row[k]=row[k]||[0,0];row[k][1]++;if(met)row[k][0]++;else miss.push(demoAt[i][j]);j++;}}
      fitBy[set[i].id]=Object.fromEntries(Object.entries(row).map(([k,[m,n]])=>[k,{met:m,of:n}]));
-     console.log('  training fit %s: %s',set[i].id,Object.entries(row).map(([k,[m,n]])=>k+' '+(100*m/n).toFixed(1)+'% of '+n).join(', '));}
-    const id='set:'+crypto.createHash('sha256').update(JSON.stringify(provenance.map(x=>[x.id,x.delay,x.disturb,x.traceSha256,x.labelled]))).digest('hex').slice(0,16);
+     /* where the misses are (decision indices, private log): one early miss on the
+        reference route is enough to leave it */
+     const hist={};for(const d of miss){const b=Math.floor(d/500)*500;hist[b]=(hist[b]||0)+1;}
+     console.log('  training fit %s%s: %s | misses first at %s, per 500 %j',set[i].id,set[i].weight>1?' (x'+set[i].weight+')':'',Object.entries(row).map(([k,[m,n]])=>k+' '+(100*m/n).toFixed(1)+'% of '+n).join(', '),
+      miss.length?miss.slice(0,6).join(','):'-',hist);}
+    const id='set:'+crypto.createHash('sha256').update(JSON.stringify(provenance.map(x=>[x.id,x.delay,x.disturb,x.traceSha256,x.labelled].concat(x.weight>1?[x.weight]:[])))).digest('hex').slice(0,16);
     await java.call({op:'dataset',id});
     distill={trainingSet:provenance,readout:readoutProfile,population:{neurons:chosen.population,varying:chosen.varying},
      fit:{met:fit.met,epochs:fit.epochs,updates:fit.fitUpdates,demonstrations:fit.demonstrations,wallSeconds:Math.round((Date.now()-tf)/1000),byProvenance:fitBy},dataset:id,actions:actions.length,routeStrides:route.masks.length};
