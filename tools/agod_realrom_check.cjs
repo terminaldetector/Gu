@@ -56,7 +56,10 @@ function retroBuild(platform,bytes){
   moduleOptions:{wasmBinary:fs.readFileSync(path.join(A,platform,'core.wasm')),locateFile:f=>path.join(A,platform,f)},frameBudget:1e10});
 }
 const TRAIN_STEPS=Number(process.env.REALROM_TRAIN_STEPS||2400),EVAL_STEPS=Number(process.env.REALROM_EVAL_STEPS||300),
- STEP_FRAMES=8,SEEDS=(process.env.REALROM_SEEDS||'11,23,37').split(',').map(Number);
+ STEP_FRAMES=8,SEEDS=(process.env.REALROM_SEEDS||'11,23,37').split(',').map(Number),
+ /* the brain's integration window per decision (ms of LIF time); 20 unless stated -
+    a stated window is part of the dataset identity */
+ WINDOW_MS=Number(process.env.REALROM_WINDOW_MS||20);
 
 function bridge(){
  const child=spawn(process.env.JAVA||'java',['-Xmx2g','-cp',process.env.CODE_CLASSPATH,
@@ -327,7 +330,7 @@ async function recoveryTeacher(ctx){
     if(REPLAY_ONLY){masks.push(...prev.masks.slice(0,cut));kinds.push(...(prev.kinds||prev.masks.map(()=>'R')).slice(0,cut));cut=0;}
     const learnt=new Map();for(const c of prev.corrections||[])if(c.counters){const e=c.from+c.length;learnt.set(e,(learnt.get(e)||[]).concat(c.counters));}
     for(let n=0;n<cut;n++){if(masks.length%8===0&&masks.length>ckpts[ckpts.length-1].stride)await saveCk();
-     await java.call({op:'decide',retina:tobs.observe(),train:false,actions,epsilon:0,windowMs:20});
+     await java.call({op:'decide',retina:tobs.observe(),train:false,actions,epsilon:0,windowMs:WINDOW_MS});
      await step(prev.masks[n],prev.kinds[n]);for(const ad of learnt.get(masks.length)||[])knownCounters.add(ad);
      /* as live: the clock is read after policy and disturbance steps, not inside a correction */
      if(prev.kinds[n]!=='C'&&masks.length-lastGain>=STALL){resumeStall=true;break;}}
@@ -342,7 +345,7 @@ async function recoveryTeacher(ctx){
    let o,stalled;
    if(resumeStall){resumeStall=false;o={lost:false,dead:false};stalled=true;}
    else{const k=masks.length;
-    const r=await java.call({op:'decide',retina:tobs.observe(),train:false,actions,epsilon:0,windowMs:20});
+    const r=await java.call({op:'decide',retina:tobs.observe(),train:false,actions,epsilon:0,windowMs:WINDOW_MS});
     const inD=p.disturb&&k>=p.disturb.at&&k<dEnd;
     o=await step(inD?disturbMask(k):r.mask,inD?'D':'P');
     stalled=masks.length-lastGain>=STALL;}
@@ -423,7 +426,7 @@ async function recoveryTeacher(ctx){
     const needMin=Math.max(needProg,gained);
     let dmgA=0,minKept=0,minNear=0,minArchive=0,minChecks=0;
     for(let i=0;i<corr.length;i++){if(masks.length%8===0&&masks.length>ckpts[ckpts.length-1].stride)await saveCk();
-     const r=await java.call({op:'decide',retina:tobs.observe(),train:false,actions,epsilon:0,windowMs:20});
+     const r=await java.call({op:'decide',retina:tobs.observe(),train:false,actions,epsilon:0,windowMs:WINDOW_MS});
      let pick=corr[i],kind='C';
      if(MINIMAL){
       if(r.mask===corr[i]){kind='P';minKept++;}
@@ -696,7 +699,7 @@ async function learn(built,inPlay,profile,identity,java,extras){
      takes no RNG step and keeps no pending decision during evaluation: the
      whole learner state is compared before and after, not just the weights. */
   const brain=(train,sampled,stream)=>async only=>{const r=await java.call({op:'decide',retina:observer.observe(),train,actions:only||actions,
-   epsilon:train?.1:0,windowMs:20,...(sampled?{sample:stream()}:{})});return {mask:r.mask,id:r.id};};
+   epsilon:train?.1:0,windowMs:WINDOW_MS,...(sampled?{sample:stream()}:{})});return {mask:r.mask,id:r.id};};
   const evaluate=async make=>{const out=[];for(const s of evalStarts)out.push(await episode(s,make(),false,EVAL_STEPS,null,null));return out;};
   const sampledBrain=()=>{const stream=rng(seed*7919+5);return brain(false,true,stream);};
   await init(seed);
@@ -795,6 +798,11 @@ async function learn(built,inPlay,profile,identity,java,extras){
        seed, the same reset per trajectory - the activity is the same as in one bridge);
        statistics and demonstrations come back through private files, demonstrations
        loaded in trajectory order so the fit is deterministic */
+    /* PROBE (REALROM_PROBE_DIR, diagnostics, private): the population's activity at
+       every decision of every pass is kept (with the retina it saw) for the
+       cross-seed analysis - REALROM_PROBE_LIMIT decisions per pass, the population
+       given in REALROM_POPULATION_NEURONS (a JSON list) or chosen as usual; no fit */
+    const PROBE=process.env.REALROM_PROBE_DIR,PROBE_LIMIT=Number(process.env.REALROM_PROBE_LIMIT||1e9);if(PROBE)fs.mkdirSync(PROBE,{recursive:true});
     const tmpBase=process.env.REALROM_EVIDENCE_DIR||require('os').tmpdir();fs.mkdirSync(tmpBase,{recursive:true});
     const tmp=fs.mkdtempSync(path.join(tmpBase,'trainset-'));
     const nW=Math.max(1,Math.min(set.length,Number(process.env.REALROM_WORKERS||4)));
@@ -803,22 +811,27 @@ async function learn(built,inPlay,profile,identity,java,extras){
     const trajPass=async(jb,t,fn)=>{const ib=await extras.rebuild(),idv=ib.driver;Phase.replayEntry(idv,extras.entrySteps);if(t.delay)idv.run(0,t.delay);
      await jb.call({op:'engineSeed',seed:t.engine||seedNow});
      const iobs=Observation.create(OBS,ib.core,{probe:obsProbe,readRam:()=>idv.readRam(),readResource:ram=>read(ram),initialResource:profile.dto.discovered.resource.initial});
-     await jb.call({op:'reset'});for(let k=0;k<t.masks.length;k++){await fn(jb,iobs.observe(),t.masks[k],t.kinds[k]);idv.run(t.masks[k],STEP_FRAMES);}
+     const lim=PROBE?Math.min(t.masks.length,PROBE_LIMIT):t.masks.length,ret=[];
+     await jb.call({op:'reset'});for(let k=0;k<lim;k++){const o=iobs.observe();if(PROBE)ret.push(Array.from(o,v=>Math.round(v*1e4)/1e4));await fn(jb,o,t.masks[k],t.kinds[k]);idv.run(t.masks[k],STEP_FRAMES);}
+     if(PROBE)fs.writeFileSync(path.join(PROBE,'retina-'+t.id+'.json'),JSON.stringify(ret));
      ib.dispose();await jb.call({op:'boundary'});};
     const runQueue=async job=>{let next=0;await Promise.all(workers.map(async jb=>{while(next<set.length){const i=next++;await job(jb,set[i],i);}}));};
-    await runQueue(async(jb,t,i)=>{await trajPass(jb,t,async(b,retina)=>{await b.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:20,stats:true});});
+    const given=process.env.REALROM_POPULATION_NEURONS?JSON.parse(fs.readFileSync(process.env.REALROM_POPULATION_NEURONS,'utf8')):null;
+    if(!given){await runQueue(async(jb,t,i)=>{await trajPass(jb,t,async(b,retina)=>{await b.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:WINDOW_MS,stats:true});});
      console.log('  training set: activity statistics over %s (%d decisions)',t.id,t.masks.length);});
-    for(let w=0;w<nW;w++){const f=path.join(tmp,'stats-'+w+'.bin');await workers[w].call({op:'statsDump',path:f});await java.call({op:'statsLoad',path:f});fs.unlinkSync(f);}
-    const chosen=await java.call({op:'population',size:Number(process.env.REALROM_POPULATION||2048)});
+    for(let w=0;w<nW;w++){const f=path.join(tmp,'stats-'+w+'.bin');await workers[w].call({op:'statsDump',path:f});await java.call({op:'statsLoad',path:f});fs.unlinkSync(f);}}
+    const chosen=given?Object.assign(await java.call({op:'population',neurons:given}),{varying:null}):await java.call({op:'population',size:Number(process.env.REALROM_POPULATION||2048)});
     const neurons=(await java.call({op:'populationGet'})).neurons;
     const provenance=new Array(set.length);
     const demoKinds=new Array(set.length),demoAt=new Array(set.length);
     await runQueue(async(jb,t,i)=>{const lab={R:0,P:0,C:0,D:0};demoKinds[i]=[];demoAt[i]=[];let at=0;await jb.call({op:'population',neurons});
-     await trajPass(jb,t,async(b,retina,mask,kind)=>{const k0=at++;if(kind!=='R'&&kind!=='P'&&kind!=='C'){await b.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:20});lab.D++;return;}
-      const dd=await b.call({op:'decide',retina,train:true,actions,epsilon:0,windowMs:20});const im=await b.call({op:'imitate',id:dd.id,mask});if(im.accepted){lab[kind]++;demoKinds[i].push(kind);demoAt[i].push(k0);}});
+     await trajPass(jb,t,async(b,retina,mask,kind)=>{const k0=at++;if(kind!=='R'&&kind!=='P'&&kind!=='C'){await b.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:WINDOW_MS});lab.D++;return;}
+      const dd=await b.call({op:'decide',retina,train:true,actions,epsilon:0,windowMs:WINDOW_MS});const im=await b.call({op:'imitate',id:dd.id,mask});if(im.accepted){lab[kind]++;demoKinds[i].push(kind);demoAt[i].push(k0);}});
      await jb.call({op:'imitationDump',path:path.join(tmp,'demo-'+i+'.bin')});
      provenance[i]={id:t.id,delay:t.delay,disturb:t.disturb,weight:t.weight,engineSeed:t.engine||null,decisions:t.masks.length,labelled:{reference:lab.R,policy:lab.P,correction:lab.C},disturbanceUnlabelled:lab.D,traceSha256:t.sha};
      console.log('  training set: imitation over %s - labelled R %d, P %d, C %d; D %d left unlabelled',t.id,lab.R,lab.P,lab.C,lab.D);});
+    if(PROBE){for(let i=0;i<set.length;i++)fs.renameSync(path.join(tmp,'demo-'+i+'.bin'),path.join(PROBE,'demo-'+set[i].id+'.bin'));for(const w of workers)w.close();fs.rmdirSync(tmp);
+     console.log('  PROBE: %d passes kept in %s (window %d ms)',set.length,PROBE,WINDOW_MS);process.exit(0);}
     for(let i=0;i<set.length;i++){const f=path.join(tmp,'demo-'+i+'.bin');for(let r=0;r<set[i].weight;r++)await java.call({op:'imitationLoad',path:f});fs.unlinkSync(f);}
     for(const w of workers)w.close();fs.rmdirSync(tmp);
     const tf=Date.now();const fit=await java.call({op:'fit',epochs:Number(process.env.REALROM_FIT_EPOCHS||400),margin:Number(process.env.REALROM_FIT_MARGIN||1),rate:.05,dropout:Number(process.env.REALROM_FIT_DROPOUT||0)});
@@ -857,13 +870,13 @@ async function learn(built,inPlay,profile,identity,java,extras){
     const iobs=Observation.create(OBS,ib.core,{probe:obsProbe,readRam:()=>idv.readRam(),readResource:ram=>read(ram),initialResource:profile.dto.discovered.resource.initial});
     await java.call({op:'reset'});for(let k=0;k<route.masks.length;k++){await fn(iobs.observe(),route.masks[k],k);idv.run(route.masks[k],STEP_FRAMES);}
     ib.dispose();await java.call({op:'boundary'});};
-   if(pop){await routePass(async retina=>{await java.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:20,stats:true});});
+   if(pop){await routePass(async retina=>{await java.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:WINDOW_MS,stats:true});});
     const chosen=await java.call({op:'population',size:Number(process.env.REALROM_POPULATION||2048)});
     populationInfo={neurons:chosen.population,varying:chosen.varying};
     console.log('  population: %d neurons varied along the route, %d read by the readout',chosen.varying,chosen.population);}
    const passes=Number(process.env.REALROM_IMITATE||(pop?1:0));let imitated=0;
    for(let pass=0;pass<passes;pass++){
-    await routePass(async(retina,mask,k)=>{const dd=await java.call({op:'decide',retina,train:true,actions,epsilon:0,windowMs:20});
+    await routePass(async(retina,mask,k)=>{const dd=await java.call({op:'decide',retina,train:true,actions,epsilon:0,windowMs:WINDOW_MS});
      if(pass===0)routeActivity[k]=dd.activityHash;
      const im=await java.call({op:'imitate',id:dd.id,mask});if(im.accepted)imitated++;});
     console.log('  imitation pass %d: %d route steps',pass+1,route.masks.length);
@@ -903,7 +916,7 @@ async function learn(built,inPlay,profile,identity,java,extras){
     while(frames<maxFrames){
      const ramBefore=fd.readRam();const t=Date.now();
      const skill=fkeyer?fkeyer.key(ramBefore,Stage.signature(fresh.core.pixels,dims[0],dims[1])):null;
-     const r=await java.call({op:'decide',retina:fobs.observe(),train:false,actions,epsilon:0,windowMs:20,...(sampled?{sample:stream()}:{}),...(skill?{skill}:{})});lat.push(Date.now()-t);
+     const r=await java.call({op:'decide',retina:fobs.observe(),train:false,actions,epsilon:0,windowMs:WINDOW_MS,...(sampled?{sample:stream()}:{}),...(skill?{skill}:{})});lat.push(Date.now()-t);
      if(r.skillProposal>=0){proposals++;if(r.skillDecided)memoryDecided++;if(r.brainMask===r.skillProposal)brainAgreed++;}
      if(routeKeys&&firstOffRoute===null&&log.length<routeKeys.length&&skill!==routeKeys[log.length]){firstOffRoute=log.length;
       /* private console only: keys carry RAM-derived values */
