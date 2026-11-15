@@ -93,6 +93,9 @@ public final class FdbGameBridge {
     FdbCheckpoint.restore(learner,ls,graph,in,out);learner.boundary();engine=new Engine(graph);engine.reset(seed);engineSlots.clear();counter=0;
     r.put("dataset",learner.readoutDataset()).put("population",learner.readoutPopulation().length).put("readoutProfile",learner.readoutProfile());}
    else if(op.equals("dataset")){learner.readoutDataset(q.getString("id"));}
+   /* M4: the seed of the engine's Poisson input stream (every reset restarts it). An
+      evaluation under another seed tests that a policy does not read the stream as a clock */
+   else if(op.equals("engineSeed")){int s=q.getInt("seed");if(s<1)throw new IllegalArgumentException("engine seed");r.put("previous",seed);seed=s;engine.reset(seed);engineSlots.clear();}
    /* parallel distillation: activity statistics and demonstrations to and from private files */
    else if(op.equals("statsDump")){try(DataOutputStream o=new DataOutputStream(new BufferedOutputStream(new FileOutputStream(q.getString("path"))))){o.writeInt(statN);o.writeInt(statSum.length);for(int i=0;i<statSum.length;i++){o.writeDouble(statSum[i]);o.writeDouble(statSq[i]);}}r.put("n",statN);}
    else if(op.equals("statsLoad")){try(DataInputStream in2=new DataInputStream(new BufferedInputStream(new FileInputStream(q.getString("path"))))){int n=in2.readInt(),len=in2.readInt();

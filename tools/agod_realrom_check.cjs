@@ -257,7 +257,7 @@ function verifyLevelClear(stageTrace,transitions){
 function parsePerturbations(specText){
  return String(specText).split(';').map(x=>x.trim()).filter(Boolean).map((entry,i)=>{const o={id:'p'+i,delay:0,disturb:null};
   const kv=Object.fromEntries(entry.split(',').map(x=>x.split('=').map(y=>y.trim())));
-  if(kv.id)o.id=kv.id;if(kv.delay)o.delay=Number(kv.delay);
+  if(kv.id)o.id=kv.id;if(kv.delay)o.delay=Number(kv.delay);if(kv.engine)o.engine=Number(kv.engine);
   if(kv.at)o.disturb={at:Number(kv.at),len:Number(kv.len||4),kind:kv.kind||'idle',seed:Number(kv.seed||1)};
   return o;});
 }
@@ -784,7 +784,13 @@ async function learn(built,inPlay,profile,identity,java,extras){
     const set=process.env.REALROM_TRAINSET.split(';').filter(Boolean).map(e=>{const wm=/\*([2-4])$/.exec(e),f=wm?e.slice(0,-2):e,weight=wm?Number(wm[1]):1;const t=JSON.parse(fs.readFileSync(f,'utf8'));
      if(JSON.stringify(t.entrySteps)!==JSON.stringify(extras.entrySteps))throw Error('a training trajectory was made from another entry');
      return {id:t.perturbation?t.perturbation.id:'reference',delay:t.perturbation?t.perturbation.delay||0:0,disturb:t.perturbation?t.perturbation.disturb:null,
-      weight,masks:t.masks,kinds:t.kinds||t.masks.map(()=>'R'),sha:crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(t.masks).buffer)).digest('hex')};});
+      weight,masks:t.masks,kinds:t.kinds||t.masks.map(()=>'R'),sha:crypto.createHash('sha256').update(Buffer.from(Uint16Array.from(t.masks).buffer)).digest('hex')};})
+    /* REALROM_TRAIN_ENGINE_SEEDS=a,b,..: every trajectory is replayed once per engine
+       seed (the Poisson input stream). The labels are game actions verified on the
+       emulator, valid whatever the brain's noise; a readout that has to meet them under
+       several streams cannot use one stream as a clock. */
+    .flatMap(t=>{const es=(process.env.REALROM_TRAIN_ENGINE_SEEDS||'').split(',').map(Number).filter(x=>x>0);
+     return es.length?es.map(e=>Object.assign({},t,{id:t.id+'@'+e,engine:e})):[t];});
     /* every pass runs in its own worker bridge (REALROM_WORKERS, default 4; same engine
        seed, the same reset per trajectory - the activity is the same as in one bridge);
        statistics and demonstrations come back through private files, demonstrations
@@ -795,6 +801,7 @@ async function learn(built,inPlay,profile,identity,java,extras){
     const seedNow=SEEDS[SEEDS.length-1];
     const workers=[];for(let w=0;w<nW;w++){const b=bridge();await b.call({op:'init',seed:seedNow,mode:'base'});await b.call({op:'readout',profile:readoutProfile});workers.push(b);}
     const trajPass=async(jb,t,fn)=>{const ib=await extras.rebuild(),idv=ib.driver;Phase.replayEntry(idv,extras.entrySteps);if(t.delay)idv.run(0,t.delay);
+     await jb.call({op:'engineSeed',seed:t.engine||seedNow});
      const iobs=Observation.create(OBS,ib.core,{probe:obsProbe,readRam:()=>idv.readRam(),readResource:ram=>read(ram),initialResource:profile.dto.discovered.resource.initial});
      await jb.call({op:'reset'});for(let k=0;k<t.masks.length;k++){await fn(jb,iobs.observe(),t.masks[k],t.kinds[k]);idv.run(t.masks[k],STEP_FRAMES);}
      ib.dispose();await jb.call({op:'boundary'});};
@@ -810,7 +817,7 @@ async function learn(built,inPlay,profile,identity,java,extras){
      await trajPass(jb,t,async(b,retina,mask,kind)=>{const k0=at++;if(kind!=='R'&&kind!=='P'&&kind!=='C'){await b.call({op:'decide',retina,train:false,actions,epsilon:0,windowMs:20});lab.D++;return;}
       const dd=await b.call({op:'decide',retina,train:true,actions,epsilon:0,windowMs:20});const im=await b.call({op:'imitate',id:dd.id,mask});if(im.accepted){lab[kind]++;demoKinds[i].push(kind);demoAt[i].push(k0);}});
      await jb.call({op:'imitationDump',path:path.join(tmp,'demo-'+i+'.bin')});
-     provenance[i]={id:t.id,delay:t.delay,disturb:t.disturb,weight:t.weight,decisions:t.masks.length,labelled:{reference:lab.R,policy:lab.P,correction:lab.C},disturbanceUnlabelled:lab.D,traceSha256:t.sha};
+     provenance[i]={id:t.id,delay:t.delay,disturb:t.disturb,weight:t.weight,engineSeed:t.engine||null,decisions:t.masks.length,labelled:{reference:lab.R,policy:lab.P,correction:lab.C},disturbanceUnlabelled:lab.D,traceSha256:t.sha};
      console.log('  training set: imitation over %s - labelled R %d, P %d, C %d; D %d left unlabelled',t.id,lab.R,lab.P,lab.C,lab.D);});
     for(let i=0;i<set.length;i++){const f=path.join(tmp,'demo-'+i+'.bin');for(let r=0;r<set[i].weight;r++)await java.call({op:'imitationLoad',path:f});fs.unlinkSync(f);}
     for(const w of workers)w.close();fs.rmdirSync(tmp);
@@ -827,7 +834,7 @@ async function learn(built,inPlay,profile,identity,java,extras){
      const hist={};for(const d of miss){const b=Math.floor(d/500)*500;hist[b]=(hist[b]||0)+1;}
      console.log('  training fit %s%s: %s | misses first at %s, per 500 %j',set[i].id,set[i].weight>1?' (x'+set[i].weight+')':'',Object.entries(row).map(([k,[m,n]])=>k+' '+(100*m/n).toFixed(1)+'% of '+n).join(', '),
       miss.length?miss.slice(0,6).join(','):'-',hist);}
-    const id='set:'+crypto.createHash('sha256').update(JSON.stringify(provenance.map(x=>[x.id,x.delay,x.disturb,x.traceSha256,x.labelled].concat(x.weight>1?[x.weight]:[])))).digest('hex').slice(0,16);
+    const id='set:'+crypto.createHash('sha256').update(JSON.stringify(provenance.map(x=>[x.id,x.delay,x.disturb,x.traceSha256,x.labelled].concat(x.weight>1?[x.weight]:[],x.engineSeed?[x.engineSeed]:[])))).digest('hex').slice(0,16);
     await java.call({op:'dataset',id});
     distill={trainingSet:provenance,readout:readoutProfile,population:{neurons:chosen.population,varying:chosen.varying},
      fit:{met:fit.met,epochs:fit.epochs,updates:fit.fitUpdates,demonstrations:fit.demonstrations,wallSeconds:Math.round((Date.now()-tf)/1000),byProvenance:fitBy},dataset:id,actions:actions.length,routeStrides:route.masks.length};
@@ -960,7 +967,10 @@ async function learn(built,inPlay,profile,identity,java,extras){
    const exploreActions=compositeActions(profile.dto.discovered.buttonAttribution,spec,3);
    for(const p of parsePerturbations(process.env.REALROM_EVAL)){
     const mkDist=()=>p.disturb?{...p.disturb,pick:(r=>()=>exploreActions[Math.floor(r()*exploreActions.length)])(rng(p.disturb.seed*7919+13))}:null;
+    /* engine=<seed>: this episode's brain runs on another Poisson input stream */
+    const prevSeed=p.engine?(await java.call({op:'engineSeed',seed:p.engine})).previous:null;
     const brain=await runEpisode(false,p.delay,mkDist());
+    if(prevSeed!==null)await java.call({op:'engineSeed',seed:prevSeed});
     /* blind replay: the route's own actions, the same delay and disturbance, no brain */
     const ob=await extras.rebuild(),od=ob.driver;Phase.replayEntry(od,extras.entrySteps);if(p.delay)od.run(0,p.delay);
     const omon=Stage.createMonitor({probe:extras.entryProbe,readResource:ram=>read(ram)});const odims=Observation.dims(ob.core)||[256,224];
@@ -972,11 +982,11 @@ async function learn(built,inPlay,profile,identity,java,extras){
      omon.observe({mask:m,ramBefore:b,ramAfter:a,signature:Stage.signature(ob.core.pixels,odims[0],odims[1]),scene:Stage.palette(ob.core.pixels,odims[0],odims[1])});
      if(sa)st.push({frame:ofr,values:sa.map(x=>a[x])});if(ended(a)){oended=true;break;}}
     const ov=verifyLevelClear(sa?st:null,omon.transitions());ob.dispose();
-    fullEpisode.evaluation.push({id:p.id,delay:p.delay,disturb:p.disturb,brain:{levelClear:brain.levelClear,ended:brain.ended,losses:brain.losses,frames:brain.framesExecuted,
+    fullEpisode.evaluation.push({id:p.id,delay:p.delay,disturb:p.disturb,engineSeed:p.engine||null,brain:{levelClear:brain.levelClear,ended:brain.ended,losses:brain.losses,frames:brain.framesExecuted,
       progress:brain.highestProgress,latencyMs:brain.decisionLatencyMs,firstDivergence:brain.firstPolicyDivergenceFromRoute,disturbance:brain.disturbance,frozen:!brain.weightsChangedInEval,restores:brain.evalRestores},
      openLoop:{levelClear:ov.verdict,ended:oended,losses:olos,frames:ofr,progress:oprog}});
-    console.log('  EVAL %s (delay %d%s): brain %s, game over %s, losses %d, progress %d | blind replay %s, game over %s, losses %d, progress %d',p.id,p.delay,
-     p.disturb?', '+p.disturb.kind+'@'+p.disturb.at+'x'+p.disturb.len:'',brain.levelClear,brain.ended,brain.losses,brain.highestProgress,ov.verdict,oended,olos,oprog);}
+    console.log('  EVAL %s (delay %d%s%s): brain %s, game over %s, losses %d, progress %d | blind replay %s, game over %s, losses %d, progress %d',p.id,p.delay,
+     p.disturb?', '+p.disturb.kind+'@'+p.disturb.at+'x'+p.disturb.len:'',p.engine?', engine seed '+p.engine:'',brain.levelClear,brain.ended,brain.losses,brain.highestProgress,ov.verdict,oended,olos,oprog);}
   }
   if(distill&&process.env.REALROM_TEACHER)fullEpisode.teacher=await recoveryTeacher({java,actions,profile,identity,extras,read,progressOf,floor,keyOptions,obsProbe,spec});
  }
