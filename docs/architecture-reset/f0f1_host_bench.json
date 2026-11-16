@@ -1,0 +1,131 @@
+{
+ "type": "gu-f0f1-host-bench",
+ "schema": 1,
+ "node": "F0/F1 host proof of concept",
+ "what": "real page and core in desktop Chromium; 30 Hz Web Worker controller; createdAt = source frame publish time, so frameToAppliedMs is frame published -> mask applied",
+ "notAndroid": "host numbers: they show the plumbing adds little beyond frame cadence, not what a phone does. Android: DEVICE-PENDING",
+ "command": "node tools/fast_loop_host_bench.cjs <system> 10 30",
+ "policy": "motion stand-in (Right, plus A when the 32x30 luminance moves) - measures the loop, not play quality",
+ "runs": [
+  {
+   "platform": "nes",
+   "seconds": 10,
+   "targetHz": 30,
+   "baselineFps": 59.99,
+   "controlledFps": 60,
+   "decisionsPerSecond": 30.28,
+   "decisionCodes": {
+    "pending": 318
+   },
+   "frameAgeAtDispatchMs": {
+    "p50": 1.1,
+    "p95": 11.5
+   },
+   "workerRoundTripMs": {
+    "p50": 0.4,
+    "p95": 0.9
+   },
+   "frameToAppliedFrames": {
+    "n": 317,
+    "p50": 1,
+    "p95": 1,
+    "max": 1
+   },
+   "frameToAppliedMs": {
+    "n": 317,
+    "p50": 15.299999999813735,
+    "p95": 19.299999999813735,
+    "max": 19.5
+   },
+   "framesPublished": 600,
+   "framesDropped": 297,
+   "copyMBps": 21.2,
+   "pageErrors": [],
+   "environment": {
+    "host": "desktop Chromium (Playwright), not Android",
+    "browser": "141.0.7390.37",
+    "node": "v22.22.0"
+   }
+  },
+  {
+   "platform": "snes",
+   "seconds": 10,
+   "targetHz": 30,
+   "baselineFps": 60.2,
+   "controlledFps": 60.1,
+   "decisionsPerSecond": 30.28,
+   "decisionCodes": {
+    "pending": 318
+   },
+   "frameAgeAtDispatchMs": {
+    "p50": 2.2,
+    "p95": 15.4
+   },
+   "workerRoundTripMs": {
+    "p50": 0.4,
+    "p95": 0.8
+   },
+   "frameToAppliedFrames": {
+    "n": 318,
+    "p50": 1,
+    "p95": 1,
+    "max": 1
+   },
+   "frameToAppliedMs": {
+    "n": 318,
+    "p50": 15.5,
+    "p95": 19.40000000037253,
+    "max": 19.600000000093132
+   },
+   "framesPublished": 601,
+   "framesDropped": 298,
+   "copyMBps": 19.8,
+   "pageErrors": [],
+   "environment": {
+    "host": "desktop Chromium (Playwright), not Android",
+    "browser": "141.0.7390.37",
+    "node": "v22.22.0"
+   }
+  },
+  {
+   "platform": "sega",
+   "seconds": 10,
+   "targetHz": 30,
+   "baselineFps": 60,
+   "controlledFps": 60,
+   "decisionsPerSecond": 30.28,
+   "decisionCodes": {
+    "pending": 318
+   },
+   "frameAgeAtDispatchMs": {
+    "p50": 3.1,
+    "p95": 15.6
+   },
+   "workerRoundTripMs": {
+    "p50": 0.4,
+    "p95": 0.6
+   },
+   "frameToAppliedFrames": {
+    "n": 317,
+    "p50": 1,
+    "p95": 1,
+    "max": 1
+   },
+   "frameToAppliedMs": {
+    "n": 317,
+    "p50": 15.700000000186265,
+    "p95": 19.600000000093132,
+    "max": 21.399999999906868
+   },
+   "framesPublished": 600,
+   "framesDropped": 297,
+   "copyMBps": 19.8,
+   "pageErrors": [],
+   "environment": {
+    "host": "desktop Chromium (Playwright), not Android",
+    "browser": "141.0.7390.37",
+    "node": "v22.22.0"
+   }
+  }
+ ]
+}

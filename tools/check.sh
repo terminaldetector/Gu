@@ -8,6 +8,8 @@ node tools/nes_check.cjs
 node --check app/src/main/assets/lab/lab.js
 node tools/emulator_independence_check.cjs
 node tools/host_invariants_check.cjs
+# F0/F1: newest-frame FrameSource and frame-bound ActionSink, wired into the real lab.js
+node tools/frame_action_port_check.cjs
 node tools/save_states_check.cjs
 node tools/save_states_ui_check.cjs
 node tools/emulation_clock_check.cjs

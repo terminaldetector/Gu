@@ -29,7 +29,8 @@ let romLoading=false, romLoadSequence=0;
 let measuredFrames=0, measuredCpuMs=0, measuredStarted=performance.now();
 let diagnosticHash=null;
 /* the boundary the emulator itself draws (pause, reset, load): AGOD's live trace is detached */
-function emulatorBoundary(reason='emulator-boundary'){try{window.gameObjectiveDiscovery?.boundary(reason);}catch(error){try{window.guLogger?.event?.('goal.discovery-error',{message:String(error.message||error)},'error');}catch(_){}}}
+function emulatorBoundary(reason='emulator-boundary'){try{window.gameObjectiveDiscovery?.boundary(reason);}catch(error){try{window.guLogger?.event?.('goal.discovery-error',{message:String(error.message||error)},'error');}catch(_){}}
+ for(const port of [window.labFrameSource,window.labActionSink])if(port)try{port.boundary(reason);}catch(_){}}
 /* a session id for provenance (AGOD sessions, logs) - one per loaded cartridge */
 function originId(){try{return crypto.randomUUID();}catch(_){return 'o-'+Date.now().toString(36)+Math.random().toString(36).slice(2);}}
 function showTab(tab){
@@ -71,10 +72,11 @@ function normalizeMask(mask) {
   if(mask&64)mask&=~128;if(mask&128)mask&=~64;
   return mask;
 }
+let appliedMask2=0;
 function releasePorts() {
   if(!nes)return;
   for(const port of [1,2])for(let i=0;i<((labPlatform==='sega'||labPlatform==='snes')?12:8);i++)nes.buttonUp(port,i);
-  appliedMask=0;
+  appliedMask=0;appliedMask2=0;
 }
 function applyPortMask(port,mask,old) {
   if(!loaded)return;
@@ -82,10 +84,13 @@ function applyPortMask(port,mask,old) {
     if(mask&(1<<i))nes.buttonDown(port,i);else nes.buttonUp(port,i);
   }
 }
-/* the human holds port 1 */
+/* the human holds port 1. A controller installed as window.labActionSink (F1) may
+   hold ports 1 and 2; a human press on port 1 takes it from the controller at once.
+   Between frames only the human path runs here; advanceFrame applies both. */
 function updateButtons() {
-  const mask=normalizeMask(manualMask);
-  applyPortMask(1,mask,appliedMask);appliedMask=mask;
+  const mask=normalizeMask(manualMask),sink=typeof window!=='undefined'?window.labActionSink:null;
+  if(mask&&sink)try{sink.manualOverride(1);}catch(_){}
+  if(mask||!(sink&&sink.holding(1))){applyPortMask(1,mask,appliedMask);appliedMask=mask;}
   if(typeof window!=='undefined')window.userInterface?.telemetry?.();
 }
 /* the latest frame is kept (latestVideo) for presentation - and later for the
@@ -94,6 +99,9 @@ function onVideoFrame(buffer,width=256,height=240) {
   if(screen.width!==width||screen.height!==height){screen.width=width;screen.height=height;screen.style.aspectRatio=width+"/"+height;image=context.createImageData(width,height);fitVideo();}
   latestVideo={buffer,width,height};videoDirty=true;
   if(!deferredVideo)presentVideo();
+  /* F0: only when a controller runtime installed window.labFrameSource - no copy otherwise */
+  if(typeof window!=='undefined'&&window.labFrameSource)try{window.labFrameSource.publish(buffer,width,height,{emuFrame:frame+1,fps:labPlatform!=='nes'&&nes&&nes.fps?nes.fps:60});}
+  catch(error){try{window.guLogger?.event?.('agent.frame-source-error',{message:String(error.message||error)},'error');}catch(_){}}
 }
 function presentVideo(){
   if(!videoDirty||!latestVideo)return;const {buffer,width,height}=latestVideo;
@@ -185,8 +193,16 @@ window.labError=function(data){
 function advanceFrame(now) {
   if(!loaded||romLoading)return;
   let coreElapsedMs=0;
-  updateButtons();
-  const objectiveAction={mask:appliedMask,humanMask:appliedMask,agentMask:0,manualOverride:false};
+  /* F1: the controller's masks for the frame about to be produced; the human wins port 1 */
+  const human=normalizeMask(manualMask),sink=window.labActionSink;let agent=null,overrode=false;
+  if(sink)try{
+   if(human){overrode=sink.holding(1)||sink.pending(1);sink.manualOverride(1);}
+   const source=window.labFrameSource;agent=sink.apply((source?source.frameIndex():frame)+1);
+  }catch(error){agent=null;try{window.guLogger?.event?.('agent.action-sink-error',{message:String(error.message||error)},'error');}catch(_){}}
+  const agent1=agent&&agent[1]||0,p1=human||normalizeMask(agent1),p2=normalizeMask(agent&&agent[2]||0);
+  applyPortMask(1,p1,appliedMask);appliedMask=p1;applyPortMask(2,p2,appliedMask2);appliedMask2=p2;
+  window.userInterface?.telemetry?.();
+  const objectiveAction={mask:p1,humanMask:human,agentMask:human?0:agent1,manualOverride:overrode};
   // Detach a diagnostic trace before an excluded or intervened frame runs.
   try{window.gameObjectiveDiscovery?.beforeFrame?.({frame:frame+1,generation,action:objectiveAction});}
   catch(error){try{window.guLogger?.event?.('goal.discovery-error',{message:String(error.message||error)},'error');}catch(_){}}
