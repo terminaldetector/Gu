@@ -32,6 +32,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
  }
  // A same-page ROM replacement invalidates an asynchronous OCR result, even with the same hash.
  await page.evaluate(()=>{ocrHold=true;scoreSearch.refresh();});await page.evaluate(()=>{scoreSearch.find();});await page.waitForFunction(()=>ocrQueries.length>0);const query=await page.evaluate(()=>ocrQueries.at(-1));await page.evaluate(async d=>{await labLoadRom(d);},rom('gb'));await page.evaluate(q=>labScoreText({token:q.token,candidates:[{digits:'999999',label:'stale'}]}),query);assert.equal(await page.locator('#scoreNumbers option').count(),0,'stale OCR cannot reach a new ROM');
- const codeLab=await page.goto('https://flyconsole.local/code/index.html');assert.equal(codeLab.status(),404,'the neural code lab (CodeLabActivity) is not shipped');
+ // fetch, not navigation: a 404 navigation is a status in Chromium but an error page in Chrome
+ const codeLab=await page.evaluate(()=>fetch('/code/index.html').then(r=>r.status));assert.equal(codeLab,404,'the neural code lab (CodeLabActivity) is not shipped');
  assert.deepEqual(errors,[]);await browser.close();console.log('PASS: in-game reset, saved gamepad A/B mapping, score counter found from OCR + RAM and kept per ROM as a diagnostic (no reward), failed/rapid ROM replacement and stale OCR exclusion on all real cores, no code lab; native responses are fixtures');
 })().catch(async e=>{console.error(e);if(browser)await browser.close();process.exitCode=1;});
