@@ -95,5 +95,13 @@ const ram=s=>Array.from(s.nes.cpu.mem.slice(0,0x800));
  const hooks=new Set(scripts.flatMap(f=>[...fs.readFileSync(path.join(LAB,f),'utf8').matchAll(/window\.(lab[A-Za-z]+)\s*=/g)].map(m=>m[1])));
  for(const h of ['labResult','labReady','labConfigured','labSystemButtons','labDualTelemetry','labAgentStatus','labImportModel','labRecording','labLayerSets','labEpisodeHistory','labEvaluationSeries'])
   assert(!hooks.has(h),'the page still defines the agent hook '+h);
+ /* the Android page-readiness probe may require only what the page defines: a probe
+    naming a removed hook makes a working page report "JavaScript did not start" */
+ const defined=new Set(scripts.flatMap(f=>[...fs.readFileSync(path.join(LAB,f),'utf8').matchAll(/window\.(\w+)\s*=(?!=)/g)].map(m=>m[1])));
+ const probe=java.match(/evaluateJavascript\("Boolean\(([^"]*)\)"/);
+ assert(probe,'the readiness probe is present in NesLabActivity');
+ const required=[...probe[1].matchAll(/window\.(\w+)/g)].map(m=>m[1]);
+ assert(required.length>=2,'the probe checks the host entry points');
+ for(const name of required)assert(defined.has(name),'the readiness probe requires window.'+name+', which no page script defines');
 }
-console.log('PASS: the real NES runs and takes human input with no agent, deterministically; AGOD hook failures are isolated and logged, a core failure stops and is reported; the page calls only declared emulator-host bridge methods and defines no agent hooks');
+console.log('PASS: the real NES runs and takes human input with no agent, deterministically; AGOD hook failures are isolated and logged, a core failure stops and is reported; the page calls only declared emulator-host bridge methods, defines no agent hooks and satisfies the Android readiness probe');
