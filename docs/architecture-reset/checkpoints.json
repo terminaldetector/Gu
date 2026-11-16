@@ -1,0 +1,33 @@
+{
+  "type": "gu-architecture-reset-checkpoints",
+  "schema": 1,
+  "branch": "arch/gu-minimal-core",
+  "archiveBranch": "archive/gu-2be2dae-male-cns-fdb",
+  "researchBranchUnchanged": {"branch": "research/agod-neural-e0-e1", "head": "2be2daed1399bef6328d45a353cd43bf4a325a16"},
+  "note": "Each checkpoint is a rollback point. 'ci' is the GitHub Actions run on that exact head; 'physicalAndroid' is never PASS without a real device.",
+  "checkpoints": [
+    {
+      "node": "G0",
+      "head": "29c9f895b842dd0501eb3e37fe88b4ea460c1f2c",
+      "parent": "e4a07dc6cd947593781bda32de0e7859f5b666d9",
+      "content": "C2a+C2b (page without the neural agent) + Android readiness-probe follow-up; Java still contains Male CNS/FDB",
+      "ci": {
+        "29c9f89": {"run": 43831493337, "conclusion": "success", "steps": "check.sh, UI suites, gpu_runtime_check, bundle_data, full Male CNS, two full models, gradle assembleDebug lintDebug assembleRelease lintRelease"},
+        "e4a07dc": {"run": 43831089524, "conclusion": "success"}
+      },
+      "apkArtifacts": {
+        "FlyConsole-debug-apk": {"zipBytes": 125915449, "artifactDigest": "sha256:d350b63303ee847dc589865000106ad15584587186ffdf9bb8088aca94e6f51f"},
+        "FlyConsole-release-apk": {"zipBytes": 119854363, "artifactDigest": "sha256:06cb551fbcf3163de2a0499b95b33b84663e413fa9959f3c05292be3074bc6be"},
+        "note": "sizes are of the zipped CI artifacts and still include the bundled Male CNS graph; G2/G3 must remove it"
+      },
+      "local": {
+        "checkSh": "exit 0 (agod_realrom_check BLOCKED without AGOD_PRIVATE_ROMS, by design)",
+        "uiSuites": "14/14",
+        "agodAppE2e": "0 failures",
+        "privacyGuard": "no ROM bytes, no archive, no iNES/ZIP magic"
+      },
+      "knownPreexisting": ["agod_experimental_bridge_check fails on research globals exactly as on 2be2dae; not in CI"],
+      "physicalAndroid": "DEVICE-PENDING"
+    }
+  ]
+}
