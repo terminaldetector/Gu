@@ -1,0 +1,625 @@
+{
+ "type": "gu-lfm-fast-vision-bench",
+ "schema": 1,
+ "model": "LiquidAI LFM2.5-VL-450M, official weights (local; not downloaded at run time, not committed)",
+ "host": "x86_64, 4 vCPU, torch 2.15.0+cu132 / onnxruntime CPU EP. HOST NUMBERS, NOT ANDROID.",
+ "graph": "research/lfm_fast/lfm_fast_vision.py FastVision: patchify (no processor, no padding) -> SigLIP2 vision -> projector [-> LFM2 decoder layers 0..k-1]; no embedding table, no LM head, no generation",
+ "reference": {
+  "patch_max_abs_diff": 5.9138983488082886e-08,
+  "proj_max_abs_diff": 0.001068115234375,
+  "proj_ref_abs_mean": 3.6195456981658936,
+  "lm2_max_abs_diff": 0.0,
+  "lm2_ref_abs_mean": 3.4994702339172363,
+  "lm4_max_abs_diff": 0.0,
+  "lm4_ref_abs_mean": 3.4910759925842285,
+  "grid": [
+   16,
+   16
+  ],
+  "tokens": 64,
+  "meaning": "minimal graph vs the transformers path on the same frame: proj max |diff| 0.0011 against mean |value| 3.62 (relative per token 1.5e-5); lm2/lm4 exits identical to transformers hidden_states[2]/[4]"
+ },
+ "fullCheckpointLoadRssMiB": 3348,
+ "torchFp32": [
+  {
+   "name": "proj",
+   "grid": [
+    16,
+    16
+   ],
+   "tokens": 64,
+   "vision_layers": 12,
+   "exit": 0,
+   "threads": 1,
+   "params_M": 94.0,
+   "preprocess_ms_p50": 0.6,
+   "model_ms_p50": 392.5,
+   "model_ms_p95": 422.5
+  },
+  {
+   "name": "proj",
+   "grid": [
+    16,
+    16
+   ],
+   "tokens": 64,
+   "vision_layers": 12,
+   "exit": 0,
+   "threads": 2,
+   "params_M": 94.0,
+   "preprocess_ms_p50": 0.4,
+   "model_ms_p50": 210.3,
+   "model_ms_p95": 222.3
+  },
+  {
+   "name": "proj",
+   "grid": [
+    16,
+    16
+   ],
+   "tokens": 64,
+   "vision_layers": 12,
+   "exit": 0,
+   "threads": 4,
+   "params_M": 94.0,
+   "preprocess_ms_p50": 0.3,
+   "model_ms_p50": 115.6,
+   "model_ms_p95": 137.2
+  },
+  {
+   "name": "lm2",
+   "grid": [
+    16,
+    16
+   ],
+   "tokens": 64,
+   "vision_layers": 12,
+   "exit": 2,
+   "threads": 1,
+   "params_M": 130.7,
+   "preprocess_ms_p50": 0.5,
+   "model_ms_p50": 414.6,
+   "model_ms_p95": 432.5
+  },
+  {
+   "name": "lm2",
+   "grid": [
+    16,
+    16
+   ],
+   "tokens": 64,
+   "vision_layers": 12,
+   "exit": 2,
+   "threads": 2,
+   "params_M": 130.7,
+   "preprocess_ms_p50": 0.4,
+   "model_ms_p50": 235.6,
+   "model_ms_p95": 256.0
+  },
+  {
+   "name": "lm2",
+   "grid": [
+    16,
+    16
+   ],
+   "tokens": 64,
+   "vision_layers": 12,
+   "exit": 2,
+   "threads": 4,
+   "params_M": 130.7,
+   "preprocess_ms_p50": 0.3,
+   "model_ms_p50": 139.0,
+   "model_ms_p95": 170.5
+  },
+  {
+   "name": "lm4",
+   "grid": [
+    16,
+    16
+   ],
+   "tokens": 64,
+   "vision_layers": 12,
+   "exit": 4,
+   "threads": 1,
+   "params_M": 166.4,
+   "preprocess_ms_p50": 0.5,
+   "model_ms_p50": 481.1,
+   "model_ms_p95": 520.3
+  },
+  {
+   "name": "lm4",
+   "grid": [
+    16,
+    16
+   ],
+   "tokens": 64,
+   "vision_layers": 12,
+   "exit": 4,
+   "threads": 2,
+   "params_M": 166.4,
+   "preprocess_ms_p50": 0.4,
+   "model_ms_p50": 263.7,
+   "model_ms_p95": 278.5
+  },
+  {
+   "name": "lm4",
+   "grid": [
+    16,
+    16
+   ],
+   "tokens": 64,
+   "vision_layers": 12,
+   "exit": 4,
+   "threads": 4,
+   "params_M": 166.4,
+   "preprocess_ms_p50": 0.3,
+   "model_ms_p50": 155.5,
+   "model_ms_p95": 201.9
+  },
+  {
+   "name": "proj-v6",
+   "grid": [
+    16,
+    16
+   ],
+   "tokens": 64,
+   "vision_layers": 6,
+   "exit": 0,
+   "threads": 1,
+   "params_M": 51.5,
+   "preprocess_ms_p50": 0.5,
+   "model_ms_p50": 191.4,
+   "model_ms_p95": 219.7
+  },
+  {
+   "name": "proj-v6",
+   "grid": [
+    16,
+    16
+   ],
+   "tokens": 64,
+   "vision_layers": 6,
+   "exit": 0,
+   "threads": 2,
+   "params_M": 51.5,
+   "preprocess_ms_p50": 0.4,
+   "model_ms_p50": 107.4,
+   "model_ms_p95": 114.6
+  },
+  {
+   "name": "proj-v6",
+   "grid": [
+    16,
+    16
+   ],
+   "tokens": 64,
+   "vision_layers": 6,
+   "exit": 0,
+   "threads": 4,
+   "params_M": 51.5,
+   "preprocess_ms_p50": 0.3,
+   "model_ms_p50": 63.7,
+   "model_ms_p95": 79.2
+  },
+  {
+   "name": "proj-t16",
+   "grid": [
+    6,
+    8
+   ],
+   "tokens": 12,
+   "vision_layers": 12,
+   "exit": 0,
+   "threads": 1,
+   "params_M": 94.0,
+   "preprocess_ms_p50": 0.3,
+   "model_ms_p50": 109.6,
+   "model_ms_p95": 115.4
+  },
+  {
+   "name": "proj-t16",
+   "grid": [
+    6,
+    8
+   ],
+   "tokens": 12,
+   "vision_layers": 12,
+   "exit": 0,
+   "threads": 2,
+   "params_M": 94.0,
+   "preprocess_ms_p50": 0.3,
+   "model_ms_p50": 59.2,
+   "model_ms_p95": 62.9
+  },
+  {
+   "name": "proj-t16",
+   "grid": [
+    6,
+    8
+   ],
+   "tokens": 12,
+   "vision_layers": 12,
+   "exit": 0,
+   "threads": 4,
+   "params_M": 94.0,
+   "preprocess_ms_p50": 0.3,
+   "model_ms_p50": 37.7,
+   "model_ms_p95": 45.8
+  },
+  {
+   "name": "proj-t16-v6",
+   "grid": [
+    6,
+    8
+   ],
+   "tokens": 12,
+   "vision_layers": 6,
+   "exit": 0,
+   "threads": 1,
+   "params_M": 51.5,
+   "preprocess_ms_p50": 0.3,
+   "model_ms_p50": 57.9,
+   "model_ms_p95": 66.9
+  },
+  {
+   "name": "proj-t16-v6",
+   "grid": [
+    6,
+    8
+   ],
+   "tokens": 12,
+   "vision_layers": 6,
+   "exit": 0,
+   "threads": 2,
+   "params_M": 51.5,
+   "preprocess_ms_p50": 0.3,
+   "model_ms_p50": 30.8,
+   "model_ms_p95": 37.0
+  },
+  {
+   "name": "proj-t16-v6",
+   "grid": [
+    6,
+    8
+   ],
+   "tokens": 12,
+   "vision_layers": 6,
+   "exit": 0,
+   "threads": 4,
+   "params_M": 51.5,
+   "preprocess_ms_p50": 0.3,
+   "model_ms_p50": 16.7,
+   "model_ms_p95": 22.2
+  }
+ ],
+ "onnx": {
+  "note": "peakRssMiB is measured in a fresh process holding only onnxruntime and the graph; file size is reported apart and is not RAM",
+  "int8": "onnxruntime quantize_dynamic, QInt8 weights, MatMul/Gemm; drift measured on 16 real keyframes of NES Contra play (frames not stored here)",
+  "variants": [
+   {
+    "realFrames": 16,
+    "int8CosineToFp32RealFrames": 0.7798382043838501,
+    "int8PooledCosineRealFrames": 0.9381388425827026,
+    "name": "nes-proj",
+    "grid": [
+     16,
+     16
+    ],
+    "visionLayers": 12,
+    "exitLayers": 0,
+    "fp32": "nes-proj.onnx",
+    "int8": "nes-proj.int8.onnx",
+    "onnxVsTorchMaxAbs": 0.003936767578125,
+    "referenceAbsMean": 2.502791404724121,
+    "int8CosineToFp32": 0.8398699760437012,
+    "fileMiB": {
+     "fp32": 360.2,
+     "int8": 91.4
+    },
+    "runs": {
+     "fp32": [
+      {
+       "threads": 1,
+       "loadMs": 507,
+       "p50": 343.2,
+       "p95": 403.3,
+       "peakRssMiB": 455,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 419
+      },
+      {
+       "threads": 2,
+       "loadMs": 384,
+       "p50": 189.2,
+       "p95": 223.4,
+       "peakRssMiB": 455,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 419
+      },
+      {
+       "threads": 4,
+       "loadMs": 396,
+       "p50": 113.0,
+       "p95": 140.7,
+       "peakRssMiB": 455,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 419
+      }
+     ],
+     "int8": [
+      {
+       "threads": 1,
+       "loadMs": 138,
+       "p50": 80.9,
+       "p95": 104.1,
+       "peakRssMiB": 187,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 150
+      },
+      {
+       "threads": 2,
+       "loadMs": 178,
+       "p50": 71.5,
+       "p95": 76.6,
+       "peakRssMiB": 187,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 150
+      },
+      {
+       "threads": 4,
+       "loadMs": 173,
+       "p50": 34.8,
+       "p95": 52.6,
+       "peakRssMiB": 187,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 151
+      }
+     ]
+    }
+   },
+   {
+    "realFrames": 16,
+    "int8CosineToFp32RealFrames": 0.7890429496765137,
+    "int8PooledCosineRealFrames": 0.938617467880249,
+    "name": "nes-lm2",
+    "grid": [
+     16,
+     16
+    ],
+    "visionLayers": 12,
+    "exitLayers": 2,
+    "fp32": "nes-lm2.onnx",
+    "int8": "nes-lm2.int8.onnx",
+    "onnxVsTorchMaxAbs": 0.0032958984375,
+    "referenceAbsMean": 2.5810794830322266,
+    "int8CosineToFp32": 0.8635333180427551,
+    "fileMiB": {
+     "fp32": 500.3,
+     "int8": 126.5
+    },
+    "runs": {
+     "fp32": [
+      {
+       "threads": 1,
+       "loadMs": 712,
+       "p50": 384.2,
+       "p95": 466.9,
+       "peakRssMiB": 596,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 559
+      },
+      {
+       "threads": 2,
+       "loadMs": 570,
+       "p50": 235.3,
+       "p95": 278.8,
+       "peakRssMiB": 596,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 559
+      },
+      {
+       "threads": 4,
+       "loadMs": 549,
+       "p50": 134.7,
+       "p95": 202.8,
+       "peakRssMiB": 597,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 559
+      }
+     ],
+     "int8": [
+      {
+       "threads": 1,
+       "loadMs": 175,
+       "p50": 90.3,
+       "p95": 108.3,
+       "peakRssMiB": 223,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 186
+      },
+      {
+       "threads": 2,
+       "loadMs": 226,
+       "p50": 55.5,
+       "p95": 70.5,
+       "peakRssMiB": 224,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 186
+      },
+      {
+       "threads": 4,
+       "loadMs": 194,
+       "p50": 41.1,
+       "p95": 47.6,
+       "peakRssMiB": 224,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 186
+      }
+     ]
+    }
+   },
+   {
+    "realFrames": 16,
+    "int8CosineToFp32RealFrames": 0.7915599942207336,
+    "int8PooledCosineRealFrames": 0.939193844795227,
+    "name": "nes-lm4",
+    "grid": [
+     16,
+     16
+    ],
+    "visionLayers": 12,
+    "exitLayers": 4,
+    "fp32": "nes-lm4.onnx",
+    "int8": "nes-lm4.int8.onnx",
+    "onnxVsTorchMaxAbs": 0.003509521484375,
+    "referenceAbsMean": 2.7021729946136475,
+    "int8CosineToFp32": 0.8777436017990112,
+    "fileMiB": {
+     "fp32": 636.4,
+     "int8": 160.7
+    },
+    "runs": {
+     "fp32": [
+      {
+       "threads": 1,
+       "loadMs": 865,
+       "p50": 456.4,
+       "p95": 503.1,
+       "peakRssMiB": 734,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 696
+      },
+      {
+       "threads": 2,
+       "loadMs": 759,
+       "p50": 293.2,
+       "p95": 342.7,
+       "peakRssMiB": 733,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 696
+      },
+      {
+       "threads": 4,
+       "loadMs": 748,
+       "p50": 142.4,
+       "p95": 221.3,
+       "peakRssMiB": 734,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 696
+      }
+     ],
+     "int8": [
+      {
+       "threads": 1,
+       "loadMs": 313,
+       "p50": 101.4,
+       "p95": 125.5,
+       "peakRssMiB": 259,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 221
+      },
+      {
+       "threads": 2,
+       "loadMs": 369,
+       "p50": 75.9,
+       "p95": 89.9,
+       "peakRssMiB": 259,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 221
+      },
+      {
+       "threads": 4,
+       "loadMs": 259,
+       "p50": 52.3,
+       "p95": 55.3,
+       "peakRssMiB": 259,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 222
+      }
+     ]
+    }
+   },
+   {
+    "realFrames": 16,
+    "int8CosineToFp32RealFrames": 0.9203885793685913,
+    "int8PooledCosineRealFrames": 0.9566863775253296,
+    "name": "nes-proj-v6",
+    "grid": [
+     16,
+     16
+    ],
+    "visionLayers": 6,
+    "exitLayers": 0,
+    "fp32": "nes-proj-v6.onnx",
+    "int8": "nes-proj-v6.int8.onnx",
+    "onnxVsTorchMaxAbs": 0.0020751953125,
+    "referenceAbsMean": 45.851539611816406,
+    "int8CosineToFp32": 0.9275581240653992,
+    "fileMiB": {
+     "fp32": 197.6,
+     "int8": 50.4
+    },
+    "runs": {
+     "fp32": [
+      {
+       "threads": 1,
+       "loadMs": 247,
+       "p50": 181.3,
+       "p95": 216.9,
+       "peakRssMiB": 290,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 254
+      },
+      {
+       "threads": 2,
+       "loadMs": 297,
+       "p50": 96.4,
+       "p95": 108.3,
+       "peakRssMiB": 291,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 255
+      },
+      {
+       "threads": 4,
+       "loadMs": 285,
+       "p50": 52.5,
+       "p95": 64.1,
+       "peakRssMiB": 291,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 255
+      }
+     ],
+     "int8": [
+      {
+       "threads": 1,
+       "loadMs": 78,
+       "p50": 44.4,
+       "p95": 58.6,
+       "peakRssMiB": 144,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 108
+      },
+      {
+       "threads": 2,
+       "loadMs": 78,
+       "p50": 35.8,
+       "p95": 45.5,
+       "peakRssMiB": 144,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 108
+      },
+      {
+       "threads": 4,
+       "loadMs": 76,
+       "p50": 23.2,
+       "p95": 27.1,
+       "peakRssMiB": 144,
+       "hwmBeforeLoadMiB": 47,
+       "rssAfterLoadMiB": 108
+      }
+     ]
+    }
+   }
+  ]
+ }
+}
