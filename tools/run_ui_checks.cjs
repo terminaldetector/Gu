@@ -2,7 +2,7 @@
 // Keep CI failures inspectable even when the job's full console log is unavailable.
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),{spawn,spawnSync}=require('node:child_process');
 const suites=[
- 'agod_worker_platforms','console_layout','interface_ui','landscape_ui','platform_ui','polish_ui','release_regression_ui','continuation_ui','episode_starts_ui','session_logger_ui','console_navigation_ui','portrait_rotation_ui','objective_profiles_ui','goal_discovery_ui'
+ 'agod_worker_platforms','console_layout','interface_ui','landscape_ui','platform_ui','polish_ui','release_regression_ui','continuation_ui','episode_starts_ui','session_logger_ui','console_navigation_ui','portrait_rotation_ui','objective_profiles_ui','goal_discovery_ui','fast_loop_probe_ui'
 ];
 const annotation=value=>String(value).replace(/%/g,'%25').replace(/\r/g,'%0D').replace(/\n/g,'%0A');
 const requested=process.argv.slice(2),unknown=requested.filter(name=>!suites.includes(name));

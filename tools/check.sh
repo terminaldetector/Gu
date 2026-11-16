@@ -25,8 +25,14 @@ node --check app/src/main/assets/lab/console-navigation.js
 python tools/inspect_diagnostics_check.py
 node --check app/src/main/assets/lab/episode-starts.js
 node --check app/src/main/assets/lab/shell-ui.js
+node --check app/src/main/assets/lab/frame-source.js
+node --check app/src/main/assets/lab/action-sink.js
+node --check app/src/main/assets/lab/fast-loop-probe.js
+node --check app/src/main/assets/lab/fast-loop-worker.js
 javac -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/RomImport.java tools/RomImportCheck.java
 java -cp "$task_tmp/classes" org.node.flyconsole.RomImportCheck
+javac -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/FrameProbe.java tools/FrameProbeCheck.java
+java -cp "$task_tmp/classes" org.node.flyconsole.FrameProbeCheck
 
 node tools/human_capture_check.cjs
 node tools/training_sessions_check.cjs

@@ -109,6 +109,39 @@
         "reason": "no KVM in this container; the unaccelerated Android 30 x86_64 emulator boots (~310 s) but system_server crash-loops (network stack ANR -> 'Lost network stack'), so the app could be installed but not launched"
       },
       "physicalAndroid": "DEVICE-PENDING: startup, pause/resume, rotation, renderer-crash recovery, fps, sound, memory are not claimed"
+    },
+    {
+      "node": "F0/F1",
+      "head": "81b83576eda3c172f867f0acb7fc211832166aa5",
+      "commits": [
+        "697e51d F0/F1",
+        "81b8357 checkpoint record"
+      ],
+      "content": "FrameSource (newest-frame slot) + ActionSink (frame-bound decisions), opt-in in lab.js; frame_action_port_check 45/45 (mutation-checked); host loop bench",
+      "ci": {
+        "81b8357": {
+          "run": 43843555704,
+          "conclusion": "success"
+        }
+      },
+      "hostBench": "docs/architecture-reset/f0f1_host_bench.json: NES/SNES/Genesis 60 FPS with a 30 Hz worker controller, 1 frame source->applied, p95 frame->applied <= 19.6 ms (desktop Chromium)",
+      "physicalAndroid": "DEVICE-PENDING: transport and latency on a phone not measured"
+    },
+    {
+      "node": "Track B (F3 probe)",
+      "base": "81b83576eda3c172f867f0acb7fc211832166aa5",
+      "content": "In-APK fast-loop latency probe (Diagnostics > Быстрый контур): three transports on equal stand-in work (32x30 luminance motion -> Right/Right+A): in-WebView worker (fast-loop-worker.js), JavascriptInterface FlyBridge.probeFrame (base64, synchronous), WebMessage ArrayBuffer via androidx.webkit addWebMessageListener (window.GuFrames, feature-gated). Stages on one clock (timeOrigin+now): FramePublished -> Dispatched -> VisualReady -> DecisionReady -> Received -> ActionApplied; emulator FPS, decisions/s, feature age at apply, dropped frames/actions, app PSS (Debug.MemoryInfo, renderer process excluded) and JS heap; 20-min soak button; report to the diagnostics journal (fastloop.probe / fastloop.soak). ActionSink gained an onApplied hook + token. Not a player.",
+      "checks": {
+        "FrameProbeCheck (JVM)": "PASS: header parse, worker-equal feature on identical frames, bridge==message, malformed refused",
+        "fast_loop_probe_ui (Chromium, Android transports as fixtures)": "PASS",
+        "check.sh": "exit 0",
+        "UI suites": "15/15",
+        "apk_minimal_core_check": "PASS debug+release (FrameProbe class, probe assets)",
+        "lintDebug": "0 errors, 4 warnings (new: GradleDependency webkit 1.12.1 < 1.18.0, kept deliberately)"
+      },
+      "hostNumbers": "desktop Chromium, fixtures for bridge/message: worker 29.9 dec/s FPS 59.8 frame->applied p50/p95 15.3/19.2 ms; bridge 30 dec/s 15.2/19.3 ms; message 30 dec/s 15.5/32 ms; 60/120 frames superseded at 30 Hz (latest-wins, by design)",
+      "androidEmulator": "BLOCKED here (no KVM; system_server crash-loop)",
+      "physicalAndroid": "DEVICE-PENDING: run Diagnostics > Быстрый контур > Замерить (and the 20-min soak) on a phone and export the diagnostic report"
     }
   ]
 }

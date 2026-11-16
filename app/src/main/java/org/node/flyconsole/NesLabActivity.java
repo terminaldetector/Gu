@@ -11,6 +11,9 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+import androidx.webkit.WebMessageCompat;
+import androidx.webkit.WebViewCompat;
+import androidx.webkit.WebViewFeature;
 import org.json.JSONObject;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -30,6 +33,8 @@ public final class NesLabActivity extends Activity {
     private final java.util.Map<Integer,Boolean> diagnosticControllers=new java.util.HashMap<>();
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
     private final ScoreOcr scoreOcr=new ScoreOcr();
+    private final FrameProbe frameProbe=new FrameProbe();
+    private boolean frameMessages;
     private final AtomicLong pageEpoch=new AtomicLong();private final ThreadLocal<Long> taskPage=new ThreadLocal<>();private volatile boolean foreground;
     private WebView web;
     private volatile boolean destroyed;
@@ -60,6 +65,7 @@ public final class NesLabActivity extends Activity {
         web.getSettings().setMixedContentMode(android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         web.getSettings().setMediaPlaybackRequiresUserGesture(true);
         web.addJavascriptInterface(new Bridge(), "FlyBridge");
+        installFrameMessages();
         web.setWebChromeClient(new android.webkit.WebChromeClient(){@Override public boolean onConsoleMessage(android.webkit.ConsoleMessage message){if(message.messageLevel()==android.webkit.ConsoleMessage.MessageLevel.ERROR||message.messageLevel()==android.webkit.ConsoleMessage.MessageLevel.WARNING)try{diagnostic(message.messageLevel()==android.webkit.ConsoleMessage.MessageLevel.ERROR?"error":"warn","web.console",new JSONObject().put("message",message.message()).put("source",message.sourceId()).put("line",message.lineNumber()));}catch(Exception ignored){}return false;}});
         web.setWebViewClient(new WebViewClient() {
             @Override public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
@@ -86,6 +92,20 @@ public final class NesLabActivity extends Activity {
         controllers=new ControllerInput(this,data->{int id=data.optInt("id");boolean online=data.optBoolean("connected");Boolean previous=diagnosticControllers.put(id,online);if(previous==null||previous!=online)try{diagnostic("info","input.controller-connection",new JSONObject().put("id",id).put("connected",online).put("name",data.optString("name")).put("sources",data.optInt("sources")).put("virtual",data.opt("virtual")));}catch(Exception ignored){}if(diagnosticControllers.size()>64)diagnosticControllers.clear();emit("labController",data);});controllers.system(labSystem);
         UiInsets.attachWeb(this,web);
         web.loadUrl(ORIGIN + "/lab/index.html?system="+labSystem);
+    }
+
+    /* The fast-loop probe's binary transport: window.GuFrames.postMessage(ArrayBuffer)
+       from the page, the decision back through the reply proxy. Feature-gated: a WebView
+       without message listeners or ArrayBuffer messages gets no GuFrames object, and the
+       probe reports the transport as unavailable instead of falling back silently. */
+    private void installFrameMessages(){
+        if(!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)||!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_ARRAY_BUFFER))return;
+        WebViewCompat.addWebMessageListener(web,"GuFrames",java.util.Collections.singleton(ORIGIN),(view,message,sourceOrigin,isMainFrame,replyProxy)->{
+            if(destroyed||!isMainFrame||message.getType()!=WebMessageCompat.TYPE_ARRAY_BUFFER)return;
+            try{replyProxy.postMessage(frameProbe.decideMessage(message.getArrayBuffer()));}
+            catch(Exception failure){try{replyProxy.postMessage("{\"error\":"+JSONObject.quote(String.valueOf(failure.getMessage()))+"}");}catch(Exception ignored){}}
+        });
+        frameMessages=true;
     }
 
     private void submit(Runnable task){if(destroyed)return;final long epoch=pageEpoch.get();try{worker.execute(()->{if(destroyed||epoch!=pageEpoch.get())return;taskPage.set(epoch);try{task.run();}finally{taskPage.remove();}});}catch(java.util.concurrent.RejectedExecutionException ignored){}}
@@ -260,6 +280,25 @@ public final class NesLabActivity extends Activity {
                     loadRom(Base64.decode(data.getString("base64"), Base64.DEFAULT), "Fly "+labSystem.toUpperCase(Locale.ROOT)+" original diagnostic");
                 } catch (Exception ex) { error(ex.getMessage()); }
             });
+        }
+        /* fast-loop probe: the base64 bridge transport (synchronous round trip) */
+        @JavascriptInterface public String probeFrame(String base64,int width,int height,int frameIndex,int epoch,int seq){
+            try{return frameProbe.decidePixels(Base64.decode(base64,Base64.NO_WRAP),width,height,frameIndex,epoch,seq);}
+            catch(Exception failure){return "{\"error\":"+JSONObject.quote(String.valueOf(failure.getMessage()))+"}";}
+        }
+        @JavascriptInterface public String probeTransports(){
+            try{return new JSONObject().put("bridge",true).put("message",frameMessages)
+                .put("messageListener",WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER))
+                .put("arrayBuffer",WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_ARRAY_BUFFER)).toString();}
+            catch(Exception failure){return "{}";}
+        }
+        /* app-process memory; the WebView renderer is a separate process and is not included */
+        @JavascriptInterface public String probeMemory(){
+            try{android.os.Debug.MemoryInfo info=new android.os.Debug.MemoryInfo();android.os.Debug.getMemoryInfo(info);Runtime runtime=Runtime.getRuntime();
+                return new JSONObject().put("appTotalPssKb",info.getTotalPss()).put("appNativePssKb",info.nativePss).put("appDalvikPssKb",info.dalvikPss).put("appOtherPssKb",info.otherPss)
+                    .put("javaHeapUsedKb",(runtime.totalMemory()-runtime.freeMemory())/1024).put("probeNativeCalls",frameProbe.calls()).put("probeNativeBusyMs",frameProbe.busyMs())
+                    .put("scope","app process only; the WebView renderer process is separate and not included").toString();}
+            catch(Exception failure){return "{}";}
         }
         @JavascriptInterface public void recognizeScore(String json) {
             if(destroyed)return;final long epoch=pageEpoch.get();

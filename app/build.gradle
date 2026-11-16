@@ -28,5 +28,7 @@ android { namespace 'org.node.flyconsole'; compileSdk 35
   if (guIgnored) ignoreAssetsPattern = (['!.svn', '!.git', '!.ds_store', '!*.scc', '.*', '!CVS', '!thumbs.db', '!picasa.ini', '!*~'] + guIgnored).join(':')
  }
 }
-dependencies { implementation 'com.google.mlkit:text-recognition:16.0.1' }
+dependencies { implementation 'com.google.mlkit:text-recognition:16.0.1'
+ /* fast-loop probe: WebMessage ArrayBuffer transport (feature-gated at runtime) */
+ implementation 'androidx.webkit:webkit:1.12.1' }
 

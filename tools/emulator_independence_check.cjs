@@ -79,7 +79,8 @@ const ram=s=>Array.from(s.nes.cpu.mem.slice(0,0x800));
  const scripts=[...html.matchAll(/src="([^"]+)"/g)].map(m=>m[1]).filter(f=>fs.existsSync(path.join(LAB,f)));
  const java=fs.readFileSync(path.join(__dirname,'../app/src/main/java/org/node/flyconsole/NesLabActivity.java'),'utf8');
  const declared=new Set([...java.matchAll(/@JavascriptInterface public \S+ (\w+)\(/g)].map(m=>m[1]));
- const host=new Set(['acceptRom','controls','demo','diagnostics','finishExit','finishSystemSwitch','gameDisplay','lifecyclePending','lifecycleSaved','orientation','pickRom','recognizeScore','resume','romLibrary','stop','switchSystem']);
+ const host=new Set(['acceptRom','controls','demo','diagnostics','finishExit','finishSystemSwitch','gameDisplay','lifecyclePending','lifecycleSaved','orientation','pickRom','recognizeScore','resume','romLibrary','stop','switchSystem',
+  /* the fast-loop latency probe (Track B) */ 'probeFrame','probeTransports','probeMemory']);
  const used=new Map();
  for(const f of scripts){
   const t=fs.readFileSync(path.join(LAB,f),'utf8');

@@ -206,3 +206,10 @@ GitHub Actions `Android APK`, прогон **43703791646**, `head_sha 2be2daed�
 
 Новый гейт `tools/apk_minimal_core_check.py` проверяет собранный APK, а не исходники: нет графа и нейроассетов, нет удалённых классов в dex, есть классы хоста, четыре ядра и AGOD, у приложения одна Activity, нет `INTERNET` (по aapt2; без aapt2 гейт не проходит). Мутация «внедрённый `male-cns.fly.gz`» ловится. `release_regression_ui` вместо открытия удалённой программной лаборатории проверяет, что её нет (404).
 
+
+### F0/F1 и Track B: порты кадра/действия и замер быстрого контура в APK
+
+- F0/F1 (`frame-source.js`, `action-sink.js`, подключение в `lab.js` только при установленных портах): `frame_action_port_check` 45/45 с мутациями; хостовый стенд `f0f1_host_bench.json`.
+- Track B — диагностический режим в APK (Диагностика → «Быстрый контур»): одинаковая работа-заглушка (яркость 32×30, движение → Right/Right+A; это измеритель, не игрок) через три транспорта: worker внутри WebView, `FlyBridge.probeFrame` (base64, синхронно), WebMessage ArrayBuffer (`androidx.webkit`, `window.GuFrames`, только если WebView поддерживает `WEB_MESSAGE_LISTENER` и `WEB_MESSAGE_ARRAY_BUFFER`). Этапы на одних часах: FramePublished → Dispatched → VisualReady → DecisionReady → Received → ActionApplied; FPS эмулятора, решений/с, возраст признаков при применении, пропуски кадров и действий, PSS процесса приложения (без процесса-рендерера WebView) и куча JS; кнопка 20-минутного замера памяти. Отчёт пишется в диагностический журнал (`fastloop.probe`, `fastloop.soak`) и экспортируется вместе с ним.
+- Проверки: `FrameProbeCheck` (JVM: заголовок, совпадение признака с worker на одинаковых кадрах, bridge = message, отказ на битых кадрах), `fast_loop_probe_ui` (Chromium; Android-транспорты — фикстуры), гейт APK требует `FrameProbe` и файлы замера.
+- Хост (десктопный Chromium, фикстуры вместо Android): 30 решений/с при 60 FPS, кадр→действие p50/p95 ≈ 15/19 мс (worker, bridge), 15/32 мс (message). Это не числа телефона: Android-эмулятор здесь не стартует (нет KVM), физическое устройство — DEVICE-PENDING.

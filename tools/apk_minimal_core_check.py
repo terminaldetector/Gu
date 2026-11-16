@@ -20,13 +20,14 @@ REQUIRED_ASSETS = [
     'assets/lab/sega/genplus.wasm', 'assets/lab/gb/core.wasm', 'assets/lab/snes/core.wasm',
     'assets/lab/agod-pipeline.js', 'assets/lab/agod-worker.js', 'assets/lab/agod-platform-driver.js',
     'assets/lab/agod-objective.js', 'assets/lab/agod-live.js', 'assets/lab/agod-reward-sink.js',
-    'assets/lab/goal-discovery-ui.js', 'assets/NOTICE.txt']
+    'assets/lab/goal-discovery-ui.js', 'assets/lab/frame-source.js', 'assets/lab/action-sink.js',
+    'assets/lab/fast-loop-probe.js', 'assets/lab/fast-loop-worker.js', 'assets/NOTICE.txt']
 DELETED_CLASSES = ['Engine', 'Graph', 'GraphCache', 'GraphDelta', 'GpuLifEngine', 'GpuLayerSync', 'Experiment',
     'RoutingProfile', 'ConnectomeStore', 'InferenceProgram', 'LabDiagnostics', 'SyntheticGraphJson', 'FdbCheckpoint',
     'FdbDiagnostics', 'FdbGrowth', 'FdbLayerBinding', 'FdbLearning', 'DualAgentContext', 'DualLayerStore',
     'DualRequestGuard', 'IsolatedFdbContext', 'LayerSetStore', 'LearnedRoles', 'ComparisonStore', 'PairedEvaluation',
     'MainActivity', 'CodeLabActivity', 'LabModule', 'LabRequestFailure']
-REQUIRED_CLASSES = ['NesLabActivity', 'RomImport', 'RomLibrary', 'ControllerInput', 'DeviceLog', 'ScoreOcr', 'DiagnosticsApplication']
+REQUIRED_CLASSES = ['NesLabActivity', 'RomImport', 'RomLibrary', 'ControllerInput', 'DeviceLog', 'ScoreOcr', 'DiagnosticsApplication', 'FrameProbe']
 descriptor = lambda name: ('Lorg/node/flyconsole/' + name + ';').encode()
 
 

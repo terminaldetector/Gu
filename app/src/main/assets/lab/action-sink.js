@@ -18,6 +18,8 @@
    LATENCY IS MEASURED AT APPLICATION: frames from the source frame to the frame
    the mask is applied on, and wall milliseconds from createdAt (if given) or
    from submission to application - the decision's real age when it takes effect.
+   options.onApplied(record) is called (exception-safe) for every applied decision
+   with its token, so a probe can time each stage of one decision end to end.
 
    The sink never blocks the emulator: apply() is O(ports) and allocation-free. */
 (function(root){'use strict';
@@ -28,6 +30,7 @@ function create(options){
  const maxStale=Number.isInteger(o.maxStaleFrames)&&o.maxStaleFrames>=0?o.maxStaleFrames:6;
  const maxHold=Number.isInteger(o.maxHoldFrames)&&o.maxHoldFrames>0?o.maxHoldFrames:60;
  const clock=typeof o.now==='function'?o.now:()=>(typeof performance!=='undefined'?performance.now():Date.now());
+ const onApplied=typeof o.onApplied==='function'?o.onApplied:null;
  let epoch=0,paused=false,lastFrame=-1;
  const pending=new Map(),active=new Map();
  const counts={submitted:0,accepted:0,applied:0,superseded:0,cancelled:0,released:0,rejected:{}};
@@ -46,7 +49,7 @@ function create(options){
   const hold=Number.isInteger(d.holdFrames)&&d.holdFrames>0?Math.min(maxHold,d.holdFrames):1;
   if(pending.has(d.port))counts.superseded++;
   pending.set(d.port,{port:d.port,mask:d.mask,hold,sourceFrameIndex:d.sourceFrameIndex,modelRevision:d.modelRevision||null,
-   createdAt:Number.isFinite(d.createdAt)?d.createdAt:clock()});
+   createdAt:Number.isFinite(d.createdAt)?d.createdAt:clock(),token:d.token===undefined?null:d.token});
   counts.accepted++;return {accepted:true,code:'pending'};
  }
  /* called once per emulated frame, before the core runs it */
@@ -60,7 +63,9 @@ function create(options){
     else{
      active.set(port,{mask:p.mask,until:frameIndex+p.hold,sourceFrameIndex:p.sourceFrameIndex,modelRevision:p.modelRevision});
      counts.applied++;
-     if(latencyFrames.length<LIMIT){latencyFrames.push(frameIndex-p.sourceFrameIndex);latencyMs.push(clock()-p.createdAt);}
+     const appliedAt=clock();
+     if(latencyFrames.length<LIMIT){latencyFrames.push(frameIndex-p.sourceFrameIndex);latencyMs.push(appliedAt-p.createdAt);}
+     if(onApplied)try{onApplied({port,token:p.token,mask:p.mask,sourceFrameIndex:p.sourceFrameIndex,appliedFrameIndex:frameIndex,createdAt:p.createdAt,appliedAt});}catch(_){}
     }
    }
    const a=active.get(port);
