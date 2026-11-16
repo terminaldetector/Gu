@@ -115,6 +115,9 @@ node tools/agod_realrom_check.cjs
 # the AGOD research mechanisms (teacher, labeller, frontier archive, frozen evaluation,
 # policy adapters) on the synthetic survival game - no private ROM, no neural backend
 node tools/agod_research_check.cjs
+# G1: the AGOD reward port - UNKNOWN is not 0, PROVISIONAL is not confirmed, one payment
+# per event, no mixed ROM/epoch context; on a synthetic port and on the real AGOD chain
+node tools/reward_port_check.cjs
 CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/agod_l1_bridge_check.cjs
 CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/fdb_carry_check.cjs
 CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/fdb_readout_check.cjs
