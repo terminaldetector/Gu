@@ -1,0 +1,34 @@
+{
+ "type": "gu-lfm-lora-cost",
+ "schema": 1,
+ "host": "x86 CPU fp32, torch - NOT Android",
+ "objective": "stand-in (cost only, not quality)",
+ "batch": 8,
+ "threads": 4,
+ "grid": [
+  16,
+  16
+ ],
+ "runs": [
+  {
+   "rank": 8,
+   "trainableParams": 360448,
+   "stepSeconds_p50": 2.39,
+   "keyframesPerHour": 12043,
+   "trainingPeakOverRssBeforeMiB": 1386,
+   "peakResetBeforeTraining": true,
+   "mergedInferenceMs": 160.4
+  },
+  {
+   "rank": 16,
+   "trainableParams": 720896,
+   "stepSeconds_p50": 2.04,
+   "keyframesPerHour": 14116,
+   "trainingPeakOverRssBeforeMiB": null,
+   "peakResetBeforeTraining": true,
+   "mergedInferenceMs": 140.0,
+   "memoryNote": "not measured: the allocator kept rank-8 memory, so no new peak was visible"
+  }
+ ],
+ "targets": "SigLIP2 self_attn q_proj/v_proj in all 12 vision layers + projector linear_1/linear_2"
+}
