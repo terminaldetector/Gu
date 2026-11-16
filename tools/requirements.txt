@@ -1,3 +1,2 @@
-numpy>=1.26,<3
-pandas>=2.2,<3
-pyarrow>=15,<22
+# The minimal core has no third-party Python dependency (the Male CNS
+# converters that needed numpy/pandas/pyarrow are on the archive branch).

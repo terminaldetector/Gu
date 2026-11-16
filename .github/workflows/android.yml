@@ -24,14 +24,6 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r tools/requirements.txt
-      - name: Check Male CNS streaming converter
-        run: python tools/male_cns_converter_check.py
-      - name: Ensure GPU test libraries
-        run: |
-          if ! python -c "import ctypes,pathlib;ctypes.CDLL('libEGL.so.1');ctypes.CDLL('libGLESv2.so.2');assert pathlib.Path('/usr/lib/x86_64-linux-gnu/dri/swrast_dri.so').exists()"; then
-            sudo apt-get -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 -o Acquire::Retries=0 update
-            sudo apt-get -o Acquire::http::Timeout=15 -o Acquire::https::Timeout=15 -o Acquire::Retries=0 install -y libegl1 libgles2 libgl1-mesa-dri
-          fi
       - uses: mymindstorm/setup-emsdk@v14
         with:
           version: '3.1.57'
@@ -48,7 +40,6 @@ jobs:
       - run: python tools/make_retro_roms.py
       - run: bash tools/check.sh
         env:
-          FDB_TEMPORAL_REPORT: fdb-temporal
           AGOD_ROM_REPORT: agod-controlled-rom.json
           AGOD_TRACE_REPORT: agod-nes-write-trace.json
       - uses: actions/upload-artifact@v4
@@ -61,15 +52,6 @@ jobs:
         with:
           name: FlyConsole-agod-trace-results
           path: agod-nes-write-trace.json
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: FlyConsole-plasticity-results
-          path: |
-            fdb-comparison.json
-            expanded-comparison.json
-            fdb-temporal.json
-            fdb-temporal.csv
       - name: Install UI test browser
         run: |
           npm install --prefix /tmp/fly-ui playwright@1.51.1
@@ -93,16 +75,11 @@ jobs:
         with:
           name: FlyConsole-ui-preview
           path: ui-preview/
-      - run: python tools/gpu_runtime_check.py
-      - run: python tools/bundle_data.py
-      - name: Check full Male CNS model and CPU integration
-        run: |
-          male_test_classes=$(mktemp -d)
-          javac -d "$male_test_classes" app/src/main/java/org/node/flyconsole/Graph.java app/src/main/java/org/node/flyconsole/GraphDelta.java app/src/main/java/org/node/flyconsole/Engine.java tools/MaleCnsGraphCheck.java
-          java -Xmx512m -cp "$male_test_classes" org.node.flyconsole.MaleCnsGraphCheck app/src/main/assets/male-cns.fly.gz
-      - name: Check two full models and real two-port games
-        run: bash tools/check_full_dual.sh
       - run: gradle assembleDebug lintDebug assembleRelease lintRelease
+      - name: Check the minimal-core APKs (no connectome, no neural classes, four cores, AGOD, no INTERNET)
+        run: |
+          python tools/apk_minimal_core_check.py app/build/outputs/apk/debug/app-debug.apk
+          for apk in app/build/outputs/apk/release/*.apk; do python tools/apk_minimal_core_check.py "$apk"; done
       - name: Collect official APK signing tool
         run: cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" /tmp/flyconsole-apksigner.jar
       - uses: actions/upload-artifact@v4

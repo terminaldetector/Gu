@@ -194,3 +194,15 @@ GitHub Actions `Android APK`, прогон **43703791646**, `head_sha 2be2daed�
 | объектные инварианты `agod_l1_bridge_check`: привязка профиля, отказ другому картриджу и раскладке, strict по умолчанию, журнал через перезапуск, override, mask mismatch, revoke | реальная цепочка без FDB |
 
 Не перенесено, так как требует обучаемого контроллера (узлы G6/G8/G11): «веса реально изменились от VERIFIED», «frozen-оценка ничего не меняет», «обученный лучше необученного и случайного». Порт этого не доказывает и не заявляет; эти свойства — контракт будущего контроллера. Порт пока не подключён к странице: его потребитель появится в G6.
+
+### C2d (узел G2): Java и APK без нейронного backend
+
+| Удалено (всё есть в `archive/gu-2be2dae-male-cns-fdb`) | Сохранено |
+|---|---|
+| Java: Engine, Graph*, GpuLif/GpuLayerSync, Experiment, RoutingProfile, ConnectomeStore, InferenceProgram, LabDiagnostics, SyntheticGraphJson, Fdb*, Dual*, IsolatedFdbContext, LayerSetStore, LearnedRoles, ComparisonStore, PairedEvaluation, MainActivity, CodeLabActivity, LabModule, LabRequestFailure | NesLabActivity — только хост эмулятора: 16 bridge-методов, которые вызывает страница (`emulator_independence_check` сверяет обе стороны и readiness probe); RomImport, RomLibrary, ControllerInput, DeviceLog/DiagnosticJournal/DiagnosticSummary, ScoreOcr, UiInsets |
+| ассеты: `code/` (программная лаборатория), `MALE-CNS-NOTICE.txt`, `male-cns-routing-v1.json`; граф никогда не упаковывается (`ignoreAssetsPattern`) | хранилища данных и методологии без FDB-идентичности: TrainingSessionStore, CurriculumStore, EpisodeHistory, FrozenSeries, EvaluationArchive, BestPromotionGate (+ их проверки) — потребитель появится с новым контроллером |
+| тесты: все Java-проверки графа/FDB/dual/GPU, `fdb_*`, `dual_game`, `expanded_game`, `code_*`, `agod_l1_bridge_check` (C12 перенесён в `reward_port_check`, G1); инструменты: конвертеры Male CNS/FlyWire, `bundle_data`, GPU-проверки, `check_full_dual.sh`, `build_techtest_set.sh`, `examples/synthetic` | порты P1/P2 ядер, драйверы AGOD, выбор пада P2 Sega — не тронуты; человек на странице играет за P1, как и раньше (P2 человека существовал только в паре с агентом) |
+| CI: конвертер и полная проверка Male CNS, GPU-библиотеки и runtime, `bundle_data`, две полные модели, plasticity-артефакт | CI: check.sh, UI-наборы, Gradle assemble + lint, новый гейт `apk_minimal_core_check.py` |
+
+Новый гейт `tools/apk_minimal_core_check.py` проверяет собранный APK, а не исходники: нет графа и нейроассетов, нет удалённых классов в dex, есть классы хоста, четыре ядра и AGOD, у приложения одна Activity, нет `INTERNET` (по aapt2; без aapt2 гейт не проходит). Мутация «внедрённый `male-cns.fly.gz`» ловится. `release_regression_ui` вместо открытия удалённой программной лаборатории проверяет, что её нет (404).
+

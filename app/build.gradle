@@ -3,34 +3,28 @@ def guDigest = java.security.MessageDigest.getInstance('SHA-256')
 def guSources = fileTree('src/main') { include 'java/**/*.java', 'assets/lab/**/*.js', 'assets/lab/**/*.html', 'assets/lab/**/*.css', 'assets/**/*source.json', 'assets/**/*.comp', 'res/**/*.xml', 'AndroidManifest.xml' }.files.toList().sort { it.path }
 (guSources + [file('build.gradle')]).each { guDigest.update(project.relativePath(it).getBytes('UTF-8')); guDigest.update(it.bytes) }
 def guSourceId = guDigest.digest().encodeHex().toString()
-/* TECH-TEST BUILDS. Every property below is optional; with none of them set the
-   build is byte-for-byte the ordinary one CI makes. tools/build_techtest_set.sh
-   uses them to make a set of APKs that install SIDE BY SIDE with each other and
-   with the normal app (own applicationId suffix and launcher label), each with a
-   chosen set of bundled connectomes and a chosen default connectome. */
+/* TECH-TEST BUILDS. Both properties are optional; with neither set the build is
+   byte-for-byte the ordinary one CI makes. They give a test APK its own
+   applicationId suffix and launcher label, so it installs SIDE BY SIDE with the
+   normal app. */
 def guTechId = project.findProperty('guTechId')
 def guTechLabel = project.findProperty('guTechLabel') ?: 'FlyConsole'
-/* Male CNS v1.0 is the only built-in production graph (directive 2026-11-13).
-   FlyWire v783 is never packaged: its asset names are always excluded, even if
-   an old checkout still has the files on disk. */
-def guTechAssets = project.findProperty('guTechAssets') ?: 'male'
-def guTechConnectome = project.findProperty('guTechConnectome') ?: 'male-cns-v1.0'
-if (!(guTechAssets in ['none', 'male'])) throw new GradleException('guTechAssets must be male or none: FlyWire v783 was removed from the product')
-if (guTechConnectome != 'male-cns-v1.0') throw new GradleException('guTechConnectome must be male-cns-v1.0: FlyWire v783 was removed from the product')
-def guIgnored = ['!brain.fly.gz', '!brain.fly', '!brain.fly.json']
-if (guTechAssets == 'none') guIgnored += ['!male-cns.fly.gz', '!male-cns.fly', '!male-cns.fly.json']
+/* MINIMAL CORE (architecture reset): no connectome is packaged. The graph file
+   names are always excluded, even if an old checkout still has them on disk
+   (the neural backend is archived on branch archive/gu-2be2dae-male-cns-fdb);
+   tools/apk_minimal_core_check.py verifies the built APK. */
+def guIgnored = ['!brain.fly.gz', '!brain.fly', '!brain.fly.json', '!male-cns.fly.gz', '!male-cns.fly', '!male-cns.fly.json']
 android { namespace 'org.node.flyconsole'; compileSdk 35
- defaultConfig { applicationId 'org.node.flyconsole.nes'; minSdk 26; targetSdk 35; versionCode 43; versionName '2.3.0-agod'; buildConfigField 'String', 'GU_SOURCE_ID', '"' + guSourceId + '"'
-  buildConfigField 'String', 'DEFAULT_CONNECTOME', '"' + guTechConnectome + '"'
+ defaultConfig { applicationId 'org.node.flyconsole.nes'; minSdk 26; targetSdk 35; versionCode 44; versionName '3.0.0-core'; buildConfigField 'String', 'GU_SOURCE_ID', '"' + guSourceId + '"'
   buildConfigField 'String', 'TECH_ID', '"' + (guTechId ?: '') + '"'
   manifestPlaceholders = [appLabel: guTechLabel]
   if (guTechId) { applicationIdSuffix '.tech.' + guTechId.toLowerCase(); versionNameSuffix '-' + guTechId }
  }
  buildFeatures { buildConfig true }
  compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
- // Graphs and source bundles are already compressed; do not inflate packaging heap.
+ // Source bundles are already compressed; do not inflate packaging heap.
  androidResources { noCompress += ['gz', 'zip']
-  // the AGP default pattern, plus whichever connectomes this build leaves out
+  // the AGP default pattern, plus the connectome files that are never packaged
   if (guIgnored) ignoreAssetsPattern = (['!.svn', '!.git', '!.ds_store', '!*.scc', '.*', '!CVS', '!thumbs.db', '!picasa.ini', '!*~'] + guIgnored).join(':')
  }
 }

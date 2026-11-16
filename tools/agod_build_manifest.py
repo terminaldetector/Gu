@@ -44,8 +44,7 @@ def main():
               'assets/lab/agod-live.js', 'assets/lab/agod-worker.js',
               'assets/lab/agod-platform-driver.js', 'assets/lab/agod-reward.js',
               'assets/lab/agod-evidence.js', 'assets/lab/sega/genplus.wasm',
-              'assets/lab/gb/core.wasm', 'assets/lab/snes/core.wasm',
-              'assets/male-cns.fly.gz']
+              'assets/lab/gb/core.wasm', 'assets/lab/snes/core.wasm']
     # The Android build stores `.gz` assets unpacked, under the name without the
     # suffix, and the app opens either. So a connectome is present if EITHER
     # name is in the APK - looking only for `.fly.gz` reported both as missing

@@ -3,16 +3,7 @@ set -eu
 cd "$(dirname "$0")/.."
 task_tmp=$(mktemp -d)
 trap 'rm -rf "$task_tmp"' EXIT
-python tools/test_convert.py "$task_tmp"
-javac -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/Graph.java app/src/main/java/org/node/flyconsole/GraphDelta.java app/src/main/java/org/node/flyconsole/FdbGrowth.java app/src/main/java/org/node/flyconsole/FdbLearning.java app/src/main/java/org/node/flyconsole/Engine.java app/src/main/java/org/node/flyconsole/Experiment.java tools/EngineCheck.java tools/ExperimentCheck.java
-java -cp "$task_tmp/classes" org.node.flyconsole.EngineCheck "$task_tmp/test.fly"
-javac -cp "$task_tmp/classes" -d "$task_tmp/classes" tools/GraphDeltaCheck.java tools/FdbGrowthCheck.java tools/FdbLearningCheck.java tools/FdbUnknownRewardCheck.java
-java -cp "$task_tmp/classes" org.node.flyconsole.GraphDeltaCheck
-java -cp "$task_tmp/classes" org.node.flyconsole.FdbGrowthCheck
-java -cp "$task_tmp/classes" org.node.flyconsole.FdbLearningCheck
-java -cp "$task_tmp/classes" org.node.flyconsole.FdbUnknownRewardCheck
 
-java -cp "$task_tmp/classes" org.node.flyconsole.ExperimentCheck
 node tools/nes_check.cjs
 node --check app/src/main/assets/lab/lab.js
 node tools/emulator_independence_check.cjs
@@ -34,7 +25,6 @@ node --check app/src/main/assets/lab/episode-starts.js
 node --check app/src/main/assets/lab/shell-ui.js
 javac -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/RomImport.java tools/RomImportCheck.java
 java -cp "$task_tmp/classes" org.node.flyconsole.RomImportCheck
-python tools/gpu_shader_check.py
 
 node tools/human_capture_check.cjs
 node tools/training_sessions_check.cjs
@@ -56,21 +46,10 @@ b=open(sys.argv[2],'rb').read() if sys.argv[2] else urllib.request.urlopen('http
 assert hashlib.sha256(b).hexdigest()=='3cf6cd6892e32e2b4c1c39e0f52f5248a2f5b37646fdfbb79a66b46b618414ed'
 open(sys.argv[1],'wb').write(b)
 PYJSON
-javac -cp "$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/LabRequestFailure.java tools/LabRequestFailureCheck.java
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.LabRequestFailureCheck
-javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/GraphCache.java app/src/main/java/org/node/flyconsole/SyntheticGraphJson.java tools/GraphIdentityCheck.java tools/SyntheticGraphCheck.java
-java -cp "$task_tmp/classes" org.node.flyconsole.GraphIdentityCheck
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.SyntheticGraphCheck examples/synthetic/*.json
 javac -cp "$task_tmp/json.jar" -d "$task_tmp/controller" tools/controller-fixture/android/content/Context.java tools/controller-fixture/android/hardware/input/InputManager.java tools/controller-fixture/android/view/*.java app/src/main/java/org/node/flyconsole/ControllerInput.java tools/ControllerInputCheck.java
 java -cp "$task_tmp/controller:$task_tmp/json.jar" org.node.flyconsole.ControllerInputCheck
-javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/InferenceProgram.java tools/InferenceCheck.java
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.InferenceCheck
-javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/LayerSetStore.java tools/LayerSetStoreCheck.java
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.LayerSetStoreCheck
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/{CheckpointDigest,DiagnosticJournal,DiagnosticSummary}.java tools/DiagnosticJournalCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.DiagnosticJournalCheck
-javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/{CheckpointDigest,LearnedRoles,ComparisonStore,EvaluationArchive,BestPromotionGate}.java tools/LearnedRolesCheck.java
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.LearnedRolesCheck
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/RomLibrary.java app/src/main/java/org/node/flyconsole/CheckpointDigest.java app/src/main/java/org/node/flyconsole/EpisodeHistory.java tools/RomLibraryCheck.java tools/EpisodeHistoryCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.RomLibraryCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.EpisodeHistoryCheck
@@ -78,30 +57,10 @@ javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.CurriculumCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FrozenSeriesCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.BestPromotionGateCheck
-javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/FdbLayerBinding.java tools/FdbLayerBindingCheck.java
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbLayerBindingCheck
-javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/FdbCheckpoint.java app/src/main/java/org/node/flyconsole/{IsolatedFdbContext,PairedEvaluation}.java tools/PairedEvaluationCheck.java tools/FdbCheckpointCheck.java tools/FdbIdentityCheck.java tools/FdbProjectionCheck.java tools/FdbProjectionCacheCheck.java tools/FdbDualCreditCheck.java tools/FrozenFdbCheck.java tools/FdbTemporalExperiment.java app/src/main/java/org/node/flyconsole/RoutingProfile.java tools/RoutingProfileCheck.java app/src/main/java/org/node/flyconsole/FdbDiagnostics.java app/src/main/java/org/node/flyconsole/GpuLayerSync.java tools/GpuLayerSyncCheck.java tools/FdbDiagnosticsCheck.java tools/SyntheticLearningCheck.java tools/FdbPlasticityCheck.java tools/ExpandedPlasticityCheck.java tools/FdbGameBridge.java
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.PairedEvaluationCheck
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbCheckpointCheck
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbIdentityCheck
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbProjectionCheck
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.SyntheticLearningCheck examples/synthetic/*.json
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbPlasticityCheck
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.ExpandedPlasticityCheck
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbProjectionCacheCheck
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbDualCreditCheck
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FrozenFdbCheck
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.RoutingProfileCheck
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.GpuLayerSyncCheck
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbDiagnosticsCheck
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbTemporalExperiment "${FDB_TEMPORAL_REPORT:-$task_tmp/fdb-temporal}"
-javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/DualAgentContext.java app/src/main/java/org/node/flyconsole/DualLayerStore.java app/src/main/java/org/node/flyconsole/DualRequestGuard.java tools/DualAgentCheck.java
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.DualAgentCheck
-CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/fdb_game_check.cjs
 # AGOD gates: platform independence, four-console scenarios, temporal discovery,
-# the three-step frontier search, and the verified-reward bridge to the
-# production learner. Each prints its own PASS/FAIL count and exits non-zero on
-# a failure; a core that is not built is reported BLOCKED by the gate itself.
+# the three-step frontier search, survival, stage and the frontier archive. Each
+# prints its own PASS/FAIL count and exits non-zero on a failure; a core that is
+# not built is reported BLOCKED by the gate itself.
 node tools/agod_g3_platform_independence_test.cjs
 node tools/agod_platform_driver_check.cjs
 node tools/agod_g4_platform_scenarios.cjs
@@ -118,11 +77,7 @@ node tools/agod_research_check.cjs
 # G1: the AGOD reward port - UNKNOWN is not 0, PROVISIONAL is not confirmed, one payment
 # per event, no mixed ROM/epoch context; on a synthetic port and on the real AGOD chain
 node tools/reward_port_check.cjs
-CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/agod_l1_bridge_check.cjs
-CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/fdb_carry_check.cjs
-CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/fdb_readout_check.cjs
 node tools/realrom_observation_check.cjs
-FDB_EXPANDED_FIXTURE=1 CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/expanded_game_check.cjs
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/TrainingSessionStore.java tools/TrainingSessionStoreCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.TrainingSessionStoreCheck
 node tools/sega_check.cjs
@@ -133,12 +88,5 @@ node tools/sega_render_check.cjs
 
 node tools/retro_check.cjs
 
-javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/LabModule.java tools/CodeLabCheck.java
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.CodeLabCheck
-CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/code_worker_check.cjs
-node --check app/src/main/assets/code/lab.js
-
 node tools/benchmark_check.cjs
-javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/GraphCache.java tools/ReleaseCheck.java
-java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.ReleaseCheck
 

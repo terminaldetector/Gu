@@ -1,7 +1,3 @@
-Bundled dataset: Shiu Drosophila brain model, FlyWire v783.
-Source: https://github.com/philshiu/Drosophila_brain_model
-FlyWire data have separate applicable dataset terms; see https://zenodo.org/records/10676866.
-
 Bundled emulator engines have their own licenses:
 - JSNES: MIT; lab/JSNES-LICENSE.txt.
 - Genesis Plus GX: noncommercial license; lab/sega/LICENSE.txt and
