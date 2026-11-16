@@ -156,3 +156,28 @@ GitHub Actions `Android APK`, прогон **43703791646**, `head_sha 2be2daed�
 | `GU_JSON_JAR` — локальная копия `json-20240303.jar` с проверкой SHA-256 | offline-прогоны |
 | Приватный корпус (`AGOD_PRIVATE_ROMS`) — только локально | гейт C13 и сравнение M5 |
 | Android-устройство целевого класса | M3/M5: задержка, RAM, частота решений; в облачной сессии устройства нет |
+
+---
+
+## 7. Ход выполнения
+
+Ветка `arch/gu-minimal-core`; архив всего удалённого — `archive/gu-2be2dae-male-cns-fdb`.
+
+| Шаг | Что сделано | Чем закреплено |
+|---|---|---|
+| M0 | архивная ветка, документы аудита в репозитории | — |
+| C1 (M1) | исследовательский стенд AGOD отделён от FDB: `tools/agod_research.cjs` (teacher, labeller, frontier-архив, стадия, frozen-оценка) с адаптером политики `null / route / replay / random` | `agod_research_check` (синтетическая игра, CI); на приватном корпусе агрегаты §1.3 совпали до и после разделения |
+| C2a | со страницы удалены dual-агент, Layer Sets, shared experience, archive replay, synthetic import, модельный UI, FDB-диагностика | `node --check`, UI-наборы консоли |
+| C2b | со страницы удалены learner (SARSA), FDB feedback, training flow/journal, autonomous episodes, curriculum/episode-history UI, agent quick panel, action hold; `lab.js` — хост эмулятора без агентных хуков; AGOD перенесён на страницу «Исследование» | см. ниже |
+
+Замены тестов на шаге C2b:
+
+| Было | Стало | Почему |
+|---|---|---|
+| `neural_isolation_check`, `console_reset_check` | `emulator_independence_check` | гейт C6/R4/R6: реальный `lab.js` и NES без агента, детерминизм; отказ хуков AGOD изолирован, отказ ядра останавливает и сообщается; страница вызывает только объявленные методы хоста и не определяет агентных хуков. Проверен мутацией |
+| `two_player_mode_check` | `host_invariants_check` | неагентная часть (пропорции кадра, поворот без пересоздания Activity, MIME CSS) сохранена; добавлен запрет `INTERNET`. Человеческий 2P на странице существовал только в паре с агентом |
+| `gmode_check`, `system_controls_check`, `current_gate_check`, `runtime_flow_check`, `action_hold_check`, `learning_check`, `demonstration_check`, `fdb_feedback_check`, `fdb_reward_check`, `sega_learning_check` | удалены | проверяли только агент/FDB |
+| UI: `training_ui`, `training_flow_ui`, `autonomous_console_ui`, `autonomous_episodes_ui`, `agent_quick_panel_ui`, `agent_teaching_panel_ui`, `plasticity_speed_ui`, `action_hold_ui` | удалены | только агентные экраны |
+| `emulation_clock`, `controller`, `game_tools`, `save_states_ui` и 12 UI-наборов | переписаны без learner | инварианты эмулятора, ввода, сохранений и AGOD сохранены |
+
+Открыто для C2d (Java): критерий C12 (награда AGOD, UNKNOWN ≠ 0, одна выплата на событие) сейчас держится на `agod_l1_bridge_check` и `FdbUnknownRewardCheck`; до удаления FDB его нужно перенести на проверку `agodObjective.settle` без нейронного бэкенда.

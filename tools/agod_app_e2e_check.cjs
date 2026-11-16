@@ -65,8 +65,8 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
    {base64:rom,name:label,sha256:shaTag});
   await target.waitForFunction(()=>loaded===true,null,{timeout:60000});
   await target.evaluate(()=>{
-   window.consoleNavigation.go('legacy-learning');
-   const section=document.getElementById('trainingResearch');
+   window.consoleNavigation.go('legacy-research');
+   const section=document.getElementById('agodResearch');
    if(section&&!section.open)section.open=true;
   });
   await target.waitForSelector('#agodRunButton',{state:'visible',timeout:30000});
@@ -451,20 +451,30 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
   expect(liveBeforePositive===liveAfterPositive,
    'the positive run changed the live RAM: '+liveBeforePositive+' -> '+liveAfterPositive);
 
-  /* ---- 14. L1 in the app: the verified result becomes the reward source ----
-     The same functions lab.js runs on every decision are called here on the
-     page's own live core: fdbRewardSnapshot before and after a real button
-     press, then fdbOutcomeReward. No RAM address is typed anywhere. */
+  /* ---- 14. the verified result becomes the live objective ----
+     The controller-facing API (window.agodObjective: read / readProgress /
+     settle) is called on the page's own live core before and after a real
+     button press - the contract any controller uses. There is no built-in
+     learner since the minimal-core reset. No RAM address is typed anywhere. */
   const l1=await positivePage.evaluate(async()=>{
    const objective=window.agodObjective.status();
-   const mode=document.getElementById('rewardMode').value;
    const dto=window.agodRunPanel.record().dto;
    const cost=dto.actions.cost,press=mask=>{
     for(let b=0;b<8;b++)(mask&(1<<b)?nes.buttonDown:nes.buttonUp).call(nes,1,b);
     for(let i=0;i<4;i++)nes.frame();
     for(let b=0;b<8;b++)nes.buttonUp(1,b);
     for(let i=0;i<8;i++)nes.frame();};
-   const snap=()=>fdbRewardSnapshot(sampleRewardMemory());
+   const live=window.agodObjective;
+   const sample=()=>{const m={};for(const a of live.addresses())m[a]=nes.cpu.mem[a];return m;};
+   const snap=()=>{const m=sample();return {value:live.read(m),progress:live.readProgress(m),frame};};
+   const fdbOutcomeReward=outcome=>{
+    const start=outcome.rewardStart,end=outcome.rewardEnd;
+    if(start.value===null||end.value===null)return {reward:0,valid:false};
+    const packet=live.settle({valueBefore:start.value,valueAfter:end.value,progressBefore:start.progress,progressAfter:end.progress,
+     endFrame:end.frame,requestedMask:outcome.mask,executed:{mask:outcome.mask,frames:outcome.frames,complete:outcome.valid===true,
+     manualOverride:outcome.valid!==true},phase:'PLAYING'});
+    return (packet.status==='VERIFIED'||packet.status==='PROVISIONAL')&&Number.isFinite(packet.value)
+     ?{reward:Math.max(-10,Math.min(10,packet.value)),valid:true,agod:packet.eventId,tier:packet.status}:{reward:0,valid:false};};
    const interval=(mask,valid)=>{const rewardStart=snap();press(mask);frame+=12;
     return {rewardStart,rewardEnd:snap(),mask,frames:12,valid};};
    /* the aggressive tier first, on a fresh interval: the effect action raises
@@ -478,17 +488,14 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
    const before=window.agodObjective.status().counts;
    window.agodObjective.revoke('e2e: withdrawn');
    const afterRevoke=fdbOutcomeReward(interval(cost,true),0);
-   let autonomous=null;
-   try{document.getElementById('rewardMode').value='agod';}catch(_){}
-   return {objective,mode,cost,resourceBefore:loss.rewardStart.value,resourceAfter:loss.rewardEnd.value,
+   return {objective,cost,resourceBefore:loss.rewardStart.value,resourceAfter:loss.rewardEnd.value,
     gain,paid,again,idle,overridden,afterRevoke,counts:before,
     stored:Object.keys(localStorage).filter(k=>k.startsWith('gu.agod.objective')).length,
     panel:document.getElementById('agodRunResult').textContent,
     status:document.getElementById('agodRunStatus').textContent};
   });
-  step('14. L1 in the app: a verified objective pays through the app reward path',l1);
+  step('14. a verified objective settles through the live-objective API',l1);
   expect(l1.objective.state==='VERIFIED','the live objective is not VERIFIED: '+JSON.stringify(l1.objective));
-  expect(l1.mode==='agod','the reward source was not switched from manual to agod: '+l1.mode);
   expect(/Подтверждено/.test(l1.status),'the indicator does not say Подтверждено: '+l1.status);
   expect(l1.resourceAfter===l1.resourceBefore-1,'the cost action did not lower the discovered resource on the live core: '
    +l1.resourceBefore+' -> '+l1.resourceAfter);
@@ -541,7 +548,6 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
    name:'AGOD sequence fixture (MIT, generated locally)',
    sha256:crypto.createHash('sha256').update(Buffer.from(seq.base64,'base64')).digest('hex')});
   await followPage.waitForFunction(()=>loaded===true,null,{timeout:60000});
-  const defaultMode=await followPage.evaluate(()=>document.getElementById('rewardMode').value);
   const statusOf=()=>followPage.evaluate(()=>document.getElementById('agodRunStatus').textContent);
   /* first run: starts by itself, ends without a verified goal */
   await followPage.waitForFunction(()=>/Недостаточно данных/.test(document.getElementById('agodRunStatus').textContent),
@@ -555,8 +561,7 @@ const step=(name,detail)=>{steps.push({name,...detail});save();};
    ||/попытка 2/.test(window.__lastAgodPhase||''),null,{timeout:60000}).catch(()=>{});
   const afterAdvance=await statusOf();
   const objective=await followPage.evaluate(()=>window.agodObjective.status());
-  step('15. discovery follows the game',{defaultMode,afterFirst,stillWaiting,afterAdvance,objective});
-  expect(defaultMode==='agod','an imported cartridge does not default to the automatic reward source: '+defaultMode);
+  step('15. discovery follows the game',{afterFirst,stillWaiting,afterAdvance,objective});
   expect(/Недостаточно данных/.test(afterFirst),'background discovery did not start and finish by itself: '+afterFirst);
   expect(!/попытка 2/.test(stillWaiting),'a retry fired although the live game had not advanced: '+stillWaiting);
   expect(/попытка 2|Недостаточно данных/.test(afterAdvance)&&afterAdvance!==stillWaiting||/попытка 2/.test(afterAdvance),

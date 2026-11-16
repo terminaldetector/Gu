@@ -1,7 +1,7 @@
 /* Experimental goal discovery. Bounded diagnostics never write controls or learned state. */
 'use strict';
 (()=>{
- const node=document.createElement('p');node.id='gameObjectiveStatus';node.className='note';node.setAttribute('role','status');$('trainingStatus').after(node);
+ const node=document.createElement('p');node.id='gameObjectiveStatus';node.className='note';node.setAttribute('role','status');$('agodResearch').append(node);
  const preference='gu-agod-experimental-v1';let saved=false;try{saved=localStorage.getItem(preference)==='true';}catch(_){}
  const runId=crypto.randomUUID();let enabled=typeof window.GU_AGOD_ENABLED==='boolean'?window.GU_AGOD_ENABLED:saved,active=null,serial=0,store=null,lastState='UNKNOWN',reason='disabled';
  const clock=()=>performance.now(),trajectory=()=>crypto.randomUUID();
@@ -9,7 +9,7 @@
  // instrumented core frame conservatively; this is separate from miner work.
  const traceLimits=Object.freeze({maxFrames:16,maxEvents:128,maxWallMs:1000,maxWatchpoints:4,maxInstallMs:20,maxFrameWorkMs:50,maxTotalWorkMs:250});
  const log=(name,data={},level='info')=>{try{window.guLogger?.event?.(name,data,level);}catch(_){}};
- const option=document.createElement('label'),toggle=document.createElement('input');toggle.type='checkbox';toggle.id='experimentalGoalDiscovery';toggle.checked=enabled;option.append(toggle,document.createTextNode(' Автоанализ NES (эксперимент, без награды)'));$('trainingResearch').append(option);toggle.onchange=()=>setEnabled(toggle.checked);
+ const option=document.createElement('label'),toggle=document.createElement('input');toggle.type='checkbox';toggle.id='experimentalGoalDiscovery';toggle.checked=enabled;option.append(toggle,document.createTextNode(' Автоанализ NES (эксперимент, без награды)'));$('agodResearch').append(option);toggle.onchange=()=>setEnabled(toggle.checked);
  const same=s=>active===s&&s.core===nes&&s.hash===romHash&&s.revision===window.labCoreIdentity;
  function traceSummary(s){
   const summary=s?.traceSummary||{active:false,reason:enabled?'not-started':'disabled'};
@@ -35,9 +35,9 @@
   }
  }
  function excluded(){
-  const startId=window.labStartStateId,assignment=window.curriculumSessions?.assignment?.();
+  const startId=window.labStartStateId;
   if(startId!=null&&startId!=='rom-boot')return 'unclassified-restored-start';
-  return document.hidden||$('freeze').checked||benchmark||$('learnMode').value==='eval'||window.autonomousEpisodes?.active?.()||assignment&&assignment.role!=='discovery'&&assignment.role!=='train'||window.dualAgents?.active?.()||gmodeMode!=='off'?'evaluation-or-context':null;
+  return document.hidden?'evaluation-or-context':null;
  }
  function beforeFrame(meta){
   const s=active;if(!s?.traceSummary?.active)return;
@@ -89,12 +89,15 @@
   try{if(active?.traceAttempted){retainTrace(active,active.adapter.traceReport?.());if(!active.traceSummary?.active)stopTrace(active,active.traceSummary?.reason||'trace-stopped');}return {...(active?.miner?.report()||{version:1,context:null,candidates:[],phase:{value:'unknown'}}),runtime:status(),rewardStatus:'UNKNOWN',observerComputeMs:active?.computeMs||0,capabilities:active?.adapter?.capabilities?.()||null,trace:traceSummary(active)};}
   catch(error){if(active)fail(active,error);return {version:1,context:active?.context||null,status:'UNKNOWN',rewardStatus:'UNKNOWN',candidates:[],runtime:status()};}
  }
+ // The last profile write. A new session reads the cache only after it settles, so an
+ // engine restart cannot read the revision its predecessor is still replacing (CAS).
+ let pendingWrite=Promise.resolve();
  function persist(s,force=false){
   if(!same(s)||!s.cacheReady||s.cachePending||!store||!window.FlyObjectiveProfiles)return;
   const now=Date.now();if(!force&&now-s.lastCacheAt<10000)return;s.lastCacheAt=now;
   let profile;try{profile=FlyObjectiveProfiles.createProfile(s.context,s.miner.report(),{now});}catch(error){log('goal.profile-error',{operation:'prepare',message:error.message},'warn');return;}
   s.cachePending=true;
-  Promise.resolve(store.put(profile,{expectedRevision:s.cacheRevision})).then(saved=>{
+  pendingWrite=Promise.resolve(store.put(profile,{expectedRevision:s.cacheRevision})).then(saved=>{
    if(!same(s))return;s.cacheRevision=saved.revision;s.cacheStatus='saved';
    log('goal.profile-saved',{status:profile.status,revision:saved.revision});
   }).catch(error=>{if(!same(s))return;s.cacheStatus='unavailable';log('goal.profile-error',{operation:'save',message:error.message},'warn');}).finally(()=>{s.cachePending=false;if(same(s))render();});
@@ -103,7 +106,7 @@
   if(!window.FlyObjectiveProfiles||!window.indexedDB)return;
   try{store=store||new FlyObjectiveProfiles.Store({indexedDB:window.indexedDB,crypto:window.crypto});}
   catch(error){s.cacheStatus='unavailable';log('goal.profile-error',{operation:'open',message:error.message},'warn');return;}
-  Promise.resolve(store.get(s.context)).then(saved=>{
+  pendingWrite.catch(()=>{}).then(()=>store.get(s.context)).then(saved=>{
    if(!same(s))return;s.cacheRevision=saved?.revision||0;s.cacheStatus=saved?'compatible-provisional':'empty';s.cacheReady=true;
    // Cached candidates describe prior observations; they are never trusted as
    // verified semantics or restored into the new miner's evidence counters.
@@ -209,7 +212,7 @@
    synthesises an outcome, and a REFUSED is shown with the stage and the reason
    the pipeline gave. */
 (()=>{
- const host=document.getElementById('trainingResearch');
+ const host=document.getElementById('agodResearch');
  if(!host)return;
  const box=document.createElement('div');
  box.id='agodRunPanel';
@@ -245,7 +248,7 @@
     NOT advance, so the frame counter is recorded too and the panel says
     plainly when the two states are not comparable. */
  const liveFrame=()=>{try{return typeof frame==='undefined'?null:frame;}catch(_){return null;}};
- let liveFrameBefore=null,lastRecord=null;
+ let liveFrameBefore=null,lastRecord=null,decisionPrior=null;
  function liveComparison(){
   const after=liveStateHash(),frameAfter=liveFrame();
   if(liveHashBefore===null||after===null)return 'живая игра: состояние не прочитано';
@@ -301,6 +304,7 @@
  let platformShape='';
 
  function showResult(message){
+  decisionPrior=null;
   const dto=message.dto||null;
   const summary=message.summary||{};
   const status=(dto&&dto.status)||summary.status||'(без статуса)';
@@ -324,50 +328,33 @@
    if(status==='VERIFIED'&&validated.valid)
     parts.push('VERIFIED получен от FlyAgodPipeline и доказательства сохранены');
    /* HAND THE RESULT TO THE LIVE OBJECTIVE. Only a VERIFIED, validated record
-      can become one; anything else leaves the game without a reward source,
-      and says so. The reward mode is switched to AGOD only from "manual" - a
-      source the user configured by hand is not overridden. */
+      can become one; anything else leaves the game without a numeric signal,
+      and says so. The live objective and the decision prior are AGOD OUTPUTS:
+      they are kept on the record for a controller that asks for them, and are
+      not applied to anything here (there is no built-in learner). */
    if(window.agodObjective){
     const live=window.agodObjective.adopt(validated.valid?dto:null,lastStarted);
     if(live.state==='VERIFIED'){
-     parts.push('источник награды: подтверждён автоматически (ресурс @'+live.resourceAddress+', '+live.polarity+')');
+     parts.push('живая цель: подтверждена автоматически (ресурс @'+live.resourceAddress+', '+live.polarity+')');
      /* THE DECISION PRIOR (real-ROM track). Survival discovery measured which
-        buttons a seeded random player held just before progress rose; those
-        are ADDED to the agent's action set (the default set is kept). Only
-        when the field still holds a platform default or a set AGOD put there
-        itself - a set the person typed is theirs. GU_AGOD_DECISION=false
-        turns it off. Measured on three private cartridges, two seeds, trained
-        progress summed over argmax and sampled evaluation: SNES run-and-gun
-        356 -> 2847, Sega run-and-gun 752 -> 5071, shooter 9614 -> 9592. The
-        innate bias that also comes with the prior is NOT applied here: it
-        helped one game and hurt another. */
+        buttons a seeded random player held just before progress rose. Offered
+        as an action set for a controller; GU_AGOD_DECISION=false turns it off. */
      try{
-      const field=document.getElementById('actionMasks');
-      const prior=window.FlyAgodObjective&&typeof window.FlyAgodObjective.decisionPrior==='function'
+      const prior=window.GU_AGOD_DECISION!==false&&window.FlyAgodObjective&&typeof window.FlyAgodObjective.decisionPrior==='function'
        ?window.FlyAgodObjective.decisionPrior(dto.discovered&&dto.discovered.buttonAttribution,
          lastStarted&&lastStarted.capabilities&&lastStarted.capabilities.actionSpec):null;
-      const defaults=['0,1,2,16,32,64,128,129,17,3,65,33,66,130,18,34,19,67,131,35,4,8',
-       '0,1,2,4,16,32,64,128,129,17,256,512,1024,257,513,1025'];
-      const current=field?field.value.replace(/\s+/g,''):'';
-      if(prior&&field&&window.GU_AGOD_DECISION!==false
-       &&(defaults.includes(current)||field.dataset.agodActions===current)){
-       const text=prior.actions.join(',');field.value=text;field.dataset.agodActions=text;
-       try{if(typeof learner!=='undefined'&&learner&&typeof learner.setActions==='function')learner.setActions(prior.actions.slice());}catch(_){}
-       parts.push('действия агента: набор из AGOD ('+prior.actions.length+' масок'
-        +(prior.priors.length?'; кнопки, за которые платит игра: '+prior.priors.map(p=>p.button).join(', '):'')+')');
-      }
+      if(prior){decisionPrior=prior;
+       parts.push('набор действий из AGOD: '+prior.actions.length+' масок'
+        +(prior.priors.length?'; кнопки, за которые платит игра: '+prior.priors.map(p=>p.button).join(', '):''));}
      }catch(_){}
-     const mode=document.getElementById('rewardMode');
-     if(mode&&mode.value==='manual'){mode.value='agod';
-      try{mode.dispatchEvent(new Event('change'));}catch(_){}}
-    }else parts.push('источник награды: не подтверждён — обучение по игре не начнётся');
+    }else parts.push('живая цель: не подтверждена — числового сигнала нет');
    }
   }else if(message.dtoCloneable===false){
    parts.push('результат не сериализуется: '+(message.dtoCloneError||''));
   }
   set(outcome,parts.join(' · '));
   set(candidates,describeCandidates(dto));
-  lastRecord={dto,validated,cost:message.cost||null};
+  lastRecord={dto,validated,cost:message.cost||null,decisionPrior};
 
   const cost=message.cost||{};
   /* platformShape is appended here too: this is the THIRD writer of this line

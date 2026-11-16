@@ -16,14 +16,14 @@
   last=data.last;resume.disabled=!last;list.replaceChildren();
   for(const row of [...data.games].sort((a,b)=>b.openedAt-a.openedAt)){
    const line=document.createElement('div');line.className='row';const button=document.createElement('button');button.textContent=row.name+' · '+row.system.toUpperCase()+' · '+new Date(row.openedAt).toLocaleString();button.onclick=()=>open(row,{user:true});
-   const remove=document.createElement('button');remove.textContent='Удалить ROM';remove.setAttribute('aria-label','Удалить ROM '+row.name);remove.onclick=async()=>{if(!window.confirm('Удалить копию ROM «'+row.name+'»? Снимки игры и обученный опыт сохранятся.'))return;try{await request('delete',{system:row.system,sha256:row.sha256});await refresh();}catch(e){message(e.message,true);}};line.append(button,remove);list.append(line);
+   const remove=document.createElement('button');remove.textContent='Удалить ROM';remove.setAttribute('aria-label','Удалить ROM '+row.name);remove.onclick=async()=>{if(!window.confirm('Удалить копию ROM «'+row.name+'»? Снимки игры сохранятся.'))return;try{await request('delete',{system:row.system,sha256:row.sha256});await refresh();}catch(e){message(e.message,true);}};line.append(button,remove);list.append(line);
   }
   if(!data.games.length)message('Откройте ROM: приложение сохранит копию для продолжения.');
   if(data.recoveredIndex)message('Каталог ROM восстановлен из резервной копии.',true);
  }
  async function refresh(){render(await request('list'));}
  resume.onclick=()=>{if(last)open(last,{user:true});};details.addEventListener('toggle',()=>{if(details.open)refresh().catch(e=>message(e.message,true));});
- window.addEventListener('lab-rom-loaded',()=>{message(persistenceError?'Игра запущена; копия ROM не сохранена: '+persistenceError:'Игра открыта. Снимок и обучение восстанавливаются независимо.',Boolean(persistenceError));refresh().catch(e=>message(e.message,true));});
+ window.addEventListener('lab-rom-loaded',()=>{message(persistenceError?'Игра запущена; копия ROM не сохранена: '+persistenceError:'Игра открыта. Снимок игры восстанавливается независимо.',Boolean(persistenceError));refresh().catch(e=>message(e.message,true));});
  window.labLibrary={request,refresh};
  request('startup').then(data=>{render(data);if(last)return open(last);}).catch(e=>message(e.message,true));
 })();

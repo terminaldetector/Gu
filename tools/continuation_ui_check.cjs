@@ -14,7 +14,7 @@ let browser;
  await page.exposeFunction('lifecycleFixture',raw=>acks.push(JSON.parse(raw)));
  await page.addInitScript(()=>{window.lifecycleForeground=true;window.lifecycleTicket=null;window.FlyBridge={romLibrary:raw=>libraryFixture(raw).then(data=>labRomLibrary({token:JSON.parse(raw).token,data})),acceptRom(){},orientation(){},stop(){},resume(){},finishExit:raw=>exitFixture(raw),lifecyclePending:token=>!lifecycleForeground&&token===lifecycleTicket,lifecycleSaved:raw=>lifecycleFixture(raw)};});
  await page.goto('https://flyconsole.local/lab/index.html');await page.waitForFunction(()=>loaded&&!romLoading&&!window.labContinuing);
- assert.equal(opens,1,'startup reopens last private ROM, not a demo call');assert.equal(await page.evaluate(()=>ready),false,'resume requires no connectome');
+ assert.equal(opens,1,'startup reopens last private ROM, not a demo call');assert.equal(await page.evaluate(()=>typeof window.labReady),'undefined','resume runs with no agent');
  await page.evaluate(async()=>{window.labPause();frame=321;await labGameStates.save('auto',{automatic:true});});
  await page.reload();await page.waitForFunction(()=>loaded&&!romLoading&&!window.labContinuing&&frame===321);
  assert.equal(opens,2);assert.equal(await page.evaluate(()=>playing),false,'restored session waits for user input');assert(await page.locator('#continueLastGame').isEnabled());
@@ -28,11 +28,11 @@ let browser;
   const state=await page.evaluate(async({foreground,ticket})=>{
    lifecycleForeground=foreground;lifecycleTicket=ticket;playing=true;
    const autosave=labGameStates.autosave;let saves=0;labGameStates.autosave=()=>{saves++;return autosave();};
-   const before={frame,generation,romHash,core:nes,connected};
-   try{const result=await delayedLifecycle();return{result,saves,playing,unchanged:frame===before.frame&&generation===before.generation&&romHash===before.romHash&&nes===before.core&&connected===before.connected};}
+   const before={frame,generation,romHash,core:nes};
+   try{const result=await delayedLifecycle();return{result,saves,playing,unchanged:frame===before.frame&&generation===before.generation&&romHash===before.romHash&&nes===before.core};}
    finally{labGameStates.autosave=autosave;labPause();}
   },{foreground,ticket});
-  assert.equal(state.result.cancelled,true,label+' is cancelled');assert.equal(state.result.gameSaved,false,label+' does not claim a game save');assert.equal(state.result.learnedSaved,false,label+' does not claim a learned save');
+  assert.equal(state.result.cancelled,true,label+' is cancelled');assert.equal(state.result.gameSaved,false,label+' does not claim a game save');assert.equal('learnedSaved' in state.result,false,label+' claims nothing beyond the game state');
   assert.equal(state.saves,0,label+' does not start persistence');assert.equal(state.playing,true,label+' does not pause the current game');assert(state.unchanged,label+' preserves current frame/core/generation/connection');assert.equal(acks.length,beforeAcks,label+' sends no saved ACK');
  };
  await cancelledLifecycle('resumed request',true,'pause-fixture');
@@ -47,13 +47,9 @@ let browser;
  const failed=await page.evaluate(async()=>{const put=IDBObjectStore.prototype.put;IDBObjectStore.prototype.put=function(value,key){if(typeof key==='string'&&!key.endsWith(':recovery'))throw new DOMException('fixture quota','QuotaExceededError');return put.apply(this,arguments);};try{frame=555;return await labState.suspend();}finally{IDBObjectStore.prototype.put=put;}});
  assert.equal(failed.gameSaved,false,'failed game write is not acknowledged as saved');assert.match(failed.error,/fixture quota/);
  await page.evaluate(()=>labGameStates.load('auto'));assert.equal(await page.evaluate(()=>frame),444,'failed write retains last committed snapshot');
- await page.evaluate(async()=>{
-  labReady({kind:'history fixture',neurons:32,edges:64,heapMiB:512,graph_sha256:'b'.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:8},(_,i)=>String(i+17)),backend:'cpu'});await labState.settle();
-  window.layerExperience.checkpoint=async options=>{if(!options.force)throw Error('force checkpoint missing');throw Error('fixture neural storage failure');};
- });
- const partial=await page.evaluate(()=>labState.suspend());assert.equal(partial.gameSaved,true);assert.equal(partial.learnedSaved,false);assert.match(partial.error,/fixture neural storage failure/);
+ const saved=await page.evaluate(()=>labState.suspend());assert.equal(saved.gameSaved,true);assert.equal(saved.error,'');assert.equal('learnedSaved' in saved,false,'the lifecycle result names only the game state');
  await page.evaluate(()=>labRequestExit());await page.waitForFunction(()=>!playing);for(let i=0;i<100&&!exits.length;i++)await new Promise(r=>setTimeout(r,20));
- assert.equal(exits.length,1,'explicit exit reaches native only after game persistence');assert.equal(exits[0].gameSaved,true);assert.equal(exits[0].learnedSaved,false,'neural failure remains explicit during exit');
+ assert.equal(exits.length,1,'explicit exit reaches native only after game persistence');assert.equal(exits[0].gameSaved,true);
  assert.deepEqual(errors,[]);await browser.close();browser=null;
- console.log('PASS: native-library startup fixture with real NES/IndexedDB, reload/last snapshot without graph, valid lifecycle ACK, cancelled deferred/expired/superseded requests after foreground or ROM change without mutation, quota rollback, forced learned save, neural failure isolation and saved exit');
+ console.log('PASS: native-library startup fixture with real NES/IndexedDB, reload/last snapshot without graph, valid lifecycle ACK, cancelled deferred/expired/superseded requests after foreground or ROM change without mutation, quota rollback, honest suspend result and saved exit');
 })().catch(async e=>{console.error(e);if(browser)await browser.close();process.exitCode=1;});

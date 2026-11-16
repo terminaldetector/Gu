@@ -1,4 +1,4 @@
-'use strict';const assert=require('node:assert/strict');const T=require('../app/src/main/assets/lab/game-tools.js'),L=require('../app/src/main/assets/lab/learner.js');
+'use strict';const assert=require('node:assert/strict');const T=require('../app/src/main/assets/lab/game-tools.js');
 const rom=Uint8Array.from(Buffer.from(require('../app/src/main/assets/lab/demo-rom.json').base64,'base64'));
 assert.equal(require('node:crypto').createHash('sha256').update(rom).digest('hex'),T.diagnosticSha256,'diagnostic feedback is pinned to actual bundled bytes, independent of ROM filename');
 assert.equal(T.validateRom(rom).mapper,0);assert.throws(()=>T.validateRom(rom.slice(0,16)),/обрезан/);
@@ -12,9 +12,4 @@ mem[0]=255;mem[1]=255;assert.equal(T.readRam(mem,{...spec,format:'signed'}),-1);
 assert.equal(T.delta(0,65535,spec,true),1);assert.equal(T.delta(0,65535,spec,false),-65535);
 assert.throws(()=>T.readRam(mem,{...spec,address:2047}));
 const actions=T.actions('0,8,4,3,129,130');assert(actions.includes(8)&&actions.includes(4));assert.throws(()=>T.actions('0,48'));assert.throws(()=>T.actions('0,192'));assert.throws(()=>T.actions('0,0'));
-const l=new L(2);l.setActions(actions);let f=l.features(new Array(16).fill(.3),new Array(8).fill(40),[0,0,0,1],new Array(16).fill(.1));
-l.step(f,0,false,true);l.step(f,1,true,true);assert(l.weights.some(w=>w.at(-1)!==0),'coordinate features receive learning updates');
-const saved=JSON.parse(JSON.stringify(l.save())),restored=new L();restored.load(saved);assert.deepEqual(restored.actions,actions);assert.deepEqual(restored.weights,l.weights);
-const v1={version:1,algorithm:'linear SARSA(lambda)',weights:Array.from({length:9},()=>new Array(29).fill(.5)),updates:1,episodes:1,totalReward:2,rng:1};restored.load(v1);assert.equal(restored.weights[0][17],0);assert.equal(restored.weights[0].at(-1),.5);
-assert.throws(()=>restored.load({...saved,updates:Infinity}));
-console.log('PASS: ROM sizes/mappers, endian/signed/BCD/wrap RAM, actions, motion/readout updates, policy migration');
+console.log('PASS: ROM sizes/mappers, endian/signed/BCD/wrap RAM, action-set parsing');

@@ -60,8 +60,8 @@ function cart(generator,tag,extra){
   /* let the live game run a little, as a player would, before discovery */
   await page.evaluate(()=>{for(let i=0;i<120;i++){nes.frame();frame++;}});
   await page.evaluate(()=>{
-   window.consoleNavigation.go('legacy-learning');
-   const section=document.getElementById('trainingResearch');if(section&&!section.open)section.open=true;
+   window.consoleNavigation.go('legacy-research');
+   const section=document.getElementById('agodResearch');if(section&&!section.open)section.open=true;
    window.__agodEvents=[];
    const original=window.FlyAgodExperimental.runInWorker;
    window.FlyAgodExperimental.runInWorker=request=>original({...request,
@@ -105,14 +105,21 @@ function cart(generator,tag,extra){
    ok(r.objective.resourceAddress===off(F.lives),p+': the resource is the oracle lives at '+off(F.lives)+', got '+r.objective.resourceAddress);
    ok(r.objective.policy==='aggressive'&&r.objective.progressFields===1,p+': aggressive policy with one progress field: '
     +r.objective.policy+'/'+r.objective.progressFields);
-   /* ---- the reward path on the page's own live core ---- */
+   /* ---- the live objective settles on the page's own live core ---- */
    const masks=positive.oracle.costAction?{cost:positive.oracle.costAction.mask,gain:positive.oracle.gainAction.mask}
     :{cost:positive.oracle.negativeMask,gain:positive.oracle.positiveMask};
    const paid=await page.evaluate(m=>{
     const count=labPlatform==='sega'||labPlatform==='snes'?12:8;
     const press=mask=>{for(let b=0;b<count;b++)(mask&(1<<b)?nes.buttonDown:nes.buttonUp).call(nes,1,b);
      for(let i=0;i<4;i++)nes.frame();for(let b=0;b<count;b++)nes.buttonUp(1,b);for(let i=0;i<8;i++)nes.frame();};
-    const snap=()=>fdbRewardSnapshot(sampleRewardMemory());
+    /* the controller-facing live-objective API (read / readProgress / settle) */
+    const live=window.agodObjective;
+    const sample=()=>{const r={};for(const a of live.addresses())r[a]=nes.cpu.mem[a];return r;};
+    const snap=()=>{const r=sample();return {value:live.read(r),progress:live.readProgress(r),frame};};
+    const fdbOutcomeReward=o=>{const a=o.rewardStart,b=o.rewardEnd;if(a.value===null||b.value===null)return {reward:0,valid:false};
+     const k=live.settle({valueBefore:a.value,valueAfter:b.value,progressBefore:a.progress,progressAfter:b.progress,endFrame:b.frame,
+      requestedMask:o.mask,executed:{mask:o.mask,frames:o.frames,complete:o.valid===true,manualOverride:o.valid!==true},phase:'PLAYING'});
+     return (k.status==='VERIFIED'||k.status==='PROVISIONAL')&&Number.isFinite(k.value)?{reward:Math.max(-10,Math.min(10,k.value)),valid:true,tier:k.status}:{reward:0,valid:false};};
     const interval=mask=>{const rewardStart=snap();press(mask);frame+=12;return {rewardStart,rewardEnd:snap(),mask,frames:12,valid:true};};
     for(let i=0;i<30;i++){nes.frame();frame++;}
     const gain=fdbOutcomeReward(interval(m.gain),0);

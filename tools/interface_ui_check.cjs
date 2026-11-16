@@ -30,8 +30,8 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
  for(const id of ['settings-display','settings-touch','settings-pad','settings-keyboard','settings-console','settings-appearance'])assert(await page.locator('#'+id).count());
  await page.selectOption('#touchScale','.7');await page.selectOption('#uiShape','square');await page.selectOption('#uiTheme','light');await page.selectOption('#uiAccent','blue');await page.selectOption('#uiDensity','compact');
  await page.locator('#uiOpacity').evaluate(el=>{el.value='.5';el.dispatchEvent(new Event('change',{bubbles:true}));});
- await page.evaluate(()=>{learner.weights[0][0]=.625;learner.updates=27;$('fdbJson').value=JSON.stringify({deltas:[],edges:[{source:'1',target:'2',weight:7}]});window.beforeUI={frame,weights:JSON.stringify(learner.weights),updates:learner.updates,fdb:$('fdbJson').value};bridgeCalls.length=0;});
- await page.click('#editTouch');assert.equal(await page.evaluate(()=>userInterface.editing()),true);assert.equal(await page.evaluate(()=>playing||connected),false);
+ await page.evaluate(()=>{window.beforeUI={frame,state:JSON.stringify(nes.toJSON())};bridgeCalls.length=0;});
+ await page.click('#editTouch');assert.equal(await page.evaluate(()=>userInterface.editing()),true);assert.equal(await page.evaluate(()=>playing),false);
  await drag('.dpad',130,380);const portrait=await page.evaluate(()=>JSON.parse(localStorage.getItem(FlyInterfaceSettings.key('sega'))).layouts.portrait);assert(portrait.dpad);
  await page.selectOption('#touchEditorMode','buttons');await drag('[data-button="0"]',220,430);
  const beforeGroup=await page.locator('[data-button="0"]').boundingBox();await page.selectOption('#touchEditorMode','groups');await drag('[data-button="0"]',beforeGroup.x+beforeGroup.width/2-20,beforeGroup.y+beforeGroup.height/2-20);
@@ -39,7 +39,7 @@ const {chromium}=require('playwright'),assets=path.resolve('app/src/main/assets'
  await page.selectOption('#touchEditorMode','buttons');await drag('[data-button="0"]',220,430);
  assert.equal(await page.evaluate(()=>manualMask),0,'dragging never presses console inputs');await page.keyboard.press('z');assert.equal(await page.evaluate(()=>manualMask),0,'editor keyboard cannot demonstrate actions');
  assert.equal(await page.evaluate(()=>frame),await page.evaluate(()=>beforeUI.frame),'no emulated frame runs in editor');
- assert.equal(await page.evaluate(()=>JSON.stringify(learner.weights)),await page.evaluate(()=>beforeUI.weights));assert.equal(await page.evaluate(()=>learner.updates),27);assert.equal(await page.inputValue('#fdbJson'),await page.evaluate(()=>beforeUI.fdb));assert(!await page.evaluate(()=>bridgeCalls.includes('configure')),'UI never reconfigures the model');
+ assert.equal(await page.evaluate(()=>frame),await page.evaluate(()=>beforeUI.frame),'editing the controls does not advance or reset the game');assert.equal(await page.evaluate(()=>JSON.stringify(nes.toJSON())),await page.evaluate(()=>beforeUI.state),'editing the controls leaves the game state untouched');
  await page.click('#touchEditorDone');assert.equal(await page.evaluate(()=>userInterface.editing()),false);assert.equal(await page.evaluate(()=>playing),false);await verifyGeometry('sega customized portrait');
  const position=await page.locator('[data-button="0"]').boundingBox();assert(position.x>160&&position.y>300,'individual drag has real effect');
  await page.setViewportSize({width:568,height:320});await page.waitForTimeout(80);await verifyGeometry('sega fresh landscape');

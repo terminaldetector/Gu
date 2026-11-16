@@ -1,7 +1,8 @@
 /* The live objective: the one AGOD profile the running game may be paid by.
 
-   goal-discovery-ui.js hands a VERIFIED worker result here; lab.js asks here
-   when the reward source is "agod". Everything that decides whether a number
+   goal-discovery-ui.js hands a VERIFIED worker result here; a controller asks
+   here (read / readProgress / settle) - there is no built-in one since the
+   minimal-core reset. Everything that decides whether a number
    is produced lives in agod-objective.js - this file only holds the current
    profile, keeps it bound to the cartridge that is actually loaded, and stores
    it so the same cartridge does not have to be re-proved on every launch.
@@ -12,7 +13,7 @@
    reported the same revision; if the revision differs the profile is dropped.
 
    Changing the cartridge drops the live objective at once. Nothing here ever
-   touches the emulator: it reads the bytes lab.js already sampled. */
+   touches the emulator: it reads the bytes its caller sampled. */
 'use strict';
 (()=>{
  const STORE='gu.agod.objective.v1.';
@@ -20,8 +21,7 @@
   Evidence:window.FlyAgodEvidence,Ram:window.FlyAgodRam});
  let profile=null,reward=null,state='NONE',reason='',detectorSeen=null,capabilities=null;
  const listeners=new Set();
- const notify=()=>{for(const fn of listeners)try{fn(status());}catch(_){}
-  try{if(typeof trainingView==='function')trainingView();}catch(_){}};
+ const notify=()=>{for(const fn of listeners)try{fn(status());}catch(_){}};
  const storage=()=>{try{return window.localStorage;}catch(_){return null;}};
 
  function identity(){

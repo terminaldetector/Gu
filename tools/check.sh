@@ -15,17 +15,12 @@ java -cp "$task_tmp/classes" org.node.flyconsole.FdbUnknownRewardCheck
 java -cp "$task_tmp/classes" org.node.flyconsole.ExperimentCheck
 node tools/nes_check.cjs
 node --check app/src/main/assets/lab/lab.js
-node tools/gmode_check.cjs
-node tools/system_controls_check.cjs
-node tools/console_reset_check.cjs
-node tools/neural_isolation_check.cjs
-node tools/current_gate_check.cjs
+node tools/emulator_independence_check.cjs
+node tools/host_invariants_check.cjs
 node tools/save_states_check.cjs
 node tools/save_states_ui_check.cjs
-node tools/runtime_flow_check.cjs
 node tools/emulation_clock_check.cjs
 node tools/controller_check.cjs
-node tools/action_hold_check.cjs
 node tools/score_search_check.cjs
 node --check app/src/main/assets/lab/score-ui.js
 node tools/settings_check.cjs
@@ -34,35 +29,15 @@ node --check app/src/main/assets/lab/interface-ui.js
 node --check app/src/main/assets/lab/state-ui.js
 node --check app/src/main/assets/lab/session-logger.js
 node --check app/src/main/assets/lab/console-navigation.js
-node --check app/src/main/assets/lab/agent-quick-panel.js
 python tools/inspect_diagnostics_check.py
 node --check app/src/main/assets/lab/episode-starts.js
 node --check app/src/main/assets/lab/shell-ui.js
-node --check app/src/main/assets/lab/training-flow.js
 javac -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/RomImport.java tools/RomImportCheck.java
 java -cp "$task_tmp/classes" org.node.flyconsole.RomImportCheck
-node tools/two_player_mode_check.cjs
 python tools/gpu_shader_check.py
 
-node tools/learning_check.cjs
-node tools/demonstration_check.cjs
 node tools/human_capture_check.cjs
 node tools/training_sessions_check.cjs
-node tools/archive_replay_check.cjs
-node --check app/src/main/assets/lab/archive-ui.js
-node --check app/src/main/assets/lab/training-journal.js
-node tools/fdb_feedback_check.cjs
-node tools/fdb_reward_check.cjs
-node tools/model_ui_check.cjs
-node tools/synthetic_import_check.cjs
-node tools/shared_experience_check.cjs
-node tools/shared_experience_ui_check.cjs
-node --check app/src/main/assets/lab/shared-experience-ui.js
-node tools/dual_ui_check.cjs
-node tools/dual_routing_check.cjs
-node tools/layer_sets_check.cjs
-node tools/current_layer_check.cjs
-node --check app/src/main/assets/lab/layer-ui.js
 
 node tools/game_tools_check.cjs
 node --check app/src/main/assets/lab/core-probe.js
@@ -120,7 +95,6 @@ java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.RoutingProfi
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.GpuLayerSyncCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbDiagnosticsCheck
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.FdbTemporalExperiment "${FDB_TEMPORAL_REPORT:-$task_tmp/fdb-temporal}"
-node tools/fdb_diagnostics_check.cjs
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/DualAgentContext.java app/src/main/java/org/node/flyconsole/DualLayerStore.java app/src/main/java/org/node/flyconsole/DualRequestGuard.java tools/DualAgentCheck.java
 java -cp "$task_tmp/classes:$task_tmp/json.jar" org.node.flyconsole.DualAgentCheck
 CODE_CLASSPATH="$task_tmp/classes:$task_tmp/json.jar" node tools/fdb_game_check.cjs
@@ -154,7 +128,6 @@ node tools/sega_p2_check.cjs
 node tools/sega_six_button_check.cjs
 node tools/sega_render_check.cjs
 
-node tools/sega_learning_check.cjs
 node tools/retro_check.cjs
 
 javac -cp "$task_tmp/classes:$task_tmp/json.jar" -d "$task_tmp/classes" app/src/main/java/org/node/flyconsole/LabModule.java tools/CodeLabCheck.java

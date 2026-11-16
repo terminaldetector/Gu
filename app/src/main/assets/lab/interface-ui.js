@@ -19,7 +19,7 @@ try{
 function save(){if(saveBlocked)return false;try{prefs.write(localStorage,labPlatform,settings);notice('Настройки экрана и управления сохранены.');return true;}catch(e){notice('Сохранение интерфейса: '+e.message,true);return false;}}
 function orientation(){return innerWidth>innerHeight?'landscape':'portrait';}
 function viewport(){return{width:innerWidth,height:innerHeight};}
-function minTop(){return Math.min(innerHeight/3,Math.max($('gameToolbar').getBoundingClientRect().bottom+4,body.classList.contains('landscape-compact')?0:$('liveTrainingBar').getBoundingClientRect().bottom+4,editing?$('touchEditorBar').getBoundingClientRect().bottom+4:0));}
+function minTop(){return Math.min(innerHeight/3,Math.max($('gameToolbar').getBoundingClientRect().bottom+4,editing?$('touchEditorBar').getBoundingClientRect().bottom+4:0));}
 function inset(){const s=getComputedStyle($('gamePanel'));return Math.max(settings.inset,parseFloat(s.paddingLeft)||0,parseFloat(s.paddingRight)||0);}
 function clearPosition(el){for(const name of ['position','left','top','right','bottom','transform','width','height','z-index'])el.style.removeProperty(name);el.classList.remove('individual-position');}
 function place(el,p){const r=el.getBoundingClientRect(),at=prefs.position(p,r.width,r.height,viewport(),minTop(),inset());el.style.position='fixed';el.style.left=at.x+'px';el.style.top=at.y+'px';el.style.right='auto';el.style.bottom='auto';el.style.transform='none';el.style.zIndex='11';}
@@ -122,29 +122,21 @@ for(const type of ['pointerup','pointercancel','lostpointercapture'])document.ad
 },true);
 function currentDevice(){const id=$('controllerDevice').value==='auto'?selectedController??devices.keys().next().value:Number($('controllerDevice').value);return devices.get(id);}
 function fullscreen(enabled){if(enabled===lastFullscreen)return;lastFullscreen=enabled;if(typeof window.FlyBridge?.gameDisplay==='function')window.FlyBridge.gameDisplay(enabled);}
-function closeTraining(){body.classList.remove('landscape-training-open');$('landscapeTraining').setAttribute('aria-expanded','false');}
 function profile(){
  const l=settings.landscape,land=orientation()==='landscape',pad=land&&!editing&&(l.input==='gamepad'||l.input==='auto'&&Boolean(currentDevice()?.used));
  const touchVisible=settings.visible||land&&l.input==='touch';body.classList.toggle('hide-touch',!touchVisible);
  body.classList.toggle('landscape-compact',land&&(l.panel==='compact'||pad));body.classList.toggle('landscape-gamepad',pad);
  body.classList.toggle('landscape-overlay',land&&(pad||!touchVisible||l.screenLayout==='overlay'));body.classList.toggle('landscape-hud-bottom',land&&l.monitorPlacement==='bottom'&&l.monitors>0);
- if(!land||editing)closeTraining();fullscreen(land&&l.fullscreen);telemetry();
+ fullscreen(land&&l.fullscreen);telemetry();
 }
 function text(el,value){if(el.textContent!==value)el.textContent=value;}
 function telemetry(){
- const l=settings.landscape,pair=window.dualAgents?.active(),masks=pair?appliedDualMasks:gmodeMode==='coop'?[appliedHumanMask,appliedAgentMask]:gmodeMode==='coop-reverse'?[appliedAgentMask,appliedHumanMask]:[appliedAgentMask,0];
- const labels=pair?[window.dualAgents.label(1),window.dualAgents.label(2)]:[$('gmodeLeft').textContent,gmodeMode==='off'?'P2 · —':$('gmodeRight').textContent];
+ const l=settings.landscape,masks=[appliedMask,0],labels=['P1','P2 · —'];
  for(let i=0;i<2;i++){const box=$('landscapeP'+(i+1));box.hidden=l.monitors<i+1;text(box.querySelector('b'),labels[i]);const action=buttonNames.filter((_,b)=>masks[i]&(1<<b)).join(' + ')||'—';text(box.querySelector('span'),action);const title=labels[i]+' · '+action;if(box.title!==title)box.title=title;}
- $('landscapeTraining').hidden=l.monitors<3;text($('landscapeLearningMode'),$('liveTrainingMode').textContent);text($('landscapeSpeedValue'),$('liveSpeed').textContent);
  text($('landscapePlay'),playing?'Пауза':'Старт');$('landscapePlay').disabled=$('landscapeReset').disabled=!loaded||romLoading;
- text($('landscapeConnect'),pair?'Сети':'Сеть');const linked=String(Boolean(connected||pair&&window.dualAgents.running()));if($('landscapeConnect').getAttribute('aria-pressed')!==linked)$('landscapeConnect').setAttribute('aria-pressed',linked);const title=pair?(window.dualAgents.running()?'Приостановить обе сети':'Продолжить обе сети'):$('gameConnect').textContent;if($('landscapeConnect').title!==title)$('landscapeConnect').title=title;
- text($('landscapeSpeed'),$('gameBoost').textContent);
 }
-$('landscapePlay').onclick=()=>{$('play').click();telemetry();};$('landscapeConnect').onclick=async()=>{const pair=window.dualAgents;if(pair?.active()){if(pair.running())pair.pause('pause');else await pair.resume();}else $('gameConnect').click();telemetry();};$('landscapeReset').onclick=()=>{$('resetNes').click();telemetry();};
-$('landscapeTraining').onclick=()=>{const open=!body.classList.contains('landscape-training-open');body.classList.toggle('landscape-training-open',open);$('landscapeTraining').setAttribute('aria-expanded',String(open));};
-$('landscapeTrainingClose').onclick=closeTraining;$('landscapeSpeed').onclick=()=>{$('gameBoost').click();telemetry();};
-for(const id of ['liveTrainingMode','liveSpeed','gmodeLeft','gmodeRight','gameConnect','play'])new MutationObserver(telemetry).observe($(id),{childList:true,characterData:true,subtree:true});
-new MutationObserver(()=>{if($('quickMenu').open)closeTraining();}).observe($('quickMenu'),{attributes:true,attributeFilter:['open']});
+$('landscapePlay').onclick=()=>{$('play').click();telemetry();};$('landscapeReset').onclick=()=>{$('resetNes').click();telemetry();};
+for(const id of ['play'])new MutationObserver(telemetry).observe($(id),{childList:true,characterData:true,subtree:true});
 function deviceMap(device){return device?physicalMaps[device.descriptor]||{}:{};}
 function padNotice(message,error=false){$('physicalPadStatus').textContent=message;$('physicalPadStatus').className='note'+(error?' error':'');}
 function physicalInfo(){
@@ -202,15 +194,14 @@ function controller(data){
  try{return prefs.physical(data,deviceMap(devices.get(data.id)),buttonNames.length===12);}catch(e){padNotice(e.message,true);return 0;}
 }
 document.addEventListener('keydown',event=>{
- if(event.code==='Escape'&&body.classList.contains('landscape-training-open')){closeTraining();event.preventDefault();event.stopImmediatePropagation();return;}
  if(binding){event.preventDefault();event.stopImmediatePropagation();if(event.code==='Escape')cancelBinding('Назначение отменено.');return;}
  if(editing){if(event.code==='Escape'){finishEditor();event.preventDefault();}if(!['INPUT','SELECT','TEXTAREA'].includes(event.target.tagName)){event.preventDefault();event.stopImmediatePropagation();}}
 },true);
 window.addEventListener('blur',()=>{cancelBinding('Назначение отменено: приложение неактивно.',false);finishEditor(false);controlsEnabled(false);});
 document.addEventListener('focusin',event=>{if(binding&&['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName))cancelBinding('Назначение отменено при переходе в поле настроек.');});
 window.addEventListener('resize',()=>{stopDrag();queueLayout();});
-const oldBack=window.labBack;window.labBack=()=>{if(editing){finishEditor();return true;}if(binding){cancelBinding('Назначение отменено.');return true;}if(body.classList.contains('landscape-training-open')){closeTraining();return true;}return oldBack?.()||false;};
-window.userInterface={editing:()=>editing,binding:()=>binding,layout,telemetry,leave:()=>{closeTraining();fullscreen(false);cancelBinding();finishEditor();fullscreen(false);},controller,
+const oldBack=window.labBack;window.labBack=()=>{if(editing){finishEditor();return true;}if(binding){cancelBinding('Назначение отменено.');return true;}return oldBack?.()||false;};
+window.userInterface={editing:()=>editing,binding:()=>binding,layout,telemetry,leave:()=>{fullscreen(false);cancelBinding();finishEditor();fullscreen(false);},controller,
  videoScale:scale=>{const v=orientation()==='landscape'?settings.landscape:settings;let n=scale*v.videoScale;return v.videoFit==='integer'&&n>=1?Math.floor(n):n;},
  videoOffset:(w,h)=>orientation()==='landscape'?{x:w*settings.landscape.offsetX/2,y:h*settings.landscape.offsetY/2}:{x:0,y:0}};
 fullscreen(false);appearance();physicalInfo();

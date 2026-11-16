@@ -8,7 +8,7 @@ const assets=path.resolve('app/src/main/assets');let browser;
  page.on('pageerror',error=>errors.push(error.message));
  await page.route('https://flyconsole.local/**',route=>{const p=path.join(assets,new URL(route.request().url()).pathname.slice(1));return route.fulfill({status:fs.existsSync(p)?200:404,body:fs.existsSync(p)?fs.readFileSync(p):'',contentType:p.endsWith('.js')?'application/javascript':p.endsWith('.css')?'text/css':p.endsWith('.wasm')?'application/wasm':p.endsWith('.json')?'application/json':'text/html'});});
  await page.exposeFunction('rotationDemo',system=>{const d=JSON.parse(fs.readFileSync(path.join(assets,'lab/demo-'+(system==='nes'?'rom':system)+'.json')));d.name='Portrait rotation fixture';d.sha256=crypto.createHash('sha256').update(Buffer.from(d.base64,'base64')).digest('hex');return page.evaluate(d=>labLoadRom(d),d);});
- await page.addInitScript(()=>{window.rotationBridge=[];window.FlyBridge={demo:()=>rotationDemo(new URL(location.href).searchParams.get('system')||'nes'),acceptRom(){},orientation(){},controls(){},stop(){},resume(){},gameDisplay:value=>rotationBridge.push(value),configure:()=>{throw Error('Layout must not configure the graph');}};});
+ await page.addInitScript(()=>{window.rotationBridge=[];window.FlyBridge={demo:()=>rotationDemo(new URL(location.href).searchParams.get('system')||'nes'),acceptRom(){},orientation(){},controls(){},stop(){},resume(){},gameDisplay:value=>rotationBridge.push(value)};});
  const setting=async(id,value)=>page.evaluate(({id,value})=>{const el=document.getElementById(id);el.value=value;el.dispatchEvent(new Event('change'));},{id,value});
  const packet=(id,mask=0,virtual=false)=>({id,mask,axisMask:mask&240,keyMasks:mask&2?[{code:97,mask:2}]:[],defaults:[{code:97,mask:2,label:'BUTTON_B'}],connected:true,descriptor:'rotation-device-'+id,name:id===5?'Neutral system input fixture':'Physical gamepad fixture',virtual});
  const checkPortrait=async label=>{
@@ -34,8 +34,6 @@ const assets=path.resolve('app/src/main/assets');let browser;
   await page.setViewportSize({width:406,height:846});await page.waitForTimeout(40);
   assert(await page.evaluate(()=>document.body.classList.contains('landscape-gamepad')),'fixture retains the old profile until queued layout');
   await checkPortrait(system+' portrait before deferred profile callback');
-  await page.evaluate(async()=>{const announce=(modelId,sha)=>labReady({modelId,kind:'rotation graph metadata fixture',neurons:32,edges:64,heapMiB:512,graph_sha256:sha.repeat(64),inputs:Array.from({length:16},(_,i)=>String(i+1)),outputs:Array.from({length:buttonNames.length},(_,i)=>String(i+17)),backend:'cpu'});await announce('imported','b');await labState.settle();await announce('male-cns-v1.0','c');await labState.settle();});
-  await checkPortrait(system+' graph change while portrait layout is deferred');
   await page.evaluate(()=>{window.requestAnimationFrame=rotationRAF;for(const callback of rotationPending.splice(0))rotationRAF(callback);});await page.waitForTimeout(80);assert(!await page.evaluate(()=>document.body.classList.contains('landscape-gamepad')));await checkPortrait(system+' settled portrait');
   fs.mkdirSync('ui-preview',{recursive:true});await page.screenshot({path:'ui-preview/rotation-'+system+'-portrait.png'});
   // Explicit preferences remain authoritative and each orientation keeps its own layout.

@@ -12,7 +12,7 @@ const {chromium}=require('playwright');
 const assets=path.resolve('app/src/main/assets');
 const demo=JSON.parse(fs.readFileSync(path.join(assets,'lab/demo-rom.json')));
 const TAG='<script src="agod-experimental.js"></script>';
-const PRODUCTION=['labLoadRom','labConfigured','labResult','labError','labPause'];
+const PRODUCTION=['labLoadRom','labError','labPause'];
 const RESEARCH=['FlyAgodRam','FlyAgodCausal','FlyAgodGoals','FlyAgodReward','FlyAgodEvidence','FlyAgodPipeline','FlyAgodDqn'];
 const observations=[];
 const result={type:'gu-agod-experimental-bridge-check',version:1,
@@ -52,7 +52,7 @@ const note=(name,expectation,observed)=>{observations.push({name,expectation,obs
   research:research.filter(name=>!!window[name]),
   bridge:!!window.FlyAgodExperimental,
   scripts:document.querySelectorAll('script').length,
-  researchPanelChildren:document.getElementById('trainingResearch')?document.getElementById('trainingResearch').children.length:null}),
+  researchPanelChildren:document.getElementById('agodResearch')?document.getElementById('agodResearch').children.length:null}),
   [PRODUCTION,RESEARCH]);
 
  try{
